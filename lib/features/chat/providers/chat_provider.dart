@@ -9,6 +9,29 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 
 part 'chat_provider.g.dart';
 
+/// Display model for the chat list UI.
+class ChatConversation {
+  final String id;
+  final String name;
+  final String latestMessage;
+  final String time;
+  final bool hasUnread;
+  final String? avatarUrl;
+  final String? initials;
+  final String listingTitle;
+
+  ChatConversation({
+    required this.id,
+    required this.name,
+    required this.latestMessage,
+    required this.time,
+    this.hasUnread = false,
+    this.avatarUrl,
+    this.initials,
+    required this.listingTitle,
+  });
+}
+
 /// Fetches the list of chat rooms for the current user.
 ///
 /// Watches authStateProvider so it refreshes when the user logs in/out.

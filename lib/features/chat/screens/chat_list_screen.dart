@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_list_item.dart';
-
-import 'package:smivo/features/chat/widgets/chat_popup.dart';
+import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/core/router/app_routes.dart';
 
 class ChatListScreen extends ConsumerWidget {
   const ChatListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final chatList = ref.watch(chatListProvider);
+    final chatRoomsAsync = ref.watch(chatRoomListProvider);
+    final authUser = ref.watch(authStateProvider).valueOrNull;
+    final currentUserId = authUser?.id;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -42,11 +46,11 @@ class ChatListScreen extends ConsumerWidget {
                 decoration: InputDecoration(
                   hintText: 'Search conversations...',
                   hintStyle: AppTextStyles.bodyLarge.copyWith(
-                    color: const Color(0xFF585781).withOpacity(0.6),
+                    color: const Color(0xFF585781).withValues(alpha: 0.6),
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: const Color(0xFF585781).withOpacity(0.6),
+                    color: const Color(0xFF585781).withValues(alpha: 0.6),
                   ),
                   filled: true,
                   fillColor: const Color(0xFFF2EFFF),
@@ -64,15 +68,76 @@ class ChatListScreen extends ConsumerWidget {
               
               // Chat List
               Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  itemCount: chatList.length,
-                  itemBuilder: (context, index) {
-                    final conversation = chatList[index];
-                    return ChatListItem(
-                      conversation: conversation,
-                      onTap: () {
-                        showChatPopup(context);
+                child: chatRoomsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Error loading conversations'),
+                        const SizedBox(height: AppSpacing.md),
+                        ElevatedButton(
+                          onPressed: () => ref.invalidate(chatRoomListProvider),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  data: (rooms) {
+                    if (rooms.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No conversations yet. Start chatting from a listing.',
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+                    return ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: rooms.length,
+                      itemBuilder: (context, index) {
+                        final room = rooms[index];
+                        
+                        // Data Transformation
+                        final otherUser = (room.buyerId == currentUserId) 
+                            ? room.seller 
+                            : room.buyer;
+                        
+                        final unreadCount = (room.buyerId == currentUserId)
+                            ? room.unreadCountBuyer
+                            : room.unreadCountSeller;
+                        
+                        final lastMessagePreview = room.lastMessage.isNotEmpty
+                            ? room.lastMessage.first.content
+                            : 'No messages yet';
+                            
+                        final timeText = room.lastMessageAt != null
+                            ? timeago.format(room.lastMessageAt!, locale: 'en_short')
+                            : '';
+
+                        // Construct display model
+                        // NOTE: Packing listing title into the name field to fit existing UI
+                        // as requested in the formatting example.
+                        final conversation = ChatConversation(
+                          id: room.id,
+                          listingTitle: room.listing?.title ?? 'Unknown Listing',
+                          name: room.listing?.title ?? 'Unknown Listing',
+                          latestMessage: '${otherUser?.displayName ?? 'User'} · $lastMessagePreview',
+                          time: timeText,
+                          hasUnread: unreadCount > 0,
+                          avatarUrl: otherUser?.avatarUrl,
+                          initials: otherUser?.displayName?.substring(0, 1).toUpperCase(),
+                        );
+
+                        return ChatListItem(
+                          conversation: conversation,
+                          onTap: () {
+                            context.pushNamed(
+                              AppRoutes.chatRoom,
+                              pathParameters: {'id': room.id},
+                            );
+                          },
+                        );
                       },
                     );
                   },
