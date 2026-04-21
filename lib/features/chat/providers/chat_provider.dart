@@ -1,104 +1,90 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:smivo/data/models/chat_room.dart';
+import 'package:smivo/data/models/message.dart';
+import 'package:smivo/data/repositories/chat_repository.dart';
+import 'package:smivo/features/auth/providers/auth_provider.dart';
 
 part 'chat_provider.g.dart';
 
-class ChatConversation {
-  final String id;
-  final String name;
-  final String latestMessage;
-  final String time;
-  final bool hasUnread;
-  final String? avatarUrl; // null means use initials
-  final String? initials;
-
-  ChatConversation({
-    required this.id,
-    required this.name,
-    required this.latestMessage,
-    required this.time,
-    this.hasUnread = false,
-    this.avatarUrl,
-    this.initials,
-  });
+/// Fetches the list of chat rooms for the current user.
+///
+/// Watches authStateProvider so it refreshes when the user logs in/out.
+@riverpod
+Future<List<ChatRoom>> chatRoomList(Ref ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return [];
+  
+  final repository = ref.watch(chatRepositoryProvider);
+  return repository.fetchChatRooms(user.id);
 }
 
+/// Manages messages for a single chat room with realtime updates.
+///
+/// Subscribes to Supabase Realtime on build and unsubscribes on dispose.
+/// New messages are appended to state; history is fetched once at build.
 @riverpod
-class ChatList extends _$ChatList {
+class ChatMessages extends _$ChatMessages {
+  RealtimeChannel? _channel;
+
   @override
-  List<ChatConversation> build() {
-    return [
-      ChatConversation(
-        id: '1',
-        name: 'Alex Rivera',
-        latestMessage: 'Hey! Are you still selling that Eco...',
-        time: '2m ago',
-        hasUnread: true,
-        avatarUrl: 'https://i.pravatar.cc/150?u=alex', // Mock avatar
-      ),
-      ChatConversation(
-        id: '2',
-        name: 'Jordan Lee',
-        latestMessage: "Sweet, I'll meet you at the quad at...",
-        time: '1h ago',
-        avatarUrl: 'https://i.pravatar.cc/150?u=jordan',
-      ),
-      ChatConversation(
-        id: '3',
-        name: 'Samira Patel',
-        latestMessage: 'Thanks for the notes! Lifesaver.',
-        time: 'Yesterday',
-        avatarUrl: 'https://i.pravatar.cc/150?u=samira',
-      ),
-      ChatConversation(
-        id: '4',
-        name: 'Campus Housing',
-        latestMessage: 'Your maintenance request has be...',
-        time: 'Tuesday',
-        initials: 'CH',
-      ),
-      ChatConversation(
-        id: '5',
-        name: 'Emma Wright',
-        latestMessage: 'Is the price negotiable?',
-        time: 'Monday',
-        avatarUrl: 'https://i.pravatar.cc/150?u=emma',
-      ),
-      ChatConversation(
-        id: '6',
-        name: 'Michael Chen',
-        latestMessage: "Thanks. I'll pick it up tomorrow m...",
-        time: 'Sun',
-        hasUnread: true,
-        avatarUrl: 'https://i.pravatar.cc/150?u=michael',
-      ),
-      ChatConversation(
-        id: '7',
-        name: 'David Lee',
-        latestMessage: 'Just returned the calculus book.',
-        time: 'Last week',
-        avatarUrl: 'https://i.pravatar.cc/150?u=david',
-      ),
-      ChatConversation(
-        id: '8',
-        name: 'Sarah Jenkins',
-        latestMessage: 'The apartment looks great! Looki...',
-        time: 'Last week',
-        avatarUrl: 'https://i.pravatar.cc/150?u=sarah',
-      ),
-      ChatConversation(
-        id: '9',
-        name: 'Anna F.',
-        latestMessage: 'Will you take \$35?',
-        time: 'Sep 20',
-        avatarUrl: 'https://i.pravatar.cc/150?u=anna',
-      ),
-      ChatConversation(
-        id: '10',
-        name: 'James K.',
-        latestMessage: 'Is the fridge still available?',
-        time: 'Sep 15',
-        avatarUrl: 'https://i.pravatar.cc/150?u=james',
-      ),
-    ];
+  Future<List<Message>> build(String chatRoomId) async {
+    // Clean up subscription when provider is disposed
+    ref.onDispose(() {
+      _channel?.unsubscribe();
+      _channel = null;
+    });
+
+    final repository = ref.watch(chatRepositoryProvider);
+
+    // 1. Fetch message history
+    final messages = await repository.fetchMessages(chatRoomId);
+
+    // 2. Subscribe to new messages
+    _channel = repository.subscribeToMessages(
+      chatRoomId: chatRoomId,
+      onMessage: (newMessage) {
+        // Append new message to current state
+        final currentMessages = state.valueOrNull ?? [];
+        // Avoid duplicates (optimistic update + realtime echo)
+        if (currentMessages.any((m) => m.id == newMessage.id)) return;
+        state = AsyncValue.data([...currentMessages, newMessage]);
+      },
+    );
+
+    return messages;
+  }
+
+  /// Sends a message and marks the chat as read for the sender.
+  Future<void> sendMessage(String content) async {
+    final user = ref.read(authStateProvider).valueOrNull;
+    if (user == null) return;
+    if (content.trim().isEmpty) return;
+
+    final repository = ref.read(chatRepositoryProvider);
+    
+    // The realtime listener will receive the message and update state.
+    await repository.sendMessage(
+      chatRoomId: chatRoomId,
+      senderId: user.id,
+      content: content.trim(),
+    );
+  }
+
+  /// Marks all messages in this room as read for the current user.
+  Future<void> markAsRead() async {
+    final user = ref.read(authStateProvider).valueOrNull;
+    if (user == null) return;
+
+    final repository = ref.read(chatRepositoryProvider);
+    await repository.markMessagesAsRead(
+      chatRoomId: chatRoomId,
+      userId: user.id,
+    );
+
+    // Invalidate chat room list so unread counts refresh
+    ref.invalidate(chatRoomListProvider);
   }
 }
