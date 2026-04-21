@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/order_card.dart';
 
 import 'package:smivo/features/orders/widgets/list_order_card.dart';

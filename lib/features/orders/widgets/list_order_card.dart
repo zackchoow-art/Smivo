@@ -3,6 +3,7 @@ import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 
