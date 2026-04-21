@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/repositories/order_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -21,16 +23,46 @@ class SelectedOrdersTab extends _$SelectedOrdersTab {
   }
 }
 
-/// Fetches all orders for the current user.
+/// Fetches all orders for the current user with realtime updates.
 ///
-/// Reactive to auth state — returns empty list if user is not logged in.
+/// Subscribes to INSERT/UPDATE on the orders table. RLS ensures 
+/// we only receive events for rows where we are buyer or seller. 
+/// Any change re-fetches the list so status transitions propagate 
+/// to all screens holding this provider.
 @riverpod
-Future<List<Order>> allOrders(Ref ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
-  if (user == null) return [];
+class AllOrders extends _$AllOrders {
+  RealtimeChannel? _channel;
 
-  final repository = ref.watch(orderRepositoryProvider);
-  return repository.fetchOrders(user.id);
+  @override
+  Future<List<Order>> build() async {
+    final user = ref.watch(authStateProvider).valueOrNull;
+    if (user == null) return [];
+
+    ref.onDispose(() {
+      _channel?.unsubscribe();
+      _channel = null;
+    });
+
+    _subscribe(user.id);
+
+    final repository = ref.read(orderRepositoryProvider);
+    return repository.fetchOrders(user.id);
+  }
+
+  void _subscribe(String userId) {
+    final client = ref.read(supabaseClientProvider);
+    _channel = client
+        .channel('orders_list:$userId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'orders',
+          callback: (payload) {
+            ref.invalidateSelf();
+          },
+        )
+        .subscribe();
+  }
 }
 
 /// Orders filtered by the currently selected tab (buying vs selling).
@@ -61,6 +93,71 @@ Future<Order> orderDetail(Ref ref, String orderId) async {
 class OrderActions extends _$OrderActions {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
+
+  /// Creates a new order from a listing.
+  ///
+  /// For sale: totalPrice = listing.price
+  /// For rental: totalPrice = listing.price * number of days
+  /// 
+  /// Returns the created Order on success. Throws on failure.
+  Future<Order> createOrder({
+    required String listingId,
+    required String sellerId,
+    required double price,
+    required String orderType,  // 'sale' or 'rental'
+    DateTime? rentalStartDate,
+    DateTime? rentalEndDate,
+    String school = 'Smith College',
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      final user = ref.read(authStateProvider).valueOrNull;
+      if (user == null) {
+        throw StateError('User must be logged in to place an order');
+      }
+      if (user.id == sellerId) {
+        throw StateError('Cannot place an order on your own listing');
+      }
+
+      // Calculate total price for rentals
+      double totalPrice = price;
+      if (orderType == 'rental' && 
+          rentalStartDate != null && 
+          rentalEndDate != null) {
+        final days = rentalEndDate.difference(rentalStartDate).inDays;
+        // Minimum 1 day
+        final effectiveDays = days > 0 ? days : 1;
+        totalPrice = price * effectiveDays;
+      }
+
+      final now = DateTime.now();
+      final draft = Order(
+        id: '',  // Database will generate
+        listingId: listingId,
+        buyerId: user.id,
+        sellerId: sellerId,
+        orderType: orderType,
+        school: school,
+        totalPrice: totalPrice,
+        rentalStartDate: rentalStartDate,
+        rentalEndDate: rentalEndDate,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final created = await ref.read(orderRepositoryProvider)
+          .createOrder(draft);
+
+      // Refresh orders list so the new order appears
+      ref.invalidate(allOrdersProvider);
+      
+      state = const AsyncValue.data(null);
+      return created;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
 
   /// Seller accepts a pending order, transitioning it to 'confirmed'.
   Future<void> acceptOrder(String orderId) async {

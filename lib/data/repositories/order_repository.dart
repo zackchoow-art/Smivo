@@ -57,9 +57,17 @@ class OrderRepository {
   Future<Order> createOrder(Order order) async {
     try {
       final orderJson = order.toJson()
+        // Nested join fields — not columns
         ..remove('buyer')
         ..remove('seller')
-        ..remove('listing');
+        ..remove('listing')
+        // Database-generated fields — let Postgres assign these
+        ..remove('id')
+        ..remove('created_at')
+        ..remove('updated_at');
+
+      // Remove null fields to avoid overwriting defaults
+      orderJson.removeWhere((key, value) => value == null);
 
       final data = await _client
           .from(AppConstants.tableOrders)

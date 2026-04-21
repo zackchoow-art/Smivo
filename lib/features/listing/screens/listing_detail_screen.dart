@@ -12,6 +12,7 @@ import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smivo/features/orders/providers/orders_provider.dart';
 
 class ListingDetailScreen extends ConsumerStatefulWidget {
   const ListingDetailScreen({
@@ -28,8 +29,8 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   String? _selectedPickupLocation;
 
-  void _showOrderSuccessDialog(BuildContext context) {
-    showDialog(
+  Future<void> _showOrderSuccessDialog(BuildContext context) {
+    return showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusXl)),
@@ -298,8 +299,70 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            _showOrderSuccessDialog(context);
+                          onPressed: () async {
+                            final user = ref.read(authStateProvider).valueOrNull;
+                            
+                            // Guard 1: must be logged in
+                            if (user == null) {
+                              context.pushNamed(AppRoutes.login);
+                              return;
+                            }
+                            
+                            // Guard 2: email must be verified
+                            if (user.emailConfirmedAt == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please verify your email first')),
+                              );
+                              return;
+                            }
+                            
+                            // Guard 3: can't buy your own listing
+                            if (user.id == listing.sellerId) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('You cannot buy your own listing')),
+                              );
+                              return;
+                            }
+                            
+                            final isRental = listing.transactionType.toLowerCase() == 'rental';
+                            
+                            // TEMPORARY: default to 7-day rental starting tomorrow
+                            // TODO: Read from RentalOptionsSection state
+                            DateTime? rentalStart;
+                            DateTime? rentalEnd;
+                            if (isRental) {
+                              rentalStart = DateTime.now().add(const Duration(days: 1));
+                              rentalEnd = rentalStart.add(const Duration(days: 7));
+                            }
+                            
+                            try {
+                              await ref.read(orderActionsProvider.notifier).createOrder(
+                                listingId: listing.id,
+                                sellerId: listing.sellerId,
+                                price: listing.price,
+                                orderType: isRental ? 'rental' : 'sale',
+                                rentalStartDate: rentalStart,
+                                rentalEndDate: rentalEnd,
+                              );
+                              
+                              if (!context.mounted) return;
+                              
+                              // Show success dialog (existing UI)
+                              await _showOrderSuccessDialog(context);
+                              
+                              if (!context.mounted) return;
+                              
+                              // Navigate to orders page after success dialog dismissed
+                              context.goNamed(AppRoutes.orders);
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to place order: ${e.toString()}'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,

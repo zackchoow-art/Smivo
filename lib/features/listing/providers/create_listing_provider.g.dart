@@ -158,7 +158,7 @@ class _ListingFormModeProviderElement
   String get initialMode => (origin as ListingFormModeProvider).initialMode;
 }
 
-String _$listingPhotosHash() => r'88bf68b0abfa15b7bcf0f9e4705c6de61a83b063';
+String _$listingPhotosHash() => r'69207946fd6353e19b0c9d4756a979031b63d126';
 
 /// See also [ListingPhotos].
 @ProviderFor(ListingPhotos)
@@ -176,7 +176,7 @@ final listingPhotosProvider =
 
 typedef _$ListingPhotos = AutoDisposeNotifier<List<String>>;
 String _$selectedListingCategoryHash() =>
-    r'771c909b7ca555cca4da43a2c777990185bdcdd0';
+    r'4ff6322d15c5611c92013d7bd7ffaa9b74fb0743';
 
 /// See also [SelectedListingCategory].
 @ProviderFor(SelectedListingCategory)
@@ -193,5 +193,32 @@ final selectedListingCategoryProvider =
     );
 
 typedef _$SelectedListingCategory = AutoDisposeNotifier<String?>;
+String _$createListingActionHash() =>
+    r'be6f67b7a3eef843f6fe47a38ccf24d2168f52ad';
+
+/// Handles the async submission of the create listing form.
+///
+/// Reads photo paths from ListingPhotos, reads form fields
+/// as parameters, uploads photos + creates the listing +
+/// creates listing_images records — all via the repository's
+/// atomic createListingWithImages method.
+///
+/// Copied from [CreateListingAction].
+@ProviderFor(CreateListingAction)
+final createListingActionProvider = AutoDisposeNotifierProvider<
+  CreateListingAction,
+  AsyncValue<Listing?>
+>.internal(
+  CreateListingAction.new,
+  name: r'createListingActionProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$createListingActionHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$CreateListingAction = AutoDisposeNotifier<AsyncValue<Listing?>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

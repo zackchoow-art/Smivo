@@ -69,96 +69,105 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       backgroundColor: AppColors.surfaceContainerLowest,
       body: SafeArea(
         bottom: false,
-        child: CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  // Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'My Orders',
-                        style: AppTextStyles.headlineLarge.copyWith(
-                          color: const Color(0xFF2B2A51),
-                          fontWeight: FontWeight.w900,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(allOrdersProvider);
+            // Wait for the next value so the spinner stays visible 
+            // until new data arrives
+            await ref.read(allOrdersProvider.future);
+          },
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'My Orders',
+                          style: AppTextStyles.headlineLarge.copyWith(
+                            color: const Color(0xFF2B2A51),
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
-                      ),
-                      // View Toggle
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.grid_view, color: !_isListView ? AppColors.primary : Colors.grey),
-                            onPressed: () => setState(() => _isListView = false),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.view_list, color: _isListView ? AppColors.primary : Colors.grey),
-                            onPressed: () => setState(() => _isListView = true),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Track your campus transactions, from dorm\nessentials to textbook rentals.',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: const Color(0xFF2B2A51).withOpacity(0.7),
-                      height: 1.4,
+                        // View Toggle
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.grid_view, color: !_isListView ? AppColors.primary : Colors.grey),
+                              onPressed: () => setState(() => _isListView = false),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.view_list, color: _isListView ? AppColors.primary : Colors.grey),
+                              onPressed: () => setState(() => _isListView = true),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Segmented Control
-                  _SegmentedControl(
-                    currentTab: currentTab,
-                    onTabChanged: (tab) => ref.read(selectedOrdersTabProvider.notifier).setTab(tab),
-                  ),
-                  const SizedBox(height: 8),
-                ]),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Track your campus transactions, from dorm\nessentials to textbook rentals.',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: const Color(0xFF2B2A51).withOpacity(0.7),
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+  
+                    // Segmented Control
+                    _SegmentedControl(
+                      currentTab: currentTab,
+                      onTabChanged: (tab) => ref.read(selectedOrdersTabProvider.notifier).setTab(tab),
+                    ),
+                    const SizedBox(height: 8),
+                  ]),
+                ),
               ),
-            ),
-            
-            ordersAsync.when(
-              loading: () => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (err, _) => SliverFillRemaining(
-                child: Center(child: Text('Error: $err')),
-              ),
-              data: (orders) {
-                if (orders.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(child: Text('No orders found.')),
+              
+              ordersAsync.when(
+                loading: () => const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (err, _) => SliverFillRemaining(
+                  child: Center(child: Text('Error: $err')),
+                ),
+                data: (orders) {
+                  if (orders.isEmpty) {
+                    return const SliverFillRemaining(
+                      child: Center(child: Text('No orders found.')),
+                    );
+                  }
+  
+                  final pendingOrders = orders.where((o) => o.status == 'pending').toList();
+                  final activeOrders = orders.where((o) => o.status == 'confirmed').toList();
+                  final historyOrders = orders.where((o) => 
+                    o.status == 'completed' || o.status == 'cancelled').toList();
+  
+                  return SliverMainAxisGroup(
+                    slivers: [
+                      ..._buildSectionSlivers('Action Needed', pendingOrders),
+                      ..._buildSectionSlivers('Active', activeOrders),
+                      ..._buildSectionSlivers('History', historyOrders),
+                    ],
                   );
-                }
-
-                final pendingOrders = orders.where((o) => o.status == 'pending').toList();
-                final activeOrders = orders.where((o) => o.status == 'confirmed').toList();
-                final historyOrders = orders.where((o) => 
-                  o.status == 'completed' || o.status == 'cancelled').toList();
-
-                return SliverMainAxisGroup(
-                  slivers: [
-                    ..._buildSectionSlivers('Action Needed', pendingOrders),
-                    ..._buildSectionSlivers('Active', activeOrders),
-                    ..._buildSectionSlivers('History', historyOrders),
-                  ],
-                );
-              },
-            ),
-
-            // Promotional Banner
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-              sliver: SliverToBoxAdapter(
-                child: _PromoBanner(),
+                },
               ),
-            ),
-          ],
+  
+              // Promotional Banner
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                sliver: SliverToBoxAdapter(
+                  child: _PromoBanner(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

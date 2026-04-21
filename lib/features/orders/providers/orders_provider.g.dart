@@ -6,26 +6,6 @@ part of 'orders_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$allOrdersHash() => r'd5b55baf92f1009e42b53c032a468f166c0fbae4';
-
-/// Fetches all orders for the current user.
-///
-/// Reactive to auth state — returns empty list if user is not logged in.
-///
-/// Copied from [allOrders].
-@ProviderFor(allOrders)
-final allOrdersProvider = AutoDisposeFutureProvider<List<Order>>.internal(
-  allOrders,
-  name: r'allOrdersProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$allOrdersHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AllOrdersRef = AutoDisposeFutureProviderRef<List<Order>>;
 String _$filteredOrdersHash() => r'5bcb39ddaba4053e3b9a97901000e80b64d9f783';
 
 /// Orders filtered by the currently selected tab (buying vs selling).
@@ -218,7 +198,31 @@ final selectedOrdersTabProvider =
     );
 
 typedef _$SelectedOrdersTab = AutoDisposeNotifier<OrdersTab>;
-String _$orderActionsHash() => r'baf1f57ee436610dd7dbdd2748b55d066ee85daf';
+String _$allOrdersHash() => r'895ce6f37dbd1aa764f2bf5bc08c8dbdd9783e70';
+
+/// Fetches all orders for the current user with realtime updates.
+///
+/// Subscribes to INSERT/UPDATE on the orders table. RLS ensures
+/// we only receive events for rows where we are buyer or seller.
+/// Any change re-fetches the list so status transitions propagate
+/// to all screens holding this provider.
+///
+/// Copied from [AllOrders].
+@ProviderFor(AllOrders)
+final allOrdersProvider =
+    AutoDisposeAsyncNotifierProvider<AllOrders, List<Order>>.internal(
+      AllOrders.new,
+      name: r'allOrdersProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$allOrdersHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$AllOrders = AutoDisposeAsyncNotifier<List<Order>>;
+String _$orderActionsHash() => r'e0f10e15845122bc65612bd68662ed093273c82f';
 
 /// Mutation actions for a specific order.
 ///
