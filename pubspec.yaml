@@ -1,0 +1,69 @@
+name: smivo
+description: "Campus marketplace for college students"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Backend — all Supabase interactions
+  supabase_flutter: ^2.12.4
+
+  # State Management — Riverpod with code generation
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation — declarative routing
+  go_router: ^17.0.0
+
+  # Models — immutable data classes
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+
+  # Environment — load .env secrets at runtime
+  flutter_dotenv: ^6.0.0
+
+  # Media — image picking and caching
+  image_picker: ^1.2.1
+  cached_network_image: ^3.4.1
+
+  # Push Notifications — Phase 2 activation
+  onesignal_flutter: ^5.5.1
+
+  # Utilities
+  url_launcher: ^6.3.1
+  timeago: ^3.7.1
+  google_fonts: ^6.3.2
+  image_cropper: ^12.2.1
+  # path: file path manipulation (used by StorageRepository for upload filenames)
+  path: ^1.9.1
+  # uuid: generate unique filenames before Supabase Storage upload
+  uuid: ^4.5.1
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # Code Generation
+  build_runner: ^2.5.4
+  freezed: ^3.1.0
+  json_serializable: ^6.9.5
+  riverpod_generator: ^2.6.5
+
+  # Asset Generation
+  flutter_gen_runner: ^5.13.0+1
+
+  # Testing — mocktail for fakes
+  mocktail: ^1.0.5
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
