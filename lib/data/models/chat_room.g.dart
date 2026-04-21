@@ -8,27 +8,27 @@ part of 'chat_room.dart';
 
 _ChatRoom _$ChatRoomFromJson(Map<String, dynamic> json) => _ChatRoom(
   id: json['id'] as String,
-  listingId: json['listingId'] as String,
-  buyerId: json['buyerId'] as String,
-  sellerId: json['sellerId'] as String,
+  listingId: json['listing_id'] as String,
+  buyerId: json['buyer_id'] as String,
+  sellerId: json['seller_id'] as String,
   unreadCountBuyer: (json['unread_count_buyer'] as num?)?.toInt() ?? 0,
   unreadCountSeller: (json['unread_count_seller'] as num?)?.toInt() ?? 0,
   lastMessageAt:
-      json['lastMessageAt'] == null
+      json['last_message_at'] == null
           ? null
-          : DateTime.parse(json['lastMessageAt'] as String),
-  createdAt: DateTime.parse(json['createdAt'] as String),
-  updatedAt: DateTime.parse(json['updatedAt'] as String),
+          : DateTime.parse(json['last_message_at'] as String),
+  createdAt: DateTime.parse(json['created_at'] as String),
+  updatedAt: DateTime.parse(json['updated_at'] as String),
 );
 
 Map<String, dynamic> _$ChatRoomToJson(_ChatRoom instance) => <String, dynamic>{
   'id': instance.id,
-  'listingId': instance.listingId,
-  'buyerId': instance.buyerId,
-  'sellerId': instance.sellerId,
+  'listing_id': instance.listingId,
+  'buyer_id': instance.buyerId,
+  'seller_id': instance.sellerId,
   'unread_count_buyer': instance.unreadCountBuyer,
   'unread_count_seller': instance.unreadCountSeller,
-  'lastMessageAt': instance.lastMessageAt?.toIso8601String(),
-  'createdAt': instance.createdAt.toIso8601String(),
-  'updatedAt': instance.updatedAt.toIso8601String(),
+  'last_message_at': instance.lastMessageAt?.toIso8601String(),
+  'created_at': instance.createdAt.toIso8601String(),
+  'updated_at': instance.updatedAt.toIso8601String(),
 };

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChatRoom {
 
- String get id; String get listingId; String get buyerId; String get sellerId;@JsonKey(name: 'unread_count_buyer') int get unreadCountBuyer;@JsonKey(name: 'unread_count_seller') int get unreadCountSeller; DateTime? get lastMessageAt; DateTime get createdAt; DateTime get updatedAt;
+ String get id;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'buyer_id') String get buyerId;@JsonKey(name: 'seller_id') String get sellerId;@JsonKey(name: 'unread_count_buyer') int get unreadCountBuyer;@JsonKey(name: 'unread_count_seller') int get unreadCountSeller;@JsonKey(name: 'last_message_at') DateTime? get lastMessageAt;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of ChatRoom
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ChatRoomCopyWith<$Res>  {
   factory $ChatRoomCopyWith(ChatRoom value, $Res Function(ChatRoom) _then) = _$ChatRoomCopyWithImpl;
 @useResult
 $Res call({
- String id, String listingId, String buyerId, String sellerId,@JsonKey(name: 'unread_count_buyer') int unreadCountBuyer,@JsonKey(name: 'unread_count_seller') int unreadCountSeller, DateTime? lastMessageAt, DateTime createdAt, DateTime updatedAt
+ String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'buyer_id') String buyerId,@JsonKey(name: 'seller_id') String sellerId,@JsonKey(name: 'unread_count_buyer') int unreadCountBuyer,@JsonKey(name: 'unread_count_seller') int unreadCountSeller,@JsonKey(name: 'last_message_at') DateTime? lastMessageAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -161,7 +161,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String listingId,  String buyerId,  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller,  DateTime? lastMessageAt,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChatRoom() when $default != null:
 return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt);case _:
@@ -182,7 +182,7 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unre
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String listingId,  String buyerId,  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller,  DateTime? lastMessageAt,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ChatRoom():
 return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt);case _:
@@ -202,7 +202,7 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unre
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String listingId,  String buyerId,  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller,  DateTime? lastMessageAt,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ChatRoom() when $default != null:
 return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt);case _:
@@ -217,18 +217,18 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unre
 @JsonSerializable()
 
 class _ChatRoom implements ChatRoom {
-  const _ChatRoom({required this.id, required this.listingId, required this.buyerId, required this.sellerId, @JsonKey(name: 'unread_count_buyer') this.unreadCountBuyer = 0, @JsonKey(name: 'unread_count_seller') this.unreadCountSeller = 0, this.lastMessageAt, required this.createdAt, required this.updatedAt});
+  const _ChatRoom({required this.id, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'buyer_id') required this.buyerId, @JsonKey(name: 'seller_id') required this.sellerId, @JsonKey(name: 'unread_count_buyer') this.unreadCountBuyer = 0, @JsonKey(name: 'unread_count_seller') this.unreadCountSeller = 0, @JsonKey(name: 'last_message_at') this.lastMessageAt, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
   factory _ChatRoom.fromJson(Map<String, dynamic> json) => _$ChatRoomFromJson(json);
 
 @override final  String id;
-@override final  String listingId;
-@override final  String buyerId;
-@override final  String sellerId;
+@override@JsonKey(name: 'listing_id') final  String listingId;
+@override@JsonKey(name: 'buyer_id') final  String buyerId;
+@override@JsonKey(name: 'seller_id') final  String sellerId;
 @override@JsonKey(name: 'unread_count_buyer') final  int unreadCountBuyer;
 @override@JsonKey(name: 'unread_count_seller') final  int unreadCountSeller;
-@override final  DateTime? lastMessageAt;
-@override final  DateTime createdAt;
-@override final  DateTime updatedAt;
+@override@JsonKey(name: 'last_message_at') final  DateTime? lastMessageAt;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 
 /// Create a copy of ChatRoom
 /// with the given fields replaced by the non-null parameter values.
@@ -263,7 +263,7 @@ abstract mixin class _$ChatRoomCopyWith<$Res> implements $ChatRoomCopyWith<$Res>
   factory _$ChatRoomCopyWith(_ChatRoom value, $Res Function(_ChatRoom) _then) = __$ChatRoomCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String listingId, String buyerId, String sellerId,@JsonKey(name: 'unread_count_buyer') int unreadCountBuyer,@JsonKey(name: 'unread_count_seller') int unreadCountSeller, DateTime? lastMessageAt, DateTime createdAt, DateTime updatedAt
+ String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'buyer_id') String buyerId,@JsonKey(name: 'seller_id') String sellerId,@JsonKey(name: 'unread_count_buyer') int unreadCountBuyer,@JsonKey(name: 'unread_count_seller') int unreadCountSeller,@JsonKey(name: 'last_message_at') DateTime? lastMessageAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 

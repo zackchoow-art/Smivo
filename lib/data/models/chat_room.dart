@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'chat_room.freezed.dart';
@@ -11,14 +12,14 @@ part 'chat_room.g.dart';
 abstract class ChatRoom with _$ChatRoom {
   const factory ChatRoom({
     required String id,
-    required String listingId,
-    required String buyerId,
-    required String sellerId,
+    @JsonKey(name: 'listing_id') required String listingId,
+    @JsonKey(name: 'buyer_id') required String buyerId,
+    @JsonKey(name: 'seller_id') required String sellerId,
     @JsonKey(name: 'unread_count_buyer') @Default(0) int unreadCountBuyer,
     @JsonKey(name: 'unread_count_seller') @Default(0) int unreadCountSeller,
-    DateTime? lastMessageAt,
-    required DateTime createdAt,
-    required DateTime updatedAt,
+    @JsonKey(name: 'last_message_at') DateTime? lastMessageAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _ChatRoom;
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) =>

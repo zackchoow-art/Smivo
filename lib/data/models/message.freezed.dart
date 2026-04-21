@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Message {
 
- String get id; String get chatRoomId; String get senderId; String get content;@JsonKey(name: 'message_type') String get messageType;@JsonKey(name: 'image_url') String? get imageUrl; bool get isRead; DateTime get createdAt; DateTime get updatedAt;
+ String get id;@JsonKey(name: 'chat_room_id') String get chatRoomId;@JsonKey(name: 'sender_id') String get senderId; String get content;@JsonKey(name: 'message_type') String get messageType;@JsonKey(name: 'image_url') String? get imageUrl;@JsonKey(name: 'is_read') bool get isRead;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $MessageCopyWith<$Res>  {
   factory $MessageCopyWith(Message value, $Res Function(Message) _then) = _$MessageCopyWithImpl;
 @useResult
 $Res call({
- String id, String chatRoomId, String senderId, String content,@JsonKey(name: 'message_type') String messageType,@JsonKey(name: 'image_url') String? imageUrl, bool isRead, DateTime createdAt, DateTime updatedAt
+ String id,@JsonKey(name: 'chat_room_id') String chatRoomId,@JsonKey(name: 'sender_id') String senderId, String content,@JsonKey(name: 'message_type') String messageType,@JsonKey(name: 'image_url') String? imageUrl,@JsonKey(name: 'is_read') bool isRead,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -161,7 +161,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String chatRoomId,  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl,  bool isRead,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Message() when $default != null:
 return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt);case _:
@@ -182,7 +182,7 @@ return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.mes
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String chatRoomId,  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl,  bool isRead,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Message():
 return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt);case _:
@@ -202,7 +202,7 @@ return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.mes
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String chatRoomId,  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl,  bool isRead,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Message() when $default != null:
 return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt);case _:
@@ -217,18 +217,18 @@ return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.mes
 @JsonSerializable()
 
 class _Message implements Message {
-  const _Message({required this.id, required this.chatRoomId, required this.senderId, required this.content, @JsonKey(name: 'message_type') this.messageType = 'text', @JsonKey(name: 'image_url') this.imageUrl, this.isRead = false, required this.createdAt, required this.updatedAt});
+  const _Message({required this.id, @JsonKey(name: 'chat_room_id') required this.chatRoomId, @JsonKey(name: 'sender_id') required this.senderId, required this.content, @JsonKey(name: 'message_type') this.messageType = 'text', @JsonKey(name: 'image_url') this.imageUrl, @JsonKey(name: 'is_read') this.isRead = false, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
   factory _Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 
 @override final  String id;
-@override final  String chatRoomId;
-@override final  String senderId;
+@override@JsonKey(name: 'chat_room_id') final  String chatRoomId;
+@override@JsonKey(name: 'sender_id') final  String senderId;
 @override final  String content;
 @override@JsonKey(name: 'message_type') final  String messageType;
 @override@JsonKey(name: 'image_url') final  String? imageUrl;
-@override@JsonKey() final  bool isRead;
-@override final  DateTime createdAt;
-@override final  DateTime updatedAt;
+@override@JsonKey(name: 'is_read') final  bool isRead;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
@@ -263,7 +263,7 @@ abstract mixin class _$MessageCopyWith<$Res> implements $MessageCopyWith<$Res> {
   factory _$MessageCopyWith(_Message value, $Res Function(_Message) _then) = __$MessageCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String chatRoomId, String senderId, String content,@JsonKey(name: 'message_type') String messageType,@JsonKey(name: 'image_url') String? imageUrl, bool isRead, DateTime createdAt, DateTime updatedAt
+ String id,@JsonKey(name: 'chat_room_id') String chatRoomId,@JsonKey(name: 'sender_id') String senderId, String content,@JsonKey(name: 'message_type') String messageType,@JsonKey(name: 'image_url') String? imageUrl,@JsonKey(name: 'is_read') bool isRead,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
