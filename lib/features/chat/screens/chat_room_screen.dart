@@ -108,6 +108,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
     final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
 
+    // Re-mark as read whenever new messages arrive while viewing this chat.
+    ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
+      final prevLen = previous?.valueOrNull?.length ?? 0;
+      final nextLen = next.valueOrNull?.length ?? 0;
+      if (nextLen > prevLen) {
+        // New message arrived while user is on this screen
+        ref.read(chatMessagesProvider(widget.chatRoomId).notifier).markAsRead();
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F4FA),
       appBar: AppBar(

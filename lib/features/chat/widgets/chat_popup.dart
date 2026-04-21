@@ -124,6 +124,16 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
     final currentUserProfile = ref.watch(profileProvider).valueOrNull;
 
+    // Re-mark as read whenever new messages arrive while viewing this chat.
+    ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
+      final prevLen = previous?.valueOrNull?.length ?? 0;
+      final nextLen = next.valueOrNull?.length ?? 0;
+      if (nextLen > prevLen) {
+        // New message arrived while user is on this screen
+        ref.read(chatMessagesProvider(widget.chatRoomId).notifier).markAsRead();
+      }
+    });
+
     const backgroundColor = Color(0xFFF5F4FA);
     const primaryBlue = Color(0xFF3B67FF);
     const headerBlue = Color(0xFF2B2A51);
