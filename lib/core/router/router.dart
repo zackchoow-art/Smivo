@@ -13,6 +13,7 @@ import 'package:smivo/features/listing/screens/listing_detail_screen.dart';
 import 'package:smivo/features/listing/screens/create_listing_form_screen.dart';
 import 'package:smivo/features/chat/screens/chat_list_screen.dart';
 import 'package:smivo/features/orders/screens/orders_screen.dart';
+import 'package:smivo/features/chat/screens/chat_room_screen.dart';
 import 'package:smivo/features/settings/screens/edit_profile_screen.dart';
 import 'package:smivo/features/settings/screens/help_screen.dart';
 import 'package:smivo/features/settings/screens/notification_settings_screen.dart';
@@ -213,8 +214,7 @@ GoRouter router(Ref ref) {
         name: AppRoutes.chatRoom,
         path: AppRoutes.chatRoomPath,
         builder: (context, state) =>
-            // TODO: Create chat_room_screen.dart (Stitch MCP)
-            const _PlaceholderScreen(name: 'Chat Room'),
+            ChatRoomScreen(chatRoomId: state.pathParameters['id']!),
       ),
 
       // ── Orders (auth required) ───────────────────────────
