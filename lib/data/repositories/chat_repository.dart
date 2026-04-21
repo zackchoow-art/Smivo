@@ -16,14 +16,14 @@ class ChatRepository {
 
   final SupabaseClient _client;
 
-  /// Fetches all chat rooms for a given user.
+  /// Fetches all chat rooms where [userId] is either buyer or seller.
   Future<List<ChatRoom>> fetchChatRooms(String userId) async {
     try {
       final data = await _client
           .from(AppConstants.tableChatRooms)
-          .select()
+          .select('*')
           .or('buyer_id.eq.$userId,seller_id.eq.$userId')
-          .order('last_message_at', ascending: false);
+          .order('last_message_at', ascending: false, nullsFirst: false);
       return data.map((json) => ChatRoom.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -92,6 +92,43 @@ class ChatRepository {
           .select()
           .single();
       return Message.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Marks all messages in [chatRoomId] as read for [userId].
+  ///
+  /// Updates is_read on messages NOT sent by userId, then resets
+  /// the appropriate unread_count in chat_rooms based on role.
+  Future<void> markMessagesAsRead({
+    required String chatRoomId,
+    required String userId,
+  }) async {
+    try {
+      // Mark other party's messages as read
+      await _client
+          .from(AppConstants.tableMessages)
+          .update({'is_read': true})
+          .eq('chat_room_id', chatRoomId)
+          .neq('sender_id', userId)
+          .eq('is_read', false);
+
+      // Determine which unread counter to reset based on user role
+      final room = await _client
+          .from(AppConstants.tableChatRooms)
+          .select('buyer_id, seller_id')
+          .eq('id', chatRoomId)
+          .single();
+
+      final updateField = (room['buyer_id'] == userId)
+          ? 'unread_count_buyer'
+          : 'unread_count_seller';
+
+      await _client
+          .from(AppConstants.tableChatRooms)
+          .update({updateField: 0})
+          .eq('id', chatRoomId);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
