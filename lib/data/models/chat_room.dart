@@ -1,5 +1,8 @@
 // ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:smivo/data/models/chat_listing_preview.dart';
+import 'package:smivo/data/models/message.dart';
+import 'package:smivo/data/models/user_profile.dart';
 
 part 'chat_room.freezed.dart';
 part 'chat_room.g.dart';
@@ -20,6 +23,11 @@ abstract class ChatRoom with _$ChatRoom {
     @JsonKey(name: 'last_message_at') DateTime? lastMessageAt,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    // Nested join data — populated only by fetchChatRooms query
+    UserProfile? buyer,
+    UserProfile? seller,
+    ChatListingPreview? listing,
+    @JsonKey(name: 'last_message') Message? lastMessage,
   }) = _ChatRoom;
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) =>

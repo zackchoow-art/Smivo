@@ -19,6 +19,24 @@ _ChatRoom _$ChatRoomFromJson(Map<String, dynamic> json) => _ChatRoom(
           : DateTime.parse(json['last_message_at'] as String),
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
+  buyer:
+      json['buyer'] == null
+          ? null
+          : UserProfile.fromJson(json['buyer'] as Map<String, dynamic>),
+  seller:
+      json['seller'] == null
+          ? null
+          : UserProfile.fromJson(json['seller'] as Map<String, dynamic>),
+  listing:
+      json['listing'] == null
+          ? null
+          : ChatListingPreview.fromJson(
+            json['listing'] as Map<String, dynamic>,
+          ),
+  lastMessage:
+      json['last_message'] == null
+          ? null
+          : Message.fromJson(json['last_message'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$ChatRoomToJson(_ChatRoom instance) => <String, dynamic>{
@@ -31,4 +49,8 @@ Map<String, dynamic> _$ChatRoomToJson(_ChatRoom instance) => <String, dynamic>{
   'last_message_at': instance.lastMessageAt?.toIso8601String(),
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
+  'buyer': instance.buyer,
+  'seller': instance.seller,
+  'listing': instance.listing,
+  'last_message': instance.lastMessage,
 };

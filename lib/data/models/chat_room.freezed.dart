@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChatRoom {
 
- String get id;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'buyer_id') String get buyerId;@JsonKey(name: 'seller_id') String get sellerId;@JsonKey(name: 'unread_count_buyer') int get unreadCountBuyer;@JsonKey(name: 'unread_count_seller') int get unreadCountSeller;@JsonKey(name: 'last_message_at') DateTime? get lastMessageAt;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'buyer_id') String get buyerId;@JsonKey(name: 'seller_id') String get sellerId;@JsonKey(name: 'unread_count_buyer') int get unreadCountBuyer;@JsonKey(name: 'unread_count_seller') int get unreadCountSeller;@JsonKey(name: 'last_message_at') DateTime? get lastMessageAt;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;// Nested join data — populated only by fetchChatRooms query
+ UserProfile? get buyer; UserProfile? get seller; ChatListingPreview? get listing;@JsonKey(name: 'last_message') Message? get lastMessage;
 /// Create a copy of ChatRoom
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $ChatRoomCopyWith<ChatRoom> get copyWith => _$ChatRoomCopyWithImpl<ChatRoom>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatRoom&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.buyerId, buyerId) || other.buyerId == buyerId)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.unreadCountBuyer, unreadCountBuyer) || other.unreadCountBuyer == unreadCountBuyer)&&(identical(other.unreadCountSeller, unreadCountSeller) || other.unreadCountSeller == unreadCountSeller)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatRoom&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.buyerId, buyerId) || other.buyerId == buyerId)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.unreadCountBuyer, unreadCountBuyer) || other.unreadCountBuyer == unreadCountBuyer)&&(identical(other.unreadCountSeller, unreadCountSeller) || other.unreadCountSeller == unreadCountSeller)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.buyer, buyer) || other.buyer == buyer)&&(identical(other.seller, seller) || other.seller == seller)&&(identical(other.listing, listing) || other.listing == listing)&&(identical(other.lastMessage, lastMessage) || other.lastMessage == lastMessage));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,listingId,buyerId,sellerId,unreadCountBuyer,unreadCountSeller,lastMessageAt,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,listingId,buyerId,sellerId,unreadCountBuyer,unreadCountSeller,lastMessageAt,createdAt,updatedAt,buyer,seller,listing,lastMessage);
 
 @override
 String toString() {
-  return 'ChatRoom(id: $id, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, unreadCountBuyer: $unreadCountBuyer, unreadCountSeller: $unreadCountSeller, lastMessageAt: $lastMessageAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'ChatRoom(id: $id, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, unreadCountBuyer: $unreadCountBuyer, unreadCountSeller: $unreadCountSeller, lastMessageAt: $lastMessageAt, createdAt: $createdAt, updatedAt: $updatedAt, buyer: $buyer, seller: $seller, listing: $listing, lastMessage: $lastMessage)';
 }
 
 
@@ -48,11 +49,11 @@ abstract mixin class $ChatRoomCopyWith<$Res>  {
   factory $ChatRoomCopyWith(ChatRoom value, $Res Function(ChatRoom) _then) = _$ChatRoomCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'buyer_id') String buyerId,@JsonKey(name: 'seller_id') String sellerId,@JsonKey(name: 'unread_count_buyer') int unreadCountBuyer,@JsonKey(name: 'unread_count_seller') int unreadCountSeller,@JsonKey(name: 'last_message_at') DateTime? lastMessageAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'buyer_id') String buyerId,@JsonKey(name: 'seller_id') String sellerId,@JsonKey(name: 'unread_count_buyer') int unreadCountBuyer,@JsonKey(name: 'unread_count_seller') int unreadCountSeller,@JsonKey(name: 'last_message_at') DateTime? lastMessageAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? buyer, UserProfile? seller, ChatListingPreview? listing,@JsonKey(name: 'last_message') Message? lastMessage
 });
 
 
-
+$UserProfileCopyWith<$Res>? get buyer;$UserProfileCopyWith<$Res>? get seller;$ChatListingPreviewCopyWith<$Res>? get listing;$MessageCopyWith<$Res>? get lastMessage;
 
 }
 /// @nodoc
@@ -65,7 +66,7 @@ class _$ChatRoomCopyWithImpl<$Res>
 
 /// Create a copy of ChatRoom
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? listingId = null,Object? buyerId = null,Object? sellerId = null,Object? unreadCountBuyer = null,Object? unreadCountSeller = null,Object? lastMessageAt = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? listingId = null,Object? buyerId = null,Object? sellerId = null,Object? unreadCountBuyer = null,Object? unreadCountSeller = null,Object? lastMessageAt = freezed,Object? createdAt = null,Object? updatedAt = null,Object? buyer = freezed,Object? seller = freezed,Object? listing = freezed,Object? lastMessage = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,listingId: null == listingId ? _self.listingId : listingId // ignore: cast_nullable_to_non_nullable
@@ -76,10 +77,62 @@ as int,unreadCountSeller: null == unreadCountSeller ? _self.unreadCountSeller : 
 as int,lastMessageAt: freezed == lastMessageAt ? _self.lastMessageAt : lastMessageAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,buyer: freezed == buyer ? _self.buyer : buyer // ignore: cast_nullable_to_non_nullable
+as UserProfile?,seller: freezed == seller ? _self.seller : seller // ignore: cast_nullable_to_non_nullable
+as UserProfile?,listing: freezed == listing ? _self.listing : listing // ignore: cast_nullable_to_non_nullable
+as ChatListingPreview?,lastMessage: freezed == lastMessage ? _self.lastMessage : lastMessage // ignore: cast_nullable_to_non_nullable
+as Message?,
   ));
 }
+/// Create a copy of ChatRoom
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserProfileCopyWith<$Res>? get buyer {
+    if (_self.buyer == null) {
+    return null;
+  }
 
+  return $UserProfileCopyWith<$Res>(_self.buyer!, (value) {
+    return _then(_self.copyWith(buyer: value));
+  });
+}/// Create a copy of ChatRoom
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserProfileCopyWith<$Res>? get seller {
+    if (_self.seller == null) {
+    return null;
+  }
+
+  return $UserProfileCopyWith<$Res>(_self.seller!, (value) {
+    return _then(_self.copyWith(seller: value));
+  });
+}/// Create a copy of ChatRoom
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ChatListingPreviewCopyWith<$Res>? get listing {
+    if (_self.listing == null) {
+    return null;
+  }
+
+  return $ChatListingPreviewCopyWith<$Res>(_self.listing!, (value) {
+    return _then(_self.copyWith(listing: value));
+  });
+}/// Create a copy of ChatRoom
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MessageCopyWith<$Res>? get lastMessage {
+    if (_self.lastMessage == null) {
+    return null;
+  }
+
+  return $MessageCopyWith<$Res>(_self.lastMessage!, (value) {
+    return _then(_self.copyWith(lastMessage: value));
+  });
+}
 }
 
 
@@ -161,10 +214,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? buyer,  UserProfile? seller,  ChatListingPreview? listing, @JsonKey(name: 'last_message')  Message? lastMessage)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChatRoom() when $default != null:
-return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt,_that.buyer,_that.seller,_that.listing,_that.lastMessage);case _:
   return orElse();
 
 }
@@ -182,10 +235,10 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unre
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? buyer,  UserProfile? seller,  ChatListingPreview? listing, @JsonKey(name: 'last_message')  Message? lastMessage)  $default,) {final _that = this;
 switch (_that) {
 case _ChatRoom():
-return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt,_that.buyer,_that.seller,_that.listing,_that.lastMessage);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +255,10 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unre
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'buyer_id')  String buyerId, @JsonKey(name: 'seller_id')  String sellerId, @JsonKey(name: 'unread_count_buyer')  int unreadCountBuyer, @JsonKey(name: 'unread_count_seller')  int unreadCountSeller, @JsonKey(name: 'last_message_at')  DateTime? lastMessageAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? buyer,  UserProfile? seller,  ChatListingPreview? listing, @JsonKey(name: 'last_message')  Message? lastMessage)?  $default,) {final _that = this;
 switch (_that) {
 case _ChatRoom() when $default != null:
-return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unreadCountBuyer,_that.unreadCountSeller,_that.lastMessageAt,_that.createdAt,_that.updatedAt,_that.buyer,_that.seller,_that.listing,_that.lastMessage);case _:
   return null;
 
 }
@@ -217,7 +270,7 @@ return $default(_that.id,_that.listingId,_that.buyerId,_that.sellerId,_that.unre
 @JsonSerializable()
 
 class _ChatRoom implements ChatRoom {
-  const _ChatRoom({required this.id, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'buyer_id') required this.buyerId, @JsonKey(name: 'seller_id') required this.sellerId, @JsonKey(name: 'unread_count_buyer') this.unreadCountBuyer = 0, @JsonKey(name: 'unread_count_seller') this.unreadCountSeller = 0, @JsonKey(name: 'last_message_at') this.lastMessageAt, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _ChatRoom({required this.id, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'buyer_id') required this.buyerId, @JsonKey(name: 'seller_id') required this.sellerId, @JsonKey(name: 'unread_count_buyer') this.unreadCountBuyer = 0, @JsonKey(name: 'unread_count_seller') this.unreadCountSeller = 0, @JsonKey(name: 'last_message_at') this.lastMessageAt, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, this.buyer, this.seller, this.listing, @JsonKey(name: 'last_message') this.lastMessage});
   factory _ChatRoom.fromJson(Map<String, dynamic> json) => _$ChatRoomFromJson(json);
 
 @override final  String id;
@@ -229,6 +282,11 @@ class _ChatRoom implements ChatRoom {
 @override@JsonKey(name: 'last_message_at') final  DateTime? lastMessageAt;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+// Nested join data — populated only by fetchChatRooms query
+@override final  UserProfile? buyer;
+@override final  UserProfile? seller;
+@override final  ChatListingPreview? listing;
+@override@JsonKey(name: 'last_message') final  Message? lastMessage;
 
 /// Create a copy of ChatRoom
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +301,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatRoom&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.buyerId, buyerId) || other.buyerId == buyerId)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.unreadCountBuyer, unreadCountBuyer) || other.unreadCountBuyer == unreadCountBuyer)&&(identical(other.unreadCountSeller, unreadCountSeller) || other.unreadCountSeller == unreadCountSeller)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatRoom&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.buyerId, buyerId) || other.buyerId == buyerId)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.unreadCountBuyer, unreadCountBuyer) || other.unreadCountBuyer == unreadCountBuyer)&&(identical(other.unreadCountSeller, unreadCountSeller) || other.unreadCountSeller == unreadCountSeller)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.buyer, buyer) || other.buyer == buyer)&&(identical(other.seller, seller) || other.seller == seller)&&(identical(other.listing, listing) || other.listing == listing)&&(identical(other.lastMessage, lastMessage) || other.lastMessage == lastMessage));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,listingId,buyerId,sellerId,unreadCountBuyer,unreadCountSeller,lastMessageAt,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,listingId,buyerId,sellerId,unreadCountBuyer,unreadCountSeller,lastMessageAt,createdAt,updatedAt,buyer,seller,listing,lastMessage);
 
 @override
 String toString() {
-  return 'ChatRoom(id: $id, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, unreadCountBuyer: $unreadCountBuyer, unreadCountSeller: $unreadCountSeller, lastMessageAt: $lastMessageAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'ChatRoom(id: $id, listingId: $listingId, buyerId: $buyerId, sellerId: $sellerId, unreadCountBuyer: $unreadCountBuyer, unreadCountSeller: $unreadCountSeller, lastMessageAt: $lastMessageAt, createdAt: $createdAt, updatedAt: $updatedAt, buyer: $buyer, seller: $seller, listing: $listing, lastMessage: $lastMessage)';
 }
 
 
@@ -263,11 +321,11 @@ abstract mixin class _$ChatRoomCopyWith<$Res> implements $ChatRoomCopyWith<$Res>
   factory _$ChatRoomCopyWith(_ChatRoom value, $Res Function(_ChatRoom) _then) = __$ChatRoomCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'buyer_id') String buyerId,@JsonKey(name: 'seller_id') String sellerId,@JsonKey(name: 'unread_count_buyer') int unreadCountBuyer,@JsonKey(name: 'unread_count_seller') int unreadCountSeller,@JsonKey(name: 'last_message_at') DateTime? lastMessageAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'buyer_id') String buyerId,@JsonKey(name: 'seller_id') String sellerId,@JsonKey(name: 'unread_count_buyer') int unreadCountBuyer,@JsonKey(name: 'unread_count_seller') int unreadCountSeller,@JsonKey(name: 'last_message_at') DateTime? lastMessageAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? buyer, UserProfile? seller, ChatListingPreview? listing,@JsonKey(name: 'last_message') Message? lastMessage
 });
 
 
-
+@override $UserProfileCopyWith<$Res>? get buyer;@override $UserProfileCopyWith<$Res>? get seller;@override $ChatListingPreviewCopyWith<$Res>? get listing;@override $MessageCopyWith<$Res>? get lastMessage;
 
 }
 /// @nodoc
@@ -280,7 +338,7 @@ class __$ChatRoomCopyWithImpl<$Res>
 
 /// Create a copy of ChatRoom
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? listingId = null,Object? buyerId = null,Object? sellerId = null,Object? unreadCountBuyer = null,Object? unreadCountSeller = null,Object? lastMessageAt = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? listingId = null,Object? buyerId = null,Object? sellerId = null,Object? unreadCountBuyer = null,Object? unreadCountSeller = null,Object? lastMessageAt = freezed,Object? createdAt = null,Object? updatedAt = null,Object? buyer = freezed,Object? seller = freezed,Object? listing = freezed,Object? lastMessage = freezed,}) {
   return _then(_ChatRoom(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,listingId: null == listingId ? _self.listingId : listingId // ignore: cast_nullable_to_non_nullable
@@ -291,11 +349,63 @@ as int,unreadCountSeller: null == unreadCountSeller ? _self.unreadCountSeller : 
 as int,lastMessageAt: freezed == lastMessageAt ? _self.lastMessageAt : lastMessageAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,buyer: freezed == buyer ? _self.buyer : buyer // ignore: cast_nullable_to_non_nullable
+as UserProfile?,seller: freezed == seller ? _self.seller : seller // ignore: cast_nullable_to_non_nullable
+as UserProfile?,listing: freezed == listing ? _self.listing : listing // ignore: cast_nullable_to_non_nullable
+as ChatListingPreview?,lastMessage: freezed == lastMessage ? _self.lastMessage : lastMessage // ignore: cast_nullable_to_non_nullable
+as Message?,
   ));
 }
 
+/// Create a copy of ChatRoom
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserProfileCopyWith<$Res>? get buyer {
+    if (_self.buyer == null) {
+    return null;
+  }
 
+  return $UserProfileCopyWith<$Res>(_self.buyer!, (value) {
+    return _then(_self.copyWith(buyer: value));
+  });
+}/// Create a copy of ChatRoom
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserProfileCopyWith<$Res>? get seller {
+    if (_self.seller == null) {
+    return null;
+  }
+
+  return $UserProfileCopyWith<$Res>(_self.seller!, (value) {
+    return _then(_self.copyWith(seller: value));
+  });
+}/// Create a copy of ChatRoom
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ChatListingPreviewCopyWith<$Res>? get listing {
+    if (_self.listing == null) {
+    return null;
+  }
+
+  return $ChatListingPreviewCopyWith<$Res>(_self.listing!, (value) {
+    return _then(_self.copyWith(listing: value));
+  });
+}/// Create a copy of ChatRoom
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MessageCopyWith<$Res>? get lastMessage {
+    if (_self.lastMessage == null) {
+    return null;
+  }
+
+  return $MessageCopyWith<$Res>(_self.lastMessage!, (value) {
+    return _then(_self.copyWith(lastMessage: value));
+  });
+}
 }
 
 // dart format on
