@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/features/chat/providers/chat_provider.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends ConsumerWidget {
   const BottomNavBar({
     super.key,
     required this.currentIndex,
@@ -14,7 +16,10 @@ class BottomNavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalUnreadAsync = ref.watch(chatTotalUnreadProvider);
+    final totalUnread = totalUnreadAsync.valueOrNull ?? 0;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -43,12 +48,13 @@ class BottomNavBar extends StatelessWidget {
                 isSelected: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
-              _NavBarItem(
+               _NavBarItem(
                 icon: Icons.chat_bubble,
                 outlinedIcon: Icons.chat_bubble_outline,
                 label: 'CHAT',
                 isSelected: currentIndex == 1,
                 onTap: () => onTap(1),
+                unreadCount: totalUnread,
               ),
               _NavBarItem(
                 icon: Icons.add_circle_outline,
@@ -80,6 +86,7 @@ class _NavBarItem extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final int unreadCount;
 
   const _NavBarItem({
     required this.icon,
@@ -87,6 +94,7 @@ class _NavBarItem extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    this.unreadCount = 0,
   });
 
   @override
@@ -102,10 +110,18 @@ class _NavBarItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? icon : outlinedIcon,
-              color: color,
-              size: 26,
+            Badge(
+              label: Text(
+                unreadCount > 99 ? '99+' : unreadCount.toString(),
+                style: const TextStyle(fontSize: 10, color: Colors.white),
+              ),
+              isLabelVisible: unreadCount > 0,
+              backgroundColor: Colors.red,
+              child: Icon(
+                isSelected ? icon : outlinedIcon,
+                color: color,
+                size: 26,
+              ),
             ),
             const SizedBox(height: 4),
             Text(

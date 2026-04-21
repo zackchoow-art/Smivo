@@ -19,7 +19,7 @@ class ChatConversation {
   final String name;
   final String latestMessage;
   final String time;
-  final bool hasUnread;
+  final int unreadCount;
   final String? avatarUrl;
   final String? initials;
   final String listingTitle;
@@ -29,7 +29,7 @@ class ChatConversation {
     required this.name,
     required this.latestMessage,
     required this.time,
-    this.hasUnread = false,
+    this.unreadCount = 0,
     this.avatarUrl,
     this.initials,
     required this.listingTitle,
@@ -172,4 +172,17 @@ class ChatMessages extends _$ChatMessages {
     // Invalidate chat room list so unread counts refresh
     ref.invalidate(chatRoomListProvider);
   }
+}
+
+/// Total unread messages across all chat rooms for the current user.
+@riverpod
+Future<int> chatTotalUnread(Ref ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return 0;
+  
+  final rooms = await ref.watch(chatRoomListProvider.future);
+  return rooms.fold<int>(0, (sum, room) {
+    final isBuyer = room.buyerId == user.id;
+    return sum + (isBuyer ? room.unreadCountBuyer : room.unreadCountSeller);
+  });
 }

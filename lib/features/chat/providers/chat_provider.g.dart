@@ -6,6 +6,26 @@ part of 'chat_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$chatTotalUnreadHash() => r'47864aa1bff7d6157ba7a22bffc2dd85aa45d4a0';
+
+/// Total unread messages across all chat rooms for the current user.
+///
+/// Copied from [chatTotalUnread].
+@ProviderFor(chatTotalUnread)
+final chatTotalUnreadProvider = AutoDisposeFutureProvider<int>.internal(
+  chatTotalUnread,
+  name: r'chatTotalUnreadProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$chatTotalUnreadHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef ChatTotalUnreadRef = AutoDisposeFutureProviderRef<int>;
 String _$chatRoomListHash() => r'bb95f37304540f7d80e7b44f76378a909a23330f';
 
 /// Fetches the user's chat rooms and subscribes to global message

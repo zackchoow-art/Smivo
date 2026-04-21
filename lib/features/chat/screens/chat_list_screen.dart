@@ -124,7 +124,7 @@ class ChatListScreen extends ConsumerWidget {
                           name: room.listing?.title ?? 'Unknown Listing',
                           latestMessage: '${otherUser?.displayName ?? 'User'} · $lastMessagePreview',
                           time: timeText,
-                          hasUnread: unreadCount > 0,
+                          unreadCount: unreadCount,
                           avatarUrl: otherUser?.avatarUrl,
                           initials: otherUser?.displayName?.substring(0, 1).toUpperCase(),
                         );

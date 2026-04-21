@@ -45,18 +45,16 @@ class ChatListItem extends StatelessWidget {
                         )
                       : null,
                 ),
-                if (conversation.hasUnread)
+                if (conversation.unreadCount > 0)
                   Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                    top: -4,
+                    right: -4,
+                    child: Badge(
+                      label: Text(
+                        conversation.unreadCount > 99 ? '99+' : conversation.unreadCount.toString(),
+                        style: const TextStyle(fontSize: 10, color: Colors.white),
                       ),
+                      backgroundColor: Colors.red,
                     ),
                   ),
               ],
