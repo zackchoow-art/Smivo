@@ -27,7 +27,7 @@ abstract class ChatRoom with _$ChatRoom {
     UserProfile? buyer,
     UserProfile? seller,
     ChatListingPreview? listing,
-    @JsonKey(name: 'last_message') Message? lastMessage,
+    @JsonKey(name: 'last_message') @Default([]) List<Message> lastMessage,
   }) = _ChatRoom;
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) =>
