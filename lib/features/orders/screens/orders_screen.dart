@@ -4,9 +4,16 @@ import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/data/models/order.dart';
+import 'package:smivo/data/models/user_profile.dart';
 import 'package:smivo/features/orders/widgets/order_card.dart';
-
 import 'package:smivo/features/orders/widgets/list_order_card.dart';
+
+/// Returns the other party's profile from an order's perspective.
+/// If [currentUserId] is the buyer, returns the seller. Otherwise buyer.
+UserProfile? orderCounterparty(Order order, String? currentUserId) {
+  if (currentUserId == null) return null;
+  return (order.buyerId == currentUserId) ? order.seller : order.buyer;
+}
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -55,17 +62,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentTab = ref.watch(ordersTabProvider);
-    final orderList = ref.watch(ordersProvider);
-
-    final pendingOrders = orderList.where((o) => 
-      o.statusType == OrderStatusType.processing || 
-      o.statusType == OrderStatusType.pendingPickUp || 
-      o.statusType == OrderStatusType.pendingDropOff).toList();
-    final activeRentals = orderList.where((o) => o.statusType == OrderStatusType.rentedOut || o.statusType == OrderStatusType.available).toList();
-    final historyOrders = orderList.where((o) => 
-      o.statusType == OrderStatusType.completed || 
-      o.statusType == OrderStatusType.cancelled).toList();
+    final ordersAsync = ref.watch(filteredOrdersProvider);
+    final currentTab = ref.watch(selectedOrdersTabProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surfaceContainerLowest,
@@ -117,17 +115,41 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   // Segmented Control
                   _SegmentedControl(
                     currentTab: currentTab,
-                    onTabChanged: (tab) => ref.read(ordersTabProvider.notifier).setTab(tab),
+                    onTabChanged: (tab) => ref.read(selectedOrdersTabProvider.notifier).setTab(tab),
                   ),
                   const SizedBox(height: 8),
                 ]),
               ),
             ),
             
-            // Grouped Orders Lists
-            ..._buildSectionSlivers('Action Needed', pendingOrders),
-            ..._buildSectionSlivers('Active', activeRentals),
-            ..._buildSectionSlivers('History', historyOrders),
+            ordersAsync.when(
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (err, _) => SliverFillRemaining(
+                child: Center(child: Text('Error: $err')),
+              ),
+              data: (orders) {
+                if (orders.isEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(child: Text('No orders found.')),
+                  );
+                }
+
+                final pendingOrders = orders.where((o) => o.status == 'pending').toList();
+                final activeOrders = orders.where((o) => o.status == 'confirmed').toList();
+                final historyOrders = orders.where((o) => 
+                  o.status == 'completed' || o.status == 'cancelled').toList();
+
+                return SliverMainAxisGroup(
+                  slivers: [
+                    ..._buildSectionSlivers('Action Needed', pendingOrders),
+                    ..._buildSectionSlivers('Active', activeOrders),
+                    ..._buildSectionSlivers('History', historyOrders),
+                  ],
+                );
+              },
+            ),
 
             // Promotional Banner
             SliverPadding(
@@ -144,8 +166,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 }
 
 class _SegmentedControl extends StatelessWidget {
-  final OrderTab currentTab;
-  final ValueChanged<OrderTab> onTabChanged;
+  final OrdersTab currentTab;
+  final ValueChanged<OrdersTab> onTabChanged;
 
   const _SegmentedControl({
     required this.currentTab,
@@ -162,14 +184,14 @@ class _SegmentedControl extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: _buildTab(OrderTab.buying, 'Buying & Renting')),
-          Expanded(child: _buildTab(OrderTab.selling, 'Selling & Renting\nOut')),
+          Expanded(child: _buildTab(OrdersTab.buying, 'Buying & Renting')),
+          Expanded(child: _buildTab(OrdersTab.selling, 'Selling & Renting\nOut')),
         ],
       ),
     );
   }
 
-  Widget _buildTab(OrderTab tab, String label) {
+  Widget _buildTab(OrdersTab tab, String label) {
     final isSelected = currentTab == tab;
 
     return GestureDetector(
@@ -221,7 +243,6 @@ class _PromoBanner extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Background graphic could go here (e.g. flying books)
           Positioned(
             right: -20,
             bottom: -20,

@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
-import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 
-class ListOrderCard extends StatelessWidget {
+class ListOrderCard extends ConsumerWidget {
   const ListOrderCard({super.key, required this.order});
 
   final Order order;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final imageUrl = order.listing?.images.firstOrNull?.imageUrl;
+    final title = order.listing?.title ?? 'Untitled Listing';
+    final status = order.status;
+
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -32,11 +36,11 @@ class ListOrderCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Image
-          if (order.imageUrl != null)
+          if (imageUrl != null && imageUrl.isNotEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: Image.network(
-                order.imageUrl!,
+                imageUrl,
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
@@ -61,19 +65,18 @@ class ListOrderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  order.title,
+                  title,
                   style: AppTextStyles.titleMedium.copyWith(height: 1.2),
-                  // Removed maxLines to allow wrapping as requested
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '\$${order.amount.toStringAsFixed(0)} • ${order.statusText}',
+                  '\$${order.totalPrice.toStringAsFixed(0)} • ${_getStatusText(status)}',
                   style: AppTextStyles.labelSmall.copyWith(
                     color: AppColors.onSurface.withOpacity(0.6),
                   ),
                 ),
                 // Snapshot Link for completed orders
-                if (order.statusType == OrderStatusType.completed)
+                if (status == 'completed')
                   GestureDetector(
                     onTap: () => TransactionSnapshotModal.show(
                       context, 
@@ -100,19 +103,18 @@ class ListOrderCard extends StatelessWidget {
           // Action Icons
           Row(
             children: [
-              if (order.statusType == OrderStatusType.pendingDropOff || 
-                  order.statusType == OrderStatusType.pendingPickUp)
+              if (status == 'pending' || status == 'confirmed')
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.camera_alt_outlined, color: AppColors.primary, size: 20),
+                  icon: const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Evidence photo tool opened')),
+                      const SnackBar(content: Text('Action will be available in the order detail view.')),
                     );
                   },
                 )
-              else if (order.statusType == OrderStatusType.completed)
+              else if (status == 'completed')
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -134,5 +136,20 @@ class ListOrderCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'pending':
+        return 'Action Needed';
+      case 'confirmed':
+        return 'In Progress';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status.toUpperCase();
+    }
   }
 }
