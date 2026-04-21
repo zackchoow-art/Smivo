@@ -12,7 +12,12 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
   displayName: json['display_name'] as String?,
   avatarUrl: json['avatar_url'] as String?,
   school: json['school'] as String? ?? 'Smith College',
+  schoolId: json['school_id'] as String,
   isVerified: json['is_verified'] as bool? ?? false,
+  schoolData:
+      json['schoolData'] == null
+          ? null
+          : School.fromJson(json['schoolData'] as Map<String, dynamic>),
   createdAt:
       json['created_at'] == null
           ? null
@@ -30,7 +35,9 @@ Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
       'display_name': instance.displayName,
       'avatar_url': instance.avatarUrl,
       'school': instance.school,
+      'school_id': instance.schoolId,
       'is_verified': instance.isVerified,
+      'schoolData': instance.schoolData,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };

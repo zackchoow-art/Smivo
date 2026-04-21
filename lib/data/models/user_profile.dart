@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:smivo/data/models/school.dart';
 
 part 'user_profile.freezed.dart';
 part 'user_profile.g.dart';
@@ -12,7 +13,10 @@ abstract class UserProfile with _$UserProfile {
     @JsonKey(name: 'display_name') String? displayName,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
     @Default('Smith College') String school,
+    @JsonKey(name: 'school_id') required String schoolId,
     @JsonKey(name: 'is_verified') @Default(false) bool isVerified,
+    // Nested join — populated when querying with school join
+    School? schoolData,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _UserProfile;

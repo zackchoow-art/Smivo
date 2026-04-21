@@ -24,6 +24,8 @@ _Listing _$ListingFromJson(Map<String, dynamic> json) => _Listing(
   rentalMonthlyPrice: (json['rental_monthly_price'] as num?)?.toDouble(),
   isPinned: json['is_pinned'] as bool? ?? false,
   pinnedDays: (json['pinned_days'] as num?)?.toInt(),
+  schoolId: json['school_id'] as String,
+  pickupLocationId: json['pickup_location_id'] as String?,
   images:
       (json['images'] as List<dynamic>?)
           ?.map((e) => ListingImage.fromJson(e as Map<String, dynamic>))
@@ -33,6 +35,12 @@ _Listing _$ListingFromJson(Map<String, dynamic> json) => _Listing(
       json['seller'] == null
           ? null
           : UserProfile.fromJson(json['seller'] as Map<String, dynamic>),
+  pickupLocation:
+      json['pickup_location'] == null
+          ? null
+          : PickupLocation.fromJson(
+            json['pickup_location'] as Map<String, dynamic>,
+          ),
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
 );
@@ -55,8 +63,11 @@ Map<String, dynamic> _$ListingToJson(_Listing instance) => <String, dynamic>{
   'rental_monthly_price': instance.rentalMonthlyPrice,
   'is_pinned': instance.isPinned,
   'pinned_days': instance.pinnedDays,
+  'school_id': instance.schoolId,
+  'pickup_location_id': instance.pickupLocationId,
   'images': instance.images,
   'seller': instance.seller,
+  'pickup_location': instance.pickupLocation,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
 };

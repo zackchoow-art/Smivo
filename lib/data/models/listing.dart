@@ -2,6 +2,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:smivo/data/models/listing_image.dart';
+import 'package:smivo/data/models/pickup_location.dart';
 import 'package:smivo/data/models/user_profile.dart';
 
 part 'listing.freezed.dart';
@@ -34,12 +35,16 @@ abstract class Listing with _$Listing {
     @JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,
     @JsonKey(name: 'is_pinned') @Default(false) bool isPinned,
     @JsonKey(name: 'pinned_days') int? pinnedDays,
+    @JsonKey(name: 'school_id') required String schoolId,
+    @JsonKey(name: 'pickup_location_id') String? pickupLocationId,
     // NOTE: images is populated from the listing_images join;
     // defaults to empty list when only the listing row is fetched.
     @Default([]) List<ListingImage> images,
     // NOTE: seller is only present on detail fetches that join user_profiles.
     // It is intentionally nullable to support list-view queries.
     UserProfile? seller,
+    // Nested join — populated by joining pickup_locations
+    @JsonKey(name: 'pickup_location') PickupLocation? pickupLocation,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _Listing;

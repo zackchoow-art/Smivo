@@ -17,11 +17,12 @@ mixin _$Listing {
 
  String get id;@JsonKey(name: 'seller_id') String get sellerId; String get title; String? get description; String get category; double get price;@JsonKey(name: 'transaction_type') String get transactionType; String get status;@JsonKey(name: 'view_count') int get viewCount;// NOTE: save_count and inquiry_count are server-managed counters;
 // the client reads them but never writes directly.
-@JsonKey(name: 'save_count') int get saveCount;@JsonKey(name: 'inquiry_count') int get inquiryCount;@JsonKey(name: 'allow_pickup_change') bool get allowPickupChange;@JsonKey(name: 'rental_daily_price') double? get rentalDailyPrice;@JsonKey(name: 'rental_weekly_price') double? get rentalWeeklyPrice;@JsonKey(name: 'rental_monthly_price') double? get rentalMonthlyPrice;@JsonKey(name: 'is_pinned') bool get isPinned;@JsonKey(name: 'pinned_days') int? get pinnedDays;// NOTE: images is populated from the listing_images join;
+@JsonKey(name: 'save_count') int get saveCount;@JsonKey(name: 'inquiry_count') int get inquiryCount;@JsonKey(name: 'allow_pickup_change') bool get allowPickupChange;@JsonKey(name: 'rental_daily_price') double? get rentalDailyPrice;@JsonKey(name: 'rental_weekly_price') double? get rentalWeeklyPrice;@JsonKey(name: 'rental_monthly_price') double? get rentalMonthlyPrice;@JsonKey(name: 'is_pinned') bool get isPinned;@JsonKey(name: 'pinned_days') int? get pinnedDays;@JsonKey(name: 'school_id') String get schoolId;@JsonKey(name: 'pickup_location_id') String? get pickupLocationId;// NOTE: images is populated from the listing_images join;
 // defaults to empty list when only the listing row is fetched.
  List<ListingImage> get images;// NOTE: seller is only present on detail fetches that join user_profiles.
 // It is intentionally nullable to support list-view queries.
- UserProfile? get seller;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ UserProfile? get seller;// Nested join — populated by joining pickup_locations
+@JsonKey(name: 'pickup_location') PickupLocation? get pickupLocation;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of Listing
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -34,16 +35,16 @@ $ListingCopyWith<Listing> get copyWith => _$ListingCopyWithImpl<Listing>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Listing&&(identical(other.id, id) || other.id == id)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.price, price) || other.price == price)&&(identical(other.transactionType, transactionType) || other.transactionType == transactionType)&&(identical(other.status, status) || other.status == status)&&(identical(other.viewCount, viewCount) || other.viewCount == viewCount)&&(identical(other.saveCount, saveCount) || other.saveCount == saveCount)&&(identical(other.inquiryCount, inquiryCount) || other.inquiryCount == inquiryCount)&&(identical(other.allowPickupChange, allowPickupChange) || other.allowPickupChange == allowPickupChange)&&(identical(other.rentalDailyPrice, rentalDailyPrice) || other.rentalDailyPrice == rentalDailyPrice)&&(identical(other.rentalWeeklyPrice, rentalWeeklyPrice) || other.rentalWeeklyPrice == rentalWeeklyPrice)&&(identical(other.rentalMonthlyPrice, rentalMonthlyPrice) || other.rentalMonthlyPrice == rentalMonthlyPrice)&&(identical(other.isPinned, isPinned) || other.isPinned == isPinned)&&(identical(other.pinnedDays, pinnedDays) || other.pinnedDays == pinnedDays)&&const DeepCollectionEquality().equals(other.images, images)&&(identical(other.seller, seller) || other.seller == seller)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Listing&&(identical(other.id, id) || other.id == id)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.price, price) || other.price == price)&&(identical(other.transactionType, transactionType) || other.transactionType == transactionType)&&(identical(other.status, status) || other.status == status)&&(identical(other.viewCount, viewCount) || other.viewCount == viewCount)&&(identical(other.saveCount, saveCount) || other.saveCount == saveCount)&&(identical(other.inquiryCount, inquiryCount) || other.inquiryCount == inquiryCount)&&(identical(other.allowPickupChange, allowPickupChange) || other.allowPickupChange == allowPickupChange)&&(identical(other.rentalDailyPrice, rentalDailyPrice) || other.rentalDailyPrice == rentalDailyPrice)&&(identical(other.rentalWeeklyPrice, rentalWeeklyPrice) || other.rentalWeeklyPrice == rentalWeeklyPrice)&&(identical(other.rentalMonthlyPrice, rentalMonthlyPrice) || other.rentalMonthlyPrice == rentalMonthlyPrice)&&(identical(other.isPinned, isPinned) || other.isPinned == isPinned)&&(identical(other.pinnedDays, pinnedDays) || other.pinnedDays == pinnedDays)&&(identical(other.schoolId, schoolId) || other.schoolId == schoolId)&&(identical(other.pickupLocationId, pickupLocationId) || other.pickupLocationId == pickupLocationId)&&const DeepCollectionEquality().equals(other.images, images)&&(identical(other.seller, seller) || other.seller == seller)&&(identical(other.pickupLocation, pickupLocation) || other.pickupLocation == pickupLocation)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,sellerId,title,description,category,price,transactionType,status,viewCount,saveCount,inquiryCount,allowPickupChange,rentalDailyPrice,rentalWeeklyPrice,rentalMonthlyPrice,isPinned,pinnedDays,const DeepCollectionEquality().hash(images),seller,createdAt,updatedAt]);
+int get hashCode => Object.hashAll([runtimeType,id,sellerId,title,description,category,price,transactionType,status,viewCount,saveCount,inquiryCount,allowPickupChange,rentalDailyPrice,rentalWeeklyPrice,rentalMonthlyPrice,isPinned,pinnedDays,schoolId,pickupLocationId,const DeepCollectionEquality().hash(images),seller,pickupLocation,createdAt,updatedAt]);
 
 @override
 String toString() {
-  return 'Listing(id: $id, sellerId: $sellerId, title: $title, description: $description, category: $category, price: $price, transactionType: $transactionType, status: $status, viewCount: $viewCount, saveCount: $saveCount, inquiryCount: $inquiryCount, allowPickupChange: $allowPickupChange, rentalDailyPrice: $rentalDailyPrice, rentalWeeklyPrice: $rentalWeeklyPrice, rentalMonthlyPrice: $rentalMonthlyPrice, isPinned: $isPinned, pinnedDays: $pinnedDays, images: $images, seller: $seller, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Listing(id: $id, sellerId: $sellerId, title: $title, description: $description, category: $category, price: $price, transactionType: $transactionType, status: $status, viewCount: $viewCount, saveCount: $saveCount, inquiryCount: $inquiryCount, allowPickupChange: $allowPickupChange, rentalDailyPrice: $rentalDailyPrice, rentalWeeklyPrice: $rentalWeeklyPrice, rentalMonthlyPrice: $rentalMonthlyPrice, isPinned: $isPinned, pinnedDays: $pinnedDays, schoolId: $schoolId, pickupLocationId: $pickupLocationId, images: $images, seller: $seller, pickupLocation: $pickupLocation, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -54,11 +55,11 @@ abstract mixin class $ListingCopyWith<$Res>  {
   factory $ListingCopyWith(Listing value, $Res Function(Listing) _then) = _$ListingCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'seller_id') String sellerId, String title, String? description, String category, double price,@JsonKey(name: 'transaction_type') String transactionType, String status,@JsonKey(name: 'view_count') int viewCount,@JsonKey(name: 'save_count') int saveCount,@JsonKey(name: 'inquiry_count') int inquiryCount,@JsonKey(name: 'allow_pickup_change') bool allowPickupChange,@JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,@JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,@JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,@JsonKey(name: 'is_pinned') bool isPinned,@JsonKey(name: 'pinned_days') int? pinnedDays, List<ListingImage> images, UserProfile? seller,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'seller_id') String sellerId, String title, String? description, String category, double price,@JsonKey(name: 'transaction_type') String transactionType, String status,@JsonKey(name: 'view_count') int viewCount,@JsonKey(name: 'save_count') int saveCount,@JsonKey(name: 'inquiry_count') int inquiryCount,@JsonKey(name: 'allow_pickup_change') bool allowPickupChange,@JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,@JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,@JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,@JsonKey(name: 'is_pinned') bool isPinned,@JsonKey(name: 'pinned_days') int? pinnedDays,@JsonKey(name: 'school_id') String schoolId,@JsonKey(name: 'pickup_location_id') String? pickupLocationId, List<ListingImage> images, UserProfile? seller,@JsonKey(name: 'pickup_location') PickupLocation? pickupLocation,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
-$UserProfileCopyWith<$Res>? get seller;
+$UserProfileCopyWith<$Res>? get seller;$PickupLocationCopyWith<$Res>? get pickupLocation;
 
 }
 /// @nodoc
@@ -71,7 +72,7 @@ class _$ListingCopyWithImpl<$Res>
 
 /// Create a copy of Listing
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? sellerId = null,Object? title = null,Object? description = freezed,Object? category = null,Object? price = null,Object? transactionType = null,Object? status = null,Object? viewCount = null,Object? saveCount = null,Object? inquiryCount = null,Object? allowPickupChange = null,Object? rentalDailyPrice = freezed,Object? rentalWeeklyPrice = freezed,Object? rentalMonthlyPrice = freezed,Object? isPinned = null,Object? pinnedDays = freezed,Object? images = null,Object? seller = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? sellerId = null,Object? title = null,Object? description = freezed,Object? category = null,Object? price = null,Object? transactionType = null,Object? status = null,Object? viewCount = null,Object? saveCount = null,Object? inquiryCount = null,Object? allowPickupChange = null,Object? rentalDailyPrice = freezed,Object? rentalWeeklyPrice = freezed,Object? rentalMonthlyPrice = freezed,Object? isPinned = null,Object? pinnedDays = freezed,Object? schoolId = null,Object? pickupLocationId = freezed,Object? images = null,Object? seller = freezed,Object? pickupLocation = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,sellerId: null == sellerId ? _self.sellerId : sellerId // ignore: cast_nullable_to_non_nullable
@@ -90,9 +91,12 @@ as double?,rentalWeeklyPrice: freezed == rentalWeeklyPrice ? _self.rentalWeeklyP
 as double?,rentalMonthlyPrice: freezed == rentalMonthlyPrice ? _self.rentalMonthlyPrice : rentalMonthlyPrice // ignore: cast_nullable_to_non_nullable
 as double?,isPinned: null == isPinned ? _self.isPinned : isPinned // ignore: cast_nullable_to_non_nullable
 as bool,pinnedDays: freezed == pinnedDays ? _self.pinnedDays : pinnedDays // ignore: cast_nullable_to_non_nullable
-as int?,images: null == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
+as int?,schoolId: null == schoolId ? _self.schoolId : schoolId // ignore: cast_nullable_to_non_nullable
+as String,pickupLocationId: freezed == pickupLocationId ? _self.pickupLocationId : pickupLocationId // ignore: cast_nullable_to_non_nullable
+as String?,images: null == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
 as List<ListingImage>,seller: freezed == seller ? _self.seller : seller // ignore: cast_nullable_to_non_nullable
-as UserProfile?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as UserProfile?,pickupLocation: freezed == pickupLocation ? _self.pickupLocation : pickupLocation // ignore: cast_nullable_to_non_nullable
+as PickupLocation?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -108,6 +112,18 @@ $UserProfileCopyWith<$Res>? get seller {
 
   return $UserProfileCopyWith<$Res>(_self.seller!, (value) {
     return _then(_self.copyWith(seller: value));
+  });
+}/// Create a copy of Listing
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PickupLocationCopyWith<$Res>? get pickupLocation {
+    if (_self.pickupLocation == null) {
+    return null;
+  }
+
+  return $PickupLocationCopyWith<$Res>(_self.pickupLocation!, (value) {
+    return _then(_self.copyWith(pickupLocation: value));
   });
 }
 }
@@ -191,10 +207,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'seller_id')  String sellerId,  String title,  String? description,  String category,  double price, @JsonKey(name: 'transaction_type')  String transactionType,  String status, @JsonKey(name: 'view_count')  int viewCount, @JsonKey(name: 'save_count')  int saveCount, @JsonKey(name: 'inquiry_count')  int inquiryCount, @JsonKey(name: 'allow_pickup_change')  bool allowPickupChange, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'is_pinned')  bool isPinned, @JsonKey(name: 'pinned_days')  int? pinnedDays,  List<ListingImage> images,  UserProfile? seller, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'seller_id')  String sellerId,  String title,  String? description,  String category,  double price, @JsonKey(name: 'transaction_type')  String transactionType,  String status, @JsonKey(name: 'view_count')  int viewCount, @JsonKey(name: 'save_count')  int saveCount, @JsonKey(name: 'inquiry_count')  int inquiryCount, @JsonKey(name: 'allow_pickup_change')  bool allowPickupChange, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'is_pinned')  bool isPinned, @JsonKey(name: 'pinned_days')  int? pinnedDays, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'pickup_location_id')  String? pickupLocationId,  List<ListingImage> images,  UserProfile? seller, @JsonKey(name: 'pickup_location')  PickupLocation? pickupLocation, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Listing() when $default != null:
-return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.category,_that.price,_that.transactionType,_that.status,_that.viewCount,_that.saveCount,_that.inquiryCount,_that.allowPickupChange,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.isPinned,_that.pinnedDays,_that.images,_that.seller,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.category,_that.price,_that.transactionType,_that.status,_that.viewCount,_that.saveCount,_that.inquiryCount,_that.allowPickupChange,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.isPinned,_that.pinnedDays,_that.schoolId,_that.pickupLocationId,_that.images,_that.seller,_that.pickupLocation,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -212,10 +228,10 @@ return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.cate
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'seller_id')  String sellerId,  String title,  String? description,  String category,  double price, @JsonKey(name: 'transaction_type')  String transactionType,  String status, @JsonKey(name: 'view_count')  int viewCount, @JsonKey(name: 'save_count')  int saveCount, @JsonKey(name: 'inquiry_count')  int inquiryCount, @JsonKey(name: 'allow_pickup_change')  bool allowPickupChange, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'is_pinned')  bool isPinned, @JsonKey(name: 'pinned_days')  int? pinnedDays,  List<ListingImage> images,  UserProfile? seller, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'seller_id')  String sellerId,  String title,  String? description,  String category,  double price, @JsonKey(name: 'transaction_type')  String transactionType,  String status, @JsonKey(name: 'view_count')  int viewCount, @JsonKey(name: 'save_count')  int saveCount, @JsonKey(name: 'inquiry_count')  int inquiryCount, @JsonKey(name: 'allow_pickup_change')  bool allowPickupChange, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'is_pinned')  bool isPinned, @JsonKey(name: 'pinned_days')  int? pinnedDays, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'pickup_location_id')  String? pickupLocationId,  List<ListingImage> images,  UserProfile? seller, @JsonKey(name: 'pickup_location')  PickupLocation? pickupLocation, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Listing():
-return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.category,_that.price,_that.transactionType,_that.status,_that.viewCount,_that.saveCount,_that.inquiryCount,_that.allowPickupChange,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.isPinned,_that.pinnedDays,_that.images,_that.seller,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.category,_that.price,_that.transactionType,_that.status,_that.viewCount,_that.saveCount,_that.inquiryCount,_that.allowPickupChange,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.isPinned,_that.pinnedDays,_that.schoolId,_that.pickupLocationId,_that.images,_that.seller,_that.pickupLocation,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -232,10 +248,10 @@ return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.cate
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'seller_id')  String sellerId,  String title,  String? description,  String category,  double price, @JsonKey(name: 'transaction_type')  String transactionType,  String status, @JsonKey(name: 'view_count')  int viewCount, @JsonKey(name: 'save_count')  int saveCount, @JsonKey(name: 'inquiry_count')  int inquiryCount, @JsonKey(name: 'allow_pickup_change')  bool allowPickupChange, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'is_pinned')  bool isPinned, @JsonKey(name: 'pinned_days')  int? pinnedDays,  List<ListingImage> images,  UserProfile? seller, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'seller_id')  String sellerId,  String title,  String? description,  String category,  double price, @JsonKey(name: 'transaction_type')  String transactionType,  String status, @JsonKey(name: 'view_count')  int viewCount, @JsonKey(name: 'save_count')  int saveCount, @JsonKey(name: 'inquiry_count')  int inquiryCount, @JsonKey(name: 'allow_pickup_change')  bool allowPickupChange, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'is_pinned')  bool isPinned, @JsonKey(name: 'pinned_days')  int? pinnedDays, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'pickup_location_id')  String? pickupLocationId,  List<ListingImage> images,  UserProfile? seller, @JsonKey(name: 'pickup_location')  PickupLocation? pickupLocation, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Listing() when $default != null:
-return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.category,_that.price,_that.transactionType,_that.status,_that.viewCount,_that.saveCount,_that.inquiryCount,_that.allowPickupChange,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.isPinned,_that.pinnedDays,_that.images,_that.seller,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.category,_that.price,_that.transactionType,_that.status,_that.viewCount,_that.saveCount,_that.inquiryCount,_that.allowPickupChange,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.isPinned,_that.pinnedDays,_that.schoolId,_that.pickupLocationId,_that.images,_that.seller,_that.pickupLocation,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -247,7 +263,7 @@ return $default(_that.id,_that.sellerId,_that.title,_that.description,_that.cate
 @JsonSerializable()
 
 class _Listing implements Listing {
-  const _Listing({required this.id, @JsonKey(name: 'seller_id') required this.sellerId, required this.title, this.description, required this.category, required this.price, @JsonKey(name: 'transaction_type') required this.transactionType, this.status = 'active', @JsonKey(name: 'view_count') this.viewCount = 0, @JsonKey(name: 'save_count') this.saveCount = 0, @JsonKey(name: 'inquiry_count') this.inquiryCount = 0, @JsonKey(name: 'allow_pickup_change') this.allowPickupChange = false, @JsonKey(name: 'rental_daily_price') this.rentalDailyPrice, @JsonKey(name: 'rental_weekly_price') this.rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price') this.rentalMonthlyPrice, @JsonKey(name: 'is_pinned') this.isPinned = false, @JsonKey(name: 'pinned_days') this.pinnedDays, final  List<ListingImage> images = const [], this.seller, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): _images = images;
+  const _Listing({required this.id, @JsonKey(name: 'seller_id') required this.sellerId, required this.title, this.description, required this.category, required this.price, @JsonKey(name: 'transaction_type') required this.transactionType, this.status = 'active', @JsonKey(name: 'view_count') this.viewCount = 0, @JsonKey(name: 'save_count') this.saveCount = 0, @JsonKey(name: 'inquiry_count') this.inquiryCount = 0, @JsonKey(name: 'allow_pickup_change') this.allowPickupChange = false, @JsonKey(name: 'rental_daily_price') this.rentalDailyPrice, @JsonKey(name: 'rental_weekly_price') this.rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price') this.rentalMonthlyPrice, @JsonKey(name: 'is_pinned') this.isPinned = false, @JsonKey(name: 'pinned_days') this.pinnedDays, @JsonKey(name: 'school_id') required this.schoolId, @JsonKey(name: 'pickup_location_id') this.pickupLocationId, final  List<ListingImage> images = const [], this.seller, @JsonKey(name: 'pickup_location') this.pickupLocation, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): _images = images;
   factory _Listing.fromJson(Map<String, dynamic> json) => _$ListingFromJson(json);
 
 @override final  String id;
@@ -269,6 +285,8 @@ class _Listing implements Listing {
 @override@JsonKey(name: 'rental_monthly_price') final  double? rentalMonthlyPrice;
 @override@JsonKey(name: 'is_pinned') final  bool isPinned;
 @override@JsonKey(name: 'pinned_days') final  int? pinnedDays;
+@override@JsonKey(name: 'school_id') final  String schoolId;
+@override@JsonKey(name: 'pickup_location_id') final  String? pickupLocationId;
 // NOTE: images is populated from the listing_images join;
 // defaults to empty list when only the listing row is fetched.
  final  List<ListingImage> _images;
@@ -283,6 +301,8 @@ class _Listing implements Listing {
 // NOTE: seller is only present on detail fetches that join user_profiles.
 // It is intentionally nullable to support list-view queries.
 @override final  UserProfile? seller;
+// Nested join — populated by joining pickup_locations
+@override@JsonKey(name: 'pickup_location') final  PickupLocation? pickupLocation;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 
@@ -299,16 +319,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Listing&&(identical(other.id, id) || other.id == id)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.price, price) || other.price == price)&&(identical(other.transactionType, transactionType) || other.transactionType == transactionType)&&(identical(other.status, status) || other.status == status)&&(identical(other.viewCount, viewCount) || other.viewCount == viewCount)&&(identical(other.saveCount, saveCount) || other.saveCount == saveCount)&&(identical(other.inquiryCount, inquiryCount) || other.inquiryCount == inquiryCount)&&(identical(other.allowPickupChange, allowPickupChange) || other.allowPickupChange == allowPickupChange)&&(identical(other.rentalDailyPrice, rentalDailyPrice) || other.rentalDailyPrice == rentalDailyPrice)&&(identical(other.rentalWeeklyPrice, rentalWeeklyPrice) || other.rentalWeeklyPrice == rentalWeeklyPrice)&&(identical(other.rentalMonthlyPrice, rentalMonthlyPrice) || other.rentalMonthlyPrice == rentalMonthlyPrice)&&(identical(other.isPinned, isPinned) || other.isPinned == isPinned)&&(identical(other.pinnedDays, pinnedDays) || other.pinnedDays == pinnedDays)&&const DeepCollectionEquality().equals(other._images, _images)&&(identical(other.seller, seller) || other.seller == seller)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Listing&&(identical(other.id, id) || other.id == id)&&(identical(other.sellerId, sellerId) || other.sellerId == sellerId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.price, price) || other.price == price)&&(identical(other.transactionType, transactionType) || other.transactionType == transactionType)&&(identical(other.status, status) || other.status == status)&&(identical(other.viewCount, viewCount) || other.viewCount == viewCount)&&(identical(other.saveCount, saveCount) || other.saveCount == saveCount)&&(identical(other.inquiryCount, inquiryCount) || other.inquiryCount == inquiryCount)&&(identical(other.allowPickupChange, allowPickupChange) || other.allowPickupChange == allowPickupChange)&&(identical(other.rentalDailyPrice, rentalDailyPrice) || other.rentalDailyPrice == rentalDailyPrice)&&(identical(other.rentalWeeklyPrice, rentalWeeklyPrice) || other.rentalWeeklyPrice == rentalWeeklyPrice)&&(identical(other.rentalMonthlyPrice, rentalMonthlyPrice) || other.rentalMonthlyPrice == rentalMonthlyPrice)&&(identical(other.isPinned, isPinned) || other.isPinned == isPinned)&&(identical(other.pinnedDays, pinnedDays) || other.pinnedDays == pinnedDays)&&(identical(other.schoolId, schoolId) || other.schoolId == schoolId)&&(identical(other.pickupLocationId, pickupLocationId) || other.pickupLocationId == pickupLocationId)&&const DeepCollectionEquality().equals(other._images, _images)&&(identical(other.seller, seller) || other.seller == seller)&&(identical(other.pickupLocation, pickupLocation) || other.pickupLocation == pickupLocation)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,sellerId,title,description,category,price,transactionType,status,viewCount,saveCount,inquiryCount,allowPickupChange,rentalDailyPrice,rentalWeeklyPrice,rentalMonthlyPrice,isPinned,pinnedDays,const DeepCollectionEquality().hash(_images),seller,createdAt,updatedAt]);
+int get hashCode => Object.hashAll([runtimeType,id,sellerId,title,description,category,price,transactionType,status,viewCount,saveCount,inquiryCount,allowPickupChange,rentalDailyPrice,rentalWeeklyPrice,rentalMonthlyPrice,isPinned,pinnedDays,schoolId,pickupLocationId,const DeepCollectionEquality().hash(_images),seller,pickupLocation,createdAt,updatedAt]);
 
 @override
 String toString() {
-  return 'Listing(id: $id, sellerId: $sellerId, title: $title, description: $description, category: $category, price: $price, transactionType: $transactionType, status: $status, viewCount: $viewCount, saveCount: $saveCount, inquiryCount: $inquiryCount, allowPickupChange: $allowPickupChange, rentalDailyPrice: $rentalDailyPrice, rentalWeeklyPrice: $rentalWeeklyPrice, rentalMonthlyPrice: $rentalMonthlyPrice, isPinned: $isPinned, pinnedDays: $pinnedDays, images: $images, seller: $seller, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Listing(id: $id, sellerId: $sellerId, title: $title, description: $description, category: $category, price: $price, transactionType: $transactionType, status: $status, viewCount: $viewCount, saveCount: $saveCount, inquiryCount: $inquiryCount, allowPickupChange: $allowPickupChange, rentalDailyPrice: $rentalDailyPrice, rentalWeeklyPrice: $rentalWeeklyPrice, rentalMonthlyPrice: $rentalMonthlyPrice, isPinned: $isPinned, pinnedDays: $pinnedDays, schoolId: $schoolId, pickupLocationId: $pickupLocationId, images: $images, seller: $seller, pickupLocation: $pickupLocation, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -319,11 +339,11 @@ abstract mixin class _$ListingCopyWith<$Res> implements $ListingCopyWith<$Res> {
   factory _$ListingCopyWith(_Listing value, $Res Function(_Listing) _then) = __$ListingCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'seller_id') String sellerId, String title, String? description, String category, double price,@JsonKey(name: 'transaction_type') String transactionType, String status,@JsonKey(name: 'view_count') int viewCount,@JsonKey(name: 'save_count') int saveCount,@JsonKey(name: 'inquiry_count') int inquiryCount,@JsonKey(name: 'allow_pickup_change') bool allowPickupChange,@JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,@JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,@JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,@JsonKey(name: 'is_pinned') bool isPinned,@JsonKey(name: 'pinned_days') int? pinnedDays, List<ListingImage> images, UserProfile? seller,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'seller_id') String sellerId, String title, String? description, String category, double price,@JsonKey(name: 'transaction_type') String transactionType, String status,@JsonKey(name: 'view_count') int viewCount,@JsonKey(name: 'save_count') int saveCount,@JsonKey(name: 'inquiry_count') int inquiryCount,@JsonKey(name: 'allow_pickup_change') bool allowPickupChange,@JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,@JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,@JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,@JsonKey(name: 'is_pinned') bool isPinned,@JsonKey(name: 'pinned_days') int? pinnedDays,@JsonKey(name: 'school_id') String schoolId,@JsonKey(name: 'pickup_location_id') String? pickupLocationId, List<ListingImage> images, UserProfile? seller,@JsonKey(name: 'pickup_location') PickupLocation? pickupLocation,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
-@override $UserProfileCopyWith<$Res>? get seller;
+@override $UserProfileCopyWith<$Res>? get seller;@override $PickupLocationCopyWith<$Res>? get pickupLocation;
 
 }
 /// @nodoc
@@ -336,7 +356,7 @@ class __$ListingCopyWithImpl<$Res>
 
 /// Create a copy of Listing
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? sellerId = null,Object? title = null,Object? description = freezed,Object? category = null,Object? price = null,Object? transactionType = null,Object? status = null,Object? viewCount = null,Object? saveCount = null,Object? inquiryCount = null,Object? allowPickupChange = null,Object? rentalDailyPrice = freezed,Object? rentalWeeklyPrice = freezed,Object? rentalMonthlyPrice = freezed,Object? isPinned = null,Object? pinnedDays = freezed,Object? images = null,Object? seller = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? sellerId = null,Object? title = null,Object? description = freezed,Object? category = null,Object? price = null,Object? transactionType = null,Object? status = null,Object? viewCount = null,Object? saveCount = null,Object? inquiryCount = null,Object? allowPickupChange = null,Object? rentalDailyPrice = freezed,Object? rentalWeeklyPrice = freezed,Object? rentalMonthlyPrice = freezed,Object? isPinned = null,Object? pinnedDays = freezed,Object? schoolId = null,Object? pickupLocationId = freezed,Object? images = null,Object? seller = freezed,Object? pickupLocation = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Listing(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,sellerId: null == sellerId ? _self.sellerId : sellerId // ignore: cast_nullable_to_non_nullable
@@ -355,9 +375,12 @@ as double?,rentalWeeklyPrice: freezed == rentalWeeklyPrice ? _self.rentalWeeklyP
 as double?,rentalMonthlyPrice: freezed == rentalMonthlyPrice ? _self.rentalMonthlyPrice : rentalMonthlyPrice // ignore: cast_nullable_to_non_nullable
 as double?,isPinned: null == isPinned ? _self.isPinned : isPinned // ignore: cast_nullable_to_non_nullable
 as bool,pinnedDays: freezed == pinnedDays ? _self.pinnedDays : pinnedDays // ignore: cast_nullable_to_non_nullable
-as int?,images: null == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
+as int?,schoolId: null == schoolId ? _self.schoolId : schoolId // ignore: cast_nullable_to_non_nullable
+as String,pickupLocationId: freezed == pickupLocationId ? _self.pickupLocationId : pickupLocationId // ignore: cast_nullable_to_non_nullable
+as String?,images: null == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
 as List<ListingImage>,seller: freezed == seller ? _self.seller : seller // ignore: cast_nullable_to_non_nullable
-as UserProfile?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as UserProfile?,pickupLocation: freezed == pickupLocation ? _self.pickupLocation : pickupLocation // ignore: cast_nullable_to_non_nullable
+as PickupLocation?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -374,6 +397,18 @@ $UserProfileCopyWith<$Res>? get seller {
 
   return $UserProfileCopyWith<$Res>(_self.seller!, (value) {
     return _then(_self.copyWith(seller: value));
+  });
+}/// Create a copy of Listing
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PickupLocationCopyWith<$Res>? get pickupLocation {
+    if (_self.pickupLocation == null) {
+    return null;
+  }
+
+  return $PickupLocationCopyWith<$Res>(_self.pickupLocation!, (value) {
+    return _then(_self.copyWith(pickupLocation: value));
   });
 }
 }

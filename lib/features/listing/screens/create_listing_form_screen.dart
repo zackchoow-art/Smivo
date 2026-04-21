@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/data/models/pickup_location.dart';
+import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/features/listing/providers/create_listing_provider.dart';
 import 'package:smivo/features/listing/widgets/custom_text_field.dart';
 import 'package:smivo/features/listing/widgets/photo_picker_section.dart';
+import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/custom_app_bar.dart';
 
 class CreateListingFormScreen extends ConsumerStatefulWidget {
@@ -23,11 +28,16 @@ class CreateListingFormScreen extends ConsumerStatefulWidget {
 class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScreen> {
   late ProviderListenable<String> modeProvider;
   
-  String _selectedLocation = 'Student Union, North Entrance';
+  PickupLocation? _selectedPickup;
   bool _allowBuyerToSuggest = false;
   bool _isPinned = false;
   double _pinnedDays = 1.0;
+  bool _isSubmitting = false;
 
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _depositController = TextEditingController();
   final _dailyController = TextEditingController();
   final _weeklyController = TextEditingController();
   final _monthlyController = TextEditingController();
@@ -37,10 +47,27 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
     super.initState();
     // Initialize the provider with the passed mode
     modeProvider = listingFormModeProvider(initialMode: widget.initialMode);
+
+    // Make the form reactive to all input changes
+    for (final c in [
+      _titleController,
+      _descriptionController,
+      _priceController,
+      _depositController,
+      _dailyController,
+      _weeklyController,
+      _monthlyController,
+    ]) {
+      c.addListener(() => setState(() {}));
+    }
   }
 
   @override
   void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _depositController.dispose();
     _dailyController.dispose();
     _weeklyController.dispose();
     _monthlyController.dispose();
@@ -98,17 +125,19 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             const SizedBox(height: AppSpacing.xl),
 
             // Title
-            const CustomTextField(
+            CustomTextField(
               label: 'Item Title',
               hintText: "Name of the item you're selling",
+              controller: _titleController,
             ),
             const SizedBox(height: AppSpacing.xl),
 
             // Description
-            const CustomTextField(
+            CustomTextField(
               label: 'Item Description',
               hintText: "Describe its condition, features, and why someone should buy it...",
               maxLines: 4,
+              controller: _descriptionController,
             ),
             const SizedBox(height: AppSpacing.xl),
 
@@ -126,11 +155,12 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
 
             // Pricing
             if (isSale)
-              const CustomTextField(
+              CustomTextField(
                 label: 'Price',
                 hintText: '0.00',
                 prefixText: '\$',
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                controller: _priceController,
               )
             else ...[
               Text(
@@ -165,11 +195,12 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
                 controller: _monthlyController,
               ),
               const SizedBox(height: AppSpacing.xl),
-              const CustomTextField(
+              CustomTextField(
                 label: 'Security Deposit',
                 hintText: '0.00',
                 prefixText: '\$',
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                controller: _depositController,
               ),
             ],
             const SizedBox(height: AppSpacing.xl),
@@ -183,38 +214,47 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF2EFFF),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedLocation,
-                  isExpanded: true,
-                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF585781)),
-                  style: AppTextStyles.titleMedium.copyWith(color: const Color(0xFF2B2A51)),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedLocation = newValue;
-                      });
+            Consumer(
+              builder: (context, ref, _) {
+                final pickupsAsync = ref.watch(myPickupLocationsProvider);
+                return pickupsAsync.when(
+                  loading: () => const SizedBox(
+                    height: 56,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (err, _) => Text('Failed to load locations: $err'),
+                  data: (locations) {
+                    if (locations.isEmpty) {
+                      return const Text('No pickup locations available');
                     }
-                  },
-                  items: <String>[
-                    'Student Union, North Entrance',
-                    'Library, 1st Floor',
-                    'Dorm A Lobby',
-                    'Cafeteria'
-                  ].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF2EFFF),
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<PickupLocation>(
+                          value: _selectedPickup,
+                          hint: const Text('Select pickup location'),
+                          isExpanded: true,
+                          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF585781)),
+                          style: AppTextStyles.titleMedium.copyWith(color: const Color(0xFF2B2A51)),
+                          onChanged: (PickupLocation? newValue) {
+                            setState(() => _selectedPickup = newValue);
+                          },
+                          items: locations.map((loc) {
+                            return DropdownMenuItem<PickupLocation>(
+                              value: loc,
+                              child: Text(loc.name),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                     );
-                  }).toList(),
-                ),
-              ),
+                  },
+                );
+              },
             ),
             CheckboxListTile(
               title: const Text('Allow buyer to suggest alternative location'),
@@ -267,47 +307,9 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Show Success Dialog
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.check_circle, color: Color(0xFF1E8E64), size: 80),
-                          const SizedBox(height: 24),
-                          Text(
-                            'Success!',
-                            style: AppTextStyles.headlineSmall.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isSale ? 'Your item has been listed for sale.' : 'Your rental listing has been posted.',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyMedium,
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Close dialog
-                                Navigator.pop(context); // Go back to previous screen
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF5271FF),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: const Text('Back to Home', style: TextStyle(color: Colors.white)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                onPressed: (_isFormValid && !_isSubmitting)
+                    ? () => _handleSubmit(context)
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF5271FF), // Blue button
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
@@ -316,13 +318,151 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
                   ),
                   elevation: 0,
                 ),
-                child: Text(
-                  isSale ? 'List Item for Sale' : 'Post Rental',
-                  style: AppTextStyles.titleMedium.copyWith(color: Colors.white),
-                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        isSale ? 'List Item for Sale' : 'Post Rental',
+                        style: AppTextStyles.titleMedium.copyWith(color: Colors.white),
+                      ),
               ),
             ),
             const SizedBox(height: 80), // Reserve for bottom navigation or general safe area
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool get _isFormValid {
+    final mode = ref.read(modeProvider);
+    final category = ref.watch(selectedListingCategoryProvider);
+    // final photos = ref.watch(listingPhotosProvider);
+
+    if (_titleController.text.trim().isEmpty) return false;
+    if (_descriptionController.text.trim().isEmpty) return false;
+    if (category == null || category.isEmpty) return false;
+    // TODO(images): Re-enable photo requirement once upload works.
+    // if (photos.isEmpty) return false;
+
+    if (mode == 'sale') {
+      final price = double.tryParse(_priceController.text.trim());
+      if (price == null || price <= 0) return false;
+    } else {
+      final daily = double.tryParse(_dailyController.text.trim()) ?? 0;
+      final weekly = double.tryParse(_weeklyController.text.trim()) ?? 0;
+      final monthly = double.tryParse(_monthlyController.text.trim()) ?? 0;
+      if (daily <= 0 && weekly <= 0 && monthly <= 0) return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _handleSubmit(BuildContext context) async {
+    setState(() => _isSubmitting = true);
+    try {
+      final profile = ref.read(profileProvider).valueOrNull;
+      if (profile == null) {
+        throw StateError('Not logged in');
+      }
+
+      final mode = ref.read(modeProvider);
+      final category = ref.read(selectedListingCategoryProvider)!;
+      final isSale = mode == 'sale';
+
+      double? price;
+      double? dailyRate;
+      double? weeklyRate;
+      double? monthlyRate;
+
+      if (isSale) {
+        price = double.parse(_priceController.text.trim());
+      } else {
+        dailyRate = double.tryParse(_dailyController.text.trim());
+        weeklyRate = double.tryParse(_weeklyController.text.trim());
+        monthlyRate = double.tryParse(_monthlyController.text.trim());
+      }
+
+      final deposit = double.tryParse(_depositController.text.trim());
+
+      await ref.read(createListingActionProvider.notifier).submit(
+            title: _titleController.text,
+            description: _descriptionController.text,
+            category: category,
+            transactionType: mode,
+            schoolId: profile.schoolId,
+            price: price,
+            dailyRate: dailyRate,
+            weeklyRate: weeklyRate,
+            monthlyRate: monthlyRate,
+            depositAmount: deposit,
+            pickupLocationId: _selectedPickup?.id,
+            allowPickupChange: _allowBuyerToSuggest,
+            isPinned: _isPinned,
+            pinnedDays: _isPinned ? _pinnedDays.toInt() : null,
+          );
+
+      if (!context.mounted) return;
+
+      await _showSuccessDialog(context, isSale);
+
+      if (!context.mounted) return;
+
+      context.goNamed(AppRoutes.home);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to post: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _showSuccessDialog(BuildContext context, bool isSale) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, color: Color(0xFF1E8E64), size: 80),
+            const SizedBox(height: 24),
+            Text(
+              'Success!',
+              style: AppTextStyles.headlineSmall.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isSale ? 'Your item has been listed for sale.' : 'Your rental listing has been posted.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5271FF),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Back to Home', style: TextStyle(color: Colors.white)),
+              ),
+            ),
           ],
         ),
       ),
