@@ -16,6 +16,8 @@ class AppTextField extends StatelessWidget {
     this.suffixText,
     this.onChanged,
     this.headerAction,
+    this.initialValue,
+    this.enabled = true,
   });
 
   final String label;
@@ -29,6 +31,8 @@ class AppTextField extends StatelessWidget {
   final String? suffixText;
   final void Function(String)? onChanged;
   final Widget? headerAction;
+  final String? initialValue;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +55,8 @@ class AppTextField extends StatelessWidget {
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
+          initialValue: initialValue,
+          enabled: enabled,
           obscureText: obscureText,
           keyboardType: keyboardType,
           validator: validator,

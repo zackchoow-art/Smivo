@@ -22,12 +22,11 @@ class ProfileRepository {
       
       return UserProfile.fromJson(data);
     } on supabase.PostgrestException catch (e) {
-      throw AppException.database(
-        message: 'Failed to fetch profile: ${e.message}',
-      );
+      throw AppException.database('Failed to fetch profile: ${e.message}', e);
     } catch (e) {
       throw AppException.unknown(
-        message: 'An unexpected error occurred while fetching profile',
+        'An unexpected error occurred while fetching profile',
+        e,
       );
     }
   }
@@ -44,12 +43,11 @@ class ProfileRepository {
       
       return UserProfile.fromJson(data);
     } on supabase.PostgrestException catch (e) {
-      throw AppException.database(
-        message: 'Failed to update profile: ${e.message}',
-      );
+      throw AppException.database('Failed to update profile: ${e.message}', e);
     } catch (e) {
       throw AppException.unknown(
-        message: 'An unexpected error occurred while updating profile',
+        'An unexpected error occurred while updating profile',
+        e,
       );
     }
   }
@@ -70,12 +68,11 @@ class ProfileRepository {
 
       return _client.storage.from('avatars').getPublicUrl(filePath);
     } on supabase.StorageException catch (e) {
-      throw AppException.storage(
-        message: 'Failed to upload avatar: ${e.message}',
-      );
+      throw AppException.storage('Failed to upload avatar: ${e.message}', e);
     } catch (e) {
       throw AppException.unknown(
-        message: 'An unexpected error occurred while uploading avatar',
+        'An unexpected error occurred while uploading avatar',
+        e,
       );
     }
   }

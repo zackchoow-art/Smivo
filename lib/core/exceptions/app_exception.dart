@@ -14,6 +14,19 @@ sealed class AppException implements Exception {
 
   @override
   String toString() => '$runtimeType: $message';
+
+  factory AppException.database(String message, [Object? error]) =
+      DatabaseException;
+
+  factory AppException.storage(String message, [Object? error]) =
+      AppStorageException;
+
+  factory AppException.unknown(String message, [Object? error]) =
+      UnknownException;
+}
+
+class UnknownException extends AppException {
+  const UnknownException(super.message, [super.originalError]);
 }
 
 /// Network-level failures (timeout, no internet, DNS).
