@@ -7,6 +7,8 @@ import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
+import 'package:smivo/data/repositories/chat_repository.dart';
+import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 
 class ListOrderCard extends ConsumerWidget {
@@ -139,7 +141,39 @@ class ListOrderCard extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary, size: 20),
-                  onPressed: () => showChatPopup(context),
+                  onPressed: () async {
+                    final user = ref.read(authStateProvider).valueOrNull;
+                    if (user == null) return;
+
+                    final isBuyer = order.buyerId == user.id;
+                    final otherProfile = isBuyer ? order.seller : order.buyer;
+
+                    try {
+                      final chatRoom = await ref
+                          .read(chatRepositoryProvider)
+                          .getOrCreateChatRoom(
+                            listingId: order.listingId,
+                            buyerId: order.buyerId,
+                            sellerId: order.sellerId,
+                          );
+
+                      if (!context.mounted) return;
+                      showChatPopup(
+                        context,
+                        chatRoomId: chatRoom.id,
+                        otherUserName: otherProfile?.displayName ?? 'User',
+                        otherUserAvatar: otherProfile?.avatarUrl,
+                        listingTitle: order.listing?.title ?? 'Order',
+                        listingPrice: order.totalPrice,
+                        listingImageUrl: order.listing?.images.firstOrNull?.imageUrl,
+                      );
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    }
+                  },
                 ),
               ],
             ),

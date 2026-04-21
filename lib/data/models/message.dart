@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:smivo/data/models/user_profile.dart';
 
 part 'message.freezed.dart';
 part 'message.g.dart';
@@ -20,6 +21,8 @@ abstract class Message with _$Message {
     @JsonKey(name: 'is_read') @Default(false) bool isRead,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    // Nested join data
+    UserProfile? sender,
   }) = _Message;
 
   factory Message.fromJson(Map<String, dynamic> json) =>

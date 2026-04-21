@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Message {
 
- String get id;@JsonKey(name: 'chat_room_id') String get chatRoomId;@JsonKey(name: 'sender_id') String get senderId; String get content;@JsonKey(name: 'message_type') String get messageType;@JsonKey(name: 'image_url') String? get imageUrl;@JsonKey(name: 'is_read') bool get isRead;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'chat_room_id') String get chatRoomId;@JsonKey(name: 'sender_id') String get senderId; String get content;@JsonKey(name: 'message_type') String get messageType;@JsonKey(name: 'image_url') String? get imageUrl;@JsonKey(name: 'is_read') bool get isRead;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;// Nested join data
+ UserProfile? get sender;
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $MessageCopyWith<Message> get copyWith => _$MessageCopyWithImpl<Message>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Message&&(identical(other.id, id) || other.id == id)&&(identical(other.chatRoomId, chatRoomId) || other.chatRoomId == chatRoomId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.content, content) || other.content == content)&&(identical(other.messageType, messageType) || other.messageType == messageType)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Message&&(identical(other.id, id) || other.id == id)&&(identical(other.chatRoomId, chatRoomId) || other.chatRoomId == chatRoomId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.content, content) || other.content == content)&&(identical(other.messageType, messageType) || other.messageType == messageType)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.sender, sender) || other.sender == sender));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,chatRoomId,senderId,content,messageType,imageUrl,isRead,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,chatRoomId,senderId,content,messageType,imageUrl,isRead,createdAt,updatedAt,sender);
 
 @override
 String toString() {
-  return 'Message(id: $id, chatRoomId: $chatRoomId, senderId: $senderId, content: $content, messageType: $messageType, imageUrl: $imageUrl, isRead: $isRead, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Message(id: $id, chatRoomId: $chatRoomId, senderId: $senderId, content: $content, messageType: $messageType, imageUrl: $imageUrl, isRead: $isRead, createdAt: $createdAt, updatedAt: $updatedAt, sender: $sender)';
 }
 
 
@@ -48,11 +49,11 @@ abstract mixin class $MessageCopyWith<$Res>  {
   factory $MessageCopyWith(Message value, $Res Function(Message) _then) = _$MessageCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'chat_room_id') String chatRoomId,@JsonKey(name: 'sender_id') String senderId, String content,@JsonKey(name: 'message_type') String messageType,@JsonKey(name: 'image_url') String? imageUrl,@JsonKey(name: 'is_read') bool isRead,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'chat_room_id') String chatRoomId,@JsonKey(name: 'sender_id') String senderId, String content,@JsonKey(name: 'message_type') String messageType,@JsonKey(name: 'image_url') String? imageUrl,@JsonKey(name: 'is_read') bool isRead,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? sender
 });
 
 
-
+$UserProfileCopyWith<$Res>? get sender;
 
 }
 /// @nodoc
@@ -65,7 +66,7 @@ class _$MessageCopyWithImpl<$Res>
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? chatRoomId = null,Object? senderId = null,Object? content = null,Object? messageType = null,Object? imageUrl = freezed,Object? isRead = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? chatRoomId = null,Object? senderId = null,Object? content = null,Object? messageType = null,Object? imageUrl = freezed,Object? isRead = null,Object? createdAt = null,Object? updatedAt = null,Object? sender = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,chatRoomId: null == chatRoomId ? _self.chatRoomId : chatRoomId // ignore: cast_nullable_to_non_nullable
@@ -76,10 +77,23 @@ as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: c
 as String?,isRead: null == isRead ? _self.isRead : isRead // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,sender: freezed == sender ? _self.sender : sender // ignore: cast_nullable_to_non_nullable
+as UserProfile?,
   ));
 }
+/// Create a copy of Message
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserProfileCopyWith<$Res>? get sender {
+    if (_self.sender == null) {
+    return null;
+  }
 
+  return $UserProfileCopyWith<$Res>(_self.sender!, (value) {
+    return _then(_self.copyWith(sender: value));
+  });
+}
 }
 
 
@@ -161,10 +175,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? sender)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Message() when $default != null:
-return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt,_that.sender);case _:
   return orElse();
 
 }
@@ -182,10 +196,10 @@ return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.mes
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? sender)  $default,) {final _that = this;
 switch (_that) {
 case _Message():
-return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt,_that.sender);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +216,10 @@ return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.mes
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'chat_room_id')  String chatRoomId, @JsonKey(name: 'sender_id')  String senderId,  String content, @JsonKey(name: 'message_type')  String messageType, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'is_read')  bool isRead, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? sender)?  $default,) {final _that = this;
 switch (_that) {
 case _Message() when $default != null:
-return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.messageType,_that.imageUrl,_that.isRead,_that.createdAt,_that.updatedAt,_that.sender);case _:
   return null;
 
 }
@@ -217,7 +231,7 @@ return $default(_that.id,_that.chatRoomId,_that.senderId,_that.content,_that.mes
 @JsonSerializable()
 
 class _Message implements Message {
-  const _Message({required this.id, @JsonKey(name: 'chat_room_id') required this.chatRoomId, @JsonKey(name: 'sender_id') required this.senderId, required this.content, @JsonKey(name: 'message_type') this.messageType = 'text', @JsonKey(name: 'image_url') this.imageUrl, @JsonKey(name: 'is_read') this.isRead = false, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _Message({required this.id, @JsonKey(name: 'chat_room_id') required this.chatRoomId, @JsonKey(name: 'sender_id') required this.senderId, required this.content, @JsonKey(name: 'message_type') this.messageType = 'text', @JsonKey(name: 'image_url') this.imageUrl, @JsonKey(name: 'is_read') this.isRead = false, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, this.sender});
   factory _Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 
 @override final  String id;
@@ -229,6 +243,8 @@ class _Message implements Message {
 @override@JsonKey(name: 'is_read') final  bool isRead;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+// Nested join data
+@override final  UserProfile? sender;
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Message&&(identical(other.id, id) || other.id == id)&&(identical(other.chatRoomId, chatRoomId) || other.chatRoomId == chatRoomId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.content, content) || other.content == content)&&(identical(other.messageType, messageType) || other.messageType == messageType)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Message&&(identical(other.id, id) || other.id == id)&&(identical(other.chatRoomId, chatRoomId) || other.chatRoomId == chatRoomId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.content, content) || other.content == content)&&(identical(other.messageType, messageType) || other.messageType == messageType)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.sender, sender) || other.sender == sender));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,chatRoomId,senderId,content,messageType,imageUrl,isRead,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,chatRoomId,senderId,content,messageType,imageUrl,isRead,createdAt,updatedAt,sender);
 
 @override
 String toString() {
-  return 'Message(id: $id, chatRoomId: $chatRoomId, senderId: $senderId, content: $content, messageType: $messageType, imageUrl: $imageUrl, isRead: $isRead, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Message(id: $id, chatRoomId: $chatRoomId, senderId: $senderId, content: $content, messageType: $messageType, imageUrl: $imageUrl, isRead: $isRead, createdAt: $createdAt, updatedAt: $updatedAt, sender: $sender)';
 }
 
 
@@ -263,11 +279,11 @@ abstract mixin class _$MessageCopyWith<$Res> implements $MessageCopyWith<$Res> {
   factory _$MessageCopyWith(_Message value, $Res Function(_Message) _then) = __$MessageCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'chat_room_id') String chatRoomId,@JsonKey(name: 'sender_id') String senderId, String content,@JsonKey(name: 'message_type') String messageType,@JsonKey(name: 'image_url') String? imageUrl,@JsonKey(name: 'is_read') bool isRead,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'chat_room_id') String chatRoomId,@JsonKey(name: 'sender_id') String senderId, String content,@JsonKey(name: 'message_type') String messageType,@JsonKey(name: 'image_url') String? imageUrl,@JsonKey(name: 'is_read') bool isRead,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? sender
 });
 
 
-
+@override $UserProfileCopyWith<$Res>? get sender;
 
 }
 /// @nodoc
@@ -280,7 +296,7 @@ class __$MessageCopyWithImpl<$Res>
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? chatRoomId = null,Object? senderId = null,Object? content = null,Object? messageType = null,Object? imageUrl = freezed,Object? isRead = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? chatRoomId = null,Object? senderId = null,Object? content = null,Object? messageType = null,Object? imageUrl = freezed,Object? isRead = null,Object? createdAt = null,Object? updatedAt = null,Object? sender = freezed,}) {
   return _then(_Message(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,chatRoomId: null == chatRoomId ? _self.chatRoomId : chatRoomId // ignore: cast_nullable_to_non_nullable
@@ -291,11 +307,24 @@ as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: c
 as String?,isRead: null == isRead ? _self.isRead : isRead // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,sender: freezed == sender ? _self.sender : sender // ignore: cast_nullable_to_non_nullable
+as UserProfile?,
   ));
 }
 
+/// Create a copy of Message
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$UserProfileCopyWith<$Res>? get sender {
+    if (_self.sender == null) {
+    return null;
+  }
 
+  return $UserProfileCopyWith<$Res>(_self.sender!, (value) {
+    return _then(_self.copyWith(sender: value));
+  });
+}
 }
 
 // dart format on

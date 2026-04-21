@@ -79,9 +79,9 @@ class ChatRepository {
     try {
       final data = await _client
           .from(AppConstants.tableMessages)
-          .select()
+          .select('*, sender:user_profiles!sender_id(*)')
           .eq('chat_room_id', chatRoomId)
-          .order('created_at');
+          .order('created_at', ascending: true);
       return data.map((json) => Message.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -102,7 +102,31 @@ class ChatRepository {
             'sender_id': senderId,
             'content': content,
           })
-          .select()
+          .select('*, sender:user_profiles!sender_id(*)')
+          .single();
+      return Message.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Sends an image message in a chat room.
+  Future<Message> sendImageMessage({
+    required String chatRoomId,
+    required String senderId,
+    required String imageUrl,
+  }) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableMessages)
+          .insert({
+            'chat_room_id': chatRoomId,
+            'sender_id': senderId,
+            'content': '[Image]',
+            'message_type': 'image',
+            'image_url': imageUrl,
+          })
+          .select('*, sender:user_profiles!sender_id(*)')
           .single();
       return Message.fromJson(data);
     } on PostgrestException catch (e) {
@@ -145,6 +169,16 @@ class ChatRepository {
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
+  }
+
+  /// Subscribes to changes in chat rooms for [userId].
+  Stream<List<ChatRoom>> subscribeToChatRooms(String userId) {
+    return _client
+        .from(AppConstants.tableChatRooms)
+        .stream(primaryKey: ['id'])
+        // Note: Supabase .stream() doesn't support complex .or() filters.
+        // We listen to changes and re-fetch the user's specific rooms.
+        .asyncMap((rooms) => fetchChatRooms(userId));
   }
 
   /// Subscribes to new messages in a chat room via Realtime.

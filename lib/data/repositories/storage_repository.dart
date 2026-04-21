@@ -54,6 +54,25 @@ class StorageRepository {
     }
   }
 
+  /// Uploads a chat message image and returns its public URL.
+  Future<String> uploadChatMessageImage({
+    required String chatRoomId,
+    required String fileName,
+    required Uint8List fileBytes,
+  }) async {
+    try {
+      final path = 'chat/$chatRoomId/$fileName';
+      await _client.storage
+          .from(AppConstants.bucketChatImages)
+          .uploadBinary(path, fileBytes);
+      return _client.storage
+          .from(AppConstants.bucketChatImages)
+          .getPublicUrl(path);
+    } on StorageException catch (e) {
+      throw AppStorageException(e.message, e);
+    }
+  }
+
   /// Deletes a file from a bucket.
   Future<void> deleteFile({
     required String bucket,

@@ -1,19 +1,41 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
-Future<void> showChatPopup(BuildContext context) {
+import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/data/models/message.dart';
+import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/features/chat/providers/chat_provider.dart';
+import 'package:smivo/features/profile/providers/profile_provider.dart';
+
+Future<void> showChatPopup(
+  BuildContext context, {
+  required String chatRoomId,
+  required String otherUserName,
+  String? otherUserAvatar,
+  required String listingTitle,
+  required double listingPrice,
+  String? listingImageUrl,
+}) {
   return showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Dismiss',
-    barrierColor: Colors.black.withOpacity(0.2), // Dim background slightly
+    barrierColor: Colors.black.withOpacity(0.2),
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) {
       return Center(
         child: Material(
           color: Colors.transparent,
-          child: const ChatPopupWidget(),
+          child: ChatPopupWidget(
+            chatRoomId: chatRoomId,
+            otherUserName: otherUserName,
+            otherUserAvatar: otherUserAvatar,
+            listingTitle: listingTitle,
+            listingPrice: listingPrice,
+            listingImageUrl: listingImageUrl,
+          ),
         ),
       );
     },
@@ -32,59 +54,60 @@ Future<void> showChatPopup(BuildContext context) {
   );
 }
 
-class ChatPopupWidget extends StatefulWidget {
-  const ChatPopupWidget({super.key});
+class ChatPopupWidget extends ConsumerStatefulWidget {
+  const ChatPopupWidget({
+    super.key,
+    required this.chatRoomId,
+    required this.otherUserName,
+    this.otherUserAvatar,
+    required this.listingTitle,
+    required this.listingPrice,
+    this.listingImageUrl,
+  });
+
+  final String chatRoomId;
+  final String otherUserName;
+  final String? otherUserAvatar;
+  final String listingTitle;
+  final double listingPrice;
+  final String? listingImageUrl;
 
   @override
-  State<ChatPopupWidget> createState() => _ChatPopupWidgetState();
+  ConsumerState<ChatPopupWidget> createState() => _ChatPopupWidgetState();
 }
 
-class _Message {
-  final String text;
-  final bool isMine;
-  final String? avatarUrl;
-
-  _Message({required this.text, required this.isMine, this.avatarUrl});
-}
-
-class _ChatPopupWidgetState extends State<ChatPopupWidget> {
+class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final List<_Message> _messages = [
-    _Message(
-      text: 'Hey! Are you still selling that textbook for Econ 101?',
-      isMine: false,
-      avatarUrl: 'https://i.pravatar.cc/150?u=alex',
-    ),
-    _Message(
-      text: 'Yeah I am! It\'s in great condition.',
-      isMine: true,
-    ),
-    _Message(
-      text: 'Awesome. Can we meet up near the Quad around 2?',
-      isMine: false,
-      avatarUrl: 'https://i.pravatar.cc/150?u=alex2',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Mark as read when opening
+    Future.microtask(() {
+      ref.read(chatMessagesProvider(widget.chatRoomId).notifier).markAsRead();
+    });
+  }
 
   void _sendMessage() {
-    if (_controller.text.trim().isEmpty) return;
-    
-    setState(() {
-      _messages.add(_Message(text: _controller.text.trim(), isMine: true));
-      _controller.clear();
-    });
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    ref.read(chatMessagesProvider(widget.chatRoomId).notifier).sendMessage(text);
+    _controller.clear();
 
     // Scroll to bottom
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    if (!_scrollController.hasClients) return;
+    Future.microtask(() {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     });
   }
 
@@ -97,19 +120,27 @@ class _ChatPopupWidgetState extends State<ChatPopupWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Colors from the screenshot
-    const backgroundColor = Color(0xFFF5F4FA); // Light lavender/grey background
-    const primaryBlue = Color(0xFF3B67FF); // Bright blue from buttons and right bubbles
-    const headerBlue = Color(0xFF2B2A51); // Dark blue text
-    const onlineGreen = Color(0xFF1E8E64);
-    const bubbleLeftBg = Color(0xFFE2DDFA); // Light purple for left bubbles
-    const callButtonBg = Color(0xFFDFDDFF); // Very light blue/purple
+    final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
+    final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
+    final currentUserProfile = ref.watch(profileProvider).valueOrNull;
+
+    // Auto-scroll on new messages
+    ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
+      if (next.hasValue && (previous?.value?.length ?? 0) < (next.value?.length ?? 0)) {
+        _scrollToBottom();
+      }
+    });
+
+    const backgroundColor = Color(0xFFF5F4FA);
+    const primaryBlue = Color(0xFF3B67FF);
+    const headerBlue = Color(0xFF2B2A51);
+    const bubbleLeftBg = Color(0xFFE2DDFA);
 
     return Container(
       width: MediaQuery.of(context).size.width * 0.85,
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(0.9), // Slight transparency as requested
+        color: backgroundColor.withOpacity(0.9),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -119,7 +150,6 @@ class _ChatPopupWidgetState extends State<ChatPopupWidget> {
           ),
         ],
       ),
-      // Apply blur to the background for glass effect
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: BackdropFilter(
@@ -131,70 +161,31 @@ class _ChatPopupWidgetState extends State<ChatPopupWidget> {
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                 child: Row(
                   children: [
-                    // Avatar with online status
-                    Stack(
-                      children: [
-                        const CircleAvatar(
-                          radius: 24,
-                          backgroundImage: NetworkImage(
-                              'https://i.pravatar.cc/150?u=alex'), // Placeholder
-                        ),
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            width: 14,
-                            height: 14,
-                            decoration: BoxDecoration(
-                              color: onlineGreen,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: backgroundColor, width: 2),
-                            ),
-                          ),
-                        ),
-                      ],
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundImage: widget.otherUserAvatar != null
+                          ? NetworkImage(widget.otherUserAvatar!)
+                          : null,
+                      child: widget.otherUserAvatar == null
+                          ? const Icon(Icons.person)
+                          : null,
                     ),
                     const SizedBox(width: 12),
-                    // Name and Status
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Alex',
+                            widget.otherUserName,
                             style: AppTextStyles.titleMedium.copyWith(
                               color: headerBlue,
                               fontWeight: FontWeight.w800,
                               fontSize: 18,
                             ),
                           ),
-                          Text(
-                            'Online',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: onlineGreen,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
                         ],
                       ),
                     ),
-                    // Call Button
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: callButtonBg,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.phone_outlined,
-                        color: primaryBlue,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Close Button
                     IconButton(
                       icon: const Icon(Icons.close, color: Color(0xFF546387)),
                       onPressed: () => Navigator.of(context).pop(),
@@ -222,27 +213,37 @@ class _ChatPopupWidgetState extends State<ChatPopupWidget> {
                   child: Row(
                     children: [
                       Container(
-                        width: 24,
+                        width: 32,
                         height: 32,
                         decoration: BoxDecoration(
                           color: const Color(0xFFDCDDDF),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: Colors.black12),
+                          image: widget.listingImageUrl != null
+                              ? DecorationImage(
+                                  image: NetworkImage(widget.listingImageUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
+                        child: widget.listingImageUrl == null
+                            ? const Icon(Icons.image, size: 16)
+                            : null,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Econ 101 Textbook',
+                          widget.listingTitle,
                           style: AppTextStyles.labelLarge.copyWith(
                             color: headerBlue,
                             fontWeight: FontWeight.w700,
                             fontSize: 13,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Text(
-                        '\$45',
+                        '\$${widget.listingPrice.toStringAsFixed(0)}',
                         style: AppTextStyles.labelLarge.copyWith(
                           color: primaryBlue,
                           fontWeight: FontWeight.w800,
@@ -260,50 +261,47 @@ class _ChatPopupWidgetState extends State<ChatPopupWidget> {
                 child: Container(
                   width: double.infinity,
                   color: backgroundColor.withOpacity(0.3),
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    itemCount: _messages.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE2DDFA),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                'Today',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: const Color(0xFF546387),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
+                  child: messagesAsync.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (err, _) => Center(child: Text('Error: $err')),
+                    data: (messages) {
+                      if (messages.isEmpty) {
+                        return const Center(child: Text('No messages yet'));
                       }
                       
-                      final msg = _messages[index - 1];
-                      if (msg.isMine) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _buildRightBubble(msg.text, primaryBlue, Colors.white),
-                        );
-                      } else {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _buildLeftBubble(
-                            msg.text,
-                            msg.avatarUrl ?? 'https://i.pravatar.cc/150?u=default',
-                            bubbleLeftBg,
-                            headerBlue,
-                          ),
-                        );
-                      }
+                      // Standard top-down flow: align to top if content is short.
+                      return ListView.builder(
+                        controller: _scrollController,
+                        reverse: false,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final msg = messages[index];
+                          final isMine = msg.senderId == currentUserId;
+                          
+                          if (isMine) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildRightBubble(
+                                msg,
+                                primaryBlue,
+                                Colors.white,
+                                currentUserProfile?.avatarUrl,
+                              ),
+                            );
+                          } else {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildLeftBubble(
+                                msg,
+                                msg.sender?.avatarUrl ?? widget.otherUserAvatar,
+                                bubbleLeftBg,
+                                headerBlue,
+                              ),
+                            );
+                          }
+                        },
+                      );
                     },
                   ),
                 ),
@@ -323,27 +321,24 @@ class _ChatPopupWidgetState extends State<ChatPopupWidget> {
                   ),
                   child: Row(
                     children: [
-                      const SizedBox(width: 12),
-                      const Icon(
-                        Icons.add_circle_outline,
-                        color: primaryBlue,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
                       Expanded(
                         child: TextField(
                           controller: _controller,
                           onSubmitted: (_) => _sendMessage(),
                           decoration: InputDecoration(
-                            hintText: 'Message Alex...',
+                            hintText: 'Message ${widget.otherUserName}...',
                             hintStyle: AppTextStyles.bodyMedium.copyWith(
                               color: const Color(0xFF9EA3C0),
                             ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.only(bottom: 4),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: _sendMessage,
                         child: Container(
@@ -372,65 +367,125 @@ class _ChatPopupWidgetState extends State<ChatPopupWidget> {
     );
   }
 
-  Widget _buildLeftBubble(String text, String avatarUrl, Color bgColor, Color textColor) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        CircleAvatar(
-          radius: 14,
-          backgroundImage: NetworkImage(avatarUrl),
+  Widget _buildTimestamp(DateTime createdAt, {required bool isMine}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      child: Text(
+        timeago.format(createdAt, locale: 'en_short'),
+        style: AppTextStyles.bodySmall.copyWith(
+          color: const Color(0xFF585781),
+          fontSize: 10,
         ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-                bottomLeft: Radius.circular(4),
+      ),
+    );
+  }
+
+  Widget _buildLeftBubble(
+    Message msg,
+    String? avatarUrl,
+    Color bgColor,
+    Color textColor,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            CircleAvatar(
+              radius: 12,
+              backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+              child: avatarUrl == null ? const Icon(Icons.person, size: 12) : null,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                    bottomLeft: Radius.circular(4),
+                  ),
+                ),
+                child: Text(
+                  msg.content,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: textColor,
+                    height: 1.4,
+                  ),
+                ),
               ),
             ),
-            child: Text(
-              text,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: textColor,
-                height: 1.4,
-              ),
+            const SizedBox(width: 32),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 32, top: 4),
+          child: Text(
+            timeago.format(msg.createdAt, locale: 'en_short'),
+            style: AppTextStyles.labelSmall.copyWith(
+              color: const Color(0xFF546387),
+              fontSize: 10,
             ),
           ),
         ),
-        const SizedBox(width: 32), // space on the right
       ],
     );
   }
 
-  Widget _buildRightBubble(String text, Color bgColor, Color textColor) {
-    return Row(
+  Widget _buildRightBubble(
+    Message msg,
+    Color bgColor,
+    Color textColor,
+    String? myAvatarUrl,
+  ) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        const SizedBox(width: 48), // space on the left
-        Flexible(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const SizedBox(width: 48),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(4),
+                  ),
+                ),
+                child: Text(
+                  msg.content,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: textColor,
+                    height: 1.4,
+                  ),
+                ),
               ),
             ),
-            child: Text(
-              text,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: textColor,
-                height: 1.4,
-              ),
+            const SizedBox(width: 8),
+            CircleAvatar(
+              radius: 12,
+              backgroundImage: myAvatarUrl != null ? NetworkImage(myAvatarUrl) : null,
+              child: myAvatarUrl == null ? const Icon(Icons.person, size: 12) : null,
+            ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 32, top: 4),
+          child: Text(
+            timeago.format(msg.createdAt, locale: 'en_short'),
+            style: AppTextStyles.labelSmall.copyWith(
+              color: const Color(0xFF546387),
+              fontSize: 10,
             ),
           ),
         ),

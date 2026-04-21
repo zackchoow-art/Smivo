@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -5,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smivo/data/models/chat_room.dart';
 import 'package:smivo/data/models/message.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
+import 'package:smivo/data/repositories/storage_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 
 part 'chat_provider.g.dart';
@@ -36,12 +38,12 @@ class ChatConversation {
 ///
 /// Watches authStateProvider so it refreshes when the user logs in/out.
 @riverpod
-Future<List<ChatRoom>> chatRoomList(Ref ref) async {
+Stream<List<ChatRoom>> chatRoomList(Ref ref) {
   final user = ref.watch(authStateProvider).valueOrNull;
-  if (user == null) return [];
+  if (user == null) return Stream.value([]);
   
   final repository = ref.watch(chatRepositoryProvider);
-  return repository.fetchChatRooms(user.id);
+  return repository.subscribeToChatRooms(user.id);
 }
 
 /// Manages messages for a single chat room with realtime updates.
@@ -93,6 +95,29 @@ class ChatMessages extends _$ChatMessages {
       chatRoomId: chatRoomId,
       senderId: user.id,
       content: content.trim(),
+    );
+  }
+
+  /// Uploads an image and sends it as a message.
+  Future<void> sendImage(Uint8List fileBytes, String fileName) async {
+    final user = ref.read(authStateProvider).valueOrNull;
+    if (user == null) return;
+
+    final storageRepo = ref.read(storageRepositoryProvider);
+    final chatRepo = ref.read(chatRepositoryProvider);
+
+    // 1. Upload image
+    final imageUrl = await storageRepo.uploadChatMessageImage(
+      chatRoomId: chatRoomId,
+      fileName: fileName,
+      fileBytes: fileBytes,
+    );
+
+    // 2. Send message
+    await chatRepo.sendImageMessage(
+      chatRoomId: chatRoomId,
+      senderId: user.id,
+      imageUrl: imageUrl,
     );
   }
 

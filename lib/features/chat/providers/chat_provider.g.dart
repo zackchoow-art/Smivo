@@ -6,7 +6,7 @@ part of 'chat_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$chatRoomListHash() => r'2f32870b92666699fe9fd0980d657d37fa475941';
+String _$chatRoomListHash() => r'e5acf59016afd7e554cfaf135432268590e1c7ae';
 
 /// Fetches the list of chat rooms for the current user.
 ///
@@ -14,7 +14,7 @@ String _$chatRoomListHash() => r'2f32870b92666699fe9fd0980d657d37fa475941';
 ///
 /// Copied from [chatRoomList].
 @ProviderFor(chatRoomList)
-final chatRoomListProvider = AutoDisposeFutureProvider<List<ChatRoom>>.internal(
+final chatRoomListProvider = AutoDisposeStreamProvider<List<ChatRoom>>.internal(
   chatRoomList,
   name: r'chatRoomListProvider',
   debugGetCreateSourceHash:
@@ -25,8 +25,8 @@ final chatRoomListProvider = AutoDisposeFutureProvider<List<ChatRoom>>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef ChatRoomListRef = AutoDisposeFutureProviderRef<List<ChatRoom>>;
-String _$chatMessagesHash() => r'a21c577aa935b0ea3550f7d905c65a5ac3eeeb24';
+typedef ChatRoomListRef = AutoDisposeStreamProviderRef<List<ChatRoom>>;
+String _$chatMessagesHash() => r'c7bab1e54c16e8d88036ac3fd9fd50ae129df550';
 
 /// Copied from Dart SDK
 class _SystemHash {

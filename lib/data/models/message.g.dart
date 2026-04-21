@@ -16,6 +16,10 @@ _Message _$MessageFromJson(Map<String, dynamic> json) => _Message(
   isRead: json['is_read'] as bool? ?? false,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
+  sender:
+      json['sender'] == null
+          ? null
+          : UserProfile.fromJson(json['sender'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$MessageToJson(_Message instance) => <String, dynamic>{
@@ -28,4 +32,5 @@ Map<String, dynamic> _$MessageToJson(_Message instance) => <String, dynamic>{
   'is_read': instance.isRead,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
+  'sender': instance.sender,
 };

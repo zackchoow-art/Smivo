@@ -7,7 +7,11 @@ import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/features/listing/widgets/listing_image_carousel.dart';
 import 'package:smivo/features/listing/widgets/rental_options_section.dart';
 import 'package:smivo/features/listing/widgets/seller_profile_card.dart';
+import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/data/repositories/chat_repository.dart';
+import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
+import 'package:go_router/go_router.dart';
 
 class ListingDetailScreen extends ConsumerStatefulWidget {
   const ListingDetailScreen({
@@ -246,7 +250,46 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           rating: '4.9', // Hardcoded placeholder for rating (Phase 2)
                           reviewCount: 12, // Hardcoded placeholder for reviews (Phase 2)
                           label: isSale ? 'SELLER' : 'LISTED BY',
-                          onMessageTap: () => showChatPopup(context),
+                          onMessageTap: () async {
+                            final user = ref.read(authStateProvider).valueOrNull;
+                            if (user == null) {
+                              context.pushNamed(AppRoutes.login);
+                              return;
+                            }
+
+                            if (user.id == listing.sellerId) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('This is your own listing')),
+                              );
+                              return;
+                            }
+
+                            try {
+                              final chatRoom = await ref
+                                  .read(chatRepositoryProvider)
+                                  .getOrCreateChatRoom(
+                                    listingId: listing.id,
+                                    buyerId: user.id,
+                                    sellerId: listing.sellerId,
+                                  );
+
+                              if (!context.mounted) return;
+                              showChatPopup(
+                                context,
+                                chatRoomId: chatRoom.id,
+                                otherUserName: listing.seller?.displayName ?? 'Seller',
+                                otherUserAvatar: listing.seller?.avatarUrl,
+                                listingTitle: listing.title,
+                                listingPrice: listing.price,
+                                listingImageUrl: listing.images.firstOrNull?.imageUrl,
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e')),
+                              );
+                            }
+                          },
                         ),
                       
                       const SizedBox(height: AppSpacing.xl),

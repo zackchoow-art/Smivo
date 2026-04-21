@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/features/chat/widgets/chat_popup.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smivo/core/router/app_routes.dart';
 
 class MessageBadgeIcon extends StatelessWidget {
   final int unreadCount;
@@ -13,7 +14,9 @@ class MessageBadgeIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
-        showChatPopup(context);
+        // Since this is a global icon without specific context,
+        // we navigate to the chat list tab instead of opening a specific popup.
+        context.go(AppRoutes.chatListPath);
       },
       icon: Stack(
         clipBehavior: Clip.none,

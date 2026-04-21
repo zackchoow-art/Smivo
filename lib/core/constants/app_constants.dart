@@ -22,6 +22,7 @@ class AppConstants {
   // ── Storage Bucket Names ───────────────────────────────────
   static const String bucketListingImages = 'listing-images';
   static const String bucketAvatars = 'avatars';
+  static const String bucketChatImages = 'chat-images';
 
   // ── Item Categories ────────────────────────────────────────
   static const List<String> categories = [
