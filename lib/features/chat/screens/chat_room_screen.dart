@@ -96,7 +96,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (!_scrollController.hasClients) return;
     Future.microtask(() {
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+        0,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
@@ -107,13 +107,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Widget build(BuildContext context) {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
     final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
-
-    // Auto-scroll on new messages
-    ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
-      if (next.hasValue && (previous?.value?.length ?? 0) < (next.value?.length ?? 0)) {
-        _scrollToBottom();
-      }
-    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F4FA),
@@ -141,12 +134,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 }
                 return ListView.builder(
                   controller: _scrollController,
-                  // Standard top-down flow: align to top if content is short.
-                  reverse: false, 
+                  reverse: true, 
                   padding: const EdgeInsets.all(AppSpacing.md),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    final msg = messages[index];
+                    final msg = messages[messages.length - 1 - index];
                     final isMine = msg.senderId == currentUserId;
                     
                     return _MessageBubble(

@@ -6,26 +6,30 @@ part of 'chat_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$chatRoomListHash() => r'e5acf59016afd7e554cfaf135432268590e1c7ae';
+String _$chatRoomListHash() => r'bb95f37304540f7d80e7b44f76378a909a23330f';
 
-/// Fetches the list of chat rooms for the current user.
+/// Fetches the user's chat rooms and subscribes to global message
+/// inserts to keep the list fresh.
 ///
-/// Watches authStateProvider so it refreshes when the user logs in/out.
+/// When any new message arrives in any room the user participates in,
+/// the list is re-fetched so last_message_at, last_message preview,
+/// and unread counts all update in real-time.
 ///
-/// Copied from [chatRoomList].
-@ProviderFor(chatRoomList)
-final chatRoomListProvider = AutoDisposeStreamProvider<List<ChatRoom>>.internal(
-  chatRoomList,
-  name: r'chatRoomListProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$chatRoomListHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+/// Copied from [ChatRoomList].
+@ProviderFor(ChatRoomList)
+final chatRoomListProvider =
+    AutoDisposeAsyncNotifierProvider<ChatRoomList, List<ChatRoom>>.internal(
+      ChatRoomList.new,
+      name: r'chatRoomListProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$chatRoomListHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ChatRoomListRef = AutoDisposeStreamProviderRef<List<ChatRoom>>;
+typedef _$ChatRoomList = AutoDisposeAsyncNotifier<List<ChatRoom>>;
 String _$chatMessagesHash() => r'c7bab1e54c16e8d88036ac3fd9fd50ae129df550';
 
 /// Copied from Dart SDK

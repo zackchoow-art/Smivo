@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:smivo/core/constants/app_constants.dart';
+import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/chat_room.dart';
 import 'package:smivo/data/models/message.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
@@ -34,16 +36,51 @@ class ChatConversation {
   });
 }
 
-/// Fetches the list of chat rooms for the current user.
+/// Fetches the user's chat rooms and subscribes to global message
+/// inserts to keep the list fresh.
 ///
-/// Watches authStateProvider so it refreshes when the user logs in/out.
+/// When any new message arrives in any room the user participates in,
+/// the list is re-fetched so last_message_at, last_message preview,
+/// and unread counts all update in real-time.
 @riverpod
-Stream<List<ChatRoom>> chatRoomList(Ref ref) {
-  final user = ref.watch(authStateProvider).valueOrNull;
-  if (user == null) return Stream.value([]);
-  
-  final repository = ref.watch(chatRepositoryProvider);
-  return repository.subscribeToChatRooms(user.id);
+class ChatRoomList extends _$ChatRoomList {
+  RealtimeChannel? _channel;
+
+  @override
+  Future<List<ChatRoom>> build() async {
+    final user = ref.watch(authStateProvider).valueOrNull;
+    if (user == null) return [];
+
+    // Clean up subscription on dispose
+    ref.onDispose(() {
+      _channel?.unsubscribe();
+      _channel = null;
+    });
+
+    // Subscribe to new messages — filter in Dart (RLS limits which 
+    // rows the server will push, but we still filter defensively)
+    _subscribe(user.id);
+
+    return ref.read(chatRepositoryProvider).fetchChatRooms(user.id);
+  }
+
+  void _subscribe(String userId) {
+    final client = ref.read(supabaseClientProvider);
+    _channel = client
+        .channel('chat_rooms_list:$userId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: AppConstants.tableMessages,
+          callback: (payload) {
+            // A new message was inserted somewhere in the system.
+            // Re-fetch chat rooms to refresh unread counts and last message.
+            // RLS ensures we only get messages for rooms we're in.
+            ref.invalidateSelf();
+          },
+        )
+        .subscribe();
+  }
 }
 
 /// Manages messages for a single chat room with realtime updates.

@@ -104,7 +104,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     if (!_scrollController.hasClients) return;
     Future.microtask(() {
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+        0,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
@@ -123,13 +123,6 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
     final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
     final currentUserProfile = ref.watch(profileProvider).valueOrNull;
-
-    // Auto-scroll on new messages
-    ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
-      if (next.hasValue && (previous?.value?.length ?? 0) < (next.value?.length ?? 0)) {
-        _scrollToBottom();
-      }
-    });
 
     const backgroundColor = Color(0xFFF5F4FA);
     const primaryBlue = Color(0xFF3B67FF);
@@ -269,14 +262,13 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                         return const Center(child: Text('No messages yet'));
                       }
                       
-                      // Standard top-down flow: align to top if content is short.
                       return ListView.builder(
                         controller: _scrollController,
-                        reverse: false,
+                        reverse: true,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         itemCount: messages.length,
                         itemBuilder: (context, index) {
-                          final msg = messages[index];
+                          final msg = messages[messages.length - 1 - index];
                           final isMine = msg.senderId == currentUserId;
                           
                           if (isMine) {
