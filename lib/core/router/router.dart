@@ -13,6 +13,7 @@ import 'package:smivo/features/listing/screens/listing_detail_screen.dart';
 import 'package:smivo/features/listing/screens/create_listing_form_screen.dart';
 import 'package:smivo/features/chat/screens/chat_list_screen.dart';
 import 'package:smivo/features/orders/screens/orders_screen.dart';
+import 'package:smivo/features/orders/screens/order_detail_screen.dart';
 import 'package:smivo/features/chat/screens/chat_room_screen.dart';
 import 'package:smivo/features/settings/screens/edit_profile_screen.dart';
 import 'package:smivo/features/settings/screens/help_screen.dart';
@@ -223,8 +224,7 @@ GoRouter router(Ref ref) {
         name: AppRoutes.orderDetail,
         path: AppRoutes.orderDetailPath,
         builder: (context, state) =>
-            // TODO: Create order_detail_screen.dart (Stitch MCP)
-            const _PlaceholderScreen(name: 'Order Detail'),
+            OrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
 
       // ── Profile & Settings (auth required) ────────────────

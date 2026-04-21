@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
@@ -309,17 +311,15 @@ class _BackSide extends StatelessWidget {
               ),
             ),
 
-          // Pending/Confirmed Orders: Show action button (TODO: add proper actions)
+          // Pending/Confirmed Orders: Show action button
           if (status == 'pending' || status == 'confirmed')
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Action will be available in the order detail view.'),
-                      backgroundColor: Color(0xFF013DFD),
-                    ),
+                  context.pushNamed(
+                    AppRoutes.orderDetail,
+                    pathParameters: {'id': order.id},
                   );
                 },
                 icon: const Icon(Icons.info_outline, color: Colors.white, size: 18),

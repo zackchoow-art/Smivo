@@ -62,6 +62,20 @@ class OrderActions extends _$OrderActions {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
+  /// Seller accepts a pending order, transitioning it to 'confirmed'.
+  Future<void> acceptOrder(String orderId) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(orderRepositoryProvider)
+          .updateOrderStatus(orderId, 'confirmed');
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(orderDetailProvider(orderId));
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
   /// Cancels an order (buyer or seller can trigger).
   Future<void> cancelOrder(String orderId) async {
     state = const AsyncValue.loading();

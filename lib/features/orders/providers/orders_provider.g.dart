@@ -218,7 +218,7 @@ final selectedOrdersTabProvider =
     );
 
 typedef _$SelectedOrdersTab = AutoDisposeNotifier<OrdersTab>;
-String _$orderActionsHash() => r'9a23bfdf78d8e301455f19748140690f9687c1a0';
+String _$orderActionsHash() => r'baf1f57ee436610dd7dbdd2748b55d066ee85daf';
 
 /// Mutation actions for a specific order.
 ///
