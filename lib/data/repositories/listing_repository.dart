@@ -152,12 +152,19 @@ class ListingRepository {
       // ── Step 2: Insert listing row ───────────────────────────
       final listingJson = listing.toJson()
         // NOTE: Exclude fields that are computed by joins or are
-        // DB-generated (images, seller) to avoid insert errors.
+        // DB-generated to avoid insert errors.
         ..remove('images')
         ..remove('seller')
+        ..remove('pickup_location')
+        ..remove('id')
+        ..remove('created_at')
+        ..remove('updated_at')
         // NOTE: category must always be lowercase to satisfy the
         // DB CHECK constraint. Normalise at the boundary.
         ..['category'] = listing.category.toLowerCase();
+
+      // Remove null values to let DB defaults apply (e.g. status)
+      listingJson.removeWhere((key, value) => value == null);
 
       final insertedData = await _client
           .from(AppConstants.tableListings)
