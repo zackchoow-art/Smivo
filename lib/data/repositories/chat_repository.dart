@@ -16,14 +16,27 @@ class ChatRepository {
 
   final SupabaseClient _client;
 
-  /// Fetches all chat rooms where [userId] is either buyer or seller.
+  /// Fetches all chat rooms for [userId] with joined context data.
+  ///
+  /// Includes both participant profiles (buyer & seller), the listing 
+  /// preview (title + first image), and the most recent message. 
+  /// UI layer picks the "other party" by comparing against userId.
   Future<List<ChatRoom>> fetchChatRooms(String userId) async {
     try {
       final data = await _client
           .from(AppConstants.tableChatRooms)
-          .select('*')
+          .select('''
+            *,
+            buyer:user_profiles!buyer_id(*),
+            seller:user_profiles!seller_id(*),
+            listing:listings(id, title, images:listing_images(image_url)),
+            last_message:messages(*)
+          ''')
           .or('buyer_id.eq.$userId,seller_id.eq.$userId')
-          .order('last_message_at', ascending: false, nullsFirst: false);
+          .order('last_message_at', ascending: false, nullsFirst: false)
+          .order('created_at', referencedTable: 'messages', ascending: false)
+          .limit(1, referencedTable: 'messages');
+      
       return data.map((json) => ChatRoom.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
