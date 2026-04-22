@@ -18,12 +18,13 @@ class StorageRepository {
 
   /// Uploads a listing image and returns its public URL.
   Future<String> uploadListingImage({
+    required String userId,
     required String listingId,
     required String fileName,
     required Uint8List fileBytes,
   }) async {
     try {
-      final path = 'listings/$listingId/$fileName';
+      final path = '$userId/$listingId/$fileName';
       await _client.storage
           .from(AppConstants.bucketListingImages)
           .uploadBinary(path, fileBytes);

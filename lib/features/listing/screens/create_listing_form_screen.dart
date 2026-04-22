@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -415,7 +416,14 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
       if (!context.mounted) return;
 
       context.goNamed(AppRoutes.home);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Log full error to terminal for debugging
+      debugPrint('=== LISTING SUBMIT ERROR ===');
+      debugPrint('Error: $e');
+      debugPrint('Stack trace:');
+      debugPrint(stackTrace.toString());
+      debugPrint('=== END ERROR ===');
+
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

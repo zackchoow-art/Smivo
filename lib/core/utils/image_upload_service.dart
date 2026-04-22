@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -7,11 +6,16 @@ import 'package:smivo/core/theme/app_colors.dart';
 class ImageUploadService {
   final ImagePicker _picker = ImagePicker();
 
-  Future<String?> pickAndCropImage(BuildContext context, {bool isAvatar = false}) async {
+  Future<XFile?> pickAndCropImage(BuildContext context, {bool isAvatar = false}) async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image == null) return null;
 
+      // TEMPORARY BYPASS: skip cropping while debugging cropper layout issue
+      // TODO: Re-enable ImageCropper.cropImage once we fix the render box error
+      return image;
+
+      /*
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: image.path,
         uiSettings: [
@@ -26,14 +30,19 @@ class ImageUploadService {
             title: 'Crop Image',
             aspectRatioLockEnabled: isAvatar,
           ),
+          WebUiSettings(
+            context: context,
+            presentStyle: WebPresentStyle.dialog,
+            size: const CropperSize(width: 520, height: 520),
+          ),
         ],
       );
 
       if (croppedFile != null) {
-        // Return local path for now. Later this will upload to Supabase Storage and return public URL.
-        return croppedFile.path;
+        return XFile(croppedFile.path);
       }
       return null;
+      */
     } catch (e) {
       debugPrint('Error picking/cropping image: $e');
       if (context.mounted) {
@@ -45,11 +54,16 @@ class ImageUploadService {
     }
   }
 
-  Future<String?> takePhotoAndCrop(BuildContext context, {bool isAvatar = false}) async {
+  Future<XFile?> takePhotoAndCrop(BuildContext context, {bool isAvatar = false}) async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.camera);
       if (image == null) return null;
 
+      // TEMPORARY BYPASS: skip cropping while debugging cropper layout issue
+      // TODO: Re-enable ImageCropper.cropImage once we fix the render box error
+      return image;
+
+      /*
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: image.path,
         uiSettings: [
@@ -64,13 +78,19 @@ class ImageUploadService {
             title: 'Crop Image',
             aspectRatioLockEnabled: isAvatar,
           ),
+          WebUiSettings(
+            context: context,
+            presentStyle: WebPresentStyle.dialog,
+            size: const CropperSize(width: 520, height: 520),
+          ),
         ],
       );
 
       if (croppedFile != null) {
-        return croppedFile.path;
+        return XFile(croppedFile.path);
       }
       return null;
+      */
     } catch (e) {
       debugPrint('Error taking/cropping photo: $e');
       if (context.mounted) {

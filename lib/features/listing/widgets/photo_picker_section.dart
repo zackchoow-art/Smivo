@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,7 +86,7 @@ class PhotoPickerSection extends ConsumerWidget {
             );
           }
 
-          final photoPath = photos[index];
+          final photo = photos[index];
           return Stack(
             clipBehavior: Clip.none,
             children: [
@@ -97,8 +97,8 @@ class PhotoPickerSection extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   image: DecorationImage(
                     image: kIsWeb 
-                        ? NetworkImage(photoPath) 
-                        : FileImage(File(photoPath)) as ImageProvider,
+                        ? NetworkImage(photo.path) 
+                        : FileImage(io.File(photo.path)) as ImageProvider,
                     fit: BoxFit.cover,
                   ),
                 ),

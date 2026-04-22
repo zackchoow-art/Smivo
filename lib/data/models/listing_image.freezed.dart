@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ListingImage {
 
- String get id; String get listingId; String get imageUrl; int get sortOrder; DateTime get createdAt; DateTime get updatedAt;
+ String get id;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'image_url') String get imageUrl;@JsonKey(name: 'sort_order') int get sortOrder;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of ListingImage
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ListingImageCopyWith<$Res>  {
   factory $ListingImageCopyWith(ListingImage value, $Res Function(ListingImage) _then) = _$ListingImageCopyWithImpl;
 @useResult
 $Res call({
- String id, String listingId, String imageUrl, int sortOrder, DateTime createdAt, DateTime updatedAt
+ String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'image_url') String imageUrl,@JsonKey(name: 'sort_order') int sortOrder,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String listingId,  String imageUrl,  int sortOrder,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ListingImage() when $default != null:
 return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.createdAt,_that.updatedAt);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.cr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String listingId,  String imageUrl,  int sortOrder,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ListingImage():
 return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.createdAt,_that.updatedAt);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.cr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String listingId,  String imageUrl,  int sortOrder,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ListingImage() when $default != null:
 return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.createdAt,_that.updatedAt);case _:
@@ -214,15 +214,15 @@ return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.cr
 @JsonSerializable()
 
 class _ListingImage implements ListingImage {
-  const _ListingImage({required this.id, required this.listingId, required this.imageUrl, this.sortOrder = 0, required this.createdAt, required this.updatedAt});
+  const _ListingImage({required this.id, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'image_url') required this.imageUrl, @JsonKey(name: 'sort_order') this.sortOrder = 0, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
   factory _ListingImage.fromJson(Map<String, dynamic> json) => _$ListingImageFromJson(json);
 
 @override final  String id;
-@override final  String listingId;
-@override final  String imageUrl;
-@override@JsonKey() final  int sortOrder;
-@override final  DateTime createdAt;
-@override final  DateTime updatedAt;
+@override@JsonKey(name: 'listing_id') final  String listingId;
+@override@JsonKey(name: 'image_url') final  String imageUrl;
+@override@JsonKey(name: 'sort_order') final  int sortOrder;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 
 /// Create a copy of ListingImage
 /// with the given fields replaced by the non-null parameter values.
@@ -257,7 +257,7 @@ abstract mixin class _$ListingImageCopyWith<$Res> implements $ListingImageCopyWi
   factory _$ListingImageCopyWith(_ListingImage value, $Res Function(_ListingImage) _then) = __$ListingImageCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String listingId, String imageUrl, int sortOrder, DateTime createdAt, DateTime updatedAt
+ String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'image_url') String imageUrl,@JsonKey(name: 'sort_order') int sortOrder,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 

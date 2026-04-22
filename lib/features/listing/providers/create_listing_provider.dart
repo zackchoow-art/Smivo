@@ -1,5 +1,6 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/data/models/listing.dart';
@@ -26,21 +27,21 @@ class ListingFormMode extends _$ListingFormMode {
 @riverpod
 class ListingPhotos extends _$ListingPhotos {
   @override
-  List<String> build() => [];
+  List<XFile> build() => [];
 
   Future<void> addPhoto(BuildContext context) async {
     if (state.length >= 5) return;
 
     final service = ImageUploadService();
-    final path = await service.pickAndCropImage(context);
+    final xFile = await service.pickAndCropImage(context);
 
-    if (path != null) {
-      state = [...state, path];
+    if (xFile != null) {
+      state = [...state, xFile];
     }
   }
 
   void removePhoto(int index) {
-    final newState = List<String>.from(state);
+    final newState = List<XFile>.from(state);
     newState.removeAt(index);
     state = newState;
   }
@@ -134,7 +135,7 @@ class CreateListingAction extends _$CreateListingAction {
       // if (photoPaths.isEmpty) {
       //   throw ArgumentError('At least one photo is required');
       // }
-      final photoPaths = ref.read(listingPhotosProvider);
+      final photoFiles = ref.read(listingPhotosProvider);
 
       // Build draft Listing — database generates id, timestamps
       final now = DateTime.now();
@@ -162,9 +163,6 @@ class CreateListingAction extends _$CreateListingAction {
         updatedAt: now,
       );
 
-      // Convert paths → File objects
-      final photoFiles = photoPaths.map((path) => File(path)).toList();
-
       final created = await ref
           .read(listingRepositoryProvider)
           .createListingWithImages(
@@ -183,6 +181,13 @@ class CreateListingAction extends _$CreateListingAction {
       state = AsyncValue.data(created);
       return created;
     } catch (e, st) {
+      debugPrint('=== CreateListingAction.submit FAILED ===');
+      debugPrint('Error: $e');
+      debugPrint('Type: ${e.runtimeType}');
+      debugPrint('Stack:');
+      debugPrint(st.toString());
+      debugPrint('=== END ===');
+
       state = AsyncValue.error(e, st);
       rethrow;
     }

@@ -158,12 +158,12 @@ class _ListingFormModeProviderElement
   String get initialMode => (origin as ListingFormModeProvider).initialMode;
 }
 
-String _$listingPhotosHash() => r'69207946fd6353e19b0c9d4756a979031b63d126';
+String _$listingPhotosHash() => r'f7ecdd1b2e7f326f79659b05544928185ff7698d';
 
 /// See also [ListingPhotos].
 @ProviderFor(ListingPhotos)
 final listingPhotosProvider =
-    AutoDisposeNotifierProvider<ListingPhotos, List<String>>.internal(
+    AutoDisposeNotifierProvider<ListingPhotos, List<XFile>>.internal(
       ListingPhotos.new,
       name: r'listingPhotosProvider',
       debugGetCreateSourceHash:
@@ -174,7 +174,7 @@ final listingPhotosProvider =
       allTransitiveDependencies: null,
     );
 
-typedef _$ListingPhotos = AutoDisposeNotifier<List<String>>;
+typedef _$ListingPhotos = AutoDisposeNotifier<List<XFile>>;
 String _$selectedListingCategoryHash() =>
     r'4ff6322d15c5611c92013d7bd7ffaa9b74fb0743';
 
@@ -194,7 +194,7 @@ final selectedListingCategoryProvider =
 
 typedef _$SelectedListingCategory = AutoDisposeNotifier<String?>;
 String _$createListingActionHash() =>
-    r'c61f8bad19189d83cdc56decb6e6fac24d65f6ca';
+    r'fbad6829ddcf9cb92ce2fb1da5c9c40db1e47cf6';
 
 /// Handles the async submission of the create listing form.
 ///

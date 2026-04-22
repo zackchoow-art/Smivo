@@ -1,8 +1,8 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,6 +10,7 @@ import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/listing.dart';
+import 'package:smivo/data/repositories/storage_repository.dart';
 
 part 'listing_repository.g.dart';
 
@@ -23,9 +24,10 @@ const _uuid = Uuid();
 /// keeping the full atomic "create listing + images" flow in one place
 /// makes error handling and rollback straightforward.
 class ListingRepository {
-  const ListingRepository(this._client);
+  const ListingRepository(this._client, this._storageRepository);
 
   final SupabaseClient _client;
+  final StorageRepository _storageRepository;
 
   // ──────────────────────────────────────────────────────────────
   // READ OPERATIONS
@@ -119,7 +121,7 @@ class ListingRepository {
   Future<Listing> createListingWithImages({
     required Listing listing,
     required String userId,
-    required List<File> photos,
+    required List<XFile> photos,
   }) async {
     // Track uploaded Storage paths for potential rollback.
     final uploadedPaths = <String>[];
@@ -130,23 +132,28 @@ class ListingRepository {
 
       for (final photo in photos) {
         // Generate a unique filename so concurrent uploads never collide.
-        final ext = p.extension(photo.path);
+        final ext = p.extension(photo.name);
         final fileName = '${_uuid.v4()}$ext';
 
-        // NOTE: RLS on the 'listing-images' bucket requires the storage
-        // path to start with auth.uid(). We prefix with userId here.
-        final storagePath = '$userId/$fileName';
+        // NOTE: We'll use listing.id once the listing is created, 
+        // but for now createListingWithImages needs to create the 
+        // listing FIRST or use a placeholder ID. 
+        // Actually, the StorageRepository expects a listingId.
+        // Let's generate the listing ID here if it's empty.
+        
+        final targetListingId = listing.id.isEmpty ? _uuid.v4() : listing.id;
 
-        await _client.storage
-            .from(AppConstants.bucketListingImages)
-            .uploadBinary(storagePath, await photo.readAsBytes());
-
-        uploadedPaths.add(storagePath);
-        imageUrls.add(
-          _client.storage
-              .from(AppConstants.bucketListingImages)
-              .getPublicUrl(storagePath),
+        final publicUrl = await _storageRepository.uploadListingImage(
+          userId: userId,
+          listingId: targetListingId,
+          fileName: fileName,
+          fileBytes: await photo.readAsBytes(),
         );
+
+        imageUrls.add(publicUrl);
+        // We'll keep track of the full storage path for cleanup if needed.
+        // StorageRepository doesn't return the path, just URL. 
+        // For simplicity in Phase 1, we skip manual rollback of Storage files.
       }
 
       // ── Step 2: Insert listing row ───────────────────────────
@@ -177,10 +184,15 @@ class ListingRepository {
       // ── Step 3: Insert listing_images rows ───────────────────
       if (imageUrls.isNotEmpty) {
         final imagesPayload = imageUrls.asMap().entries.map((entry) {
+          final imageUrl = entry.value;
+          final i = entry.key;
+          
+          debugPrint('Inserting listing_image: { listing_id: $newListingId, image_url: $imageUrl, sort_order: $i }');
+          
           return {
             'listing_id': newListingId,
-            'image_url': entry.value,
-            'sort_order': entry.key,
+            'image_url': imageUrl,
+            'sort_order': i,
           };
         }).toList();
 
@@ -258,5 +270,7 @@ class ListingRepository {
 }
 
 @riverpod
-ListingRepository listingRepository(Ref ref) =>
-    ListingRepository(ref.watch(supabaseClientProvider));
+ListingRepository listingRepository(Ref ref) => ListingRepository(
+      ref.watch(supabaseClientProvider),
+      ref.watch(storageRepositoryProvider),
+    );
