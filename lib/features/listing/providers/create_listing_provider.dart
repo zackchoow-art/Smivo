@@ -10,7 +10,7 @@ import 'package:smivo/features/home/providers/home_provider.dart';
 
 part 'create_listing_provider.g.dart';
 
-// State for the form mode ('sale' or 'rent')
+// State for the form mode ('sale' or 'rental')
 @riverpod
 class ListingFormMode extends _$ListingFormMode {
   @override

@@ -111,7 +111,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
               child: SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(value: 'sale', label: Text('Sell')),
-                  ButtonSegment(value: 'rent', label: Text('Rent')),
+                  ButtonSegment(value: 'rental', label: Text('Rent')),
                 ],
                 selected: {mode},
                 onSelectionChanged: (Set<String> newSelection) {
