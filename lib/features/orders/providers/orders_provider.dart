@@ -200,12 +200,25 @@ class OrderActions extends _$OrderActions {
         throw StateError('User must be logged in to confirm delivery');
       }
 
-      final role = (order.buyerId == user.id) ? 'buyer' : 'seller';
+      final isBuyer = order.buyerId == user.id;
 
-      await ref.read(orderRepositoryProvider).confirmDelivery(
-        orderId: order.id,
-        byUserRole: role,
-      );
+      // Sale orders: only buyers can confirm, and it directly 
+      // completes the order. Seller has no action here.
+      if (order.orderType == 'sale') {
+        if (!isBuyer) {
+          throw StateError('Only the buyer can confirm a sale pickup');
+        }
+        
+        await ref.read(orderRepositoryProvider)
+            .updateOrderStatus(order.id, 'completed');
+      } else {
+        // Rental: keep dual confirmation (existing behavior)
+        final role = isBuyer ? 'buyer' : 'seller';
+        await ref.read(orderRepositoryProvider).confirmDelivery(
+          orderId: order.id,
+          byUserRole: role,
+        );
+      }
 
       // Refresh lists so status updates everywhere
       ref.invalidate(allOrdersProvider);

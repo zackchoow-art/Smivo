@@ -227,83 +227,134 @@ class OrderDetailScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: isActing ? null : () async {
-                    await ref.read(orderActionsProvider.notifier)
-                        .acceptOrder(order.id);
-                  },
+                  onPressed: isActing
+                      ? null
+                      : () async {
+                          await ref
+                              .read(orderActionsProvider.notifier)
+                              .acceptOrder(order.id);
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(
                     isActing ? 'Processing...' : 'Accept Order',
-                    style: AppTextStyles.titleMedium.copyWith(color: Colors.white),
+                    style:
+                        AppTextStyles.titleMedium.copyWith(color: Colors.white),
                   ),
                 ),
               ),
             const SizedBox(height: AppSpacing.sm),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: isActing ? null : () async {
-                  final confirmed = await _showConfirmDialog(
-                    context,
-                    'Cancel Order',
-                    'Are you sure you want to cancel this order?',
-                  );
-                  if (confirmed == true) {
-                    await ref.read(orderActionsProvider.notifier)
-                        .cancelOrder(order.id);
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: Text(
-                  'Cancel Order',
-                  style: AppTextStyles.titleMedium.copyWith(color: AppColors.error),
-                ),
-              ),
-            ),
+            _buildCancelButton(context, ref, order, isActing),
           ],
         );
 
       case 'confirmed':
-        // Show "Confirm Delivery" only if this user hasn't confirmed yet
+        // For SALE orders: only buyer sees a button (Confirm Pickup)
+        if (order.orderType == 'sale') {
+          if (isBuyer) {
+            return Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isActing
+                        ? null
+                        : () async {
+                            await ref
+                                .read(orderActionsProvider.notifier)
+                                .confirmDelivery(order);
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text(
+                      isActing ? 'Processing...' : 'Confirm Pickup',
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _buildCancelButton(context, ref, order, isActing),
+              ],
+            );
+          } else {
+            // Seller sees status, no confirmation button, but CAN cancel
+            return Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                  child: Text(
+                    'Waiting for buyer to confirm pickup',
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _buildCancelButton(context, ref, order, isActing),
+              ],
+            );
+          }
+        }
+
+        // For RENTAL orders: keep existing dual-confirmation UI
         final myConfirmed = isBuyer
             ? order.deliveryConfirmedByBuyer
             : order.deliveryConfirmedBySeller;
-        
+
         if (myConfirmed) {
-          return Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            ),
-            child: Text(
-              'You have confirmed delivery. Waiting for the other party.',
-              style: AppTextStyles.bodyMedium,
-            ),
+          return Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+                child: Text(
+                  'You have confirmed delivery. Waiting for the other party.',
+                  style: AppTextStyles.bodyMedium,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildCancelButton(context, ref, order, isActing),
+            ],
           );
         }
 
-        return SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: isActing ? null : () async {
-              await ref.read(orderActionsProvider.notifier)
-                  .confirmDelivery(order);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+        return Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isActing
+                    ? null
+                    : () async {
+                        await ref
+                            .read(orderActionsProvider.notifier)
+                            .confirmDelivery(order);
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: Text(
+                  isActing ? 'Processing...' : 'Confirm Delivery',
+                  style:
+                      AppTextStyles.titleMedium.copyWith(color: Colors.white),
+                ),
+              ),
             ),
-            child: Text(
-              isActing ? 'Processing...' : 'Confirm Delivery',
-              style: AppTextStyles.titleMedium.copyWith(color: Colors.white),
-            ),
-          ),
+            const SizedBox(height: AppSpacing.sm),
+            _buildCancelButton(context, ref, order, isActing),
+          ],
         );
 
       case 'completed':
@@ -329,6 +380,40 @@ class OrderDetailScreen extends ConsumerWidget {
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _buildCancelButton(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isActing,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: isActing
+            ? null
+            : () async {
+                final confirmed = await _showConfirmDialog(
+                  context,
+                  'Cancel Order',
+                  'Are you sure you want to cancel this order?',
+                );
+                if (confirmed == true) {
+                  await ref
+                      .read(orderActionsProvider.notifier)
+                      .cancelOrder(order.id);
+                }
+              },
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        child: Text(
+          'Cancel Order',
+          style: AppTextStyles.titleMedium.copyWith(color: AppColors.error),
+        ),
+      ),
+    );
   }
 
   Widget _infoRow(String label, String value) {
