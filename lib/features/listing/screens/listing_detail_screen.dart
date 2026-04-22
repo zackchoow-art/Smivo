@@ -13,6 +13,8 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/features/shared/providers/school_provider.dart';
+import 'package:smivo/data/models/pickup_location.dart';
 
 class ListingDetailScreen extends ConsumerStatefulWidget {
   const ListingDetailScreen({
@@ -27,7 +29,7 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
-  String? _selectedPickupLocation;
+  String? _selectedPickupLocationId;
 
   Future<void> _showOrderSuccessDialog(BuildContext context) {
     return showDialog(
@@ -208,32 +210,60 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                     color: AppColors.surfaceContainerLow,
                                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                                   ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: _selectedPickupLocation ?? 'Student Union, North Entrance',
-                                      isExpanded: true,
-                                      icon: const Icon(Icons.arrow_drop_down, color: AppColors.primary),
-                                      style: AppTextStyles.titleMedium.copyWith(color: AppColors.onSurface),
-                                      onChanged: listing.allowPickupChange 
-                                        ? (String? newValue) {
-                                            setState(() {
-                                              _selectedPickupLocation = newValue;
-                                            });
-                                          }
-                                        : null,
-                                      items: <String>[
-                                        'Student Union, North Entrance',
-                                        'Library, 1st Floor',
-                                        'Dorm A Lobby',
-                                        'Cafeteria'
-                                      ].map<DropdownMenuItem<String>>((String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Text(value),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
+                                  child: !listing.allowPickupChange
+                                      ? Container(
+                                          alignment: Alignment.centerLeft,
+                                          height: 48,
+                                          child: Text(
+                                            listing.pickupLocation?.name ?? 'Not specified',
+                                            style: AppTextStyles.titleMedium.copyWith(color: AppColors.onSurface),
+                                          ),
+                                        )
+                                      : DropdownButtonHideUnderline(
+                                          child: Consumer(
+                                            builder: (context, ref, _) {
+                                              final pickupsAsync = ref.watch(myPickupLocationsProvider);
+                                              return pickupsAsync.when(
+                                                loading: () => const SizedBox(
+                                                  height: 48,
+                                                  child: Center(child: CircularProgressIndicator()),
+                                                ),
+                                                error: (err, _) => Container(
+                                                  alignment: Alignment.centerLeft,
+                                                  height: 48,
+                                                  child: Text(
+                                                    listing.pickupLocation?.name ?? 'Unable to load',
+                                                    style: AppTextStyles.bodyMedium,
+                                                  ),
+                                                ),
+                                                data: (locations) {
+                                                  // Build a selected-location id (use listing's pickup as default 
+                                                  // unless user has changed it)
+                                                  final selectedId = _selectedPickupLocationId ?? 
+                                                      listing.pickupLocationId;
+                                                  
+                                                  return DropdownButton<String>(
+                                                    value: selectedId,
+                                                    isExpanded: true,
+                                                    icon: const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                                                    style: AppTextStyles.titleMedium.copyWith(color: AppColors.onSurface),
+                                                    onChanged: (String? newId) {
+                                                      setState(() {
+                                                        _selectedPickupLocationId = newId;
+                                                      });
+                                                    },
+                                                    items: locations.map((loc) {
+                                                      return DropdownMenuItem<String>(
+                                                        value: loc.id,
+                                                        child: Text(loc.name),
+                                                      );
+                                                    }).toList(),
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ),
                                 ),
                               ],
                             ),

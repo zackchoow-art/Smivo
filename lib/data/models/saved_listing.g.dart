@@ -9,17 +9,17 @@ part of 'saved_listing.dart';
 _SavedListing _$SavedListingFromJson(Map<String, dynamic> json) =>
     _SavedListing(
       id: json['id'] as String,
-      userId: json['userId'] as String,
-      listingId: json['listingId'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      userId: json['user_id'] as String,
+      listingId: json['listing_id'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
 
 Map<String, dynamic> _$SavedListingToJson(_SavedListing instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'userId': instance.userId,
-      'listingId': instance.listingId,
-      'createdAt': instance.createdAt.toIso8601String(),
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'user_id': instance.userId,
+      'listing_id': instance.listingId,
+      'created_at': instance.createdAt.toIso8601String(),
+      'updated_at': instance.updatedAt.toIso8601String(),
     };

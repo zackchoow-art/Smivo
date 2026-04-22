@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'saved_listing.freezed.dart';
@@ -11,10 +12,10 @@ part 'saved_listing.g.dart';
 abstract class SavedListing with _$SavedListing {
   const factory SavedListing({
     required String id,
-    required String userId,
-    required String listingId,
-    required DateTime createdAt,
-    required DateTime updatedAt,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'listing_id') required String listingId,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _SavedListing;
 
   factory SavedListing.fromJson(Map<String, dynamic> json) =>

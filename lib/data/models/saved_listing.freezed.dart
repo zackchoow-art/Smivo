@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SavedListing {
 
- String get id; String get userId; String get listingId; DateTime get createdAt; DateTime get updatedAt;
+ String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of SavedListing
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $SavedListingCopyWith<$Res>  {
   factory $SavedListingCopyWith(SavedListing value, $Res Function(SavedListing) _then) = _$SavedListingCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String listingId, DateTime createdAt, DateTime updatedAt
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -157,7 +157,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String listingId,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SavedListing() when $default != null:
 return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt);case _:
@@ -178,7 +178,7 @@ return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.upda
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String listingId,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _SavedListing():
 return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt);case _:
@@ -198,7 +198,7 @@ return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.upda
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String listingId,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _SavedListing() when $default != null:
 return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt);case _:
@@ -213,14 +213,14 @@ return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.upda
 @JsonSerializable()
 
 class _SavedListing implements SavedListing {
-  const _SavedListing({required this.id, required this.userId, required this.listingId, required this.createdAt, required this.updatedAt});
+  const _SavedListing({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
   factory _SavedListing.fromJson(Map<String, dynamic> json) => _$SavedListingFromJson(json);
 
 @override final  String id;
-@override final  String userId;
-@override final  String listingId;
-@override final  DateTime createdAt;
-@override final  DateTime updatedAt;
+@override@JsonKey(name: 'user_id') final  String userId;
+@override@JsonKey(name: 'listing_id') final  String listingId;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 
 /// Create a copy of SavedListing
 /// with the given fields replaced by the non-null parameter values.
@@ -255,7 +255,7 @@ abstract mixin class _$SavedListingCopyWith<$Res> implements $SavedListingCopyWi
   factory _$SavedListingCopyWith(_SavedListing value, $Res Function(_SavedListing) _then) = __$SavedListingCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String listingId, DateTime createdAt, DateTime updatedAt
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 

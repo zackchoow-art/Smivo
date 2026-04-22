@@ -67,7 +67,12 @@ class ListingRepository {
     try {
       final data = await _client
           .from(AppConstants.tableListings)
-          .select('*, seller:user_profiles(*), images:listing_images(*)')
+          .select('''
+            *,
+            seller:user_profiles!seller_id(*),
+            images:listing_images(*),
+            pickup_location:pickup_locations!pickup_location_id(*)
+          ''')
           .eq('id', id)
           .single();
       return Listing.fromJson(data);
