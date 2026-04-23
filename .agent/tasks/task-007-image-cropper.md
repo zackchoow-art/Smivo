@@ -1,3 +1,22 @@
+# Task 007: Restore Image Cropper — Web + Mobile
+
+## Objective
+Re-enable the image_cropper functionality that was temporarily bypassed.
+The cropper.js is already configured in web/index.html.
+The image_cropper package (^12.2.1) is already in pubspec.yaml.
+
+## STRICT SCOPE — Only modify this file:
+1. `lib/core/utils/image_upload_service.dart`
+
+**DO NOT** modify any other files.
+
+---
+
+## Step 1: Rewrite the entire file
+
+Replace the entire contents of `lib/core/utils/image_upload_service.dart` with:
+
+```dart
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,7 +41,6 @@ class ImageUploadService {
         maxHeight: 1920,
       );
       if (image == null) return null;
-      if (!context.mounted) return null;
 
       return _cropImage(context, image.path, isAvatar: isAvatar);
     } catch (e) {
@@ -48,7 +66,6 @@ class ImageUploadService {
         maxHeight: 1920,
       );
       if (image == null) return null;
-      if (!context.mounted) return null;
 
       return _cropImage(context, image.path, isAvatar: isAvatar);
     } catch (e) {
@@ -108,3 +125,12 @@ class ImageUploadService {
     return null;
   }
 }
+```
+
+## Step 2: Verify
+
+```bash
+cd /Users/george/smivo && flutter analyze
+```
+
+Report ONLY errors. Write report to `.agent/reports/report-007.md`.
