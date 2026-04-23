@@ -92,6 +92,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
         data: (listing) {
           final isSale = listing.transactionType.toLowerCase() == 'sale';
           final seller = listing.seller;
+          final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
+          final isOwnListing = currentUserId != null && currentUserId == listing.sellerId;
           
           // Use joined images, fallback to empty list
           final imageUrls = listing.images.map((img) => img.imageUrl).toList();
@@ -273,8 +275,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
 
                       const SizedBox(height: AppSpacing.xl),
                       
-                      // Seller Section
-                      if (seller != null)
+                      // Seller Section — hidden on own listing
+                      if (seller != null && !isOwnListing)
                         SellerProfileCard(
                           name: seller.displayName ?? 'Anonymous Student',
                           avatarUrl: seller.avatarUrl ?? 'https://i.pravatar.cc/150?u=${seller.id}',
@@ -324,8 +326,43 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                         ),
                       
                       const SizedBox(height: AppSpacing.xl),
+
+                      // Stats Section — only visible on own listing
+                      if (isOwnListing) ...[
+                        Text(
+                          'LISTING STATS',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.onSurface.withValues(alpha: 0.5),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Row(
+                          children: [
+                            _StatCard(
+                              icon: Icons.visibility_outlined,
+                              label: 'Views',
+                              count: listing.viewCount,
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            _StatCard(
+                              icon: Icons.bookmark_outline,
+                              label: 'Saves',
+                              count: listing.saveCount,
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            _StatCard(
+                              icon: Icons.chat_bubble_outline,
+                              label: 'Inquiries',
+                              count: listing.inquiryCount,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
                       
-                      // Primary Action Button
+                      // Primary Action Button — hidden on own listing
+                      if (!isOwnListing)
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -458,6 +495,52 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.icon,
+    required this.label,
+    required this.count,
+  });
+
+  final IconData icon;
+  final String label;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.md,
+          horizontal: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: AppColors.primary, size: 24),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              count.toString(),
+              style: AppTextStyles.titleMedium.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.outlineVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
