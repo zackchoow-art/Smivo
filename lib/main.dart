@@ -12,8 +12,8 @@ import 'app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables from .env file.
-  await dotenv.load(fileName: '.env');
+  // Load environment variables from assets/env file.
+  await dotenv.load(fileName: 'assets/env');
 
   // Initialize Supabase with credentials from .env.
   await Supabase.initialize(

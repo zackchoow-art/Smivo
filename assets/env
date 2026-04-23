@@ -1,0 +1,3 @@
+# Supabase credentials — replace with real values before running
+SUPABASE_URL=https://sztrbkfdcldwaifjkkol.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_uF2gSam0yvMjVEswqwYWcA_i67ROBxj
