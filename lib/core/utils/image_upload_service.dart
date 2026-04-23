@@ -94,9 +94,12 @@ class ImageUploadService {
           title: isAvatar ? 'Crop Avatar' : 'Crop Photo',
           aspectRatioLockEnabled: isAvatar,
         ),
+        // HACK: WebPresentStyle.dialog crashes with infinite width bug
+        // in image_cropper_for_web 7.0.0 (cropper_dialog.dart:151).
+        // Using page mode as a workaround until the package is fixed.
         WebUiSettings(
           context: context,
-          presentStyle: WebPresentStyle.dialog,
+          presentStyle: WebPresentStyle.page,
           size: const CropperSize(width: 520, height: 520),
         ),
       ],
