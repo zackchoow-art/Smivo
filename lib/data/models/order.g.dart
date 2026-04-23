@@ -34,6 +34,7 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
   deliveryPhotoUrl: json['delivery_photo_url'] as String?,
   deliveryNote: json['delivery_note'] as String?,
   totalPrice: (json['total_price'] as num).toDouble(),
+  depositAmount: (json['deposit_amount'] as num?)?.toDouble() ?? 0.0,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
   buyer:
@@ -47,7 +48,7 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
   listing:
       json['listing'] == null
           ? null
-          : ChatListingPreview.fromJson(
+          : OrderListingPreview.fromJson(
             json['listing'] as Map<String, dynamic>,
           ),
 );
@@ -69,6 +70,7 @@ Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
   'delivery_photo_url': instance.deliveryPhotoUrl,
   'delivery_note': instance.deliveryNote,
   'total_price': instance.totalPrice,
+  'deposit_amount': instance.depositAmount,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
   'buyer': instance.buyer,

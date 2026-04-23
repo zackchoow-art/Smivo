@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:smivo/data/models/user_profile.dart';
-import 'package:smivo/data/models/chat_listing_preview.dart';
+import 'package:smivo/data/models/order_listing_preview.dart';
 
 part 'order.freezed.dart';
 part 'order.g.dart';
@@ -31,13 +31,14 @@ abstract class Order with _$Order {
     @JsonKey(name: 'delivery_photo_url') String? deliveryPhotoUrl,
     @JsonKey(name: 'delivery_note') String? deliveryNote,
     @JsonKey(name: 'total_price') required double totalPrice,
+    @JsonKey(name: 'deposit_amount') @Default(0.0) double depositAmount,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
     
     // Nested join data — populated only by specific join queries
     UserProfile? buyer,
     UserProfile? seller,
-    ChatListingPreview? listing,
+    OrderListingPreview? listing,
   }) = _Order;
 
   factory Order.fromJson(Map<String, dynamic> json) =>

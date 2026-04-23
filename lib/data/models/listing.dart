@@ -23,6 +23,7 @@ abstract class Listing with _$Listing {
     required String category,
     required double price,
     @JsonKey(name: 'transaction_type') required String transactionType,
+    @Default('good') String condition,
     @Default('active') String status,
     @JsonKey(name: 'view_count') @Default(0) int viewCount,
     // NOTE: save_count and inquiry_count are server-managed counters;
@@ -33,6 +34,7 @@ abstract class Listing with _$Listing {
     @JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,
     @JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,
     @JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,
+    @JsonKey(name: 'deposit_amount') @Default(0.0) double depositAmount,
     @JsonKey(name: 'is_pinned') @Default(false) bool isPinned,
     @JsonKey(name: 'pinned_days') int? pinnedDays,
     @JsonKey(name: 'school_id') required String schoolId,

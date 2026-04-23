@@ -19,32 +19,49 @@ class RentalOptionsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedRate = ref.watch(selectedRentalRateProvider);
 
+    // Collect only enabled pricing modes
+    final List<Widget> pricingCards = [];
+    
+    if ((listing.rentalDailyPrice ?? 0) > 0) {
+      pricingCards.add(_PricingCard(
+        label: 'DAY',
+        price: listing.rentalDailyPrice!,
+        isSelected: selectedRate == 'DAY',
+        onTap: () => ref.read(selectedRentalRateProvider.notifier).setRate('DAY'),
+      ));
+    }
+    if ((listing.rentalWeeklyPrice ?? 0) > 0) {
+      pricingCards.add(_PricingCard(
+        label: 'WEEK',
+        price: listing.rentalWeeklyPrice!,
+        isSelected: selectedRate == 'WEEK',
+        onTap: () => ref.read(selectedRentalRateProvider.notifier).setRate('WEEK'),
+      ));
+    }
+    if ((listing.rentalMonthlyPrice ?? 0) > 0) {
+      pricingCards.add(_PricingCard(
+        label: 'MONTH',
+        price: listing.rentalMonthlyPrice!,
+        isSelected: selectedRate == 'MONTH',
+        onTap: () => ref.read(selectedRentalRateProvider.notifier).setRate('MONTH'),
+      ));
+    }
+
+    // Deposit text
+    final depositText = listing.depositAmount > 0
+        ? '\$${listing.depositAmount.toStringAsFixed(0)} Deposit'
+        : 'No deposit required';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Pricing Cards Row
         Row(
           children: [
-            _PricingCard(
-              label: 'DAY',
-              price: listing.rentalDailyPrice ?? (listing.price * 0.1), // Fallback if not specified
-              isSelected: selectedRate == 'DAY',
-              onTap: () => ref.read(selectedRentalRateProvider.notifier).setRate('DAY'),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            _PricingCard(
-              label: 'WEEK',
-              price: listing.rentalWeeklyPrice ?? (listing.price * 0.5), // Fallback
-              isSelected: selectedRate == 'WEEK',
-              onTap: () => ref.read(selectedRentalRateProvider.notifier).setRate('WEEK'),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            _PricingCard(
-              label: 'MONTH',
-              price: listing.rentalMonthlyPrice ?? listing.price, // Fallback
-              isSelected: selectedRate == 'MONTH',
-              onTap: () => ref.read(selectedRentalRateProvider.notifier).setRate('MONTH'),
-            ),
+            for (int i = 0; i < pricingCards.length; i++) ...[
+              if (i > 0) const SizedBox(width: AppSpacing.md),
+              pricingCards[i],
+            ],
           ],
         ),
         const SizedBox(height: AppSpacing.xl),
@@ -64,7 +81,7 @@ class RentalOptionsSection extends ConsumerWidget {
           
         const SizedBox(height: AppSpacing.lg),
         
-        // Security Deposit (Calculated placeholder)
+        // Security Deposit
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
@@ -87,7 +104,7 @@ class RentalOptionsSection extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      '\$${(listing.price * 0.25).toStringAsFixed(0)} Deposit', // Fixed placeholder logic
+                      depositText,
                       style: AppTextStyles.titleMedium,
                     ),
                   ],
@@ -175,7 +192,7 @@ class _DateRangePicker extends ConsumerWidget {
     final durationDays = endDate.difference(startDate).inDays;
     
     // Total calculation using Daily Price
-    final dailyPrice = listing.rentalDailyPrice ?? (listing.price * 0.1);
+    final dailyPrice = listing.rentalDailyPrice ?? 0.0;
     final totalRent = dailyPrice * (durationDays > 0 ? durationDays : 0);
 
     return Column(
@@ -339,12 +356,12 @@ class _StepperConfigurator extends ConsumerWidget {
     if (unit == 'WEEK') {
       totalDays = 7 * duration;
       calculatedEndDate = startDate.add(Duration(days: totalDays));
-      final weeklyPrice = listing.rentalWeeklyPrice ?? (listing.price * 0.5);
+      final weeklyPrice = listing.rentalWeeklyPrice ?? 0.0;
       totalRent = duration * weeklyPrice;
     } else {
       calculatedEndDate = DateTime(startDate.year, startDate.month + duration, startDate.day);
       totalDays = calculatedEndDate.difference(startDate).inDays;
-      final monthlyPrice = listing.rentalMonthlyPrice ?? listing.price;
+      final monthlyPrice = listing.rentalMonthlyPrice ?? 0.0;
       totalRent = duration * monthlyPrice;
     }
     

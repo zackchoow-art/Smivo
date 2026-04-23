@@ -24,7 +24,7 @@ class OrderRepository {
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
-            listing:listings(id, title, images:listing_images(image_url))
+            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url))
           ''')
           .or('buyer_id.eq.$userId,seller_id.eq.$userId')
           .order('created_at', ascending: false);
@@ -43,7 +43,7 @@ class OrderRepository {
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
-            listing:listings(id, title, images:listing_images(image_url))
+            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url))
           ''')
           .eq('id', id)
           .single();

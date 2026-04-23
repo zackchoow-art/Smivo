@@ -43,11 +43,29 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
   final _weeklyController = TextEditingController();
   final _monthlyController = TextEditingController();
 
+  // Rental mode selection state
+  bool _dailyEnabled = true; // default checked
+  bool _weeklyEnabled = false;
+  bool _monthlyEnabled = false;
+
+  // Error state for validation feedback
+  bool _dailyHasError = false;
+  bool _weeklyHasError = false;
+  bool _monthlyHasError = false;
+  bool _depositHasError = false;
+  String? _rentalRateErrorText; // shown under rental section
+
   @override
   void initState() {
     super.initState();
     // Initialize the provider with the passed mode
     modeProvider = listingFormModeProvider(initialMode: widget.initialMode);
+
+    // Initial values for rental rates and deposit
+    _dailyController.text = '';
+    _weeklyController.text = '';
+    _monthlyController.text = '';
+    _depositController.text = '';
 
     // Make the form reactive to all input changes
     for (final c in [
@@ -172,36 +190,108 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              CustomTextField(
+              // Daily Rate Row
+              _buildRentalRateRow(
                 label: 'Daily Rate',
-                hintText: '0.00',
-                prefixText: '\$',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 controller: _dailyController,
+                enabled: _dailyEnabled,
+                hasError: _dailyHasError,
+                onChanged: (v) {
+                  setState(() {
+                    _dailyEnabled = v ?? false;
+                    if (!_dailyEnabled) {
+                      _dailyController.clear();
+                      _dailyHasError = false;
+                    }
+                  });
+                },
               ),
               const SizedBox(height: AppSpacing.md),
-              CustomTextField(
+              // Weekly Rate Row
+              _buildRentalRateRow(
                 label: 'Weekly Rate',
-                hintText: '0.00',
-                prefixText: '\$',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 controller: _weeklyController,
+                enabled: _weeklyEnabled,
+                hasError: _weeklyHasError,
+                onChanged: (v) {
+                  setState(() {
+                    _weeklyEnabled = v ?? false;
+                    if (!_weeklyEnabled) {
+                      _weeklyController.clear();
+                      _weeklyHasError = false;
+                    }
+                  });
+                },
               ),
               const SizedBox(height: AppSpacing.md),
-              CustomTextField(
+              // Monthly Rate Row
+              _buildRentalRateRow(
                 label: 'Monthly Rate',
-                hintText: '0.00',
-                prefixText: '\$',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 controller: _monthlyController,
+                enabled: _monthlyEnabled,
+                hasError: _monthlyHasError,
+                onChanged: (v) {
+                  setState(() {
+                    _monthlyEnabled = v ?? false;
+                    if (!_monthlyEnabled) {
+                      _monthlyController.clear();
+                      _monthlyHasError = false;
+                    }
+                  });
+                },
               ),
+              if (_rentalRateErrorText != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 140),
+                  child: Text(
+                    _rentalRateErrorText!,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
               const SizedBox(height: AppSpacing.xl),
-              CustomTextField(
-                label: 'Security Deposit',
-                hintText: '0.00',
-                prefixText: '\$',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              // Security Deposit
+              Text(
+                'Security Deposit',
+                style: AppTextStyles.labelLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF2B2A51),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              TextField(
                 controller: _depositController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: AppTextStyles.bodyLarge.copyWith(color: const Color(0xFF2B2A51)),
+                decoration: InputDecoration(
+                  hintText: 'Required for rentals',
+                  prefixText: '\$ ',
+                  prefixStyle: AppTextStyles.bodyLarge.copyWith(
+                    color: const Color(0xFF2B2A51),
+                    fontWeight: FontWeight.bold,
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFFF2EFFF),
+                  contentPadding: const EdgeInsets.all(AppSpacing.md),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    borderSide: _depositHasError 
+                        ? const BorderSide(color: Colors.red, width: 2)
+                        : BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    borderSide: _depositHasError 
+                        ? const BorderSide(color: Colors.red, width: 2)
+                        : BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    borderSide: BorderSide(
+                      color: _depositHasError ? Colors.red : const Color(0xFF5271FF),
+                      width: 2,
+                    ),
+                  ),
+                ),
               ),
             ],
             const SizedBox(height: AppSpacing.xl),
@@ -308,9 +398,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: (_isFormValid && !_isSubmitting)
-                    ? () => _handleSubmit(context)
-                    : null,
+                onPressed: _isSubmitting ? null : () => _handleSubmit(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF5271FF), // Blue button
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
@@ -341,41 +429,179 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
     );
   }
 
-  bool get _isFormValid {
-    final mode = ref.read(modeProvider);
-    final category = ref.watch(selectedListingCategoryProvider);
-    // final photos = ref.watch(listingPhotosProvider);
-
-    if (_titleController.text.trim().isEmpty) return false;
-    if (_descriptionController.text.trim().isEmpty) return false;
-    if (category == null || category.isEmpty) return false;
-    // TODO(images): Re-enable photo requirement once upload works.
-    // if (photos.isEmpty) return false;
-
-    if (mode == 'sale') {
-      final price = double.tryParse(_priceController.text.trim());
-      if (price == null || price <= 0) return false;
-    } else {
-      final daily = double.tryParse(_dailyController.text.trim()) ?? 0;
-      final weekly = double.tryParse(_weeklyController.text.trim()) ?? 0;
-      final monthly = double.tryParse(_monthlyController.text.trim()) ?? 0;
-      if (daily <= 0 && weekly <= 0 && monthly <= 0) return false;
-    }
-
-    return true;
+  Widget _buildRentalRateRow({
+    required String label,
+    required TextEditingController controller,
+    required bool enabled,
+    required bool hasError,
+    required Function(bool?) onChanged,
+  }) {
+    return Row(
+      children: [
+        // Left side: checkbox + label (fixed width)
+        SizedBox(
+          width: 150, // Slightly wider for better text fit
+          child: CheckboxListTile(
+            value: enabled,
+            onChanged: onChanged,
+            title: Text(
+              label,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: const Color(0xFF2B2A51),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
+        // Right side: $ + TextField
+        Expanded(
+          child: TextField(
+            controller: controller,
+            enabled: enabled,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: AppTextStyles.bodyLarge.copyWith(color: const Color(0xFF2B2A51)),
+            decoration: InputDecoration(
+              prefixText: '\$ ',
+              hintText: enabled ? '' : '—',
+              prefixStyle: AppTextStyles.bodyLarge.copyWith(
+                color: const Color(0xFF2B2A51),
+                fontWeight: FontWeight.bold,
+              ),
+              filled: true,
+              fillColor: enabled ? const Color(0xFFF2EFFF) : Colors.grey.shade100,
+              contentPadding: const EdgeInsets.all(AppSpacing.md),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                borderSide: hasError 
+                    ? const BorderSide(color: Colors.red, width: 2)
+                    : BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                borderSide: hasError 
+                    ? const BorderSide(color: Colors.red, width: 2)
+                    : BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                borderSide: BorderSide(
+                  color: hasError ? Colors.red : const Color(0xFF5271FF),
+                  width: 2,
+                ),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                borderSide: BorderSide(color: Colors.grey.shade200),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _handleSubmit(BuildContext context) async {
+    // Reset all error flags
+    setState(() {
+      _dailyHasError = false;
+      _weeklyHasError = false;
+      _monthlyHasError = false;
+      _depositHasError = false;
+      _rentalRateErrorText = null;
+    });
+
+    final formMode = ref.read(modeProvider);
+    final category = ref.read(selectedListingCategoryProvider);
+    final isSale = formMode == 'sale';
+
+    // Track any errors
+    final errors = <String>[];
+
+    // Required common fields
+    if (_titleController.text.trim().isEmpty) {
+      errors.add('Title is required');
+    }
+    if (_descriptionController.text.trim().isEmpty) {
+      errors.add('Description is required');
+    }
+    if (category == null || category.isEmpty) {
+      errors.add('Please select a category');
+    }
+
+    // Sale-specific validation
+    if (isSale) {
+      final price = double.tryParse(_priceController.text.trim());
+      if (price == null || price <= 0) {
+        errors.add('Valid sale price required');
+      }
+    }
+
+    // Rental-specific validation
+    if (!isSale) {
+      // At least one rate must be enabled and > 0
+      final daily = _dailyEnabled 
+          ? double.tryParse(_dailyController.text.trim()) 
+          : null;
+      final weekly = _weeklyEnabled 
+          ? double.tryParse(_weeklyController.text.trim()) 
+          : null;
+      final monthly = _monthlyEnabled 
+          ? double.tryParse(_monthlyController.text.trim()) 
+          : null;
+
+      // Check each enabled field has a valid positive number
+      if (_dailyEnabled && (daily == null || daily <= 0)) {
+        setState(() => _dailyHasError = true);
+        errors.add('Daily rate must be greater than 0');
+      }
+      if (_weeklyEnabled && (weekly == null || weekly <= 0)) {
+        setState(() => _weeklyHasError = true);
+        errors.add('Weekly rate must be greater than 0');
+      }
+      if (_monthlyEnabled && (monthly == null || monthly <= 0)) {
+        setState(() => _monthlyHasError = true);
+        errors.add('Monthly rate must be greater than 0');
+      }
+
+      // At least one checkbox must be enabled
+      if (!_dailyEnabled && !_weeklyEnabled && !_monthlyEnabled) {
+        setState(() {
+          _rentalRateErrorText = 'Select at least one rental mode';
+        });
+        errors.add('Select at least one rental mode');
+      }
+
+      // Deposit validation: must be a valid number >= 0
+      final depositText = _depositController.text.trim();
+      final deposit = double.tryParse(depositText);
+      if (deposit == null || deposit < 0) {
+        setState(() => _depositHasError = true);
+        errors.add('Deposit must be a valid number (0 or greater)');
+      }
+    }
+
+    // If any errors, show and abort
+    if (errors.isNotEmpty) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errors.first), // show first error
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
     try {
       final profile = ref.read(profileProvider).valueOrNull;
-      if (profile == null) {
-        throw StateError('Not logged in');
-      }
+      if (profile == null) throw StateError('Not logged in');
 
-      final mode = ref.read(modeProvider);
-      final category = ref.read(selectedListingCategoryProvider)!;
-      final isSale = mode == 'sale';
+      final selectedCategory = ref.read(selectedListingCategoryProvider)!;
 
       double? price;
       double? dailyRate;
@@ -385,18 +611,24 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
       if (isSale) {
         price = double.parse(_priceController.text.trim());
       } else {
-        dailyRate = double.tryParse(_dailyController.text.trim());
-        weeklyRate = double.tryParse(_weeklyController.text.trim());
-        monthlyRate = double.tryParse(_monthlyController.text.trim());
+        dailyRate = _dailyEnabled 
+            ? double.parse(_dailyController.text.trim()) 
+            : null;
+        weeklyRate = _weeklyEnabled 
+            ? double.parse(_weeklyController.text.trim()) 
+            : null;
+        monthlyRate = _monthlyEnabled 
+            ? double.parse(_monthlyController.text.trim()) 
+            : null;
       }
 
-      final deposit = double.tryParse(_depositController.text.trim());
+      final deposit = double.parse(_depositController.text.trim());
 
       await ref.read(createListingActionProvider.notifier).submit(
             title: _titleController.text,
             description: _descriptionController.text,
-            category: category,
-            transactionType: mode,
+            category: selectedCategory,
+            transactionType: isSale ? 'sale' : 'rental',
             schoolId: profile.schoolId,
             price: price,
             dailyRate: dailyRate,
@@ -417,12 +649,9 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
 
       context.goNamed(AppRoutes.home);
     } catch (e, stackTrace) {
-      // Log full error to terminal for debugging
       debugPrint('=== LISTING SUBMIT ERROR ===');
       debugPrint('Error: $e');
-      debugPrint('Stack trace:');
       debugPrint(stackTrace.toString());
-      debugPrint('=== END ERROR ===');
 
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

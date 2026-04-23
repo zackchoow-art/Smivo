@@ -1,4 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
 
@@ -34,8 +36,18 @@ class SearchQuery extends _$SearchQuery {
 /// Uses [ListingRepository] to fetch data from Supabase.
 @riverpod
 class HomeListings extends _$HomeListings {
+  RealtimeChannel? _channel;
+
   @override
   Future<List<Listing>> build() async {
+    if (_channel == null) {
+      ref.onDispose(() {
+        _channel?.unsubscribe();
+        _channel = null;
+      });
+      _subscribe();
+    }
+
     final category = ref.watch(selectedCategoryProvider);
     final query = ref.watch(searchQueryProvider);
     final repository = ref.watch(listingRepositoryProvider);
@@ -57,6 +69,21 @@ class HomeListings extends _$HomeListings {
         category: category == 'All' ? null : category,
       );
     }
+  }
+
+  void _subscribe() {
+    final client = ref.read(supabaseClientProvider);
+    _channel = client
+        .channel('home_listings')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'listings',
+          callback: (payload) {
+            ref.invalidateSelf();
+          },
+        )
+        .subscribe();
   }
 }
 

@@ -373,6 +373,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                 orderType: isRental ? 'rental' : 'sale',
                                 rentalStartDate: rentalStart,
                                 rentalEndDate: rentalEnd,
+                                depositAmount: listing.depositAmount,
                               );
                               
                               if (!context.mounted) return;

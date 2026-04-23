@@ -81,6 +81,12 @@ class OrderDetailScreen extends ConsumerWidget {
           _buildInfoSection(order, counterparty?.displayName),
           const SizedBox(height: AppSpacing.lg),
 
+          // Rental rate options (rental only, show available rates)
+          if (order.orderType == 'rental' && order.listing != null)
+            _buildRentalRates(order),
+          if (order.orderType == 'rental' && order.listing != null)
+            const SizedBox(height: AppSpacing.lg),
+
           // Rental period (rental only)
           if (order.orderType == 'rental' && 
               order.rentalStartDate != null) ...[
@@ -170,6 +176,9 @@ class OrderDetailScreen extends ConsumerWidget {
         _infoRow('Type', order.orderType.toUpperCase()),
         _infoRow('Date', order.createdAt.toLocal().toString().split(' ')[0]),
         _infoRow('Counterparty', counterpartyName ?? 'Unknown'),
+        // NOTE: Show deposit only for rental orders with non-zero deposit
+        if (order.orderType == 'rental' && order.depositAmount > 0)
+          _infoRow('Deposit', '\$${order.depositAmount.toStringAsFixed(2)}'),
       ],
     );
   }
@@ -186,6 +195,83 @@ class OrderDetailScreen extends ConsumerWidget {
         if (order.returnConfirmedAt != null)
           _infoRow('Returned', order.returnConfirmedAt!.toLocal().toString().split(' ')[0]),
       ],
+    );
+  }
+
+  Widget _buildRentalRates(Order order) {
+    final listing = order.listing!;
+    final hasDaily = (listing.rentalDailyPrice ?? 0) > 0;
+    final hasWeekly = (listing.rentalWeeklyPrice ?? 0) > 0;
+    final hasMonthly = (listing.rentalMonthlyPrice ?? 0) > 0;
+
+    // NOTE: If no rates are available at all, don't show this section
+    if (!hasDaily && !hasWeekly && !hasMonthly) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Rental Rates', style: AppTextStyles.titleMedium),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            if (hasDaily)
+              _rateChip(
+                'Day',
+                '\$${listing.rentalDailyPrice!.toStringAsFixed(2)}',
+              ),
+            if (hasDaily && (hasWeekly || hasMonthly))
+              const SizedBox(width: AppSpacing.sm),
+            if (hasWeekly)
+              _rateChip(
+                'Week',
+                '\$${listing.rentalWeeklyPrice!.toStringAsFixed(2)}',
+              ),
+            if (hasWeekly && hasMonthly)
+              const SizedBox(width: AppSpacing.sm),
+            if (hasMonthly)
+              _rateChip(
+                'Month',
+                '\$${listing.rentalMonthlyPrice!.toStringAsFixed(2)}',
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _rateChip(String label, String price) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(color: AppColors.outlineVariant),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.outlineVariant,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              price,
+              style: AppTextStyles.titleSmall.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

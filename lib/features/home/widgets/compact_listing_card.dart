@@ -16,6 +16,19 @@ class CompactListingCard extends StatelessWidget {
 
   final Listing listing;
 
+  String _rentalPriceLabel(Listing listing) {
+    if ((listing.rentalDailyPrice ?? 0) > 0) {
+      return '\$${listing.rentalDailyPrice!.toStringAsFixed(0)}/day';
+    }
+    if ((listing.rentalWeeklyPrice ?? 0) > 0) {
+      return '\$${listing.rentalWeeklyPrice!.toStringAsFixed(0)}/week';
+    }
+    if ((listing.rentalMonthlyPrice ?? 0) > 0) {
+      return '\$${listing.rentalMonthlyPrice!.toStringAsFixed(0)}/month';
+    }
+    return 'Rental'; // fallback if no rates set (shouldn't happen)
+  }
+
   @override
   Widget build(BuildContext context) {
     final imageUrl = listing.displayImageUrl;
@@ -71,7 +84,7 @@ class CompactListingCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     listing.transactionType.toLowerCase() == 'rental' 
-                      ? '\$${listing.price.toStringAsFixed(0)}/mo'
+                      ? _rentalPriceLabel(listing)
                       : '\$${listing.price.toStringAsFixed(0)}',
                     style: AppTextStyles.labelLarge.copyWith(color: AppColors.priceTagPrimary),
                   ),

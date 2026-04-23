@@ -126,6 +126,11 @@ class CreateListingAction extends _$CreateListingAction {
         if (!hasAnyRate) {
           throw ArgumentError('At least one rental rate is required');
         }
+
+        // deposit is required for rentals but 0 is acceptable (no deposit)
+        if (depositAmount == null || depositAmount < 0) {
+          throw ArgumentError('Deposit must be a valid number (0 or greater)');
+        }
       }
 
       // TODO(images): Re-enable this check once image upload
@@ -149,13 +154,13 @@ class CreateListingAction extends _$CreateListingAction {
         description: description.trim(),
         category: category.toLowerCase(),
         transactionType: transactionType,
-        // For rentals, we use the first available rate as the 'price' column 
-        // to support sorting/display on feed.
-        price: transactionType == 'sale' ? price! : (dailyRate ?? weeklyRate ?? monthlyRate!),
+        // For rentals, we set price to 0.0 as it's only meaningful for sales.
+        // Rental rates are stored in their respective columns.
+        price: transactionType == 'sale' ? price! : 0.0,
         rentalDailyPrice: dailyRate,
         rentalWeeklyPrice: weeklyRate,
         rentalMonthlyPrice: monthlyRate,
-        // NOTE: depositAmount is not currently in the DB schema/Listing model. 
+        depositAmount: depositAmount ?? 0.0,
         isPinned: isPinned,
         pinnedDays: pinnedDays,
         status: 'active',

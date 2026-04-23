@@ -105,6 +105,7 @@ class OrderActions extends _$OrderActions {
     required String sellerId,
     required double price,
     required String orderType,  // 'sale' or 'rental'
+    double depositAmount = 0.0,
     DateTime? rentalStartDate,
     DateTime? rentalEndDate,
     String school = 'Smith College',
@@ -139,6 +140,7 @@ class OrderActions extends _$OrderActions {
         orderType: orderType,
         school: school,
         totalPrice: totalPrice,
+        depositAmount: depositAmount,
         rentalStartDate: rentalStartDate,
         rentalEndDate: rentalEndDate,
         createdAt: now,
