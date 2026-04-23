@@ -369,18 +369,6 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     );
   }
 
-  Widget _buildTimestamp(DateTime createdAt, {required bool isMine}) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 8),
-      child: Text(
-        timeago.format(createdAt, locale: 'en_short'),
-        style: AppTextStyles.bodySmall.copyWith(
-          color: const Color(0xFF585781),
-          fontSize: 10,
-        ),
-      ),
-    );
-  }
 
   Widget _buildLeftBubble(
     Message msg,

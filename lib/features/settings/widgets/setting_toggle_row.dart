@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/features/settings/widgets/setting_card_container.dart';
 
@@ -65,8 +64,8 @@ class SettingToggleRow extends StatelessWidget {
           const SizedBox(width: 16),
           CupertinoSwitch(
             value: value,
-            activeColor: const Color(0xFF013DFD),
-            trackColor: const Color(0xFF2B2A51).withValues(alpha: 0.15),
+            activeTrackColor: const Color(0xFF013DFD),
+            inactiveTrackColor: const Color(0xFF2B2A51).withValues(alpha: 0.15),
             onChanged: onChanged,
           ),
         ],

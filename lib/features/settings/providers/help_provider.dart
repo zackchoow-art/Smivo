@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'help_provider.g.dart';
@@ -52,6 +53,6 @@ class ExpandedFaqState extends _$ExpandedFaqState {
 }
 
 @riverpod
-List<HelpFaq> helpFaqs(HelpFaqsRef ref) {
+List<HelpFaq> helpFaqs(Ref ref) {
   return _faqs;
 }

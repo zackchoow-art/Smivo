@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import 'package:smivo/core/exceptions/app_exception.dart';
@@ -79,7 +80,7 @@ class ProfileRepository {
 }
 
 @riverpod
-ProfileRepository profileRepository(ProfileRepositoryRef ref) {
+ProfileRepository profileRepository(Ref ref) {
   // Assuming supabaseClientProvider exists in core/
   // If not, we will need to define it or use the global instance for now.
   // Based on architecture rules, it should be provided.

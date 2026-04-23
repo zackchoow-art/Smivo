@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/core/constants/debug_constants.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
@@ -12,7 +13,7 @@ part 'auth_provider.g.dart';
 /// This is the "Source of Truth" for authentication status across the app.
 /// GoRouter and other providers listen to this to react to login/logout.
 @riverpod
-Stream<supabase.User?> authState(AuthStateRef ref) {
+Stream<supabase.User?> authState(Ref ref) {
   return ref.watch(authRepositoryProvider).authStateChanges.map((state) => state.session?.user);
 }
 

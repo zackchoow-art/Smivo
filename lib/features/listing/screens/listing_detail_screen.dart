@@ -14,7 +14,6 @@ import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
-import 'package:smivo/data/models/pickup_location.dart';
 
 String _conditionLabel(String condition) {
   switch (condition) {

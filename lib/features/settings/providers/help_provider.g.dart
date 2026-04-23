@@ -6,7 +6,7 @@ part of 'help_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$helpFaqsHash() => r'71da69a29a3aa95c1375187eb9db1f797398a93e';
+String _$helpFaqsHash() => r'2589c78843f6aed68a1607b9fb5fbd638e4cd60e';
 
 /// See also [helpFaqs].
 @ProviderFor(helpFaqs)

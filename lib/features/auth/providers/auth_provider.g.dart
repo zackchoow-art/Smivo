@@ -6,7 +6,7 @@ part of 'auth_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authStateHash() => r'9aa8548d2b7c73df889f22340edf44ed90a0718a';
+String _$authStateHash() => r'144bfa8203fd2c4fdc82dc20bf256e51139432a0';
 
 /// Stream of the current Supabase user.
 ///
