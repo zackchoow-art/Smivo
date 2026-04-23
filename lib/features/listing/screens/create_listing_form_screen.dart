@@ -11,7 +11,7 @@ import 'package:smivo/features/listing/providers/create_listing_provider.dart';
 import 'package:smivo/features/listing/widgets/custom_text_field.dart';
 import 'package:smivo/features/listing/widgets/photo_picker_section.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
-import 'package:smivo/shared/widgets/custom_app_bar.dart';
+
 
 class CreateListingFormScreen extends ConsumerStatefulWidget {
   const CreateListingFormScreen({
@@ -30,8 +30,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
   
   PickupLocation? _selectedPickup;
   bool _allowBuyerToSuggest = false;
-  bool _isPinned = false;
-  double _pinnedDays = 1.0;
+
   bool _isSubmitting = false;
   String _selectedCondition = 'good'; // Default condition
 
@@ -100,7 +99,18 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBar(title: 'List Item', showBackButton: true),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         child: Column(
@@ -219,52 +229,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // Condition
-            Text(
-              'Condition',
-              style: AppTextStyles.labelLarge.copyWith(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF2B2A51),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                _ConditionChip(
-                  label: 'New',
-                  value: 'new',
-                  isSelected: _selectedCondition == 'new',
-                  onTap: () => setState(() => _selectedCondition = 'new'),
-                ),
-                _ConditionChip(
-                  label: 'Like New',
-                  value: 'like_new',
-                  isSelected: _selectedCondition == 'like_new',
-                  onTap: () => setState(() => _selectedCondition = 'like_new'),
-                ),
-                _ConditionChip(
-                  label: 'Good',
-                  value: 'good',
-                  isSelected: _selectedCondition == 'good',
-                  onTap: () => setState(() => _selectedCondition = 'good'),
-                ),
-                _ConditionChip(
-                  label: 'Fair',
-                  value: 'fair',
-                  isSelected: _selectedCondition == 'fair',
-                  onTap: () => setState(() => _selectedCondition = 'fair'),
-                ),
-                _ConditionChip(
-                  label: 'Poor',
-                  value: 'poor',
-                  isSelected: _selectedCondition == 'poor',
-                  onTap: () => setState(() => _selectedCondition = 'poor'),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xl),
+
 
             // Pricing
             if (isSale)
@@ -454,38 +419,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // Pinning Section
-            CheckboxListTile(
-              title: const Text('Pin this listing to top of feed'),
-              subtitle: const Text('Increase visibility for your item'),
-              value: _isPinned,
-              onChanged: (bool? value) {
-                setState(() {
-                  _isPinned = value ?? false;
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-            ),
-            if (_isPinned) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Pin for ${_pinnedDays.toInt()} days (\$${(_pinnedDays * 1.5).toStringAsFixed(2)})',
-                style: AppTextStyles.bodyMedium,
-              ),
-              Slider(
-                value: _pinnedDays,
-                min: 1,
-                max: 14,
-                divisions: 13,
-                label: _pinnedDays.round().toString(),
-                onChanged: (double value) {
-                  setState(() {
-                    _pinnedDays = value;
-                  });
-                },
-              ),
-            ],
+
             const SizedBox(height: AppSpacing.xxxl),
 
             // Submit Button
@@ -732,8 +666,8 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             depositAmount: deposit,
             pickupLocationId: _selectedPickup?.id,
             allowPickupChange: _allowBuyerToSuggest,
-            isPinned: _isPinned,
-            pinnedDays: _isPinned ? _pinnedDays.toInt() : null,
+            isPinned: false,
+            pinnedDays: null,
           );
 
       if (!context.mounted) return;
