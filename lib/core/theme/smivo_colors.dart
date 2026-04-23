@@ -50,8 +50,12 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
     // Gradients & decorations
     required this.gradientStart,
     required this.gradientEnd,
+    required this.secondaryGradientStart,
+    required this.secondaryGradientEnd,
     required this.dividerColor,
     required this.useDividers,
+    // Borders
+    required this.borderLight,
     // Bottom nav
     required this.navActiveBackground,
     required this.navActiveIcon,
@@ -60,6 +64,11 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
     required this.chatBubbleOther,
     required this.chatBubbleTextSelf,
     required this.chatBubbleTextOther,
+    // Order status badges
+    required this.statusConfirmed,
+    required this.statusCompleted,
+    required this.statusPending,
+    required this.statusCancelled,
     // Shadow base
     required this.shadow,
   });
@@ -108,11 +117,16 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
   // ── Gradients & Decorations ────────────────────────────────
   final Color gradientStart;
   final Color gradientEnd;
+  final Color secondaryGradientStart;
+  final Color secondaryGradientEnd;
   final Color dividerColor;
 
   /// Whether 1px divider lines are used in this theme.
   /// Teal uses traditional dividers; IKEA replaces them with whitespace.
   final bool useDividers;
+
+  // ── Borders ────────────────────────────────────────────────
+  final Color borderLight;
 
   // ── Bottom Navigation ──────────────────────────────────────
   final Color navActiveBackground;
@@ -123,6 +137,12 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
   final Color chatBubbleOther;
   final Color chatBubbleTextSelf;
   final Color chatBubbleTextOther;
+
+  // ── Order Status Badges ────────────────────────────────────
+  final Color statusConfirmed;
+  final Color statusCompleted;
+  final Color statusPending;
+  final Color statusCancelled;
 
   // ── Shadow ─────────────────────────────────────────────────
   final Color shadow;
@@ -168,8 +188,12 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
         // Gradients
         gradientStart: Color(0xFF006067),
         gradientEnd: Color(0xFF007B83),
+        secondaryGradientStart: Color(0xFF7B2FF7),
+        secondaryGradientEnd: Color(0xFFA855F7),
         dividerColor: Color(0xFFBDC9CA),
         useDividers: true,
+        // Borders
+        borderLight: Color(0xFFE5E9E9),
         // Nav
         navActiveBackground: Color(0xFF006067),
         navActiveIcon: Color(0xFFFFFFFF),
@@ -178,6 +202,11 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
         chatBubbleOther: Color(0xFFF1F4F4),
         chatBubbleTextSelf: Color(0xFFFFFFFF),
         chatBubbleTextOther: Color(0xFF181C1D),
+        // Status badges
+        statusConfirmed: Color(0xFF00FFCC),
+        statusCompleted: Color(0xFFDCD2FE),
+        statusPending: Color(0xFFFFBBAA),
+        statusCancelled: Color(0xFFFF6666),
         // Shadow
         shadow: Color(0x11000000),
       );
@@ -223,8 +252,12 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
         // Gradients — IKEA uses flat solid colors, no gradient
         gradientStart: Color(0xFF004181),
         gradientEnd: Color(0xFF004181),
+        secondaryGradientStart: Color(0xFF004181),
+        secondaryGradientEnd: Color(0xFF0058AB),
         dividerColor: Color(0xFFC2C6D3),
         useDividers: false,
+        // Borders
+        borderLight: Color(0xFFE8E8E8),
         // Nav — yellow highlight pill
         navActiveBackground: Color(0xFFFDD816),
         navActiveIcon: Color(0xFF004181),
@@ -233,6 +266,11 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
         chatBubbleOther: Color(0xFFF3F3F3),
         chatBubbleTextSelf: Color(0xFFFFFFFF),
         chatBubbleTextOther: Color(0xFF1A1C1C),
+        // Status badges
+        statusConfirmed: Color(0xFF00FFCC),
+        statusCompleted: Color(0xFFE8E8E8),
+        statusPending: Color(0xFFFDD816),
+        statusCancelled: Color(0xFFFF6666),
         // Shadow
         shadow: Color(0x0F1A1C1C),
       );
@@ -282,14 +320,21 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
     Color? settingsTextSecondary,
     Color? gradientStart,
     Color? gradientEnd,
+    Color? secondaryGradientStart,
+    Color? secondaryGradientEnd,
     Color? dividerColor,
     bool? useDividers,
+    Color? borderLight,
     Color? navActiveBackground,
     Color? navActiveIcon,
     Color? chatBubbleSelf,
     Color? chatBubbleOther,
     Color? chatBubbleTextSelf,
     Color? chatBubbleTextOther,
+    Color? statusConfirmed,
+    Color? statusCompleted,
+    Color? statusPending,
+    Color? statusCancelled,
     Color? shadow,
   }) {
     return SmivoColors(
@@ -332,15 +377,21 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
           settingsTextSecondary ?? this.settingsTextSecondary,
       gradientStart: gradientStart ?? this.gradientStart,
       gradientEnd: gradientEnd ?? this.gradientEnd,
+      secondaryGradientStart: secondaryGradientStart ?? this.secondaryGradientStart,
+      secondaryGradientEnd: secondaryGradientEnd ?? this.secondaryGradientEnd,
       dividerColor: dividerColor ?? this.dividerColor,
       useDividers: useDividers ?? this.useDividers,
+      borderLight: borderLight ?? this.borderLight,
       navActiveBackground: navActiveBackground ?? this.navActiveBackground,
       navActiveIcon: navActiveIcon ?? this.navActiveIcon,
       chatBubbleSelf: chatBubbleSelf ?? this.chatBubbleSelf,
       chatBubbleOther: chatBubbleOther ?? this.chatBubbleOther,
       chatBubbleTextSelf: chatBubbleTextSelf ?? this.chatBubbleTextSelf,
-      chatBubbleTextOther:
-          chatBubbleTextOther ?? this.chatBubbleTextOther,
+      chatBubbleTextOther: chatBubbleTextOther ?? this.chatBubbleTextOther,
+      statusConfirmed: statusConfirmed ?? this.statusConfirmed,
+      statusCompleted: statusCompleted ?? this.statusCompleted,
+      statusPending: statusPending ?? this.statusPending,
+      statusCancelled: statusCancelled ?? this.statusCancelled,
       shadow: shadow ?? this.shadow,
     );
   }
@@ -399,8 +450,13 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
       gradientStart:
           Color.lerp(gradientStart, other.gradientStart, t)!,
       gradientEnd: Color.lerp(gradientEnd, other.gradientEnd, t)!,
+      secondaryGradientStart: Color.lerp(
+          secondaryGradientStart, other.secondaryGradientStart, t)!,
+      secondaryGradientEnd: Color.lerp(
+          secondaryGradientEnd, other.secondaryGradientEnd, t)!,
       dividerColor: Color.lerp(dividerColor, other.dividerColor, t)!,
       useDividers: t < 0.5 ? useDividers : other.useDividers,
+      borderLight: Color.lerp(borderLight, other.borderLight, t)!,
       navActiveBackground: Color.lerp(
           navActiveBackground, other.navActiveBackground, t)!,
       navActiveIcon:
@@ -413,6 +469,14 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
           Color.lerp(chatBubbleTextSelf, other.chatBubbleTextSelf, t)!,
       chatBubbleTextOther: Color.lerp(
           chatBubbleTextOther, other.chatBubbleTextOther, t)!,
+      statusConfirmed:
+          Color.lerp(statusConfirmed, other.statusConfirmed, t)!,
+      statusCompleted:
+          Color.lerp(statusCompleted, other.statusCompleted, t)!,
+      statusPending:
+          Color.lerp(statusPending, other.statusPending, t)!,
+      statusCancelled:
+          Color.lerp(statusCancelled, other.statusCancelled, t)!,
       shadow: Color.lerp(shadow, other.shadow, t)!,
     );
   }

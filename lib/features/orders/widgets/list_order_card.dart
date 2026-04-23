@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +11,6 @@ import 'package:smivo/features/chat/widgets/chat_popup.dart';
 
 class ListOrderCard extends ConsumerWidget {
   const ListOrderCard({super.key, required this.order});
-
   final Order order;
 
   @override
@@ -22,180 +18,108 @@ class ListOrderCard extends ConsumerWidget {
     final imageUrl = order.listing?.images.firstOrNull?.imageUrl;
     final title = order.listing?.title ?? 'Untitled Listing';
     final status = order.status;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return InkWell(
-      onTap: () {
-        context.pushNamed(
-          AppRoutes.orderDetail,
-          pathParameters: {'id': order.id},
-        );
-      },
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
+      borderRadius: BorderRadius.circular(radius.card),
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: colors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(radius.card),
+          boxShadow: [BoxShadow(color: colors.shadow, blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Image
-            if (imageUrl != null && imageUrl.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                child: Image.network(
-                  imageUrl,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                ),
-              )
-            else
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                ),
-                child: const Icon(Icons.image_not_supported, color: Colors.grey),
-              ),
-              
-            const SizedBox(width: AppSpacing.md),
-            
-            // Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.titleMedium.copyWith(height: 1.2),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '\$${order.totalPrice.toStringAsFixed(0)} • ${_getStatusText(status)}',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  // Snapshot Link for completed orders
-                  if (status == 'completed')
-                    GestureDetector(
-                      onTap: () => TransactionSnapshotModal.show(
-                        context, 
-                        title: 'Order Snapshot',
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'View Order Snapshot',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: const Color(0xFF013DFD).withValues(alpha: 0.7),
-                            fontWeight: FontWeight.w500,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(width: AppSpacing.sm),
-            
-            // Action Icons
-            Row(
-              children: [
-                if (status == 'pending' || status == 'confirmed')
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
-                    onPressed: () {
-                      context.pushNamed(
-                        AppRoutes.orderDetail,
-                        pathParameters: {'id': order.id},
-                      );
-                    },
-                  )
-                else if (status == 'completed')
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(Icons.receipt_long_outlined, color: AppColors.primary, size: 20),
-                    onPressed: () => TransactionSnapshotModal.show(
-                      context, 
-                      title: 'Order Snapshot',
-                    ),
-                  ),
-                const SizedBox(width: 12),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.chat_bubble_outline, color: AppColors.primary, size: 20),
-                  onPressed: () async {
-                    final user = ref.read(authStateProvider).valueOrNull;
-                    if (user == null) return;
-
-                    final isBuyer = order.buyerId == user.id;
-                    final otherProfile = isBuyer ? order.seller : order.buyer;
-
-                    try {
-                      final chatRoom = await ref
-                          .read(chatRepositoryProvider)
-                          .getOrCreateChatRoom(
-                            listingId: order.listingId,
-                            buyerId: order.buyerId,
-                            sellerId: order.sellerId,
-                          );
-
-                      if (!context.mounted) return;
-                      showChatPopup(
-                        context,
-                        chatRoomId: chatRoom.id,
-                        otherUserName: otherProfile?.displayName ?? 'User',
-                        otherUserAvatar: otherProfile?.avatarUrl,
-                        listingTitle: order.listing?.title ?? 'Order',
-                        listingPrice: order.totalPrice,
-                        listingImageUrl: order.listing?.images.firstOrNull?.imageUrl,
-                      );
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
+            _buildImage(imageUrl, colors, radius),
+            const SizedBox(width: 12),
+            Expanded(child: _buildDetails(context, title, status, colors, typo)),
+            const SizedBox(width: 8),
+            _buildActions(context, ref, status, colors),
           ],
         ),
       ),
     );
   }
 
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'pending':
-        return 'Action Needed';
-      case 'confirmed':
-        return 'In Progress';
-      case 'completed':
-        return 'Completed';
-      case 'cancelled':
-        return 'Cancelled';
-      default:
-        return status.toUpperCase();
+  Widget _buildImage(String? imageUrl, SmivoColors colors, SmivoRadius radius) {
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius.sm),
+        child: Image.network(imageUrl, width: 60, height: 60, fit: BoxFit.cover),
+      );
+    }
+    return Container(
+      width: 60, height: 60,
+      decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.sm)),
+      child: Icon(Icons.image_not_supported, color: colors.outlineVariant),
+    );
+  }
+
+  Widget _buildDetails(BuildContext context, String title, String status, SmivoColors colors, SmivoTypography typo) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: typo.titleMedium.copyWith(height: 1.2)),
+        const SizedBox(height: 4),
+        Text('\$${order.totalPrice.toStringAsFixed(0)} • ${_statusText(status)}',
+          style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+        if (status == 'completed')
+          GestureDetector(
+            onTap: () => TransactionSnapshotModal.show(context, title: 'Order Snapshot'),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text('View Order Snapshot',
+                style: typo.labelSmall.copyWith(color: colors.primary.withValues(alpha: 0.7), fontWeight: FontWeight.w500, decoration: TextDecoration.underline)),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildActions(BuildContext context, WidgetRef ref, String status, SmivoColors colors) {
+    return Row(
+      children: [
+        if (status == 'pending' || status == 'confirmed')
+          IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+            icon: Icon(Icons.info_outline, color: colors.primary, size: 20),
+            onPressed: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}))
+        else if (status == 'completed')
+          IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+            icon: Icon(Icons.receipt_long_outlined, color: colors.primary, size: 20),
+            onPressed: () => TransactionSnapshotModal.show(context, title: 'Order Snapshot')),
+        const SizedBox(width: 12),
+        IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+          icon: Icon(Icons.chat_bubble_outline, color: colors.primary, size: 20),
+          onPressed: () => _openChat(context, ref)),
+      ],
+    );
+  }
+
+  Future<void> _openChat(BuildContext context, WidgetRef ref) async {
+    final user = ref.read(authStateProvider).valueOrNull;
+    if (user == null) return;
+    final isBuyer = order.buyerId == user.id;
+    final otherProfile = isBuyer ? order.seller : order.buyer;
+    try {
+      final chatRoom = await ref.read(chatRepositoryProvider).getOrCreateChatRoom(
+        listingId: order.listingId, buyerId: order.buyerId, sellerId: order.sellerId);
+      if (!context.mounted) return;
+      showChatPopup(context, chatRoomId: chatRoom.id,
+        otherUserName: otherProfile?.displayName ?? 'User', otherUserAvatar: otherProfile?.avatarUrl,
+        listingTitle: order.listing?.title ?? 'Order', listingPrice: order.totalPrice,
+        listingImageUrl: order.listing?.images.firstOrNull?.imageUrl);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
+
+  String _statusText(String s) => switch (s) {
+    'pending' => 'Action Needed', 'confirmed' => 'In Progress',
+    'completed' => 'Completed', 'cancelled' => 'Cancelled', _ => s.toUpperCase(),
+  };
 }

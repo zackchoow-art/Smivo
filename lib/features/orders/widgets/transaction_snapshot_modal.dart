@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 
 class TransactionSnapshotModal extends StatelessWidget {
@@ -39,10 +38,16 @@ class TransactionSnapshotModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(radius.xl),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -53,7 +58,7 @@ class TransactionSnapshotModal extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: colors.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -71,15 +76,17 @@ class TransactionSnapshotModal extends StatelessWidget {
                       children: [
                         Text(
                           'Transaction Snapshot',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: const Color(0xFF013DFD),
+                          style: typo.labelSmall.copyWith(
+                            color: colors.primary,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
                           ),
                         ),
                         Text(
                           orderId,
-                          style: AppTextStyles.headlineSmall.copyWith(fontWeight: FontWeight.w900),
+                          style: typo.headlineSmall.copyWith(
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ],
                     ),
@@ -93,18 +100,30 @@ class TransactionSnapshotModal extends StatelessWidget {
                 
                 // Details Grid
                 _SnapshotRow(label: 'BUYER', value: buyerName),
-                const Divider(height: 32),
+                Divider(height: 32, color: colors.dividerColor),
                 _SnapshotRow(label: 'SELLER', value: sellerName),
-                const Divider(height: 32),
-                _SnapshotRow(label: 'TRANSACTION TIME', value: transactionTime),
-                const Divider(height: 32),
-                _SnapshotRow(label: 'AMOUNT', value: '\$${amount.toStringAsFixed(2)}'),
+                Divider(height: 32, color: colors.dividerColor),
+                _SnapshotRow(
+                  label: 'TRANSACTION TIME',
+                  value: transactionTime,
+                ),
+                Divider(height: 32, color: colors.dividerColor),
+                _SnapshotRow(
+                  label: 'AMOUNT',
+                  value: '\$${amount.toStringAsFixed(2)}',
+                ),
                 if (rentalPeriod != null) ...[
-                  const Divider(height: 32),
-                  _SnapshotRow(label: 'RENTAL PERIOD', value: rentalPeriod!),
+                  Divider(height: 32, color: colors.dividerColor),
+                  _SnapshotRow(
+                    label: 'RENTAL PERIOD',
+                    value: rentalPeriod!,
+                  ),
                 ],
-                const Divider(height: 32),
-                _SnapshotRow(label: 'PICKUP LOCATION', value: pickupLocation),
+                Divider(height: 32, color: colors.dividerColor),
+                _SnapshotRow(
+                  label: 'PICKUP LOCATION',
+                  value: pickupLocation,
+                ),
                 
                 const SizedBox(height: 40),
                 
@@ -112,19 +131,24 @@ class TransactionSnapshotModal extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF2EFFF),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF013DFD).withValues(alpha: 0.1)),
+                    color: colors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(radius.md),
+                    border: Border.all(
+                      color: colors.primary.withValues(alpha: 0.1),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.verified_user_outlined, color: Color(0xFF013DFD)),
+                      Icon(
+                        Icons.verified_user_outlined,
+                        color: colors.primary,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'This record is permanent and cannot be modified. It serves as official proof of transaction within Smivo.',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
+                          style: typo.labelSmall.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.7),
                             height: 1.4,
                           ),
                         ),
@@ -148,6 +172,9 @@ class _SnapshotRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -155,8 +182,8 @@ class _SnapshotRow extends StatelessWidget {
           width: 120,
           child: Text(
             label,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: const Color(0xFF2B2A51).withValues(alpha: 0.5),
+            style: typo.labelSmall.copyWith(
+              color: colors.onSurface.withValues(alpha: 0.5),
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),
@@ -165,8 +192,8 @@ class _SnapshotRow extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: const Color(0xFF2B2A51),
+            style: typo.bodyLarge.copyWith(
+              color: colors.onSurface,
               fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.right,

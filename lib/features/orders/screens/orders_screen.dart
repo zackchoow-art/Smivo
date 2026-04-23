@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
@@ -11,8 +8,11 @@ class OrdersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
     return Scaffold(
-      backgroundColor: AppColors.surfaceContainerLowest,
+      backgroundColor: colors.surfaceContainerLowest,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -21,15 +21,15 @@ class OrdersScreen extends StatelessWidget {
             children: [
               Text(
                 'My Orders',
-                style: AppTextStyles.headlineLarge.copyWith(
+                style: typo.headlineLarge.copyWith(
                   fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Track your campus transactions.',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: 0.7),
+                style: typo.bodyMedium.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 32),
@@ -39,7 +39,7 @@ class OrdersScreen extends StatelessWidget {
                 icon: Icons.shopping_bag_outlined,
                 title: 'Buyer Center',
                 subtitle: 'Your purchase requests,\naccepted orders, and history.',
-                gradient: const [Color(0xFF013DFD), Color(0xFF436BFF)],
+                gradient: [colors.gradientStart, colors.gradientEnd],
                 onTap: () => context.pushNamed(AppRoutes.buyerCenter),
               ),
               const SizedBox(height: 16),
@@ -49,7 +49,7 @@ class OrdersScreen extends StatelessWidget {
                 icon: Icons.storefront_outlined,
                 title: 'Seller Center',
                 subtitle: 'Active listings, incoming\norders, and sales history.',
-                gradient: const [Color(0xFF7B2FF7), Color(0xFFA855F7)],
+                gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
                 onTap: () => context.pushNamed(AppRoutes.sellerCenter),
               ),
             ],
@@ -77,6 +77,10 @@ class _HubCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    final colors = context.smivoColors;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -88,7 +92,7 @@ class _HubCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          borderRadius: BorderRadius.circular(radius.xl),
           boxShadow: [
             BoxShadow(
               color: gradient.first.withValues(alpha: 0.3),
@@ -105,23 +109,27 @@ class _HubCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: Colors.white,
+                    style: typo.headlineSmall.copyWith(
+                      color: colors.onPrimary,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     subtitle,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
+                    style: typo.bodyMedium.copyWith(
+                      color: colors.onPrimary.withValues(alpha: 0.85),
                       height: 1.4,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(icon, color: Colors.white.withValues(alpha: 0.3), size: 64),
+            Icon(
+              icon,
+              color: colors.onPrimary.withValues(alpha: 0.3),
+              size: 64,
+            ),
           ],
         ),
       ),

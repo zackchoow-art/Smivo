@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -51,12 +49,15 @@ class _FrontSide extends StatelessWidget {
     final imageUrl = order.listing?.images.firstOrNull?.imageUrl;
     final title = order.listing?.title ?? 'Untitled Listing';
     final status = order.status;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderLight, width: 1),
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(radius.card),
+        border: Border.all(color: colors.borderLight, width: 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -73,7 +74,7 @@ class _FrontSide extends StatelessWidget {
                     fit: BoxFit.cover,
                   )
                 else
-                  Container(color: Colors.grey[200]),
+                  Container(color: colors.surfaceContainerLow),
 
                 // Status Badge
                 Positioned(
@@ -101,8 +102,8 @@ class _FrontSide extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: AppTextStyles.titleMedium.copyWith(
-                              color: const Color(0xFF2B2A51),
+                            style: typo.titleMedium.copyWith(
+                              color: colors.onSurface,
                               fontWeight: FontWeight.w700,
                             ),
                             maxLines: 2,
@@ -111,8 +112,8 @@ class _FrontSide extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             order.orderType.toUpperCase(),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
+                            style: typo.bodySmall.copyWith(
+                              color: colors.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -123,15 +124,15 @@ class _FrontSide extends StatelessWidget {
                       order.orderType == 'rental'
                           ? '\$${order.totalPrice.toInt()}/mo'
                           : '\$${order.totalPrice.toInt()}',
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: const Color(0xFF013DFD),
+                      style: typo.titleMedium.copyWith(
+                        color: colors.primary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Divider(height: 1),
+                Divider(height: 1, color: colors.dividerColor),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -140,8 +141,8 @@ class _FrontSide extends StatelessWidget {
                     Expanded(
                       child: Text(
                         _getStatusText(status),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: const Color(0xFF2B2A51),
+                        style: typo.bodyMedium.copyWith(
+                          color: colors.onSurface,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -183,15 +184,18 @@ class _BackSide extends StatelessWidget {
     final title = order.listing?.title ?? 'Untitled Listing';
     final counterparty = orderCounterparty(order, currentUserId);
     final status = order.status;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderLight, width: 1),
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(radius.card),
+        border: Border.all(color: colors.borderLight, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: colors.shadow,
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -208,8 +212,8 @@ class _BackSide extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: const Color(0xFF013DFD),
+                  style: typo.titleMedium.copyWith(
+                    color: colors.primary,
                     fontWeight: FontWeight.w700,
                   ),
                   maxLines: 2,
@@ -226,15 +230,15 @@ class _BackSide extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2EFFF),
-              borderRadius: BorderRadius.circular(8),
+              color: colors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(radius.sm),
             ),
             child: Row(
               children: [
                 Text(
                   'COUNTERPARTY',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFF2B2A51).withValues(alpha: 0.6),
+                  style: typo.labelSmall.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.2,
                   ),
@@ -248,8 +252,8 @@ class _BackSide extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   counterparty?.displayName ?? 'User',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: const Color(0xFF2B2A51),
+                  style: typo.bodyMedium.copyWith(
+                    color: colors.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -258,11 +262,11 @@ class _BackSide extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          _buildInfoRow('AMOUNT', order.orderType == 'rental' ? '\$${order.totalPrice.toInt()}/mo' : '\$${order.totalPrice.toInt()}'),
-          _buildInfoRow('DATE', order.createdAt.toLocal().toString().split(' ')[0]),
+          _buildInfoRow(context, 'AMOUNT', order.orderType == 'rental' ? '\$${order.totalPrice.toInt()}/mo' : '\$${order.totalPrice.toInt()}'),
+          _buildInfoRow(context, 'DATE', order.createdAt.toLocal().toString().split(' ')[0]),
           if (order.orderType == 'rental' && order.rentalStartDate != null)
-            _buildInfoRow('RENTAL\nPERIOD', '${order.rentalStartDate.toString().split(' ')[0]} - ${order.rentalEndDate?.toString().split(' ')[0] ?? 'N/A'}'),
-          _buildInfoRow('STATUS', _getStatusText(status)),
+            _buildInfoRow(context, 'RENTAL\nPERIOD', '${order.rentalStartDate.toString().split(' ')[0]} - ${order.rentalEndDate?.toString().split(' ')[0] ?? 'N/A'}'),
+          _buildInfoRow(context, 'STATUS', _getStatusText(status)),
 
           // Pickup Location row
           Padding(
@@ -274,8 +278,8 @@ class _BackSide extends StatelessWidget {
                   width: 100,
                   child: Text(
                     'PICKUP',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFF2B2A51).withValues(alpha: 0.6),
+                    style: typo.labelSmall.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1.2,
                     ),
@@ -284,8 +288,8 @@ class _BackSide extends StatelessWidget {
                 Expanded(
                   child: Text(
                     order.pickupLocation?.name ?? order.school,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: const Color(0xFF2B2A51),
+                    style: typo.bodyMedium.copyWith(
+                      color: colors.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.right,
@@ -309,8 +313,8 @@ class _BackSide extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
                     'View Order Snapshot',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFF013DFD).withValues(alpha: 0.7),
+                    style: typo.labelSmall.copyWith(
+                      color: colors.primary.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,
                       decoration: TextDecoration.underline,
                     ),
@@ -330,15 +334,17 @@ class _BackSide extends StatelessWidget {
                     pathParameters: {'id': order.id},
                   );
                 },
-                icon: const Icon(Icons.info_outline, color: Colors.white, size: 18),
+                icon: Icon(Icons.info_outline, color: colors.onPrimary, size: 18),
                 label: Text(
                   'View Details',
-                  style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
+                  style: typo.labelLarge.copyWith(color: colors.onPrimary),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: colors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(radius.sm),
+                  ),
                 ),
               ),
             ),
@@ -347,8 +353,8 @@ class _BackSide extends StatelessWidget {
           Center(
             child: Text(
               'tap anywhere to flip back',
-              style: AppTextStyles.labelSmall.copyWith(
-                color: const Color(0xFF2B2A51).withValues(alpha: 0.4),
+              style: typo.labelSmall.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.4),
               ),
             ),
           ),
@@ -372,7 +378,10 @@ class _BackSide extends StatelessWidget {
     }
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -382,8 +391,8 @@ class _BackSide extends StatelessWidget {
             width: 100,
             child: Text(
               label,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: const Color(0xFF2B2A51).withValues(alpha: 0.6),
+              style: typo.labelSmall.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
               ),
@@ -392,8 +401,8 @@ class _BackSide extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: const Color(0xFF2B2A51),
+              style: typo.bodyMedium.copyWith(
+                color: colors.onSurface,
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.right,
@@ -412,29 +421,33 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
     Color bgColor;
-    Color textColor = const Color(0xFF2B2A51);
     String label;
 
+    // NOTE: Status badge colors are intentionally kept as fixed semantic values
+    // since they represent universal status semantics (green=confirmed, etc.)
     switch (status) {
       case 'confirmed':
-        bgColor = const Color(0xFF00FFCC);
+        bgColor = colors.statusConfirmed;
         label = 'CONFIRMED';
         break;
       case 'completed':
-        bgColor = const Color(0xFFDCD2FE);
+        bgColor = colors.statusCompleted;
         label = 'COMPLETED';
         break;
       case 'pending':
-        bgColor = const Color(0xFFFFBBAA);
+        bgColor = colors.statusPending;
         label = 'PENDING';
         break;
       case 'cancelled':
-        bgColor = const Color(0xFFFF6666);
+        bgColor = colors.statusCancelled;
         label = 'CANCELLED';
         break;
       default:
-        bgColor = const Color(0xFFBBDDFF);
+        bgColor = colors.surfaceContainerHigh;
         label = status.toUpperCase();
     }
 
@@ -446,8 +459,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: textColor,
+        style: typo.labelSmall.copyWith(
+          color: colors.onSurface,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.5,
           fontSize: 10,
@@ -464,24 +477,28 @@ class _StatusIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+
     IconData iconData;
-    Color color = const Color(0xFF006067);
+    Color color;
 
     switch (status) {
       case 'completed':
         iconData = Icons.check_circle_outline;
+        color = colors.statusConfirmed;
         break;
       case 'pending':
       case 'confirmed':
         iconData = Icons.local_shipping_outlined;
-        color = const Color(0xFFB35900);
+        color = colors.statusPending;
         break;
       case 'cancelled':
         iconData = Icons.cancel_outlined;
-        color = const Color(0xFFFF6666);
+        color = colors.statusCancelled;
         break;
       default:
         iconData = Icons.hourglass_empty;
+        color = colors.onSurfaceVariant;
     }
 
     return Icon(iconData, size: 20, color: color);
