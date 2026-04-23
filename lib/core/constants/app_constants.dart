@@ -18,11 +18,13 @@ class AppConstants {
   static const String tableOrders = 'orders';
   static const String tableChatRooms = 'chat_rooms';
   static const String tableMessages = 'messages';
+  static const String tableOrderEvidence = 'order_evidence';
 
   // ── Storage Bucket Names ───────────────────────────────────
   static const String bucketListingImages = 'listing-images';
   static const String bucketAvatars = 'avatars';
   static const String bucketChatImages = 'chat-images';
+  static const String bucketOrderEvidence = 'order-evidence';
 
   // ── Item Categories ────────────────────────────────────────
   static const List<String> categories = [

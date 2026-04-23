@@ -8,7 +8,10 @@ import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/features/orders/providers/order_chat_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/features/orders/widgets/chat_history_section.dart';
+import 'package:smivo/features/orders/widgets/evidence_photo_section.dart';
 
 class OrderDetailScreen extends ConsumerWidget {
   const OrderDetailScreen({
@@ -94,7 +97,45 @@ class OrderDetailScreen extends ConsumerWidget {
           if (order.status == 'confirmed' || order.status == 'completed')
             _buildDeliveryStatus(order),
 
-          const SizedBox(height: AppSpacing.xl),
+          if (order.status == 'confirmed' || order.status == 'completed') ...[
+            EvidencePhotoSection(
+              orderId: order.id,
+              canUpload: order.status == 'confirmed' && (isBuyer || isSeller),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+
+          // Chat History (collapsible)
+          Builder(
+            builder: (context) {
+              // Find the chat room for this listing + buyer/seller pair
+              final chatRoomAsync = ref.watch(
+                orderChatRoomIdProvider(
+                  listingId: order.listingId,
+                  buyerId: order.buyerId,
+                  sellerId: order.sellerId,
+                ),
+              );
+
+              return chatRoomAsync.when(
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (chatRoomId) {
+                  if (chatRoomId == null) return const SizedBox.shrink();
+                  return Column(
+                    children: [
+                      ChatHistorySection(
+                        chatRoomId: chatRoomId,
+                        currentUserId: currentUserId ?? '',
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+
           _buildActions(context, ref, order, isBuyer, isSeller, isActing),
 
           // Rental lifecycle actions
