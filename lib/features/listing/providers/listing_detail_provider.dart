@@ -1,7 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/data/models/listing.dart';
+import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
+import 'package:smivo/data/repositories/order_repository.dart';
+import 'package:smivo/features/auth/providers/auth_provider.dart';
 
 part 'listing_detail_provider.g.dart';
 
@@ -64,4 +67,18 @@ class RentalEndDate extends _$RentalEndDate {
 Future<Listing> listingDetail(Ref ref, String id) async {
   final repository = ref.watch(listingRepositoryProvider);
   return repository.fetchListing(id);
+}
+
+/// Checks if the current user already has a pending/confirmed order
+/// for this listing. Returns the order if found, null otherwise.
+@riverpod
+Future<Order?> existingBuyerOrder(Ref ref, String listingId) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return null;
+  
+  final repo = ref.watch(orderRepositoryProvider);
+  return repo.fetchOrderByListingAndBuyer(
+    listingId: listingId,
+    buyerId: user.id,
+  );
 }

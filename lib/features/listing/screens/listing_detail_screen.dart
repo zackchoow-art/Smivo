@@ -12,6 +12,8 @@ import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:smivo/features/listing/providers/saved_listing_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 
@@ -110,6 +112,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           final seller = listing.seller;
           final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
           final isOwnListing = currentUserId != null && currentUserId == listing.sellerId;
+          final existingOrder = ref.watch(existingBuyerOrderProvider(listing.id));
           
           // Use joined images, fallback to empty list
           final imageUrls = listing.images.map((img) => img.imageUrl).toList();
@@ -368,134 +371,173 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           
                           // Primary Action Button — hidden on own listing
                           if (!isOwnListing)
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                final user = ref.read(authStateProvider).valueOrNull;
-                                
-                                // Guard 1: must be logged in
-                                if (user == null) {
-                                  context.pushNamed(AppRoutes.login);
-                                  return;
-                                }
-                                
-                                // Guard 2: email must be verified
-                                if (user.emailConfirmedAt == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please verify your email first')),
-                                  );
-                                  return;
-                                }
-                                
-                                // Guard 3: can't buy your own listing
-                                if (user.id == listing.sellerId) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('You cannot buy your own listing')),
-                                  );
-                                  return;
-                                }
-                                
-                                final isRental = listing.transactionType.toLowerCase() == 'rental';
-                                
-                                double orderPrice;
-                                DateTime? rentalStart;
-                                DateTime? rentalEnd;
-                                
-                                if (isRental) {
-                                  // Read rental configuration from providers
-                                  final selectedRate = ref.read(selectedRentalRateProvider);
-                                  final startDate = ref.read(rentalStartDateProvider);
-                                  
-                                  // Calculate price and end date based on selected rate type
-                                  if (selectedRate == 'DAY') {
-                                    final endDate = ref.read(rentalEndDateProvider);
-                                    final days = endDate.difference(startDate).inDays;
-                                    final effectiveDays = days > 0 ? days : 1;
-                                    orderPrice = (listing.rentalDailyPrice ?? 0) * effectiveDays;
-                                    rentalStart = startDate;
-                                    rentalEnd = endDate;
-                                  } else if (selectedRate == 'WEEK') {
-                                    final duration = ref.read(rentalDurationProvider);
-                                    final totalDays = 7 * duration;
-                                    orderPrice = (listing.rentalWeeklyPrice ?? 0) * duration;
-                                    rentalStart = startDate;
-                                    rentalEnd = startDate.add(Duration(days: totalDays));
-                                  } else {
-                                    // MONTH
-                                    final duration = ref.read(rentalDurationProvider);
-                                    orderPrice = (listing.rentalMonthlyPrice ?? 0) * duration;
-                                    rentalStart = startDate;
-                                    rentalEnd = DateTime(
-                                      startDate.year,
-                                      startDate.month + duration,
-                                      startDate.day,
-                                    );
-                                  }
-                                  
-                                  // Guard: total price must be > 0
-                                  if (orderPrice <= 0) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Invalid rental configuration. Please select a valid rate and period.'),
+                          existingOrder.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (order) {
+                              if (order != null) {
+                                // Buyer already submitted an order
+                                final submittedDate = DateFormat('MMM d, yyyy').format(order.createdAt);
+                                return Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceContainerLow,
+                                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      const Icon(Icons.check_circle, color: Colors.green, size: 28),
+                                      const SizedBox(height: AppSpacing.xs),
+                                      Text(
+                                        'Application Submitted',
+                                        style: AppTextStyles.titleMedium.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    );
-                                    return;
-                                  }
-                                } else {
-                                  // Sale: use listing price directly
-                                  orderPrice = listing.price;
-                                }
-                                
-                                try {
-                                  // NOTE: Use buyer's selected pickup if they changed it,
-                                  // otherwise fall back to seller's default pickup location.
-                                  final effectivePickupId = _selectedPickupLocationId 
-                                      ?? listing.pickupLocationId;
-                                  
-                                  await ref.read(orderActionsProvider.notifier).createOrder(
-                                    listingId: listing.id,
-                                    sellerId: listing.sellerId,
-                                    price: orderPrice,
-                                    orderType: isRental ? 'rental' : 'sale',
-                                    rentalStartDate: rentalStart,
-                                    rentalEndDate: rentalEnd,
-                                    depositAmount: listing.depositAmount,
-                                    pickupLocationId: effectivePickupId,
-                                  );
-                                  
-                                  if (!context.mounted) return;
-                                  
-                                  // Show success dialog (existing UI)
-                                  await _showOrderSuccessDialog(context);
-                                  
-                                  if (!context.mounted) return;
-                                  
-                                  // Navigate to orders page after success dialog dismissed
-                                  context.goNamed(AppRoutes.orders);
-                                } catch (e) {
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Failed to place order: ${e.toString()}'),
-                                      backgroundColor: Colors.red,
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        submittedDate,
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.outlineVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              
+                              // Normal action button
+                              return SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    final user = ref.read(authStateProvider).valueOrNull;
+                                    
+                                    // Guard 1: must be logged in
+                                    if (user == null) {
+                                      context.pushNamed(AppRoutes.login);
+                                      return;
+                                    }
+                                    
+                                    // Guard 2: email must be verified
+                                    if (user.emailConfirmedAt == null) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please verify your email first')),
+                                      );
+                                      return;
+                                    }
+                                    
+                                    // Guard 3: can't buy your own listing
+                                    if (user.id == listing.sellerId) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('You cannot buy your own listing')),
+                                      );
+                                      return;
+                                    }
+                                    
+                                    final isRental = listing.transactionType.toLowerCase() == 'rental';
+                                    
+                                    double orderPrice;
+                                    DateTime? rentalStart;
+                                    DateTime? rentalEnd;
+                                    
+                                    if (isRental) {
+                                      // Read rental configuration from providers
+                                      final selectedRate = ref.read(selectedRentalRateProvider);
+                                      final startDate = ref.read(rentalStartDateProvider);
+                                      
+                                      // Calculate price and end date based on selected rate type
+                                      if (selectedRate == 'DAY') {
+                                        final endDate = ref.read(rentalEndDateProvider);
+                                        final days = endDate.difference(startDate).inDays;
+                                        final effectiveDays = days > 0 ? days : 1;
+                                        orderPrice = (listing.rentalDailyPrice ?? 0) * effectiveDays;
+                                        rentalStart = startDate;
+                                        rentalEnd = endDate;
+                                      } else if (selectedRate == 'WEEK') {
+                                        final duration = ref.read(rentalDurationProvider);
+                                        final totalDays = 7 * duration;
+                                        orderPrice = (listing.rentalWeeklyPrice ?? 0) * duration;
+                                        rentalStart = startDate;
+                                        rentalEnd = startDate.add(Duration(days: totalDays));
+                                      } else {
+                                        // MONTH
+                                        final duration = ref.read(rentalDurationProvider);
+                                        orderPrice = (listing.rentalMonthlyPrice ?? 0) * duration;
+                                        rentalStart = startDate;
+                                        rentalEnd = DateTime(
+                                          startDate.year,
+                                          startDate.month + duration,
+                                          startDate.day,
+                                        );
+                                      }
+                                      
+                                      // Guard: total price must be > 0
+                                      if (orderPrice <= 0) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Invalid rental configuration. Please select a valid rate and period.'),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                    } else {
+                                      // Sale: use listing price directly
+                                      orderPrice = listing.price;
+                                    }
+                                    
+                                    try {
+                                      // NOTE: Use buyer's selected pickup if they changed it,
+                                      // otherwise fall back to seller's default pickup location.
+                                      final effectivePickupId = _selectedPickupLocationId 
+                                          ?? listing.pickupLocationId;
+                                      
+                                      await ref.read(orderActionsProvider.notifier).createOrder(
+                                        listingId: listing.id,
+                                        sellerId: listing.sellerId,
+                                        price: orderPrice,
+                                        orderType: isRental ? 'rental' : 'sale',
+                                        rentalStartDate: rentalStart,
+                                        rentalEndDate: rentalEnd,
+                                        depositAmount: listing.depositAmount,
+                                        pickupLocationId: effectivePickupId,
+                                      );
+                                      
+                                      if (!context.mounted) return;
+                                      
+                                      // Show success dialog (existing UI)
+                                      await _showOrderSuccessDialog(context);
+                                      
+                                      if (!context.mounted) return;
+                                      
+                                      // Navigate to orders page after success dialog dismissed
+                                      context.goNamed(AppRoutes.orders);
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Failed to place order: ${e.toString()}'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                                     ),
-                                  );
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                                    elevation: 0,
+                                  ),
+                                  child: Text(
+                                    isSale ? 'Place Order' : 'Request to Rent',
+                                    style: AppTextStyles.titleMedium.copyWith(color: Colors.white),
+                                  ),
                                 ),
-                                elevation: 0,
-                              ),
-                              child: Text(
-                                isSale ? 'Place Order' : 'Request to Rent',
-                                style: AppTextStyles.titleMedium.copyWith(color: Colors.white),
-                              ),
-                            ),
+                              );
+                            },
                           ),
                           
                           const SizedBox(height: 100),
@@ -527,6 +569,47 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   ),
                 ),
               ),
+              // Floating save button — hidden for own listings
+              if (!isOwnListing)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  right: 12,
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final isSavedAsync = ref.watch(isListingSavedProvider(listing.id));
+                      final isSaved = isSavedAsync.valueOrNull ?? false;
+                      
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            isSaved ? Icons.bookmark : Icons.bookmark_border,
+                            color: isSaved ? AppColors.primary : AppColors.onSurface,
+                          ),
+                          onPressed: () {
+                            final user = ref.read(authStateProvider).valueOrNull;
+                            if (user == null) {
+                              context.pushNamed(AppRoutes.login);
+                              return;
+                            }
+                            ref.read(savedListingActionsProvider.notifier)
+                                .toggleSave(listing.id);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           );
         },

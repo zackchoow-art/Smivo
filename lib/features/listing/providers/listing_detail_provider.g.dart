@@ -172,6 +172,146 @@ class _ListingDetailProviderElement
   String get id => (origin as ListingDetailProvider).id;
 }
 
+String _$existingBuyerOrderHash() =>
+    r'20ff335d0d4a11547e3f7ca9a4dd01e00d688ed8';
+
+/// Checks if the current user already has a pending/confirmed order
+/// for this listing. Returns the order if found, null otherwise.
+///
+/// Copied from [existingBuyerOrder].
+@ProviderFor(existingBuyerOrder)
+const existingBuyerOrderProvider = ExistingBuyerOrderFamily();
+
+/// Checks if the current user already has a pending/confirmed order
+/// for this listing. Returns the order if found, null otherwise.
+///
+/// Copied from [existingBuyerOrder].
+class ExistingBuyerOrderFamily extends Family<AsyncValue<Order?>> {
+  /// Checks if the current user already has a pending/confirmed order
+  /// for this listing. Returns the order if found, null otherwise.
+  ///
+  /// Copied from [existingBuyerOrder].
+  const ExistingBuyerOrderFamily();
+
+  /// Checks if the current user already has a pending/confirmed order
+  /// for this listing. Returns the order if found, null otherwise.
+  ///
+  /// Copied from [existingBuyerOrder].
+  ExistingBuyerOrderProvider call(String listingId) {
+    return ExistingBuyerOrderProvider(listingId);
+  }
+
+  @override
+  ExistingBuyerOrderProvider getProviderOverride(
+    covariant ExistingBuyerOrderProvider provider,
+  ) {
+    return call(provider.listingId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'existingBuyerOrderProvider';
+}
+
+/// Checks if the current user already has a pending/confirmed order
+/// for this listing. Returns the order if found, null otherwise.
+///
+/// Copied from [existingBuyerOrder].
+class ExistingBuyerOrderProvider extends AutoDisposeFutureProvider<Order?> {
+  /// Checks if the current user already has a pending/confirmed order
+  /// for this listing. Returns the order if found, null otherwise.
+  ///
+  /// Copied from [existingBuyerOrder].
+  ExistingBuyerOrderProvider(String listingId)
+    : this._internal(
+        (ref) => existingBuyerOrder(ref as ExistingBuyerOrderRef, listingId),
+        from: existingBuyerOrderProvider,
+        name: r'existingBuyerOrderProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$existingBuyerOrderHash,
+        dependencies: ExistingBuyerOrderFamily._dependencies,
+        allTransitiveDependencies:
+            ExistingBuyerOrderFamily._allTransitiveDependencies,
+        listingId: listingId,
+      );
+
+  ExistingBuyerOrderProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.listingId,
+  }) : super.internal();
+
+  final String listingId;
+
+  @override
+  Override overrideWith(
+    FutureOr<Order?> Function(ExistingBuyerOrderRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: ExistingBuyerOrderProvider._internal(
+        (ref) => create(ref as ExistingBuyerOrderRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        listingId: listingId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<Order?> createElement() {
+    return _ExistingBuyerOrderProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ExistingBuyerOrderProvider && other.listingId == listingId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, listingId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin ExistingBuyerOrderRef on AutoDisposeFutureProviderRef<Order?> {
+  /// The parameter `listingId` of this provider.
+  String get listingId;
+}
+
+class _ExistingBuyerOrderProviderElement
+    extends AutoDisposeFutureProviderElement<Order?>
+    with ExistingBuyerOrderRef {
+  _ExistingBuyerOrderProviderElement(super.provider);
+
+  @override
+  String get listingId => (origin as ExistingBuyerOrderProvider).listingId;
+}
+
 String _$selectedRentalRateHash() =>
     r'0c444cb1063da1555318c40dcba4f21ce0ae31fd';
 

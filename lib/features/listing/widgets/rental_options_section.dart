@@ -286,18 +286,24 @@ class _TotalRentBanner extends StatelessWidget {
         color: AppColors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Rental Period: $periodText',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.onSurface),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.onSurface,
+            ),
           ),
-          Text(
-            'Total: \$${_formatTotal(totalAmount)}',
-            style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.primary, 
-              fontWeight: FontWeight.bold,
+          const SizedBox(height: AppSpacing.xs),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'Total: \$${_formatTotal(totalAmount)}',
+              style: AppTextStyles.headlineSmall.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

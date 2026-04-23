@@ -143,6 +143,27 @@ class OrderRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  /// Finds an existing order by listing and buyer.
+  /// Returns null if no active order exists.
+  Future<Order?> fetchOrderByListingAndBuyer({
+    required String listingId,
+    required String buyerId,
+  }) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableOrders)
+          .select()
+          .eq('listing_id', listingId)
+          .eq('buyer_id', buyerId)
+          .inFilter('status', ['pending', 'confirmed'])
+          .maybeSingle();
+      if (data == null) return null;
+      return Order.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod
