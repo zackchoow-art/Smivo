@@ -66,7 +66,13 @@ class RentalEndDate extends _$RentalEndDate {
 @riverpod
 Future<Listing> listingDetail(Ref ref, String id) async {
   final repository = ref.watch(listingRepositoryProvider);
-  return repository.fetchListing(id);
+  final listing = await repository.fetchListing(id);
+
+  // Fire-and-forget: record this view for analytics
+  final userId = ref.read(authStateProvider).valueOrNull?.id;
+  repository.recordView(listingId: id, viewerId: userId);
+
+  return listing;
 }
 
 /// Checks if the current user already has a pending/confirmed order

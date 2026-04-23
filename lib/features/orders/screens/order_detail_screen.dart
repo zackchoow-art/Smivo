@@ -782,6 +782,14 @@ class OrderDetailScreen extends ConsumerWidget {
     Order order,
     bool isActing,
   ) {
+    // Hide cancel button if either party has confirmed delivery
+    final canCancel = order.status == 'pending' ||
+        (order.status == 'confirmed' &&
+            !order.deliveryConfirmedByBuyer &&
+            !order.deliveryConfirmedBySeller);
+
+    if (!canCancel) return const SizedBox.shrink();
+
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
@@ -800,11 +808,13 @@ class OrderDetailScreen extends ConsumerWidget {
                 }
               },
         style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.error,
+          side: const BorderSide(color: AppColors.error),
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
         child: Text(
-          'Cancel Order',
-          style: AppTextStyles.titleMedium.copyWith(color: AppColors.error),
+          isActing ? 'Processing...' : 'Cancel Order',
+          style: AppTextStyles.titleMedium,
         ),
       ),
     );

@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/data/models/order.dart';
+import 'package:smivo/data/repositories/chat_repository.dart';
+import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/seller/providers/transaction_stats_provider.dart';
+import 'package:smivo/features/seller/providers/listing_views_provider.dart';
 
 class TransactionManagementScreen extends ConsumerWidget {
   const TransactionManagementScreen({
@@ -44,36 +49,88 @@ class TransactionManagementScreen extends ConsumerWidget {
   }
 }
 
-/// Views tab — placeholder since we don't have a listing_views table yet.
-class _ViewsTab extends StatelessWidget {
+/// Views tab — shows individual viewer details.
+class _ViewsTab extends ConsumerWidget {
   const _ViewsTab({required this.listingId});
   final String listingId;
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.visibility_outlined,
-              size: 48,
-              color: AppColors.onSurface.withValues(alpha: 0.3)),
-          const SizedBox(height: 12),
-          Text(
-            'View tracking coming soon',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.outlineVariant,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewsAsync = ref.watch(listingViewsProvider(listingId));
+
+    return viewsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data: (views) {
+        if (views.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.visibility_outlined,
+                    size: 48,
+                    color: AppColors.onSurface.withValues(alpha: 0.3)),
+                const SizedBox(height: 12),
+                Text('No views yet',
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.outlineVariant)),
+              ],
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Individual viewer details will appear here.',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.outlineVariant,
+          );
+        }
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Text(
+                    'Total Views: ${views.length}',
+                    style: AppTextStyles.titleMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: views.length,
+                itemBuilder: (context, index) {
+                  final view = views[index];
+                  final timeStr = DateFormat('MMM d, h:mm a').format(view.viewedAt.toLocal());
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.surfaceContainerHigh,
+                        backgroundImage: view.viewerAvatarUrl != null
+                            ? NetworkImage(view.viewerAvatarUrl!)
+                            : null,
+                        child: view.viewerAvatarUrl == null
+                            ? const Icon(Icons.person, color: AppColors.onSurface)
+                            : null,
+                      ),
+                      title: Text(view.viewerName ?? 'Anonymous Guest',
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(fontWeight: FontWeight.w600)),
+                      subtitle: Text('Viewed on $timeStr',
+                          style: AppTextStyles.bodySmall),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -197,7 +254,7 @@ class _OrdersTab extends ConsumerWidget {
   }
 }
 
-class _OrderCard extends StatelessWidget {
+class _OrderCard extends ConsumerWidget {
   const _OrderCard({
     required this.order,
     required this.isActing,
@@ -209,7 +266,7 @@ class _OrderCard extends StatelessWidget {
   final VoidCallback? onAccept;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final buyerName = order.buyer?.displayName ?? 'Unknown Buyer';
     final dateStr = DateFormat('MMM d, yyyy').format(order.createdAt);
     final isPending = order.status == 'pending';
@@ -270,6 +327,27 @@ class _OrderCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chat_outlined, size: 20),
+                  tooltip: 'Message buyer',
+                  onPressed: () async {
+                    final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
+                    if (currentUserId == null) return;
+
+                    final chatRepo = ref.read(chatRepositoryProvider);
+                    final room = await chatRepo.getOrCreateChatRoom(
+                      listingId: order.listingId,
+                      buyerId: order.buyerId,
+                      sellerId: order.sellerId,
+                    );
+                    if (context.mounted) {
+                      context.pushNamed(
+                        AppRoutes.chatRoom,
+                        pathParameters: {'id': room.id},
+                      );
+                    }
+                  },
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(

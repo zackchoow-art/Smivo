@@ -267,6 +267,27 @@ class ListingRepository {
     }
   }
 
+  /// Records a view event for a listing.
+  /// Silently fails if the insert errors (non-critical).
+  Future<void> recordView({
+    required String listingId,
+    String? viewerId,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'listing_id': listingId,
+      };
+      if (viewerId != null) {
+        data['viewer_id'] = viewerId;
+      }
+      await _client
+          .from(AppConstants.tableListingViews)
+          .insert(data);
+    } on PostgrestException catch (_) {
+      // Non-critical — don't crash the app if view tracking fails
+    }
+  }
+
   // ──────────────────────────────────────────────────────────────
   // PRIVATE HELPERS
   // ──────────────────────────────────────────────────────────────
