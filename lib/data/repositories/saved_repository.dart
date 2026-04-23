@@ -86,6 +86,21 @@ class SavedRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  /// Fetches all users who saved a specific listing (for seller stats).
+  /// Returns a list of SavedListing records.
+  Future<List<SavedListing>> fetchSavedByListing(String listingId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableSavedListings)
+          .select('*, user:user_profiles!user_id(*)')
+          .eq('listing_id', listingId)
+          .order('created_at', ascending: false);
+      return data.map((json) => SavedListing.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod

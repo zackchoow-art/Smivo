@@ -373,12 +373,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                               width: double.infinity,
                               child: OutlinedButton.icon(
                                 onPressed: () {
-                                  // TODO: Navigate to transaction management
-                                  // (Task 015 will implement this)
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Transaction management coming soon'),
-                                    ),
+                                  context.pushNamed(
+                                    AppRoutes.transactionManagement,
+                                    pathParameters: {'id': listing.id},
                                   );
                                 },
                                 icon: const Icon(Icons.manage_search),

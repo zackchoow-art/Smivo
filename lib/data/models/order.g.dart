@@ -38,6 +38,15 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
   pickupLocationId: json['pickup_location_id'] as String?,
+  rentalStatus: json['rental_status'] as String?,
+  depositRefundedAt:
+      json['deposit_refunded_at'] == null
+          ? null
+          : DateTime.parse(json['deposit_refunded_at'] as String),
+  returnRequestedAt:
+      json['return_requested_at'] == null
+          ? null
+          : DateTime.parse(json['return_requested_at'] as String),
   buyer:
       json['buyer'] == null
           ? null
@@ -81,6 +90,9 @@ Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
   'pickup_location_id': instance.pickupLocationId,
+  'rental_status': instance.rentalStatus,
+  'deposit_refunded_at': instance.depositRefundedAt?.toIso8601String(),
+  'return_requested_at': instance.returnRequestedAt?.toIso8601String(),
   'buyer': instance.buyer,
   'seller': instance.seller,
   'listing': instance.listing,

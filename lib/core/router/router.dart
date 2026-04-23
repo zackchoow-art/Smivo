@@ -21,6 +21,7 @@ import 'package:smivo/features/settings/screens/notification_settings_screen.dar
 import 'package:smivo/features/settings/screens/settings_screen.dart';
 import 'package:smivo/features/settings/screens/system_settings_screen.dart';
 import 'package:smivo/features/seller/screens/seller_center_screen.dart';
+import 'package:smivo/features/seller/screens/transaction_management_screen.dart';
 import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
 import 'package:smivo/shared/widgets/app_shell.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -234,6 +235,14 @@ GoRouter router(Ref ref) {
         name: AppRoutes.sellerCenter,
         path: AppRoutes.sellerCenterPath,
         builder: (context, state) => const SellerCenterScreen(),
+      ),
+
+      GoRoute(
+        name: AppRoutes.transactionManagement,
+        path: AppRoutes.transactionManagementPath,
+        builder: (context, state) => TransactionManagementScreen(
+          listingId: state.pathParameters['id']!,
+        ),
       ),
 
       // ── Buyer Center ─────────────────────────────────────

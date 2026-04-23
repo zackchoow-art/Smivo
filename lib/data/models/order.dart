@@ -36,6 +36,9 @@ abstract class Order with _$Order {
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
     @JsonKey(name: 'pickup_location_id') String? pickupLocationId,
+    @JsonKey(name: 'rental_status') String? rentalStatus,
+    @JsonKey(name: 'deposit_refunded_at') DateTime? depositRefundedAt,
+    @JsonKey(name: 'return_requested_at') DateTime? returnRequestedAt,
     
     // Nested join data — populated only by specific join queries
     UserProfile? buyer,

@@ -209,17 +209,88 @@ class OrderActions extends _$OrderActions {
         await ref.read(orderRepositoryProvider)
             .updateOrderStatus(order.id, 'completed');
       } else {
-        // Rental: keep dual confirmation (existing behavior)
+        // Rental: keep dual confirmation
         final role = isBuyer ? 'buyer' : 'seller';
         await ref.read(orderRepositoryProvider).confirmDelivery(
           orderId: order.id,
           byUserRole: role,
         );
+        
+        // After both parties confirm, activate the rental
+        // (instead of completing it — rental has a return lifecycle)
+        final updated = await ref.read(orderRepositoryProvider)
+            .fetchOrder(order.id);
+        if (updated.deliveryConfirmedByBuyer && 
+            updated.deliveryConfirmedBySeller &&
+            updated.rentalStatus == null) {
+          await ref.read(orderRepositoryProvider)
+              .updateRentalStatus(order.id, 'active');
+        }
       }
 
       // Refresh lists so status updates everywhere
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(order.id));
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Activates a rental order after both parties confirm delivery.
+  /// Called automatically when rental delivery is confirmed.
+  Future<void> activateRental(String orderId) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(orderRepositoryProvider)
+          .updateRentalStatus(orderId, 'active');
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(orderDetailProvider(orderId));
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Buyer requests to return the rented item.
+  Future<void> requestReturn(String orderId) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(orderRepositoryProvider)
+          .updateRentalStatus(orderId, 'return_requested');
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(orderDetailProvider(orderId));
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Seller confirms the item has been returned.
+  Future<void> confirmReturn(String orderId) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(orderRepositoryProvider)
+          .updateRentalStatus(orderId, 'returned');
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(orderDetailProvider(orderId));
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Seller confirms the deposit has been refunded.
+  Future<void> refundDeposit(String orderId) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(orderRepositoryProvider)
+          .updateRentalStatus(orderId, 'deposit_refunded');
+      // Mark the order as completed after deposit refund
+      await ref.read(orderRepositoryProvider)
+          .updateOrderStatus(orderId, 'completed');
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(orderDetailProvider(orderId));
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

@@ -55,6 +55,52 @@ class OrderRepository {
     }
   }
 
+  /// Fetches all orders for a specific listing.
+  Future<List<Order>> fetchOrdersByListing(String listingId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableOrders)
+          .select('''
+            *,
+            buyer:user_profiles!buyer_id(*),
+            seller:user_profiles!seller_id(*)
+          ''')
+          .eq('listing_id', listingId)
+          .order('created_at', ascending: false);
+      return data.map((json) => Order.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Updates the rental status of an order.
+  Future<Order> updateRentalStatus(String id, String rentalStatus) async {
+    try {
+      final updateData = <String, dynamic>{
+        'rental_status': rentalStatus,
+      };
+      
+      // Add timestamps for specific transitions
+      if (rentalStatus == 'return_requested') {
+        updateData['return_requested_at'] = DateTime.now().toIso8601String();
+      } else if (rentalStatus == 'returned') {
+        updateData['return_confirmed_at'] = DateTime.now().toIso8601String();
+      } else if (rentalStatus == 'deposit_refunded') {
+        updateData['deposit_refunded_at'] = DateTime.now().toIso8601String();
+      }
+      
+      final data = await _client
+          .from(AppConstants.tableOrders)
+          .update(updateData)
+          .eq('id', id)
+          .select()
+          .single();
+      return Order.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Creates a new order. Strips nested join fields before insert.
   Future<Order> createOrder(Order order) async {
     try {

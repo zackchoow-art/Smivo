@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_spacing.dart';
@@ -73,35 +74,227 @@ class OrderDetailScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Listing card
           _buildListingCard(order),
           const SizedBox(height: AppSpacing.lg),
 
-          // Order info
+          _buildTimeline(order),
+          const SizedBox(height: AppSpacing.lg),
+
+          _buildFinancialSummary(order),
+          const SizedBox(height: AppSpacing.lg),
+
           _buildInfoSection(order, counterparty?.displayName),
           const SizedBox(height: AppSpacing.lg),
 
-          // Rental rate options (rental only, show available rates)
-          if (order.orderType == 'rental' && order.listing != null)
-            _buildRentalRates(order),
-          if (order.orderType == 'rental' && order.listing != null)
-            const SizedBox(height: AppSpacing.lg),
-
-          // Rental period (rental only)
-          if (order.orderType == 'rental' && 
-              order.rentalStartDate != null) ...[
+          if (order.orderType == 'rental' && order.rentalStartDate != null) ...[
             _buildRentalSection(order),
             const SizedBox(height: AppSpacing.lg),
           ],
 
-          // Delivery confirmation status
           if (order.status == 'confirmed' || order.status == 'completed')
             _buildDeliveryStatus(order),
 
           const SizedBox(height: AppSpacing.xl),
-
-          // Action buttons
           _buildActions(context, ref, order, isBuyer, isSeller, isActing),
+
+          // Rental lifecycle actions
+          if (order.orderType == 'rental' && order.rentalStatus != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            _buildRentalLifecycleActions(
+                context, ref, order, isBuyer, isSeller, isActing),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeline(Order order) {
+    final steps = <_TimelineStep>[
+      _TimelineStep(
+        label: 'Order Placed',
+        date: order.createdAt,
+        isCompleted: true,
+      ),
+      _TimelineStep(
+        label: 'Accepted',
+        date: order.status != 'pending' && order.status != 'cancelled'
+            ? order.updatedAt
+            : null,
+        isCompleted:
+            order.status == 'confirmed' || order.status == 'completed',
+      ),
+      if (order.orderType == 'sale')
+        _TimelineStep(
+          label: 'Picked Up',
+          date: order.status == 'completed' ? order.updatedAt : null,
+          isCompleted: order.status == 'completed',
+        ),
+      if (order.orderType == 'rental') ...[
+        _TimelineStep(
+          label: 'Delivered',
+          date: order.deliveryConfirmedByBuyer &&
+                  order.deliveryConfirmedBySeller
+              ? order.updatedAt
+              : null,
+          isCompleted: order.deliveryConfirmedByBuyer &&
+              order.deliveryConfirmedBySeller,
+        ),
+        _TimelineStep(
+          label: 'Returned',
+          date: order.returnConfirmedAt,
+          isCompleted: order.returnConfirmedAt != null,
+        ),
+      ],
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('ORDER TIMELINE',
+            style: AppTextStyles.labelSmall.copyWith(
+              color: AppColors.onSurface.withValues(alpha: 0.5),
+              letterSpacing: 0.5,
+            )),
+        const SizedBox(height: AppSpacing.md),
+        ...steps.asMap().entries.map((entry) {
+          final index = entry.key;
+          final step = entry.value;
+          final isLast = index == steps.length - 1;
+
+          return _buildTimelineRow(step, isLast);
+        }),
+      ],
+    );
+  }
+
+  Widget _buildTimelineRow(_TimelineStep step, bool isLast) {
+    final dateStr = step.date != null
+        ? DateFormat('MMM d, yyyy · h:mm a').format(step.date!.toLocal())
+        : '—';
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Dot + Line
+          SizedBox(
+            width: 32,
+            child: Column(
+              children: [
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: step.isCompleted
+                        ? AppColors.primary
+                        : AppColors.surfaceContainerHigh,
+                    border: Border.all(
+                      color: step.isCompleted
+                          ? AppColors.primary
+                          : AppColors.outlineVariant,
+                      width: 2,
+                    ),
+                  ),
+                  child: step.isCompleted
+                      ? const Icon(Icons.check, size: 8, color: Colors.white)
+                      : null,
+                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      color: step.isCompleted
+                          ? AppColors.primary
+                          : AppColors.surfaceContainerHigh,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(step.label,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: step.isCompleted
+                            ? AppColors.onSurface
+                            : AppColors.outlineVariant,
+                      )),
+                  if (step.date != null)
+                    Text(dateStr,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.outlineVariant,
+                        )),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinancialSummary(Order order) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('FINANCIAL SUMMARY',
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.onSurface.withValues(alpha: 0.5),
+                letterSpacing: 0.5,
+              )),
+          const SizedBox(height: AppSpacing.md),
+          _summaryRow('Type', order.orderType.toUpperCase()),
+          if (order.orderType == 'rental' && order.listing != null) ...[
+            if ((order.listing!.rentalDailyPrice ?? 0) > 0)
+              _summaryRow('Daily Rate',
+                  '\$${order.listing!.rentalDailyPrice!.toStringAsFixed(2)}'),
+            if ((order.listing!.rentalWeeklyPrice ?? 0) > 0)
+              _summaryRow('Weekly Rate',
+                  '\$${order.listing!.rentalWeeklyPrice!.toStringAsFixed(2)}'),
+            if ((order.listing!.rentalMonthlyPrice ?? 0) > 0)
+              _summaryRow('Monthly Rate',
+                  '\$${order.listing!.rentalMonthlyPrice!.toStringAsFixed(2)}'),
+          ],
+          if (order.depositAmount > 0)
+            _summaryRow(
+                'Deposit', '\$${order.depositAmount.toStringAsFixed(2)}'),
+          const Divider(),
+          _summaryRow(
+            'Total',
+            '\$${order.totalPrice.toStringAsFixed(2)}',
+            isBold: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, String value, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: AppTextStyles.bodyMedium),
+          Text(value,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                color: isBold ? AppColors.primary : null,
+              )),
         ],
       ),
     );
@@ -197,83 +390,6 @@ class OrderDetailScreen extends ConsumerWidget {
         if (order.returnConfirmedAt != null)
           _infoRow('Returned', order.returnConfirmedAt!.toLocal().toString().split(' ')[0]),
       ],
-    );
-  }
-
-  Widget _buildRentalRates(Order order) {
-    final listing = order.listing!;
-    final hasDaily = (listing.rentalDailyPrice ?? 0) > 0;
-    final hasWeekly = (listing.rentalWeeklyPrice ?? 0) > 0;
-    final hasMonthly = (listing.rentalMonthlyPrice ?? 0) > 0;
-
-    // NOTE: If no rates are available at all, don't show this section
-    if (!hasDaily && !hasWeekly && !hasMonthly) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Rental Rates', style: AppTextStyles.titleMedium),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          children: [
-            if (hasDaily)
-              _rateChip(
-                'Day',
-                '\$${listing.rentalDailyPrice!.toStringAsFixed(2)}',
-              ),
-            if (hasDaily && (hasWeekly || hasMonthly))
-              const SizedBox(width: AppSpacing.sm),
-            if (hasWeekly)
-              _rateChip(
-                'Week',
-                '\$${listing.rentalWeeklyPrice!.toStringAsFixed(2)}',
-              ),
-            if (hasWeekly && hasMonthly)
-              const SizedBox(width: AppSpacing.sm),
-            if (hasMonthly)
-              _rateChip(
-                'Month',
-                '\$${listing.rentalMonthlyPrice!.toStringAsFixed(2)}',
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _rateChip(String label, String price) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.sm,
-          horizontal: AppSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          border: Border.all(color: AppColors.outlineVariant),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.outlineVariant,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              price,
-              style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -470,6 +586,155 @@ class OrderDetailScreen extends ConsumerWidget {
     }
   }
 
+  Widget _buildRentalLifecycleActions(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isBuyer,
+    bool isSeller,
+    bool isActing,
+  ) {
+    switch (order.rentalStatus) {
+      case 'active':
+        if (isBuyer) {
+          return SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isActing
+                  ? null
+                  : () => ref
+                      .read(orderActionsProvider.notifier)
+                      .requestReturn(order.id),
+              icon: const Icon(Icons.assignment_return),
+              label: Text(isActing ? 'Processing...' : 'Request Return'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          );
+        }
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: Colors.green.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green),
+              const SizedBox(width: 8),
+              Text('Rental Active — Item with buyer',
+                  style: AppTextStyles.bodyMedium),
+            ],
+          ),
+        );
+
+      case 'return_requested':
+        if (isSeller) {
+          return SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isActing
+                  ? null
+                  : () => ref
+                      .read(orderActionsProvider.notifier)
+                      .confirmReturn(order.id),
+              icon: const Icon(Icons.check),
+              label: Text(isActing ? 'Processing...' : 'Confirm Return'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          );
+        }
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.hourglass_top, color: Colors.orange),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Waiting for seller to confirm return',
+                    style: AppTextStyles.bodyMedium),
+              ),
+            ],
+          ),
+        );
+
+      case 'returned':
+        if (isSeller && order.depositAmount > 0) {
+          return SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isActing
+                  ? null
+                  : () => ref
+                      .read(orderActionsProvider.notifier)
+                      .refundDeposit(order.id),
+              icon: const Icon(Icons.payments),
+              label: Text(isActing
+                  ? 'Processing...'
+                  : 'Confirm Deposit Refund (\$${order.depositAmount.toStringAsFixed(0)})'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          );
+        }
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.assignment_turned_in, color: Colors.blue),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  order.depositAmount > 0
+                      ? 'Item returned — Awaiting deposit refund'
+                      : 'Item returned — Transaction complete',
+                  style: AppTextStyles.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+        );
+
+      case 'deposit_refunded':
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: Colors.green.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green),
+              const SizedBox(width: 8),
+              Text('Deposit refunded — Transaction complete',
+                  style: AppTextStyles.bodyMedium),
+            ],
+          ),
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
   Widget _buildCancelButton(
     BuildContext context,
     WidgetRef ref,
@@ -564,4 +829,15 @@ class OrderDetailScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _TimelineStep {
+  const _TimelineStep({
+    required this.label,
+    required this.isCompleted,
+    this.date,
+  });
+  final String label;
+  final DateTime? date;
+  final bool isCompleted;
 }
