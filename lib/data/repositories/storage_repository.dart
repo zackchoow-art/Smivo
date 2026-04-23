@@ -56,19 +56,26 @@ class StorageRepository {
   }
 
   /// Uploads a chat message image and returns its public URL.
+  ///
+  /// If orderId is available, stores under order folder.
+  /// Falls back to chatRoomId subfolder if no order exists yet.
   Future<String> uploadChatMessageImage({
     required String chatRoomId,
     required String fileName,
     required Uint8List fileBytes,
+    String? orderId,
   }) async {
     try {
-      final path = 'chat/$chatRoomId/$fileName';
+      // Prefer order-based path; fall back to chat room path
+      final basePath = orderId != null
+          ? '$orderId/chat/$fileName'
+          : 'unlinked/$chatRoomId/$fileName';
       await _client.storage
-          .from(AppConstants.bucketChatImages)
-          .uploadBinary(path, fileBytes);
+          .from(AppConstants.bucketOrderFiles)
+          .uploadBinary(basePath, fileBytes);
       return _client.storage
-          .from(AppConstants.bucketChatImages)
-          .getPublicUrl(path);
+          .from(AppConstants.bucketOrderFiles)
+          .getPublicUrl(basePath);
     } on StorageException catch (e) {
       throw AppStorageException(e.message, e);
     }

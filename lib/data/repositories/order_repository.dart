@@ -150,9 +150,14 @@ class OrderRepository {
   /// status transitions to 'completed'. The database trigger 
   /// (00006_order_listing_status_sync) then updates the listing 
   /// status for sale orders.
+  /// Confirms delivery by [byUserRole] ('buyer' or 'seller').
+  ///
+  /// For sale orders: if both confirmed, transitions to 'completed'.
+  /// For rental orders: stays in 'confirmed', provider layer activates rental.
   Future<Order> confirmDelivery({
     required String orderId,
     required String byUserRole,
+    required String orderType,
   }) async {
     try {
       final field = byUserRole == 'buyer'
@@ -176,8 +181,9 @@ class OrderRepository {
           current['delivery_confirmed_by_buyer'] == true &&
           current['delivery_confirmed_by_seller'] == true;
 
-      // Step 3: if both confirmed and not already completed, mark complete
-      if (bothConfirmed && current['status'] != 'completed') {
+      // Step 3: only complete sale orders automatically.
+      // Rental orders stay in 'confirmed' — provider layer activates rental.
+      if (bothConfirmed && current['status'] != 'completed' && orderType == 'sale') {
         await _client
             .from(AppConstants.tableOrders)
             .update({'status': 'completed'})
@@ -189,6 +195,7 @@ class OrderRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
 
   /// Finds an existing order by listing and buyer.
   /// Returns null if no active order exists.

@@ -38,13 +38,13 @@ class OrderEvidenceRepository {
   }) async {
     try {
       // Upload to storage
-      final path = '$orderId/$uploaderId/$fileName';
+      final path = '$orderId/evidence/$uploaderId/$fileName';
       await _client.storage
-          .from(AppConstants.bucketOrderEvidence)
+          .from(AppConstants.bucketOrderFiles)
           .uploadBinary(path, imageBytes);
 
       final imageUrl = _client.storage
-          .from(AppConstants.bucketOrderEvidence)
+          .from(AppConstants.bucketOrderFiles)
           .getPublicUrl(path);
 
       // Create DB record

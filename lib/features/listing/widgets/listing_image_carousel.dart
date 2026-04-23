@@ -144,57 +144,6 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
               ),
             ),
           
-          // Navigation Buttons
-          Positioned(
-            top: MediaQuery.of(context).padding.top + AppSpacing.sm,
-            left: AppSpacing.sm,
-            child: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.arrow_back, color: AppColors.onSurface, size: 20),
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-          
-          Positioned(
-            top: MediaQuery.of(context).padding.top + AppSpacing.sm,
-            right: AppSpacing.sm,
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.share_outlined, color: AppColors.onSurface, size: 20),
-                  ),
-                  onPressed: () {
-                    // TODO: Share listing
-                  },
-                ),
-                IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.favorite_border, color: AppColors.onSurface, size: 20),
-                  ),
-                  onPressed: () {
-                    // TODO: Save listing
-                  },
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

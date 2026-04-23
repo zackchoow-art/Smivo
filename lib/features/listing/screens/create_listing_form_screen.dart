@@ -637,20 +637,20 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
       double? monthlyRate;
 
       if (isSale) {
-        price = double.parse(_priceController.text.trim());
+        price = double.tryParse(_priceController.text.trim()) ?? 0.0;
       } else {
         dailyRate = _dailyEnabled 
-            ? double.parse(_dailyController.text.trim()) 
+            ? double.tryParse(_dailyController.text.trim()) 
             : null;
         weeklyRate = _weeklyEnabled 
-            ? double.parse(_weeklyController.text.trim()) 
+            ? double.tryParse(_weeklyController.text.trim()) 
             : null;
         monthlyRate = _monthlyEnabled 
-            ? double.parse(_monthlyController.text.trim()) 
+            ? double.tryParse(_monthlyController.text.trim()) 
             : null;
       }
 
-      final deposit = double.parse(_depositController.text.trim());
+      final deposit = double.tryParse(_depositController.text.trim()) ?? 0.0;
 
       await ref.read(createListingActionProvider.notifier).submit(
             title: _titleController.text,

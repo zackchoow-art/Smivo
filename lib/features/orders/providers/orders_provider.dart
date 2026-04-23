@@ -214,6 +214,7 @@ class OrderActions extends _$OrderActions {
         await ref.read(orderRepositoryProvider).confirmDelivery(
           orderId: order.id,
           byUserRole: role,
+          orderType: order.orderType,
         );
         
         // After both parties confirm, activate the rental

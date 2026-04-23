@@ -404,7 +404,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                             data: (order) {
                               if (order != null) {
                                 // Buyer already submitted an order
-                                final submittedDate = DateFormat('MMM d, yyyy').format(order.createdAt);
+                                final submittedDate = DateFormat('MMM d, yyyy · h:mm a').format(order.createdAt.toLocal());
                                 return Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
