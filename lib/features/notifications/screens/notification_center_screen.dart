@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,60 +14,40 @@ class NotificationCenterScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationListProvider);
-    final unreadCount = ref.watch(totalUnreadNotificationsProvider)
-        .valueOrNull ?? 0;
+    final unreadCount = ref.watch(totalUnreadNotificationsProvider).valueOrNull ?? 0;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 18),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          'Notifications',
-          style: AppTextStyles.headlineSmall,
-        ),
+        title: Text('Notifications', style: typo.headlineSmall),
         actions: [
           if (unreadCount > 0)
             TextButton(
-              onPressed: () {
-                ref.read(notificationListProvider.notifier).markAllAsRead();
-              },
-              child: Text(
-                'Mark All Read',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
+              onPressed: () => ref.read(notificationListProvider.notifier).markAllAsRead(),
+              child: Text('Mark All Read', style: typo.labelSmall.copyWith(color: colors.primary)),
             ),
         ],
       ),
       body: notificationsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
-          child: Text(
-            'Error loading notifications',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.error,
-            ),
-          ),
+          child: Text('Error loading notifications', style: typo.bodyMedium.copyWith(color: colors.error)),
         ),
         data: (notifications) {
-          if (notifications.isEmpty) {
-            return _buildEmptyState();
-          }
-
+          if (notifications.isEmpty) return _buildEmptyState(context);
           return ListView.builder(
             itemCount: notifications.length,
             itemBuilder: (context, index) {
               final notification = notifications[index];
-              return NotificationListItem(
-                notification: notification,
-                onTap: () => _handleTap(context, ref, notification),
-              );
+              return NotificationListItem(notification: notification, onTap: () => _handleTap(context, ref, notification));
             },
           );
         },
@@ -78,68 +55,38 @@ class NotificationCenterScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.notifications_none_outlined,
-            size: 64,
-            color: AppColors.outlineVariant.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'No notifications yet',
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.outlineVariant,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            "We'll notify you when something happens.",
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.outlineVariant,
-            ),
-          ),
+          Icon(Icons.notifications_none_outlined, size: 64, color: colors.outlineVariant.withValues(alpha: 0.5)),
+          const SizedBox(height: 12),
+          Text('No notifications yet', style: typo.bodyLarge.copyWith(color: colors.outlineVariant)),
+          const SizedBox(height: 4),
+          Text("We'll notify you when something happens.", style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
         ],
       ),
     );
   }
 
-  void _handleTap(
-    BuildContext context,
-    WidgetRef ref,
-    AppNotification notification,
-  ) {
-    // Mark as read on tap
+  void _handleTap(BuildContext context, WidgetRef ref, AppNotification notification) {
     if (!notification.isRead) {
-      ref.read(notificationListProvider.notifier)
-          .markAsRead(notification.id);
+      ref.read(notificationListProvider.notifier).markAsRead(notification.id);
     }
-
     switch (notification.actionType) {
       case 'order':
         if (notification.relatedOrderId != null) {
-          context.pushNamed(
-            AppRoutes.orderDetail,
-            pathParameters: {'id': notification.relatedOrderId!},
-          );
+          context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': notification.relatedOrderId!});
         }
-        break;
       case 'url':
-        if (notification.actionUrl != null) {
-          launchUrl(Uri.parse(notification.actionUrl!));
-        }
-        break;
+        if (notification.actionUrl != null) launchUrl(Uri.parse(notification.actionUrl!));
       case 'route':
-        if (notification.actionUrl != null) {
-          context.push(notification.actionUrl!);
-        }
-        break;
+        if (notification.actionUrl != null) context.push(notification.actionUrl!);
       case 'none':
       default:
-        // Just mark as read, no navigation
         break;
     }
   }

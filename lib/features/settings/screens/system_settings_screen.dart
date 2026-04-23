@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/features/settings/providers/settings_provider.dart';
@@ -16,9 +14,12 @@ class SystemSettingsScreen extends ConsumerWidget {
     final isDarkMode = ref.watch(darkModeStateProvider);
     final isDataUsageEnabled = ref.watch(dataUsageStateProvider);
     final isPrivacyEnabled = ref.watch(privacySettingsStateProvider);
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return Scaffold(
-      backgroundColor: AppColors.surfaceContainerLowest,
+      backgroundColor: colors.surfaceContainerLowest,
       appBar: const CustomAppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -26,104 +27,42 @@ class SystemSettingsScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'System Settings',
-                style: AppTextStyles.headlineLarge.copyWith(
-                  color: const Color(0xFF2B2A51),
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
+              Text('System Settings', style: typo.headlineLarge.copyWith(color: colors.settingsText, fontWeight: FontWeight.w900)),
               const SizedBox(height: 32),
-              
-              Text(
-                'Display',
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: const Color(0xFF2B2A51),
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+              Text('Display', style: typo.titleMedium.copyWith(color: colors.settingsText, fontWeight: FontWeight.w800)),
               const SizedBox(height: 16),
-              SettingToggleRow(
-                icon: Icons.dark_mode_outlined,
-                title: 'Dark Mode',
-                subtitle: 'Adjust interface\nappearance',
-                value: isDarkMode,
-                onChanged: (_) => ref.read(darkModeStateProvider.notifier).toggle(),
-              ),
+              SettingToggleRow(icon: Icons.dark_mode_outlined, title: 'Dark Mode',
+                subtitle: 'Adjust interface\nappearance', value: isDarkMode,
+                onChanged: (_) => ref.read(darkModeStateProvider.notifier).toggle()),
               const SizedBox(height: 16),
               SettingCardContainer(
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.language,
-                        color: Color(0xFF013DFD),
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Language',
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              color: const Color(0xFF2B2A51),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'English (US)',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right,
-                      color: Color(0xFF2B2A51),
-                    ),
-                  ],
-                ),
+                child: Row(children: [
+                  Container(
+                    width: 40, height: 40,
+                    decoration: BoxDecoration(color: colors.surfaceContainerLowest, shape: BoxShape.circle),
+                    child: Icon(Icons.language, color: colors.settingsIcon, size: 20),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Language', style: typo.bodyLarge.copyWith(color: colors.settingsText, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 2),
+                    Text('English (US)', style: typo.bodySmall.copyWith(color: colors.settingsTextSecondary)),
+                  ])),
+                  Icon(Icons.chevron_right, color: colors.settingsText),
+                ]),
               ),
-              
               const SizedBox(height: 32),
-              const Divider(color: Color(0xFFE2DFFF)),
+              Divider(color: colors.dividerColor),
               const SizedBox(height: 32),
-              
-              Text(
-                'Network & Privacy',
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: const Color(0xFF2B2A51),
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+              Text('Network & Privacy', style: typo.titleMedium.copyWith(color: colors.settingsText, fontWeight: FontWeight.w800)),
               const SizedBox(height: 16),
-              SettingToggleRow(
-                icon: Icons.data_usage,
-                title: 'Data Usage',
-                subtitle: 'Optimize imagery for\ncellular',
-                value: isDataUsageEnabled,
-                onChanged: (_) => ref.read(dataUsageStateProvider.notifier).toggle(),
-              ),
+              SettingToggleRow(icon: Icons.data_usage, title: 'Data Usage',
+                subtitle: 'Optimize imagery for\ncellular', value: isDataUsageEnabled,
+                onChanged: (_) => ref.read(dataUsageStateProvider.notifier).toggle()),
               const SizedBox(height: 16),
-              SettingToggleRow(
-                icon: Icons.shield_outlined,
-                title: 'Privacy Settings',
-                subtitle: 'Limit profile visibility',
-                value: isPrivacyEnabled,
-                onChanged: (_) => ref.read(privacySettingsStateProvider.notifier).toggle(),
-              ),
+              SettingToggleRow(icon: Icons.shield_outlined, title: 'Privacy Settings',
+                subtitle: 'Limit profile visibility', value: isPrivacyEnabled,
+                onChanged: (_) => ref.read(privacySettingsStateProvider.notifier).toggle()),
               const SizedBox(height: 48),
             ],
           ),
