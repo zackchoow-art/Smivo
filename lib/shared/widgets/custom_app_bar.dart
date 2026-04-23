@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/shared/widgets/message_badge_icon.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -18,13 +17,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.onSurface, size: 20),
+              icon: Icon(
+                Icons.arrow_back_ios_new,
+                color: colors.onSurface,
+                size: 20,
+              ),
               onPressed: () {
                 if (context.canPop()) {
                   context.pop();
@@ -35,7 +41,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: title != null
           ? Text(
               title!,
-              style: AppTextStyles.headlineSmall.copyWith(
+              style: typo.headlineSmall.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),

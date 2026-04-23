@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/data/models/message.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
@@ -107,6 +105,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Widget build(BuildContext context) {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
     final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
+    final colors = context.smivoColors;
 
     // Re-mark as read whenever new messages arrive while viewing this chat.
     ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
@@ -119,10 +118,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F4FA),
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text('Chat'),
-        backgroundColor: Colors.white,
+        backgroundColor: colors.surfaceContainerLowest,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -145,7 +144,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 return ListView.builder(
                   controller: _scrollController,
                   reverse: true, 
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(12),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[messages.length - 1 - index];
@@ -167,11 +166,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Widget _buildInputBar() {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0x11000000))),
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLowest,
+        border: Border(
+          top: BorderSide(color: colors.shadow),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -179,25 +184,27 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           children: [
             // Add Button
             IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+              icon: Icon(Icons.add_circle_outline, color: colors.primary),
               onPressed: _handlePickImage,
             ),
-            const SizedBox(width: AppSpacing.xs),
+            const SizedBox(width: 4),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F4FA),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(radius.lg),
                 ),
                 child: TextField(
                   controller: _inputController,
                   decoration: InputDecoration(
                     hintText: 'Type a message...',
-                    hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.outlineVariant),
+                    hintStyle: typo.bodyMedium.copyWith(
+                      color: colors.outlineVariant,
+                    ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                   ),
                   textInputAction: TextInputAction.send,
@@ -205,7 +212,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: 8),
             IconButton(
               icon: _isSending
                   ? const SizedBox(
@@ -213,7 +220,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.send, color: AppColors.primary),
+                  : Icon(Icons.send, color: colors.primary),
               onPressed: _isSending ? null : _handleSend,
             ),
           ],
@@ -236,9 +243,12 @@ class _MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final avatarUrl = message.sender?.avatarUrl;
     final initials = message.sender?.displayName?.substring(0, 1).toUpperCase() ?? '?';
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -246,32 +256,40 @@ class _MessageBubble extends StatelessWidget {
           if (!isMine) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: const Color(0xFFD3D0F0),
+              backgroundColor: colors.surfaceContainerHigh,
               backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
               child: avatarUrl == null 
-                  ? Text(initials, style: const TextStyle(fontSize: 12, color: Color(0xFF2B2A51))) 
+                  ? Text(
+                      initials,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurface,
+                      ),
+                    ) 
                   : null,
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: 8),
           ],
           Flexible(
             child: Column(
               crossAxisAlignment: isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isMine ? AppColors.primary : Colors.white,
+                    color: isMine
+                        ? colors.chatBubbleSelf
+                        : colors.chatBubbleOther,
                     borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(AppSpacing.radiusLg),
-                      topRight: const Radius.circular(AppSpacing.radiusLg),
-                      bottomLeft: Radius.circular(isMine ? AppSpacing.radiusLg : 4),
-                      bottomRight: Radius.circular(isMine ? 4 : AppSpacing.radiusLg),
+                      topLeft: Radius.circular(radius.lg),
+                      topRight: Radius.circular(radius.lg),
+                      bottomLeft: Radius.circular(isMine ? radius.lg : 4),
+                      bottomRight: Radius.circular(isMine ? 4 : radius.lg),
                     ),
                     boxShadow: [
                       if (!isMine)
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: colors.shadow,
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -279,7 +297,7 @@ class _MessageBubble extends StatelessWidget {
                   ),
                   child: message.messageType == 'image' && message.imageUrl != null
                       ? ClipRRect(
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                          borderRadius: BorderRadius.circular(radius.md),
                           child: Image.network(
                             message.imageUrl!,
                             fit: BoxFit.cover,
@@ -295,16 +313,18 @@ class _MessageBubble extends StatelessWidget {
                         )
                       : Text(
                           message.content,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            color: isMine ? Colors.white : AppColors.onSurface,
+                          style: typo.bodyLarge.copyWith(
+                            color: isMine
+                                ? colors.chatBubbleTextSelf
+                                : colors.chatBubbleTextOther,
                           ),
                         ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   timeago.format(message.createdAt, locale: 'en_short'),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.outlineVariant,
+                  style: typo.bodySmall.copyWith(
+                    color: colors.outlineVariant,
                     fontSize: 10,
                   ),
                 ),
@@ -312,13 +332,19 @@ class _MessageBubble extends StatelessWidget {
             ),
           ),
           if (isMine) ...[
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: 8),
             CircleAvatar(
               radius: 16,
-              backgroundColor: const Color(0xFFD3D0F0),
+              backgroundColor: colors.surfaceContainerHigh,
               backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
               child: avatarUrl == null 
-                  ? Text(initials, style: const TextStyle(fontSize: 12, color: Color(0xFF2B2A51))) 
+                  ? Text(
+                      initials,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurface,
+                      ),
+                    ) 
                   : null,
             ),
           ],

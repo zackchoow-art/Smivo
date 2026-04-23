@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smivo - My Orders</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#953f01",
+                    "primary-container": "#0058ab",
+                    "on-secondary-fixed-variant": "#544600",
+                    "inverse-surface": "#2f3131",
+                    "on-primary-fixed-variant": "#00468a",
+                    "surface-container-low": "#f3f3f3",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-secondary-fixed": "#221b00",
+                    "surface-bright": "#f9f9f9",
+                    "surface-variant": "#e2e2e2",
+                    "on-primary-fixed": "#001b3d",
+                    "on-secondary-container": "#705e00",
+                    "on-tertiary-fixed-variant": "#783100",
+                    "on-surface": "#1a1c1c",
+                    "outline": "#727783",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#341100",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#ffe164",
+                    "inverse-primary": "#a8c8ff",
+                    "error-container": "#ffdad6",
+                    "surface": "#f9f9f9",
+                    "surface-dim": "#dadada",
+                    "primary-fixed": "#d6e3ff",
+                    "error": "#ba1a1a",
+                    "secondary": "#6f5d00",
+                    "on-surface-variant": "#424752",
+                    "on-background": "#1a1c1c",
+                    "background": "#f9f9f9",
+                    "outline-variant": "#c2c6d3",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed": "#ffdbcb",
+                    "primary": "#004181",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#fdd816",
+                    "primary-fixed-dim": "#a8c8ff",
+                    "tertiary": "#702d00",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#ffc3a5",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "surface-container": "#eeeeee",
+                    "inverse-on-surface": "#f1f1f1",
+                    "secondary-fixed-dim": "#e7c400",
+                    "surface-container-high": "#e8e8e8",
+                    "surface-tint": "#115eb1",
+                    "on-primary-container": "#b8d1ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label": [
+                            "Plus Jakarta Sans"
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-[#f9f9f9]/80 dark:bg-[#1a1c1c]/80 backdrop-blur-md text-[#004181] dark:text-[#fdd816] font-['Plus_Jakarta_Sans'] font-bold text-lg full-width top-0 sticky bg-[#f3f3f3] dark:bg-[#2a2a2a] flat no-line architecture flex justify-between items-center px-6 py-4 w-full z-50">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-[#f3f3f3] dark:hover:bg-[#333333] transition-colors active:scale-95 transition-transform text-[#1a1c1c] dark:text-[#e2e2e2]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<div class="text-2xl font-black tracking-tight text-[#004181] dark:text-[#fdd816]">Smivo</div>
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-[#f3f3f3] dark:hover:bg-[#333333] transition-colors active:scale-95 transition-transform text-[#1a1c1c] dark:text-[#e2e2e2]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">search</span>
+</button>
+</header>
+<main class="max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-12">
+<!-- Header -->
+<div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="text-5xl font-headline font-bold text-on-surface tracking-tight mb-2">My Orders</h1>
+<p class="text-on-surface-variant font-body">Track and manage your purchases and rentals.</p>
+</div>
+<!-- Segmented Control -->
+<div class="inline-flex bg-surface-container-high rounded p-1 shadow-sm">
+<button class="px-6 py-2 bg-surface-container-lowest text-on-surface font-label font-bold text-sm rounded shadow-sm transition-all whitespace-nowrap">Buying / Renting</button>
+<button class="px-6 py-2 text-on-surface-variant font-label font-bold text-sm rounded hover:bg-surface-container-low transition-all whitespace-nowrap">Selling / Renting Out</button>
+</div>
+</div>
+<!-- Orders List -->
+<div class="space-y-6">
+<!-- Order Card 1: Active/Arriving -->
+<article class="bg-surface-container-lowest rounded overflow-hidden relative border border-outline-variant/15 shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] flex flex-col md:flex-row transition-transform hover:-translate-y-1 duration-300">
+<!-- Status Bar -->
+<div class="absolute top-0 left-0 w-full md:w-2 md:h-full bg-secondary-container h-2 z-10"></div>
+<!-- Image Container -->
+<div class="w-full md:w-64 h-48 md:h-auto shrink-0 bg-surface-container-high relative">
+<img alt="MacBook Pro M1" class="w-full h-full object-cover" data-alt="sleek modern laptop on desk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLzlPFXCK3p70dslN2d3DDFfz3irPYguVKVBExX4snf4gnKIyuS4qh0_81zEgSF4xubQc8pWhQKDrLhW24OU0KmyYtdJSEhpo-Dn_eii8UBd9wzgMrXQBZeIplDn2dXphgLf78_R33ZNp8A1rZfdZP6WiHZl8M98XXHF5cSDEDSC81H6Tub6JIdmI9kP9PmV57Eayxonla7gNyy81IXl5fvkBz6szkYj2oOIu8vAQsJx4xJDByM4NKhGybImEaUv3HoojhF0mumz8"/>
+<div class="absolute top-4 right-4 bg-surface-container-lowest text-on-surface font-label text-xs font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span>
+                        Delivery
+                    </div>
+</div>
+<!-- Content -->
+<div class="p-6 md:p-8 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+<div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-1">MacBook Pro M1</h3>
+<p class="text-on-surface-variant text-sm font-body">Order #SM-8492-BX</p>
+</div>
+<div class="bg-secondary-container text-on-secondary-container font-label font-bold text-xs uppercase tracking-wider px-3 py-1.5 rounded-sm inline-flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] animate-pulse">schedule</span>
+                                Arriving Soon
+                            </div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-sm mb-6 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div>
+<h4 class="font-bold text-sm text-on-surface mb-1">Delivery Instructions</h4>
+<p class="text-sm text-on-surface-variant">Scheduled for tomorrow between 10:00 AM - 2:00 PM. Please ensure clear path to living room.</p>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/15">
+<span class="font-headline font-bold text-lg text-primary">$499.00</span>
+<div class="flex gap-3">
+<button class="font-label font-bold text-sm text-primary hover:bg-surface-container-low px-4 py-2 rounded transition-colors">Track</button>
+<button class="bg-primary text-on-primary font-label font-bold text-sm px-6 py-2 rounded hover:bg-primary-container transition-colors shadow-sm">Details</button>
+</div>
+</div>
+</div>
+</article>
+<!-- Order Card 2: Ready for Pickup -->
+<article class="bg-surface-container-lowest rounded overflow-hidden relative border border-outline-variant/15 shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] flex flex-col md:flex-row transition-transform hover:-translate-y-1 duration-300">
+<!-- Status Bar -->
+<div class="absolute top-0 left-0 w-full md:w-2 md:h-full bg-primary h-2 z-10"></div>
+<!-- Image Container -->
+<div class="w-full md:w-64 h-48 md:h-auto shrink-0 bg-surface-container-high relative">
+<img alt="Organic Chemistry Set" class="w-full h-full object-cover" data-alt="High-quality product photo of a stacks of modern university textbooks for biology and organic chemistry, clean white background, soft lighting, professional photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK3ITEvEThGLHPLppCokXGEb3gUjJB5i9SenGXFTOvtaGJZ-m9dReSU8LZJlOdg65eftZG_8WO49BKOPuF3Og2mP8W3MR5ph2HCJvFbAz6jcRzTLtjJVOxXOwrvA2PjgGC8KqOCtgmakIksxGZh1DRPmGL5yaS84WnXrIZ6mjvkHvHU8oDzoklF8yKwd9y3-cAEvur76kSHCq7M4-_nu0I6KUZSzX0h_Ny83xu5mOZNXgZOj_10_wqXBB0SJyD4tuY7H0t83jSmwg"/>
+<div class="absolute top-4 right-4 bg-surface-container-lowest text-on-surface font-label text-xs font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                        Pickup
+                    </div>
+</div>
+<!-- Content -->
+<div class="p-6 md:p-8 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+<div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-1">Organic Chemistry Set</h3>
+<p class="text-on-surface-variant text-sm font-body">Order #SM-3312-PL</p>
+</div>
+<div class="bg-primary-container text-on-primary-container font-label font-bold text-xs uppercase tracking-wider px-3 py-1.5 rounded-sm inline-flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                Ready for Pickup
+                            </div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-sm mb-6 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">location_on</span>
+<div>
+<h4 class="font-bold text-sm text-on-surface mb-1">Pickup Location</h4>
+<p class="text-sm text-on-surface-variant">Smivo Hub North. Bring valid ID and your order number. Open until 8:00 PM today.</p>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/15">
+<span class="font-headline font-bold text-lg text-primary">$129.00</span>
+<div class="flex gap-3">
+<button class="bg-primary text-on-primary font-label font-bold text-sm px-6 py-2 rounded hover:bg-primary-container transition-colors shadow-sm">View Barcode</button>
+</div>
+</div>
+</div>
+</article>
+<!-- Order Card 3: Completed -->
+<article class="bg-surface-container-lowest rounded overflow-hidden relative border border-outline-variant/15 shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] flex flex-col md:flex-row opacity-75 hover:opacity-100 transition-opacity">
+<!-- Status Bar -->
+<div class="absolute top-0 left-0 w-full md:w-2 md:h-full bg-outline-variant h-2 z-10"></div>
+<!-- Image Container -->
+<div class="w-full md:w-64 h-48 md:h-auto shrink-0 bg-surface-container-high relative grayscale-[50%]">
+<img alt="Campus Hoodie" class="w-full h-full object-cover" data-alt="A stack of neatly folded college-branded hoodies and apparel, varsity style, soft fabric textures, clean presentation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAhBCvKeVjNK_ZpyqtucIDZTvj92uaZAykjMxqIMsLoTmRd_rYEj9Zw7vK06E4q8clMs8-NdMQgynmWDdJYInfI0GolQvzTymAZjZ5BktXq4r9iJqpgTV2Qp7Y34M_yOx7B3_5DjJsC3icVwo16PmAg5Q1gsgAEEQ2NrIHXuXJPe2BOtIYkxDDdgOidJ_otLCHFlcK8LLUGJ9ayhtfwszKN462JumdOstUtp9c6wHn707Rx46X7S8dIs3ey1bd7c0NFxzsRLLwl0k"/>
+</div>
+<!-- Content -->
+<div class="p-6 md:p-8 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+<div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-1 text-on-surface-variant">Campus Hoodie</h3>
+<p class="text-on-surface-variant text-sm font-body">Order #SM-1198-DT</p>
+</div>
+<div class="bg-surface-container-highest text-on-surface-variant font-label font-bold text-xs uppercase tracking-wider px-3 py-1.5 rounded-sm inline-flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">done_all</span>
+                                Completed
+                            </div>
+</div>
+<p class="text-sm text-on-surface-variant mb-6">Delivered on Oct 12, 2023</p>
+</div>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/15">
+<span class="font-headline font-bold text-lg text-on-surface-variant">$199.00</span>
+<div class="flex gap-3">
+<button class="font-label font-bold text-sm text-primary hover:bg-surface-container-low px-4 py-2 rounded transition-colors border border-outline-variant/15">Leave Review</button>
+<button class="font-label font-bold text-sm text-on-surface hover:bg-surface-container-low px-4 py-2 rounded transition-colors">Buy Again</button>
+</div>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="bg-white dark:bg-[#1a1c1c] text-[#004181] dark:text-[#fdd816] font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider hidden fixed bottom-0 w-full z-50 rounded-t-none border-t border-[#c2c6d3]/15 shadow-[0_-8px_24px_-4px_rgba(26,28,28,0.06)] tap-highlight-transparent duration-200 fixed bottom-0 left-0 w-full md:hidden flex justify-around items-center bg-white dark:bg-[#1a1c1c] pb-safe pt-2 px-2">
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span>Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">chat_bubble</span>
+<span>Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">add_circle</span>
+<span>Post</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#fdd816] text-[#004181] rounded-xl px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+<span>Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</body></html>

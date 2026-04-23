@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/app_colors.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/features/settings/providers/profile_provider.dart';
 import 'package:smivo/shared/widgets/custom_app_bar.dart';
 

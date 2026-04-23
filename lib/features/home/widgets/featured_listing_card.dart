@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/features/home/widgets/transaction_tag.dart';
@@ -32,6 +30,9 @@ class FeaturedListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = listing.displayImageUrl;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return GestureDetector(
       onTap: () => context.pushNamed(
@@ -40,10 +41,10 @@ class FeaturedListingCard extends StatelessWidget {
       ),
       child: Container(
         height: 300,
-        margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          color: colors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(radius.xl),
           image: imageUrl != null 
               ? DecorationImage(
                   image: NetworkImage(imageUrl),
@@ -59,14 +60,14 @@ class FeaturedListingCard extends StatelessWidget {
                 child: Icon(
                   Icons.image_not_supported_outlined,
                   size: 48,
-                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
+                  color: colors.outlineVariant.withValues(alpha: 0.5),
                 ),
               ),
             
             // Transaction Tag
             Positioned(
-              top: AppSpacing.md,
-              right: AppSpacing.md,
+              top: 12,
+              right: 12,
               child: TransactionTag(transactionType: listing.transactionType),
             ),
             
@@ -76,18 +77,18 @@ class FeaturedListingCard extends StatelessWidget {
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.8),
+                      colors.onSurface.withValues(alpha: 0.8),
                       Colors.transparent,
                     ],
                   ),
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(AppSpacing.radiusXl),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(radius.xl),
                   ),
                 ),
                 child: Row(
@@ -99,26 +100,31 @@ class FeaturedListingCard extends StatelessWidget {
                         children: [
                           Text(
                             listing.title,
-                            style: AppTextStyles.titleMedium.copyWith(color: Colors.white),
+                            style: typo.titleMedium.copyWith(
+                              color: colors.onPrimary,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           if (listing.description != null)
                             Text(
                               listing.description!,
-                              style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                              style: typo.bodySmall.copyWith(
+                                color: colors.onPrimary
+                                    .withValues(alpha: 0.7),
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: 8),
                     Text(
                       listing.transactionType.toLowerCase() == 'rental' 
                         ? _rentalPriceLabel(listing)
                         : '\$${listing.price.toStringAsFixed(0)}',
-                      style: AppTextStyles.headlineMedium.copyWith(color: AppColors.priceTagSuccess),
+                      style: typo.priceStyle,
                     ),
                   ],
                 ),

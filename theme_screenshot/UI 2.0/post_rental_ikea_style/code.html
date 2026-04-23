@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smivo - Post Rental</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#115eb1",
+                    "secondary-fixed": "#ffe164",
+                    "error-container": "#ffdad6",
+                    "on-background": "#1a1c1c",
+                    "tertiary-container": "#953f01",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-low": "#f3f3f3",
+                    "secondary-container": "#fdd816",
+                    "on-secondary-fixed-variant": "#544600",
+                    "outline": "#727783",
+                    "outline-variant": "#c2c6d3",
+                    "on-primary-container": "#b8d1ff",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-tertiary": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "on-tertiary-container": "#ffc3a5",
+                    "on-error": "#ffffff",
+                    "surface-dim": "#dadada",
+                    "primary-fixed": "#d6e3ff",
+                    "surface-container-high": "#e8e8e8",
+                    "surface-bright": "#f9f9f9",
+                    "primary-fixed-dim": "#a8c8ff",
+                    "secondary-fixed-dim": "#e7c400",
+                    "secondary": "#6f5d00",
+                    "on-tertiary-fixed": "#341100",
+                    "on-secondary-container": "#705e00",
+                    "on-surface-variant": "#424752",
+                    "inverse-on-surface": "#f1f1f1",
+                    "primary": "#004181",
+                    "error": "#ba1a1a",
+                    "tertiary": "#702d00",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eeeeee",
+                    "on-primary-fixed-variant": "#00468a",
+                    "on-primary-fixed": "#001b3d",
+                    "background": "#f9f9f9",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface": "#f9f9f9",
+                    "surface-variant": "#e2e2e2",
+                    "on-secondary-fixed": "#221b00",
+                    "primary-container": "#0058ab",
+                    "inverse-primary": "#a8c8ff",
+                    "on-tertiary-fixed-variant": "#783100"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label": [
+                            "Plus Jakarta Sans"
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen pb-24 md:pb-0">
+<header class="sticky top-0 z-50 w-full bg-surface-container-lowest/80 backdrop-blur-[20px] shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] flex items-center justify-between px-6 py-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined text-on-surface group-active:scale-95 transition-transform">close</span>
+</button>
+<span class="font-['Plus_Jakarta_Sans'] text-sm font-bold tracking-tight text-primary">Smivo</span>
+<div class="w-10 h-10"></div>
+</header>
+<main class="max-w-3xl mx-auto px-6 py-12">
+<div class="mb-12">
+<h1 class="font-headline text-[3.5rem] font-bold leading-none text-on-surface tracking-tight">List for Rent</h1>
+<p class="font-body text-[0.875rem] text-on-surface-variant mt-4 max-w-lg">Share your items and start earning. Fill in the details below to create your rental listing.</p>
+</div>
+<form class="space-y-12">
+<section class="space-y-6">
+<h2 class="font-headline text-[1.75rem] font-semibold text-on-surface">Item Details</h2>
+<div class="space-y-2">
+<label class="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-on-surface" for="item-title">Item Title</label>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none rounded-DEFAULT px-4 py-4 font-body text-[0.875rem] text-on-surface placeholder:text-on-surface-variant focus:bg-surface-container-lowest focus:ring-0 focus:border-b-2 focus:border-primary transition-all shadow-sm" id="item-title" placeholder="e.g., Makita 18V Cordless Drill" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-on-surface" for="category">Category</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-highest border-none rounded-DEFAULT px-4 py-4 font-body text-[0.875rem] text-on-surface focus:bg-surface-container-lowest focus:ring-0 focus:border-b-2 focus:border-primary transition-all shadow-sm cursor-pointer" id="category">
+<option disabled="" selected="" value="">Select a category</option>
+<option value="tools">Tools &amp; Equipment</option>
+<option value="electronics">Electronics</option>
+<option value="outdoor">Outdoor Gear</option>
+<option value="party">Party Supplies</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-on-surface" for="description">Description</label>
+<div class="relative">
+<textarea class="w-full bg-surface-container-highest border-none rounded-DEFAULT px-4 py-4 font-body text-[0.875rem] text-on-surface placeholder:text-on-surface-variant focus:bg-surface-container-lowest focus:ring-0 focus:border-b-2 focus:border-primary transition-all shadow-sm resize-none" id="description" placeholder="Describe the item, its condition, and any accessories included..." rows="4"></textarea>
+</div>
+</div>
+<div class="space-y-4 pt-4">
+<label class="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-on-surface">Photos</label>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="aspect-square bg-surface-container-lowest border border-outline-variant/15 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors group relative overflow-hidden">
+<span class="material-symbols-outlined text-[2rem] text-primary group-hover:scale-110 transition-transform">add_photo_alternate</span>
+<span class="font-label text-[0.65rem] font-bold uppercase text-primary mt-2">Upload</span>
+</div>
+<div class="aspect-square bg-surface-container-low rounded-lg border border-outline-variant/15 relative group overflow-hidden">
+<img alt="Cordless drill on wooden workbench" class="w-full h-full object-cover" data-alt="close up of a modern yellow and black cordless power drill resting on a textured wooden workbench with soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpxPcEws4IU0h7W2R43gWFhWj9g3nurkN-pbzBpdBog2y3IKMKzoX0cxSJlUzLsJNof8GIZIRt68nTKXSFe7rpVKy9MmurEQE7F4kc3OsV_PjHetxLU49DvpqjL3aY-NVSh7YIE0QDsn86e_DoZt0HaFtlyoqV94_JQGnnjt7-8xGel77F34w5-W4SEV6xsIMyJt5mk1PcNIcpi3CwUBCxD4A-41zIl3li8ib3aSilMm133kMIIdryYYcWKu0g8_KhkUHYRTqG46s"/>
+<button class="absolute top-2 right-2 w-8 h-8 bg-surface-container-lowest/90 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity" type="button">
+<span class="material-symbols-outlined text-[1.2rem] text-error">delete</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<section class="space-y-6 pt-8 border-t border-transparent" style="background-image: linear-gradient(to right, transparent, transparent); border-image: linear-gradient(to right, transparent, transparent) 1; box-shadow: 0 -1px 0 0 rgba(194, 198, 211, 0.15);">
+<h2 class="font-headline text-[1.75rem] font-semibold text-on-surface">Pricing &amp; Terms</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="space-y-2">
+<label class="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-on-surface" for="price-daily">Daily Rate</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-body text-[0.875rem] text-on-surface-variant font-bold">$</span>
+<input class="w-full bg-surface-container-highest border-none rounded-DEFAULT pl-8 pr-4 py-4 font-body text-[0.875rem] text-on-surface placeholder:text-on-surface-variant focus:bg-surface-container-lowest focus:ring-0 focus:border-b-2 focus:border-primary transition-all shadow-sm" id="price-daily" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-on-surface" for="price-weekly">Weekly Rate</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-body text-[0.875rem] text-on-surface-variant font-bold">$</span>
+<input class="w-full bg-surface-container-highest border-none rounded-DEFAULT pl-8 pr-4 py-4 font-body text-[0.875rem] text-on-surface placeholder:text-on-surface-variant focus:bg-surface-container-lowest focus:ring-0 focus:border-b-2 focus:border-primary transition-all shadow-sm" id="price-weekly" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-on-surface" for="price-monthly">Monthly Rate</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-body text-[0.875rem] text-on-surface-variant font-bold">$</span>
+<input class="w-full bg-surface-container-highest border-none rounded-DEFAULT pl-8 pr-4 py-4 font-body text-[0.875rem] text-on-surface placeholder:text-on-surface-variant focus:bg-surface-container-lowest focus:ring-0 focus:border-b-2 focus:border-primary transition-all shadow-sm" id="price-monthly" placeholder="0.00" type="number"/>
+</div>
+</div>
+</div>
+<div class="space-y-2 pt-4">
+<label class="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-on-surface" for="security-deposit">Security Deposit</label>
+<div class="relative max-w-xs">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-body text-[0.875rem] text-on-surface-variant font-bold">$</span>
+<input class="w-full bg-surface-container-highest border-none rounded-DEFAULT pl-8 pr-4 py-4 font-body text-[0.875rem] text-on-surface placeholder:text-on-surface-variant focus:bg-surface-container-lowest focus:ring-0 focus:border-b-2 focus:border-primary transition-all shadow-sm" id="security-deposit" placeholder="Optional" type="number"/>
+</div>
+<p class="font-body text-[0.75rem] text-on-surface-variant mt-1">Held securely during the rental period.</p>
+</div>
+</section>
+<section class="bg-surface-container-low p-6 rounded-lg space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-title text-[1.0rem] font-bold text-on-surface">Auto-Relist Item</h3>
+<p class="font-body text-[0.875rem] text-on-surface-variant mt-1">Automatically make this item available again once returned.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-14 h-7 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-outline-variant after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</section>
+<div class="pt-8 flex flex-col sm:flex-row gap-4 items-center justify-end">
+<button class="w-full sm:w-auto px-8 py-4 font-label text-[0.875rem] font-bold uppercase tracking-wider text-primary bg-transparent border border-outline-variant/15 rounded-DEFAULT hover:bg-surface-container-low transition-colors shadow-sm" type="button">Save Draft</button>
+<button class="w-full sm:w-auto px-8 py-4 font-label text-[0.875rem] font-bold uppercase tracking-wider text-on-primary bg-primary bg-gradient-to-br from-primary to-primary-container rounded-DEFAULT hover:opacity-90 active:scale-95 transition-all shadow-md" type="submit">Post Rental</button>
+</div>
+</form>
+</main>
+</body></html>

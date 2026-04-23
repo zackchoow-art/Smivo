@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:smivo/core/theme/app_colors.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 
 /// Displays a verified badge next to a user's name.
 ///
@@ -17,7 +16,7 @@ class VerifiedBadge extends StatelessWidget {
     return Icon(
       Icons.verified,
       size: size,
-      color: AppColors.primary,
+      color: context.smivoColors.primary,
       semanticLabel: 'Verified user',
     );
   }

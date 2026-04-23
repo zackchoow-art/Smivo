@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/constants/debug_constants.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/utils/validators.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -38,9 +37,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('Passwords do not match'),
+          backgroundColor: context.smivoColors.error,
         ),
       );
       return;
@@ -70,6 +69,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final isLoading = authState.isLoading;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     // Listen for auth errors and show SnackBar
     ref.listen(authProvider, (previous, next) {
@@ -82,14 +84,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: AppColors.error,
+            backgroundColor: colors.error,
           ),
         );
       }
     });
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 38),
@@ -101,12 +103,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   IconButton(
                     onPressed: () => context.pop(),
                     icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                    color: AppColors.textPrimary,
+                    color: colors.onSurface,
                   ),
                   const Spacer(),
                   Text(
                     'Smivo',
-                    style: AppTextStyles.logo.copyWith(fontSize: 24),
+                    style: typo.displayLarge.copyWith(
+                      fontSize: 24,
+                      fontStyle: FontStyle.italic,
+                      color: colors.primary,
+                    ),
                   ),
                   const Spacer(),
                   const SizedBox(width: 48), // Balance for back button
@@ -117,11 +123,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               // ── Main Card ────────────────────────────────────────
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(24),
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(radius.xl),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2B2A51).withValues(alpha: 0.06),
+                      color: colors.shadow,
                       blurRadius: 32,
                       offset: const Offset(0, 12),
                     ),
@@ -137,13 +143,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       Text(
                         'Join the Quad.',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.headlineLarge,
+                        style: typo.headlineLarge,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'Create your account with your university email.',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyLarge,
+                        style: typo.bodyLarge,
                       ),
                       const SizedBox(height: 32),
 
@@ -166,10 +172,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         hintText: '••••••••',
                         controller: _passwordController,
                         obscureText: true,
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.lock_outline_rounded,
                           size: 16,
-                          color: AppColors.textTertiary,
+                          color: colors.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -180,10 +186,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         hintText: '••••••••',
                         controller: _confirmPasswordController,
                         obscureText: true,
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.verified_user_outlined,
                           size: 16,
-                          color: AppColors.textTertiary,
+                          color: colors.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -193,18 +199,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         height: 60,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          gradient: const LinearGradient(
+                          borderRadius: BorderRadius.circular(radius.xl),
+                          gradient: LinearGradient(
                             colors: [
-                              AppColors.gradientStart,
-                              AppColors.gradientEnd,
+                              colors.gradientStart,
+                              colors.gradientEnd,
                             ],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.2),
+                              color: colors.primary.withValues(alpha: 0.2),
                               blurRadius: 15,
                               offset: const Offset(0, 10),
                             ),
@@ -216,15 +222,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
+                              borderRadius: BorderRadius.circular(radius.xl),
                             ),
                           ),
                           child: isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   height: 24,
                                   width: 24,
                                   child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: colors.onPrimary,
                                     strokeWidth: 2,
                                   ),
                                 )
@@ -233,13 +239,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   children: [
                                     Text(
                                       'Create Account',
-                                      style: AppTextStyles.buttonLarge,
+                                      style: typo.labelLarge.copyWith(
+                                        color: colors.onPrimary,
+                                        fontSize: 18,
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
-                                    const Icon(
+                                    Icon(
                                       Icons.person_add_alt_1_rounded,
                                       size: 18,
-                                      color: Color(0xFFF2F1FF),
+                                      color: colors.onPrimary,
                                     ),
                                   ],
                                 ),
@@ -254,12 +263,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           icon: Icon(
                             _isDebugMode ? Icons.bug_report : Icons.bug_report_outlined,
                             size: 18,
-                            color: AppColors.textTertiary,
+                            color: colors.onSurfaceVariant,
                           ),
                           label: Text(
                             _isDebugMode ? 'Switch to Normal' : 'Switch to Debug',
-                            style: AppTextStyles.footerText.copyWith(
-                              color: AppColors.textTertiary,
+                            style: typo.bodySmall.copyWith(
+                              color: colors.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -268,7 +277,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       const SizedBox(height: 32),
 
                       // ── Divider ───────────────────────────────────
-                      const Divider(color: AppColors.divider),
+                      Divider(color: colors.dividerColor),
                       const SizedBox(height: 24),
 
                       // ── Switch to Login ───────────────────────────
@@ -277,13 +286,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         child: Text.rich(
                           TextSpan(
                             text: 'Already have an account? ',
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              color: AppColors.textSecondary,
+                            style: typo.bodyLarge.copyWith(
+                              color: colors.onSurfaceVariant,
                             ),
                             children: [
                               TextSpan(
                                 text: 'Sign In',
-                                style: AppTextStyles.linkText,
+                                style: typo.bodyMedium.copyWith(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                           ),
@@ -296,7 +308,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       Text(
                         'Only valid university emails (.edu) are accepted to ensure a safe campus environment.',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.footerText,
+                        style: typo.bodySmall,
                       ),
                     ],
                   ),

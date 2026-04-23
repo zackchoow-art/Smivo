@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 
 class ListingImageCarousel extends StatefulWidget {
   const ListingImageCarousel({
@@ -25,6 +23,9 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
   @override
   Widget build(BuildContext context) {
     final hasImages = widget.imageUrls.isNotEmpty;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return SizedBox(
       height: 350,
@@ -48,12 +49,12 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
             )
           else
             Container(
-              color: AppColors.surfaceContainerLow,
-              child: const Center(
+              color: colors.surfaceContainerLow,
+              child: Center(
                 child: Icon(
                   Icons.image_not_supported_outlined,
                   size: 64,
-                  color: AppColors.outlineVariant,
+                  color: colors.outlineVariant,
                 ),
               ),
             ),
@@ -70,7 +71,7 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.5),
+                    colors.onSurface.withValues(alpha: 0.5),
                     Colors.transparent,
                   ],
                 ),
@@ -80,18 +81,18 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
 
           // Status Tag
           Positioned(
-            left: AppSpacing.lg,
-            bottom: AppSpacing.lg,
+            left: 16,
+            bottom: 16,
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
+                horizontal: 12,
+                vertical: 8,
               ),
               decoration: BoxDecoration(
                 color: widget.isSale 
-                  ? Colors.white.withValues(alpha: 0.3)
-                  : Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  ? colors.onPrimary.withValues(alpha: 0.3)
+                  : colors.onSurface.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(radius.chip),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -100,17 +101,17 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.priceTagSuccess,
+                      decoration: BoxDecoration(
+                        color: colors.priceAccent,
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: 8),
                   ],
                   Text(
                     widget.tagText,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: widget.isSale ? Colors.white : Colors.white70,
+                    style: typo.labelSmall.copyWith(
+                      color: colors.onPrimary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -122,7 +123,7 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
           // Pagination Dots (only if multiple images)
           if (widget.imageUrls.length > 1)
             Positioned(
-              bottom: AppSpacing.lg,
+              bottom: 16,
               left: 0,
               right: 0,
               child: Row(
@@ -136,8 +137,8 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _currentIndex == index
-                          ? AppColors.primary
-                          : Colors.white.withValues(alpha: 0.5),
+                          ? colors.primary
+                          : colors.onPrimary.withValues(alpha: 0.5),
                     ),
                   ),
                 ),

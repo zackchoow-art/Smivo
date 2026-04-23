@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/features/home/widgets/compact_listing_card.dart';
 import 'package:smivo/features/home/widgets/featured_listing_card.dart';
@@ -16,19 +14,21 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final listingsAsync = ref.watch(homeListingsProvider);
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
             const SliverToBoxAdapter(child: HomeHeader()),
-            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
             const SliverToBoxAdapter(child: HomeSearchBar()),
-            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
             const SliverToBoxAdapter(child: HomeCategoryChips()),
-            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
             
             listingsAsync.when(
               loading: () => const SliverFillRemaining(
@@ -38,7 +38,7 @@ class HomeScreen extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     'Error loading listings',
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                    style: typo.bodyMedium.copyWith(color: colors.error),
                   ),
                 ),
               ),
@@ -48,7 +48,7 @@ class HomeScreen extends ConsumerWidget {
                     child: Center(
                       child: Text(
                         'No listings found.',
-                        style: AppTextStyles.bodyLarge,
+                        style: typo.bodyLarge,
                       ),
                     ),
                   );
@@ -59,18 +59,24 @@ class HomeScreen extends ConsumerWidget {
                 final compactItems = listings.skip(3).toList();
 
                 return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         if (index < featuredItems.length) {
-                          return FeaturedListingCard(listing: featuredItems[index]);
+                          return FeaturedListingCard(
+                            listing: featuredItems[index],
+                          );
                         } else {
-                          final compactIndex = index - featuredItems.length;
-                          return CompactListingCard(listing: compactItems[compactIndex]);
+                          final compactIndex =
+                              index - featuredItems.length;
+                          return CompactListingCard(
+                            listing: compactItems[compactIndex],
+                          );
                         }
                       },
-                      childCount: featuredItems.length + compactItems.length,
+                      childCount:
+                          featuredItems.length + compactItems.length,
                     ),
                   ),
                 );

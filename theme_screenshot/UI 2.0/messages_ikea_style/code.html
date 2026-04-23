@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smivo - Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#953f01",
+                        "primary-container": "#0058ab",
+                        "on-secondary-fixed-variant": "#544600",
+                        "inverse-surface": "#2f3131",
+                        "on-primary-fixed-variant": "#00468a",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed": "#221b00",
+                        "surface-bright": "#f9f9f9",
+                        "surface-variant": "#e2e2e2",
+                        "on-primary-fixed": "#001b3d",
+                        "on-secondary-container": "#705e00",
+                        "on-tertiary-fixed-variant": "#783100",
+                        "on-surface": "#1a1c1c",
+                        "outline": "#727783",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#341100",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffe164",
+                        "inverse-primary": "#a8c8ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#d6e3ff",
+                        "error": "#ba1a1a",
+                        "secondary": "#6f5d00",
+                        "on-surface-variant": "#424752",
+                        "on-background": "#1a1c1c",
+                        "background": "#f9f9f9",
+                        "outline-variant": "#c2c6d3",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdbcb",
+                        "primary": "#004181",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#fdd816",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "tertiary": "#702d00",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#ffc3a5",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "surface-container": "#eeeeee",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary-fixed-dim": "#e7c400",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-tint": "#115eb1",
+                        "on-primary-container": "#b8d1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        'safe': 'env(safe-area-inset-bottom)'
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-6 py-4 w-full z-50 bg-[#f9f9f9]/80 dark:bg-[#1a1c1c]/80 backdrop-blur-md docked full-width top-0 sticky">
+<button aria-label="Menu" class="text-on-surface hover:bg-surface-container-low transition-colors p-2 rounded-DEFAULT">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="text-2xl font-black tracking-tight text-[#004181] dark:text-[#fdd816]">Smivo</div>
+<button aria-label="Search" class="text-on-surface hover:bg-surface-container-low transition-colors p-2 rounded-DEFAULT">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="max-w-3xl mx-auto px-4 sm:px-6 pt-6 pb-20">
+<!-- Page Header -->
+<div class="mb-8 pl-2 border-l-4 border-primary">
+<h1 class="font-headline text-[2.5rem] font-bold leading-none tracking-tight text-on-surface">Messages</h1>
+<p class="text-body-md text-on-surface-variant mt-2 font-medium">Your recent conversations.</p>
+</div>
+<!-- Search Bar Container -->
+<div class="mb-8 relative bg-surface-container-highest p-1 rounded-DEFAULT">
+<div class="bg-surface-container-lowest flex items-center px-4 py-3 rounded-DEFAULT border-b-2 border-transparent focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-outline mr-3" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-body-md text-on-surface placeholder-outline p-0" placeholder="Search conversations..." type="text"/>
+</div>
+</div>
+<!-- Messages List Container -->
+<div class="flex flex-col space-y-2">
+<!-- Chat Item 1 (Unread) -->
+<a class="group block bg-surface-container-lowest p-4 rounded-DEFAULT hover:shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] transition-all duration-300 relative overflow-hidden" href="#">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex items-center space-x-4">
+<div class="relative shrink-0">
+<img alt="Avatar" class="w-14 h-14 rounded-full object-cover" data-alt="Close up portrait of young woman with clear skin and natural makeup, neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC97vLtfdm8wo-u0JN5RYHWgWyi-E4yALHcdgBeTv_6NiZpoj5Q4YRozalz1y3ouALHrIqmeW-5h88xzotWJYxaf9xlvNA6nkAnCToxH0Zgp0oaH7fJfZm5za8NChg5dvUvBIRTjSQza-M_rB136P1TDIJM0EDXRD7zJg4_zS1L_-Rv1FnJ__SCtXfUA-ns8cBTXRGBa9SE7hqcaAStizkN54dszqqjyxu8O5hCiCNZsBVGqNWxrBCS6_KCxGAaYle8u8mxc3fnzro"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h2 class="font-headline text-title-sm font-bold text-on-surface truncate">Elara Vance</h2>
+<span class="text-label-md font-bold text-primary ml-2 shrink-0">10:42 AM</span>
+</div>
+<p class="text-body-md text-on-surface font-semibold truncate pr-4">Yes, the MALM dresser is still available. When can you pick it up?</p>
+</div>
+</div>
+</a>
+<!-- Chat Item 2 (Read) -->
+<a class="group block bg-surface p-4 rounded-DEFAULT hover:bg-surface-container-lowest hover:shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] transition-all duration-300" href="#">
+<div class="flex items-center space-x-4">
+<div class="relative shrink-0">
+<img alt="Avatar" class="w-14 h-14 rounded-full object-cover grayscale opacity-80" data-alt="Portrait of young man with slight beard looking away from camera, neutral lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCG13hDd_1dbCK--K-qmqujXQMohl7sAwDKnT_Ooe4pGrF6ph5S6o2KrJLtXpGbRK0oLpdr2W-6Q3YL8S4hAP6N6vhO7GdedzDhNdzH2YBqCgRnJETZWuRCjxWbfpWAkoBfMLnwuWcLd9RDH9k_uoao1EJenV7sJ3T9AfGxAS53xyzRBqPkZp26fahVTtnQhiu2CyzxiqOU4KPhGjRVoBn5ATSVNJGlIcZax904Z0skSuxMKCNxtGO4Ar6UJzgOBHZeaSbMc1rHvrs"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h2 class="font-headline text-title-sm text-on-surface-variant truncate">Marcus Thorne</h2>
+<span class="text-label-md text-outline ml-2 shrink-0">Yesterday</span>
+</div>
+<p class="text-body-md text-on-surface-variant truncate pr-4">Thanks for the smooth transaction!</p>
+</div>
+</div>
+</a>
+<!-- Chat Item 3 (Read) -->
+<a class="group block bg-surface p-4 rounded-DEFAULT hover:bg-surface-container-lowest hover:shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] transition-all duration-300" href="#">
+<div class="flex items-center space-x-4">
+<div class="relative shrink-0">
+<div class="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold text-xl">S</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h2 class="font-headline text-title-sm text-on-surface-variant truncate">Sarah Jenkins</h2>
+<span class="text-label-md text-outline ml-2 shrink-0">Tue</span>
+</div>
+<p class="text-body-md text-on-surface-variant truncate pr-4">Could you send dimensions for the KALLAX?</p>
+</div>
+</div>
+</a>
+<!-- Chat Item 4 (Read) -->
+<a class="group block bg-surface p-4 rounded-DEFAULT hover:bg-surface-container-lowest hover:shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] transition-all duration-300" href="#">
+<div class="flex items-center space-x-4">
+<div class="relative shrink-0">
+<img alt="Avatar" class="w-14 h-14 rounded-full object-cover grayscale opacity-80" data-alt="Portrait of young woman smiling gently outdoors with blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6ALSmIRagptwuXur4DqIxf6FYJ4nAh-aHNgwKp1GBlJ6I-uUrb2BH7gAIrpJFRCnWLNP5DSToUavebHqhplVlqlw4b9BMLIa8ofmxVHIgPM7sJY4JAWdN0GA4tXBaJ2F-9bHRDFN_vxut2TTa231alPjc_4uQpf8eSJu_habL6aXbUAEZkdqUgcAVW6e3BkcIQCSBPzg0HYPxQCUp7JzKlzdOu8ASc4a61nLMkKK1cvqms3ppgcE-5hEUuBCxT9e-gA_tdBYgMe4"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h2 class="font-headline text-title-sm text-on-surface-variant truncate">Chloe Chen</h2>
+<span class="text-label-md text-outline ml-2 shrink-0">Oct 12</span>
+</div>
+<p class="text-body-md text-on-surface-variant truncate pr-4">I'll pass for now, but thank you.</p>
+</div>
+</div>
+</a>
+</div>
+</main>
+<!-- Floating Action Button (New Message) -->
+<button aria-label="New Message" class="fixed bottom-24 right-6 w-14 h-14 bg-secondary-container text-on-secondary-container rounded-DEFAULT shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-40">
+<span class="material-symbols-outlined" data-icon="add" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center bg-white dark:bg-[#1a1c1c] pb-safe pt-2 px-2 z-50 rounded-t-none border-t border-[#c2c6d3]/15 shadow-[0_-8px_24px_-4px_rgba(26,28,28,0.06)] md:hidden">
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] tap-highlight-transparent duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#fdd816] text-[#004181] rounded-xl px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] tap-highlight-transparent duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="chat_bubble" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] tap-highlight-transparent duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="add_circle">add_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Post</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] tap-highlight-transparent duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] tap-highlight-transparent duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="settings">settings</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Settings</span>
+</a>
+</nav>
+</body></html>

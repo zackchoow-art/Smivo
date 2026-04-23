@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/constants/app_constants.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 
@@ -15,9 +13,11 @@ class HomeHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unreadAsync = ref.watch(totalUnreadNotificationsProvider);
     final unreadCount = unreadAsync.valueOrNull ?? 0;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -30,12 +30,12 @@ class HomeHeader extends ConsumerWidget {
                 children: [
                   Text(
                     'Campus',
-                    style: AppTextStyles.headlineMedium,
+                    style: typo.headlineMedium,
                   ),
                   Text(
-                    AppConstants.defaultSchool.replaceAll(' ', ''), // e.g. "SmithCollege"
-                    style: AppTextStyles.headlineLarge.copyWith(
-                      color: const Color(0xFF0546ED), // The screenshot uses a blue tint for the school name
+                    AppConstants.defaultSchool.replaceAll(' ', ''),
+                    style: typo.headlineLarge.copyWith(
+                      color: colors.primary,
                     ),
                   ),
                 ],
@@ -43,18 +43,24 @@ class HomeHeader extends ConsumerWidget {
               Row(
                 children: [
                   _NotificationBellIcon(unreadCount: unreadCount),
-                  const SizedBox(width: AppSpacing.md),
+                  const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () => context.pushNamed(AppRoutes.settings),
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.outlineVariant, width: 2),
+                        border: Border.all(
+                          color: colors.outlineVariant,
+                          width: 2,
+                        ),
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 20,
-                        backgroundColor: AppColors.surfaceContainerHigh,
-                        child: Icon(Icons.person, color: AppColors.onSurface),
+                        backgroundColor: colors.surfaceContainerHigh,
+                        child: Icon(
+                          Icons.person,
+                          color: colors.onSurface,
+                        ),
                       ),
                     ),
                   ),
@@ -62,11 +68,11 @@ class HomeHeader extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: 8),
           Text(
             'The digital pulse of your university. Buy, sell, and connect.',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.onSurface.withValues(alpha: 0.7),
+            style: typo.bodyMedium.copyWith(
+              color: colors.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -82,6 +88,8 @@ class _NotificationBellIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+
     return IconButton(
       onPressed: () => context.pushNamed(AppRoutes.notificationCenter),
       icon: Stack(
@@ -91,7 +99,7 @@ class _NotificationBellIcon extends StatelessWidget {
             unreadCount > 0
                 ? Icons.notifications_active
                 : Icons.notifications_outlined,
-            color: AppColors.primary,
+            color: colors.primary,
             size: 28,
           ),
           if (unreadCount > 0)
@@ -101,9 +109,12 @@ class _NotificationBellIcon extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFCC3300),
+                  color: colors.error,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
+                  border: Border.all(
+                    color: colors.surfaceContainerLowest,
+                    width: 1.5,
+                  ),
                 ),
                 constraints: const BoxConstraints(
                   minWidth: 18,
@@ -112,8 +123,8 @@ class _NotificationBellIcon extends StatelessWidget {
                 child: Center(
                   child: Text(
                     unreadCount > 9 ? '9+' : unreadCount.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colors.onPrimary,
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
                       height: 1,

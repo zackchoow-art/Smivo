@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 
 class MessageBadgeIcon extends StatelessWidget {
   final int unreadCount;
@@ -12,6 +13,8 @@ class MessageBadgeIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+
     return IconButton(
       onPressed: () {
         // Since this is a global icon without specific context,
@@ -21,9 +24,9 @@ class MessageBadgeIcon extends StatelessWidget {
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
-          const Icon(
+          Icon(
             Icons.chat_bubble_outline,
-            color: Color(0xFF013DFD), // Blue icon as per screenshot
+            color: colors.primary,
             size: 28,
           ),
           if (unreadCount > 0)
@@ -33,9 +36,12 @@ class MessageBadgeIcon extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFCC3300), // Red/Orange badge color
+                  color: colors.error,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2), // White border around badge
+                  border: Border.all(
+                    color: colors.surfaceContainerLowest,
+                    width: 2,
+                  ),
                 ),
                 constraints: const BoxConstraints(
                   minWidth: 22,
@@ -44,8 +50,8 @@ class MessageBadgeIcon extends StatelessWidget {
                 child: Center(
                   child: Text(
                     unreadCount.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colors.onPrimary,
                       fontSize: 11,
                       fontWeight: FontWeight.w900,
                       height: 1,

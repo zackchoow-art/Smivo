@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smivo Help &amp; Support</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#115eb1",
+                    "secondary-fixed": "#ffe164",
+                    "error-container": "#ffdad6",
+                    "on-background": "#1a1c1c",
+                    "tertiary-container": "#953f01",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-low": "#f3f3f3",
+                    "secondary-container": "#fdd816",
+                    "on-secondary-fixed-variant": "#544600",
+                    "outline": "#727783",
+                    "outline-variant": "#c2c6d3",
+                    "on-primary-container": "#b8d1ff",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-tertiary": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "on-tertiary-container": "#ffc3a5",
+                    "on-error": "#ffffff",
+                    "surface-dim": "#dadada",
+                    "primary-fixed": "#d6e3ff",
+                    "surface-container-high": "#e8e8e8",
+                    "surface-bright": "#f9f9f9",
+                    "primary-fixed-dim": "#a8c8ff",
+                    "secondary-fixed-dim": "#e7c400",
+                    "secondary": "#6f5d00",
+                    "on-tertiary-fixed": "#341100",
+                    "on-secondary-container": "#705e00",
+                    "on-surface-variant": "#424752",
+                    "inverse-on-surface": "#f1f1f1",
+                    "primary": "#004181",
+                    "error": "#ba1a1a",
+                    "tertiary": "#702d00",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eeeeee",
+                    "on-primary-fixed-variant": "#00468a",
+                    "on-primary-fixed": "#001b3d",
+                    "background": "#f9f9f9",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface": "#f9f9f9",
+                    "surface-variant": "#e2e2e2",
+                    "on-secondary-fixed": "#221b00",
+                    "primary-container": "#0058ab",
+                    "inverse-primary": "#a8c8ff",
+                    "on-tertiary-fixed-variant": "#783100"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        /* details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; } */
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen antialiased selection:bg-secondary-container selection:text-on-secondary-container flex flex-col">
+<!-- Top Navigation suppressed due to task-focused 'Help' page intent as per instructions, replaced with a task-specific header -->
+<header class="w-full bg-surface-container-lowest sticky top-0 z-50 flex items-center justify-between px-6 py-4">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="p-2 -ml-2 rounded-lg hover:bg-surface-container-low transition-colors duration-200 text-on-surface">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+<span class="font-headline text-title-sm font-bold tracking-tight text-primary">Smivo</span>
+</div>
+<div class="flex items-center">
+<button class="px-4 py-2 bg-surface-container-low text-on-surface font-label text-label-md font-bold uppercase tracking-widest rounded-DEFAULT hover:bg-surface-container-highest transition-colors">
+                Contact Us
+            </button>
+</div>
+</header>
+<main class="flex-grow w-full max-w-4xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-16">
+<!-- Hero Section -->
+<section class="flex flex-col gap-8 max-w-2xl">
+<h1 class="font-headline text-display-lg font-bold leading-tight text-primary">
+                Help &amp; Support
+            </h1>
+<p class="font-body text-body-md text-on-surface-variant max-w-lg">
+                Find answers to common questions about buying, selling, and managing your account on Smivo.
+            </p>
+<!-- Search Bar -->
+<div class="relative w-full mt-4">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline" style="font-variation-settings: 'FILL' 0;">search</span>
+</div>
+<input class="w-full pl-12 pr-4 py-5 bg-surface-container-highest border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 rounded-DEFAULT font-body text-body-md text-on-surface placeholder-outline transition-all duration-200 outline-none" placeholder="Search for help topics..." type="text"/>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="flex flex-col gap-8">
+<h2 class="font-headline text-headline-md font-semibold text-on-surface mb-4">
+                Frequently Asked Questions
+            </h2>
+<div class="flex flex-col gap-2">
+<!-- FAQ Item 1 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">How do I create a listing on Smivo?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        To create a listing, click the 'Sell' icon in the bottom navigation bar. Follow the prompts to add photos, write a detailed description, set a price, and choose your preferred shipping or pickup methods. Your item will be live once you confirm all details.
+                    </div>
+</details>
+<!-- FAQ Item 2 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">What are the fees for selling?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        Listing items on Smivo is completely free. We only charge a small processing fee of 5% plus a fixed transaction cost when your item successfully sells. This covers secure payment processing and buyer protection.
+                    </div>
+</details>
+<!-- FAQ Item 3 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">How does buyer protection work?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        Smivo Buyer Protection guarantees that you get the item you ordered or your money back. We hold the payment until you confirm the item has arrived safely and matches the description. If there's an issue, you have 3 days to report it.
+                    </div>
+</details>
+<!-- FAQ Item 4 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">Can I change my shipping address?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        You can update your default shipping address in your Profile under 'Settings'. If you have already placed an order, you cannot change the address for that specific order. You will need to contact the seller directly to request a change, though they are not obligated to accommodate it.
+                    </div>
+</details>
+<!-- FAQ Item 5 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">How do I track my order?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        Once a seller ships your item, you will receive a notification with a tracking number. You can also view the tracking information by navigating to your Profile, selecting 'My Purchases', and tapping on the specific order.
+                    </div>
+</details>
+<!-- FAQ Item 6 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">What if my item arrives damaged?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        If your item arrives damaged, please do not complete the transaction. Instead, immediately file a dispute through the order page within 3 days of delivery. Be prepared to provide clear photos of the damage and the original packaging.
+                    </div>
+</details>
+<!-- FAQ Item 7 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">How do I get paid as a seller?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        Funds are released to your Smivo balance after the buyer confirms they have received the item as described, or automatically 3 days after tracking shows delivered if no issue is reported. You can then transfer your balance to your linked bank account.
+                    </div>
+</details>
+<!-- FAQ Item 8 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">Can I cancel an order?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        Buyers can request a cancellation before the item is shipped, but it requires the seller's approval. Sellers can cancel an order at any time before shipping, though frequent cancellations may affect seller ratings.
+                    </div>
+</details>
+<!-- FAQ Item 9 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">How do I report a suspicious user or listing?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        To report a user or listing, tap the three dots icon on their profile or listing page and select 'Report'. Provide a brief description of the issue. Our trust and safety team will review the report within 24 hours.
+                    </div>
+</details>
+<!-- FAQ Item 10 -->
+<details class="group bg-surface-container-lowest rounded-lg overflow-hidden [&amp;_summary::-webkit-details-marker]:hidden">
+<summary class="flex justify-between items-center cursor-pointer p-6 hover:bg-surface-container-low transition-colors duration-200">
+<span class="font-headline text-title-sm font-bold text-on-surface group-open:text-primary transition-colors">How do I delete my account?</span>
+<span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body text-body-md text-on-surface-variant bg-surface-container-lowest leading-relaxed">
+                        To permanently delete your account, go to Profile &gt; Settings &gt; Account Security, and select 'Delete Account'. Please note that all active listings must be closed and all pending transactions must be completed before an account can be deleted.
+                    </div>
+</details>
+</div>
+</section>
+<!-- Contact Support Fallback -->
+<section class="mt-8 p-8 bg-surface-container-low rounded-lg flex flex-col md:flex-row items-center justify-between gap-6">
+<div>
+<h3 class="font-headline text-title-sm font-bold text-on-surface mb-2">Still need help?</h3>
+<p class="font-body text-body-md text-on-surface-variant">Our support team is available around the clock to assist you.</p>
+</div>
+<button class="w-full md:w-auto px-8 py-4 bg-primary text-on-primary font-label text-label-md font-bold uppercase tracking-widest rounded-DEFAULT hover:bg-primary-container transition-colors shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)]">
+                Message Support
+            </button>
+</section>
+</main>
+<!-- Bottom Nav suppressed due to task-focused intent of Help page -->
+</body></html>

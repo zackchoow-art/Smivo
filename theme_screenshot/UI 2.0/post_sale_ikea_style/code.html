@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smivo - List an Item</title>
+<!-- Google Fonts: Plus Jakarta Sans & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration (Design System Tokens) -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#115eb1",
+                        "secondary-fixed": "#ffe164",
+                        "error-container": "#ffdad6",
+                        "on-background": "#1a1c1c",
+                        "tertiary-container": "#953f01",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-low": "#f3f3f3",
+                        "secondary-container": "#fdd816",
+                        "on-secondary-fixed-variant": "#544600",
+                        "outline": "#727783",
+                        "outline-variant": "#c2c6d3",
+                        "on-primary-container": "#b8d1ff",
+                        "tertiary-fixed": "#ffdbcb",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#2f3131",
+                        "on-tertiary-container": "#ffc3a5",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#d6e3ff",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-bright": "#f9f9f9",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "secondary-fixed-dim": "#e7c400",
+                        "secondary": "#6f5d00",
+                        "on-tertiary-fixed": "#341100",
+                        "on-secondary-container": "#705e00",
+                        "on-surface-variant": "#424752",
+                        "inverse-on-surface": "#f1f1f1",
+                        "primary": "#004181",
+                        "error": "#ba1a1a",
+                        "tertiary": "#702d00",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eeeeee",
+                        "on-primary-fixed-variant": "#00468a",
+                        "on-primary-fixed": "#001b3d",
+                        "background": "#f9f9f9",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface": "#f9f9f9",
+                        "surface-variant": "#e2e2e2",
+                        "on-secondary-fixed": "#221b00",
+                        "primary-container": "#0058ab",
+                        "inverse-primary": "#a8c8ff",
+                        "on-tertiary-fixed-variant": "#783100"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"],
+                        "label": ["Plus Jakarta Sans", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base typography setup */
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Material Symbols utility */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #c2c6d3;
+            border-radius: 4px;
+        }
+
+        /* Hide default radio buttons for custom chips */
+        .category-radio:checked + label {
+            background-color: #004181; /* primary */
+            color: #ffffff; /* on-primary */
+            border-color: #004181;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- 
+        Navigation Shell Logic: 
+        This is a transactional "Post Sale" task-focused screen with a clear "Close" action.
+        Therefore, according to the "Automatic Suppression" rule, the global BottomNavBar and TopAppBar are suppressed.
+        We implement a contextual minimal header instead.
+    -->
+<!-- Contextual Header -->
+<header class="w-full flex items-center justify-end px-6 py-4 bg-surface-container-lowest z-10 sticky top-0">
+<button aria-label="Close" class="p-3 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" type="button">
+<span class="material-symbols-outlined text-2xl group-active:scale-90 transition-transform">close</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-3xl mx-auto px-6 pt-8 pb-32 flex flex-col">
+<!-- Header Section -->
+<div class="mb-12">
+<h1 class="font-headline text-[2.5rem] md:text-[3.5rem] font-bold tracking-tight text-on-surface leading-none mb-4">
+                List an Item
+            </h1>
+<p class="font-body text-body-md text-on-surface-variant max-w-lg">
+                Provide the details below to add your item to the marketplace. Clear photos and accurate descriptions help items sell faster.
+            </p>
+</div>
+<!-- Form Layout -->
+<form action="#" class="flex flex-col gap-10" method="POST">
+<!-- Photo Upload Area (Functional addition for a marketplace) -->
+<div class="flex flex-col gap-3">
+<label class="font-label text-label-md uppercase tracking-widest text-on-surface-variant">Photos</label>
+<div class="w-full h-48 bg-surface-container-low border-2 border-dashed border-outline-variant/40 rounded-DEFAULT flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container hover:border-outline transition-all group">
+<div class="w-14 h-14 rounded-full bg-surface-container-lowest shadow-[0_8px_24px_-4px_rgba(26,28,28,0.06)] flex items-center justify-center mb-3 group-hover:-translate-y-1 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">add_a_photo</span>
+</div>
+<span class="font-body text-sm text-on-surface font-semibold">Add up to 10 photos</span>
+<span class="font-body text-xs text-on-surface-variant mt-1">JPEG, PNG. Max 5MB per image.</span>
+</div>
+</div>
+<!-- Item Title -->
+<div class="flex flex-col gap-3">
+<label class="font-label text-label-md uppercase tracking-widest text-on-surface-variant" for="item-title">Item Title</label>
+<div class="bg-surface-container-highest rounded-DEFAULT border-b-2 border-transparent focus-within:bg-surface-container-lowest focus-within:border-primary transition-all duration-200">
+<input class="w-full bg-transparent px-5 py-4 font-body text-body-md text-on-surface placeholder:text-outline-variant outline-none border-none focus:ring-0" id="item-title" name="title" placeholder="e.g. Vintage Teak Sideboard" required="" type="text"/>
+</div>
+</div>
+<!-- Description -->
+<div class="flex flex-col gap-3">
+<label class="font-label text-label-md uppercase tracking-widest text-on-surface-variant" for="item-description">Description</label>
+<div class="bg-surface-container-highest rounded-DEFAULT border-b-2 border-transparent focus-within:bg-surface-container-lowest focus-within:border-primary transition-all duration-200">
+<textarea class="w-full bg-transparent px-5 py-4 font-body text-body-md text-on-surface placeholder:text-outline-variant outline-none border-none resize-y min-h-[120px] focus:ring-0" id="item-description" name="description" placeholder="Describe the condition, dimensions, and any notable features..." required="" rows="5"></textarea>
+</div>
+</div>
+<!-- Category (Bento-style chips for functional tactility) -->
+<div class="flex flex-col gap-3">
+<label class="font-label text-label-md uppercase tracking-widest text-on-surface-variant">Category</label>
+<div class="flex flex-wrap gap-3">
+<!-- Chip 1 -->
+<div>
+<input checked="" class="category-radio hidden" id="cat-furniture" name="category" type="radio" value="furniture"/>
+<label class="block px-6 py-3 bg-surface-container-highest text-on-surface font-label text-sm font-bold rounded-DEFAULT cursor-pointer hover:bg-surface-container-low border-2 border-transparent transition-colors select-none" for="cat-furniture">
+                            Furniture
+                        </label>
+</div>
+<!-- Chip 2 -->
+<div>
+<input class="category-radio hidden" id="cat-electronics" name="category" type="radio" value="electronics"/>
+<label class="block px-6 py-3 bg-surface-container-highest text-on-surface font-label text-sm font-bold rounded-DEFAULT cursor-pointer hover:bg-surface-container-low border-2 border-transparent transition-colors select-none" for="cat-electronics">
+                            Electronics
+                        </label>
+</div>
+<!-- Chip 3 -->
+<div>
+<input class="category-radio hidden" id="cat-home" name="category" type="radio" value="home"/>
+<label class="block px-6 py-3 bg-surface-container-highest text-on-surface font-label text-sm font-bold rounded-DEFAULT cursor-pointer hover:bg-surface-container-low border-2 border-transparent transition-colors select-none" for="cat-home">
+                            Home Goods
+                        </label>
+</div>
+<!-- Chip 4 -->
+<div>
+<input class="category-radio hidden" id="cat-clothing" name="category" type="radio" value="clothing"/>
+<label class="block px-6 py-3 bg-surface-container-highest text-on-surface font-label text-sm font-bold rounded-DEFAULT cursor-pointer hover:bg-surface-container-low border-2 border-transparent transition-colors select-none" for="cat-clothing">
+                            Clothing
+                        </label>
+</div>
+<!-- Chip 5 -->
+<div>
+<input class="category-radio hidden" id="cat-other" name="category" type="radio" value="other"/>
+<label class="block px-6 py-3 bg-surface-container-highest text-on-surface font-label text-sm font-bold rounded-DEFAULT cursor-pointer hover:bg-surface-container-low border-2 border-transparent transition-colors select-none" for="cat-other">
+                            Other
+                        </label>
+</div>
+</div>
+</div>
+<!-- Price -->
+<div class="flex flex-col gap-3">
+<label class="font-label text-label-md uppercase tracking-widest text-on-surface-variant" for="item-price">Price</label>
+<div class="flex items-center bg-surface-container-highest rounded-DEFAULT border-b-2 border-transparent focus-within:bg-surface-container-lowest focus-within:border-primary transition-all duration-200">
+<span class="pl-5 pr-2 font-headline text-lg font-bold text-on-surface-variant">$</span>
+<input class="w-full bg-transparent pr-5 py-4 font-headline text-lg font-semibold text-on-surface placeholder:text-outline-variant outline-none border-none focus:ring-0" id="item-price" min="0" name="price" placeholder="0.00" required="" step="0.01" type="number"/>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-8 pt-8 border-t border-surface-container-low">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-label text-base font-bold uppercase tracking-widest py-5 px-8 rounded-DEFAULT shadow-[0_8px_24px_-4px_rgba(26,28,28,0.12)] hover:shadow-[0_12px_32px_-4px_rgba(26,28,28,0.15)] hover:from-primary-container hover:to-[#0066c4] active:scale-[0.98] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-fixed focus:ring-offset-2 focus:ring-offset-surface" type="submit">
+                    Post Item
+                </button>
+</div>
+</form>
+</main>
+</body></html>

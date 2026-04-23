@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 
 /// Reusable error display widget for AsyncValue error states.
 ///
@@ -22,26 +20,28 @@ class AppErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 48,
-              color: AppColors.error,
+              color: colors.error,
               semanticLabel: 'Error icon',
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: 16),
               OutlinedButton(
                 onPressed: onRetry,
                 child: const Text('Retry'),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 
 class ChatListItem extends StatelessWidget {
@@ -15,14 +14,18 @@ class ChatListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(AppSpacing.md),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFE2DFFF),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          color: colors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(radius.card),
         ),
         child: Row(
           children: [
@@ -32,15 +35,15 @@ class ChatListItem extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundColor: const Color(0xFFD3D0F0),
+                  backgroundColor: colors.surfaceContainer,
                   backgroundImage: conversation.avatarUrl != null
                       ? NetworkImage(conversation.avatarUrl!)
                       : null,
                   child: conversation.initials != null
                       ? Text(
                           conversation.initials!,
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: const Color(0xFF2B2A51),
+                          style: typo.titleMedium.copyWith(
+                            color: colors.onSurface,
                           ),
                         )
                       : null,
@@ -51,15 +54,20 @@ class ChatListItem extends StatelessWidget {
                     right: -4,
                     child: Badge(
                       label: Text(
-                        conversation.unreadCount > 99 ? '99+' : conversation.unreadCount.toString(),
-                        style: const TextStyle(fontSize: 10, color: Colors.white),
+                        conversation.unreadCount > 99
+                            ? '99+'
+                            : conversation.unreadCount.toString(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colors.onPrimary,
+                        ),
                       ),
-                      backgroundColor: Colors.red,
+                      backgroundColor: colors.error,
                     ),
                   ),
               ],
             ),
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: 12),
             
             // Name and Message
             Expanded(
@@ -69,17 +77,21 @@ class ChatListItem extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        conversation.name,
-                        style: AppTextStyles.titleMedium.copyWith(
-                          color: const Color(0xFF2B2A51),
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Text(
+                          conversation.name,
+                          style: typo.titleMedium.copyWith(
+                            color: colors.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Text(
                         conversation.time,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: const Color(0xFF0546ED), // A blueish color for time based on screenshot, actually wait, the screenshot has time in blueish-purple
+                        style: typo.labelSmall.copyWith(
+                          color: colors.primary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -88,8 +100,8 @@ class ChatListItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     conversation.latestMessage,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: const Color(0xFF585781),
+                    style: typo.bodyMedium.copyWith(
+                      color: colors.onSurfaceVariant,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

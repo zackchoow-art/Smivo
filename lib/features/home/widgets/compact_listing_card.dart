@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/features/home/widgets/transaction_tag.dart';
@@ -32,6 +30,9 @@ class CompactListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = listing.displayImageUrl;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return GestureDetector(
       onTap: () => context.pushNamed(
@@ -39,7 +40,7 @@ class CompactListingCard extends StatelessWidget {
         pathParameters: {'id': listing.id},
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+        margin: const EdgeInsets.only(bottom: 16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -48,8 +49,8 @@ class CompactListingCard extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                color: colors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(radius.image),
                 image: imageUrl != null 
                     ? DecorationImage(
                         image: NetworkImage(imageUrl),
@@ -62,31 +63,33 @@ class CompactListingCard extends StatelessWidget {
                       child: Icon(
                         Icons.image_not_supported_outlined,
                         size: 32,
-                        color: AppColors.outlineVariant.withValues(alpha: 0.5),
+                        color: colors.outlineVariant.withValues(alpha: 0.5),
                       ),
                     )
                   : null,
             ),
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: 12),
             // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TransactionTag(transactionType: listing.transactionType),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: 4),
                   Text(
                     listing.title,
-                    style: AppTextStyles.titleMedium,
+                    style: typo.titleMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: 4),
                   Text(
                     listing.transactionType.toLowerCase() == 'rental' 
                       ? _rentalPriceLabel(listing)
                       : '\$${listing.price.toStringAsFixed(0)}',
-                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.priceTagPrimary),
+                    style: typo.labelLarge.copyWith(
+                      color: colors.priceAccentContainer,
+                    ),
                   ),
                 ],
               ),

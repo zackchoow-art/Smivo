@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_list_item.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -17,54 +16,57 @@ class ChatListScreen extends ConsumerWidget {
     final chatRoomsAsync = ref.watch(chatRoomListProvider);
     final authUser = ref.watch(authStateProvider).valueOrNull;
     final currentUserId = authUser?.id;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.surfaceContainerLowest,
       body: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: 12),
               // Title
               Text(
                 'Chat',
-                style: AppTextStyles.displayLarge.copyWith(
-                  color: const Color(0xFF2B2A51),
+                style: typo.displayLarge.copyWith(
+                  color: colors.onSurface,
                   letterSpacing: -1.5,
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: 12),
               
               // Search Bar
               TextField(
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: const Color(0xFF2B2A51),
+                style: typo.bodyLarge.copyWith(
+                  color: colors.onSurface,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search conversations...',
-                  hintStyle: AppTextStyles.bodyLarge.copyWith(
-                    color: const Color(0xFF585781).withValues(alpha: 0.6),
+                  hintStyle: typo.bodyLarge.copyWith(
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: const Color(0xFF585781).withValues(alpha: 0.6),
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                   filled: true,
-                  fillColor: const Color(0xFFF2EFFF),
+                  fillColor: colors.surfaceContainerLow,
                   contentPadding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.sm,
-                    horizontal: AppSpacing.md,
+                    vertical: 8,
+                    horizontal: 12,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    borderRadius: BorderRadius.circular(radius.input),
                     borderSide: BorderSide.none,
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: 16),
               
               // Chat List
               Expanded(
@@ -75,7 +77,7 @@ class ChatListScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text('Error loading conversations'),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: 12),
                         ElevatedButton(
                           onPressed: () => ref.invalidate(chatRoomListProvider),
                           child: const Text('Retry'),

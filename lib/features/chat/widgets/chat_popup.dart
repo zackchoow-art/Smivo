@@ -1,9 +1,9 @@
 import 'dart:ui';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/data/models/message.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
@@ -123,38 +123,35 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
     final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
     final currentUserProfile = ref.watch(profileProvider).valueOrNull;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     // Re-mark as read whenever new messages arrive while viewing this chat.
     ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
       final prevLen = previous?.valueOrNull?.length ?? 0;
       final nextLen = next.valueOrNull?.length ?? 0;
       if (nextLen > prevLen) {
-        // New message arrived while user is on this screen
         ref.read(chatMessagesProvider(widget.chatRoomId).notifier).markAsRead();
       }
     });
-
-    const backgroundColor = Color(0xFFF5F4FA);
-    const primaryBlue = Color(0xFF3B67FF);
-    const headerBlue = Color(0xFF2B2A51);
-    const bubbleLeftBg = Color(0xFFE2DDFA);
 
     return Container(
       width: MediaQuery.of(context).size.width * 0.85,
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: backgroundColor.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(24),
+        color: colors.background.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(radius.xl),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: colors.shadow,
             blurRadius: 40,
             offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(radius.xl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Column(
@@ -180,8 +177,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                         children: [
                           Text(
                             widget.otherUserName,
-                            style: AppTextStyles.titleMedium.copyWith(
-                              color: headerBlue,
+                            style: typo.titleMedium.copyWith(
+                              color: colors.onSurface,
                               fontWeight: FontWeight.w800,
                               fontSize: 18,
                             ),
@@ -190,7 +187,10 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Color(0xFF546387)),
+                      icon: Icon(
+                        Icons.close,
+                        color: colors.onSurfaceVariant,
+                      ),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -203,11 +203,11 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    color: colors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(radius.md),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
+                        color: colors.shadow,
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -219,8 +219,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFDCDDDF),
-                          borderRadius: BorderRadius.circular(4),
+                          color: colors.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(radius.xs),
                           image: widget.listingImageUrl != null
                               ? DecorationImage(
                                   image: NetworkImage(widget.listingImageUrl!),
@@ -236,8 +236,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                       Expanded(
                         child: Text(
                           widget.listingTitle,
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: headerBlue,
+                          style: typo.labelLarge.copyWith(
+                            color: colors.onSurface,
                             fontWeight: FontWeight.w700,
                             fontSize: 13,
                           ),
@@ -247,8 +247,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                       ),
                       Text(
                         '\$${widget.listingPrice.toStringAsFixed(0)}',
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: primaryBlue,
+                        style: typo.labelLarge.copyWith(
+                          color: colors.primary,
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
                         ),
@@ -263,7 +263,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  color: backgroundColor.withValues(alpha: 0.3),
+                  color: colors.background.withValues(alpha: 0.3),
                   child: messagesAsync.when(
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (err, _) => Center(child: Text('Error: $err')),
@@ -286,8 +286,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                               padding: const EdgeInsets.only(bottom: 16),
                               child: _buildRightBubble(
                                 msg,
-                                primaryBlue,
-                                Colors.white,
+                                colors.chatBubbleSelf,
+                                colors.chatBubbleTextSelf,
                                 currentUserProfile?.avatarUrl,
                               ),
                             );
@@ -297,8 +297,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                               child: _buildLeftBubble(
                                 msg,
                                 msg.sender?.avatarUrl ?? widget.otherUserAvatar,
-                                bubbleLeftBg,
-                                headerBlue,
+                                colors.chatBubbleOther,
+                                colors.chatBubbleTextOther,
                               ),
                             );
                           }
@@ -312,14 +312,14 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
               // --- Bottom Input Area ---
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLowest,
                 ),
                 child: Container(
                   height: 52,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F4FA),
-                    borderRadius: BorderRadius.circular(16),
+                    color: colors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(radius.md),
                   ),
                   child: Row(
                     children: [
@@ -329,8 +329,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                           onSubmitted: (_) => _sendMessage(),
                           decoration: InputDecoration(
                             hintText: 'Message ${widget.otherUserName}...',
-                            hintStyle: AppTextStyles.bodyMedium.copyWith(
-                              color: const Color(0xFF9EA3C0),
+                            hintStyle: typo.bodyMedium.copyWith(
+                              color: colors.outlineVariant,
                             ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
@@ -348,12 +348,12 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: primaryBlue,
-                            borderRadius: BorderRadius.circular(12),
+                            color: colors.primary,
+                            borderRadius: BorderRadius.circular(radius.md),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.send_outlined,
-                            color: Colors.white,
+                            color: colors.onPrimary,
                             size: 20,
                           ),
                         ),
@@ -376,6 +376,9 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     Color bgColor,
     Color textColor,
   ) {
+    final typo = context.smivoTypo;
+    final colors = context.smivoColors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -402,7 +405,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                 ),
                 child: Text(
                   msg.content,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: typo.bodyMedium.copyWith(
                     color: textColor,
                     height: 1.4,
                   ),
@@ -416,8 +419,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
           padding: const EdgeInsets.only(left: 32, top: 4),
           child: Text(
             timeago.format(msg.createdAt, locale: 'en_short'),
-            style: AppTextStyles.labelSmall.copyWith(
-              color: const Color(0xFF546387),
+            style: typo.labelSmall.copyWith(
+              color: colors.onSurfaceVariant,
               fontSize: 10,
             ),
           ),
@@ -432,6 +435,9 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     Color textColor,
     String? myAvatarUrl,
   ) {
+    final typo = context.smivoTypo;
+    final colors = context.smivoColors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -454,7 +460,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                 ),
                 child: Text(
                   msg.content,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: typo.bodyMedium.copyWith(
                     color: textColor,
                     height: 1.4,
                   ),
@@ -473,8 +479,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
           padding: const EdgeInsets.only(right: 32, top: 4),
           child: Text(
             timeago.format(msg.createdAt, locale: 'en_short'),
-            style: AppTextStyles.labelSmall.copyWith(
-              color: const Color(0xFF546387),
+            style: typo.labelSmall.copyWith(
+              color: colors.onSurfaceVariant,
               fontSize: 10,
             ),
           ),

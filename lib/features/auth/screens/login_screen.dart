@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/constants/debug_constants.dart';
 import 'package:smivo/core/router/app_routes.dart';
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/utils/validators.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -59,6 +58,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final isLoading = authState.isLoading;
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     // Listen for auth errors and show SnackBar
     ref.listen(authProvider, (previous, next) {
@@ -71,14 +73,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: AppColors.error,
+            backgroundColor: colors.error,
           ),
         );
       }
     });
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 38),
@@ -89,7 +91,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Center(
                 child: Text(
                   'Smivo',
-                  style: AppTextStyles.logo,
+                  style: typo.displayLarge.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: colors.primary,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -97,11 +102,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               // ── Main Card ────────────────────────────────────────
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(24),
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(radius.xl),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2B2A51).withValues(alpha: 0.06),
+                      color: colors.shadow,
                       blurRadius: 32,
                       offset: const Offset(0, 12),
                     ),
@@ -117,13 +122,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Text(
                         'Welcome back.',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.headlineLarge,
+                        style: typo.headlineLarge,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'Sign in to access your university\'s exclusive hub.',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyLarge,
+                        style: typo.bodyLarge,
                       ),
                       const SizedBox(height: 32),
 
@@ -146,10 +151,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         hintText: '••••••••',
                         controller: _passwordController,
                         obscureText: true,
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.lock_outline_rounded,
                           size: 16,
-                          color: AppColors.textTertiary,
+                          color: colors.onSurfaceVariant,
                         ),
                         headerAction: GestureDetector(
                           onTap: () {
@@ -157,7 +162,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           },
                           child: Text(
                             'Forgot Password?',
-                            style: AppTextStyles.linkText,
+                            style: typo.bodyMedium.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
@@ -168,18 +176,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         height: 60,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          gradient: const LinearGradient(
+                          borderRadius: BorderRadius.circular(radius.xl),
+                          gradient: LinearGradient(
                             colors: [
-                              AppColors.gradientStart,
-                              AppColors.gradientEnd,
+                              colors.gradientStart,
+                              colors.gradientEnd,
                             ],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.2),
+                              color: colors.primary.withValues(alpha: 0.2),
                               blurRadius: 15,
                               offset: const Offset(0, 10),
                             ),
@@ -191,15 +199,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
+                              borderRadius: BorderRadius.circular(radius.xl),
                             ),
                           ),
                           child: isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   height: 24,
                                   width: 24,
                                   child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: colors.onPrimary,
                                     strokeWidth: 2,
                                   ),
                                 )
@@ -208,13 +216,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   children: [
                                     Text(
                                       'Sign In',
-                                      style: AppTextStyles.buttonLarge,
+                                      style: typo.labelLarge.copyWith(
+                                        color: colors.onPrimary,
+                                        fontSize: 18,
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
-                                    const Icon(
+                                    Icon(
                                       Icons.arrow_forward_rounded,
                                       size: 16,
-                                      color: Color(0xFFF2F1FF),
+                                      color: colors.onPrimary,
                                     ),
                                   ],
                                 ),
@@ -229,12 +240,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           icon: Icon(
                             _isDebugMode ? Icons.bug_report : Icons.bug_report_outlined,
                             size: 18,
-                            color: AppColors.textTertiary,
+                            color: colors.onSurfaceVariant,
                           ),
                           label: Text(
                             _isDebugMode ? 'Switch to Normal Mode' : 'Switch to Debug Mode',
-                            style: AppTextStyles.footerText.copyWith(
-                              color: AppColors.textTertiary,
+                            style: typo.bodySmall.copyWith(
+                              color: colors.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -246,16 +257,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Stack(
                         alignment: Alignment.center,
                         children: [
-                          const Divider(color: AppColors.divider),
+                          Divider(color: colors.dividerColor),
                           Container(
-                            color: AppColors.surface,
+                            color: colors.surface,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
                               'NEW TO THE QUAD?',
-                              style: AppTextStyles.bodyLarge.copyWith(
+                              style: typo.bodyLarge.copyWith(
                                 fontSize: 12,
                                 letterSpacing: 1.2,
-                                color: AppColors.textTertiary,
+                                color: colors.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -270,26 +281,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: OutlinedButton(
                           onPressed: () => context.pushNamed(AppRoutes.register),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: AppColors.borderLight,
+                            side: BorderSide(
+                              color: colors.outlineVariant,
                               width: 2,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
+                              borderRadius: BorderRadius.circular(radius.xl),
                             ),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.school_outlined,
-                                color: AppColors.primary,
+                                color: colors.primary,
                                 size: 22,
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 'Join with smith.edu email',
-                                style: AppTextStyles.buttonSecondary,
+                                style: typo.labelLarge.copyWith(
+                                  color: colors.primary,
+                                  fontSize: 16,
+                                ),
                               ),
                             ],
                           ),
@@ -304,18 +318,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             TextSpan(
                               text: 'Community Standards',
-                              style: const TextStyle(decoration: TextDecoration.underline),
+                              style: const TextStyle(
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                             const TextSpan(text: ' and '),
                             TextSpan(
                               text: 'Terms of Service',
-                              style: const TextStyle(decoration: TextDecoration.underline),
+                              style: const TextStyle(
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                             const TextSpan(text: '.'),
                           ],
                         ),
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.footerText,
+                        style: typo.bodySmall,
                       ),
                     ],
                   ),

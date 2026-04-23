@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smivo - Campus Marketplace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#953f01",
+                        "primary-container": "#0058ab",
+                        "on-secondary-fixed-variant": "#544600",
+                        "inverse-surface": "#2f3131",
+                        "on-primary-fixed-variant": "#00468a",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed": "#221b00",
+                        "surface-bright": "#f9f9f9",
+                        "surface-variant": "#e2e2e2",
+                        "on-primary-fixed": "#001b3d",
+                        "on-secondary-container": "#705e00",
+                        "on-tertiary-fixed-variant": "#783100",
+                        "on-surface": "#1a1c1c",
+                        "outline": "#727783",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#341100",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffe164",
+                        "inverse-primary": "#a8c8ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#d6e3ff",
+                        "error": "#ba1a1a",
+                        "secondary": "#6f5d00",
+                        "on-surface-variant": "#424752",
+                        "on-background": "#1a1c1c",
+                        "background": "#f9f9f9",
+                        "outline-variant": "#c2c6d3",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdbcb",
+                        "primary": "#004181",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#fdd816",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "tertiary": "#702d00",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#ffc3a5",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "surface-container": "#eeeeee",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary-fixed-dim": "#e7c400",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-tint": "#115eb1",
+                        "on-primary-container": "#b8d1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .ghost-border { box-shadow: inset 0 0 0 1px rgba(194, 198, 211, 0.15); }
+        .ambient-shadow { box-shadow: 0 8px 24px -4px rgba(26, 28, 28, 0.06); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-6 py-4 w-full z-50 bg-[#f9f9f9]/80 backdrop-blur-md docked full-width top-0 sticky bg-[#f3f3f3] flat no-line architecture">
+<button class="text-[#004181] hover:bg-[#f3f3f3] transition-colors active:scale-95 transition-transform p-2 rounded-lg flex items-center justify-center tap-highlight-transparent duration-200">
+<span class="material-symbols-outlined text-2xl" data-icon="menu">menu</span>
+</button>
+<h1 class="text-2xl font-black tracking-tight text-[#004181] font-['Plus_Jakarta_Sans'] font-bold text-lg text-center flex-1">Smivo</h1>
+<button class="text-[#004181] hover:bg-[#f3f3f3] transition-colors active:scale-95 transition-transform p-2 rounded-lg flex items-center justify-center tap-highlight-transparent duration-200">
+<span class="material-symbols-outlined text-2xl" data-icon="search">search</span>
+</button>
+</header>
+<main class="flex-1 pb-[88px] flex flex-col gap-8 md:gap-12">
+<!-- Search Section -->
+<section class="px-6 pt-4 max-w-7xl w-full mx-auto">
+<div class="relative w-full bg-surface-container-highest rounded-DEFAULT flex items-center px-4 py-3 focus-within:bg-surface-container-lowest focus-within:border-b-2 border-primary transition-all duration-200 group">
+<span class="material-symbols-outlined text-on-surface-variant mr-3 group-focus-within:text-primary" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none outline-none text-body-md text-on-surface placeholder:text-on-surface-variant p-0 focus:ring-0" placeholder="What are you looking for today?" type="text"/>
+</div>
+</section>
+<!-- Categories Scroll -->
+<section class="pl-6 max-w-7xl w-full mx-auto">
+<h2 class="text-label-md uppercase tracking-wider text-on-surface-variant mb-4 font-bold">Categories</h2>
+<div class="flex overflow-x-auto hide-scrollbar gap-3 pb-2 pr-6">
+<!-- Category Chips -->
+<button class="flex-none bg-surface-container-low hover:bg-surface-container-highest transition-colors px-6 py-3 rounded-DEFAULT text-body-md font-semibold whitespace-nowrap text-on-surface">Furniture</button>
+<button class="flex-none bg-surface-container-low hover:bg-surface-container-highest transition-colors px-6 py-3 rounded-DEFAULT text-body-md font-semibold whitespace-nowrap text-on-surface">Textbooks</button>
+<button class="flex-none bg-surface-container-low hover:bg-surface-container-highest transition-colors px-6 py-3 rounded-DEFAULT text-body-md font-semibold whitespace-nowrap text-on-surface">Electronics</button>
+<button class="flex-none bg-surface-container-low hover:bg-surface-container-highest transition-colors px-6 py-3 rounded-DEFAULT text-body-md font-semibold whitespace-nowrap text-on-surface">Dorm Decor</button>
+<button class="flex-none bg-surface-container-low hover:bg-surface-container-highest transition-colors px-6 py-3 rounded-DEFAULT text-body-md font-semibold whitespace-nowrap text-on-surface">Kitchen</button>
+<button class="flex-none bg-surface-container-low hover:bg-surface-container-highest transition-colors px-6 py-3 rounded-DEFAULT text-body-md font-semibold whitespace-nowrap text-on-surface">Rentals</button>
+</div>
+</section>
+<!-- Promo Banner -->
+<section class="px-6 max-w-7xl w-full mx-auto">
+<div class="bg-secondary-container rounded-lg p-6 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+<div class="relative z-10 max-w-lg">
+<span class="text-label-md uppercase tracking-wider text-on-secondary-container mb-2 block font-bold">Heads Up!</span>
+<h3 class="text-headline-md font-bold text-on-secondary-container mb-3 leading-tight">Moving out? Sell your stuff in seconds.</h3>
+<p class="text-body-md text-on-secondary-container/80 mb-6">Zero listing fees for the first 50 items. Keep your dorm clean and wallet full.</p>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-DEFAULT font-bold text-body-md hover:bg-primary-container transition-colors shadow-sm">Start Selling</button>
+</div>
+<div class="hidden md:block relative w-48 h-48 flex-shrink-0 z-10">
+<img alt="Cardboard box filled with miscellaneous items on a light background" class="w-full h-full object-cover rounded-lg rotate-3 ambient-shadow" data-alt="a minimalist cardboard moving box slightly angled on a bright yellow background, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBk-a6lkKbDKDWLkkG3jB-CgIKl4F5Fmml_87_7kBcwJFGAo-K3fK7CAwfxoyvaZjifJDywvDdmB_-cI7LaiHVQO4WiHN5xx7MbAAzZWzT-2rbeoMvMTITgwHbzRwYZX0zFrVld3djbZSXI8A-erIW9OtdKkWFC2MuUrVrWuPZ2nmomOwZE6_mP_i5nxy45JjGJyQZJ0PCJ-FUufDTrxz02gnI6Ezlg_IRe5-gGqkr7e8XOEXk9i22o_UL_8ryNr_FBrk0ttoBRs7k"/>
+</div>
+</div>
+</section>
+<!-- Campus Favorites Grid -->
+<section class="px-6 pb-12 max-w-7xl w-full mx-auto">
+<div class="flex items-end justify-between mb-8">
+<div>
+<span class="text-label-md uppercase tracking-wider text-primary mb-1 block font-bold">Trending Now</span>
+<h2 class="text-headline-md font-bold text-on-surface">Campus Favorites</h2>
+</div>
+<button class="text-primary font-bold text-body-md hover:underline decoration-2 underline-offset-4 hidden sm:block">View all</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+<!-- Product Card 1 -->
+<article class="group flex flex-col bg-surface-container-lowest rounded-lg overflow-hidden ambient-shadow transition-transform hover:-translate-y-1 duration-300">
+<div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+<img alt="Minimalist wooden desk lamp" class="w-full h-full object-cover mix-blend-multiply p-4 group-hover:scale-105 transition-transform duration-500" data-alt="minimalist modern desk lamp with a warm wooden base and white metal shade, studio lighting against a soft gray background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQIlYFtfalgvbZXfc6QL813G97gX0Z4y7z9aia_FX7knqEGyD_EUwgfEbkq8E7TMssJYICbWqmV7P1j-8Sk3CcpVoK3fJaY7PqyT6N7Flnp91cnX-603aYwzKyMDgBdApQB7PNiqM4vSsl4wfycbm-l4SE2GUwNFldypZrMv9BNbtqkeb0JPqWVfakiHQ-ao-9LWORAcdzEUTkuju4SX4dZauYo6GXTKvLA7mcKqws3KBDI9mY2SFcS6hzLTPIx_fIHp6W2VXm3DQ"/>
+<div class="absolute top-4 left-4 bg-surface-container-lowest px-3 py-1 rounded-sm text-label-md font-bold uppercase tracking-wider text-on-surface ghost-border">Nearly New</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-title-sm font-bold text-on-surface mb-1">MacBook Pro M1</h3>
+<p class="text-body-md text-on-surface-variant mb-4 flex-1">North Campus Dorms</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-surface-container-high/50">
+<span class="text-headline-md font-extrabold text-on-surface tracking-tight">$25</span>
+<button class="bg-surface-container-low text-primary hover:bg-primary hover:text-on-primary transition-colors w-10 h-10 rounded-DEFAULT flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="group flex flex-col bg-surface-container-lowest rounded-lg overflow-hidden ambient-shadow transition-transform hover:-translate-y-1 duration-300">
+<div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+<img alt="Ergonomic office chair" class="w-full h-full object-cover mix-blend-multiply p-4 group-hover:scale-105 transition-transform duration-500" data-alt="black ergonomic mesh office chair against a clean white background, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2UlCGJnzXcplx9OhmBwvDy6SoGXHZdDTcX2aOEYbg3-JvvhOEtwFN-GDtqUjFYdrH4_N4IepuwisXnf5ON63VKg6wCIcNJWsPpHZV6lhfJDAPgsK0u34SWOoy9qBKapR8cP2yzclUBOUVfBQO4TFsmIHiXxK2yU33EmjqStUKgd-vIwrvfsNCZ_ylsAFmwvapEMVzzl7hJIhmwDHyLDClvmbuC0_Fd774W0niQ1NfgJPV2D6Gl9MHlIu7rkIF_8joLftJqOg_EUw"/>
+<div class="absolute top-4 left-4 bg-secondary-container px-3 py-1 rounded-sm text-label-md font-bold uppercase tracking-wider text-on-secondary-container">Price Drop</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-title-sm font-bold text-on-surface mb-1">Ergonomic Study Chair</h3>
+<p class="text-body-md text-on-surface-variant mb-4 flex-1">Engineering Building</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-surface-container-high/50">
+<span class="text-headline-md font-extrabold text-on-surface tracking-tight">$45</span>
+<button class="bg-surface-container-low text-primary hover:bg-primary hover:text-on-primary transition-colors w-10 h-10 rounded-DEFAULT flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="group flex flex-col bg-surface-container-lowest rounded-lg overflow-hidden ambient-shadow transition-transform hover:-translate-y-1 duration-300">
+<div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+<img alt="Apple MacBook Pro" class="w-full h-full object-cover mix-blend-multiply p-8 group-hover:scale-105 transition-transform duration-500" data-alt="silver laptop slightly open on a minimal white background, soft shadow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQIlYFtfalgvbZXfc6QL813G97gX0Z4y7z9aia_FX7knqEGyD_EUwgfEbkq8E7TMssJYICbWqmV7P1j-8Sk3CcpVoK3fJaY7PqyT6N7Flnp91cnX-603aYwzKyMDgBdApQB7PNiqM4vSsl4wfycbm-l4SE2GUwNFldypZrMv9BNbtqkeb0JPqWVfakiHQ-ao-9LWORAcdzEUTkuju4SX4dZauYo6GXTKvLA7mcKqws3KBDI9mY2SFcS6hzLTPIx_fIHp6W2VXm3DQ"/>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-title-sm font-bold text-on-surface mb-1">Premium Headphones</h3>
+<p class="text-body-md text-on-surface-variant mb-4 flex-1">Library Commons</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-surface-container-high/50">
+<span class="text-headline-md font-extrabold text-on-surface tracking-tight">$180</span>
+<button class="bg-surface-container-low text-primary hover:bg-primary hover:text-on-primary transition-colors w-10 h-10 rounded-DEFAULT flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="group flex flex-col bg-surface-container-lowest rounded-lg overflow-hidden ambient-shadow transition-transform hover:-translate-y-1 duration-300">
+<div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+<img alt="Potted Monstera plant" class="w-full h-full object-cover mix-blend-multiply p-4 group-hover:scale-105 transition-transform duration-500" data-alt="lush green monstera plant in a simple terracotta pot on a light gray surface, natural daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK3ITEvEThGLHPLppCokXGEb3gUjJB5i9SenGXFTOvtaGJZ-m9dReSU8LZJlOdg65eftZG_8WO49BKOPuF3Og2mP8W3MR5ph2HCJvFbAz6jcRzTLtjJVOxXOwrvA2PjgGC8KqOCtgmakIksxGZh1DRPmGL5yaS84WnXrIZ6mjvkHvHU8oDzoklF8yKwd9y3-cAEvur76kSHCq7M4-_nu0I6KUZSzX0h_Ny83xu5mOZNXgZOj_10_wqXBB0SJyD4tuY7H0t83jSmwg"/>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-title-sm font-bold text-on-surface mb-1">Organic Chemistry Textbooks</h3>
+<p class="text-body-md text-on-surface-variant mb-4 flex-1">Science Library</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-surface-container-high/50">
+<span class="text-headline-md font-extrabold text-on-surface tracking-tight">$85</span>
+<button class="bg-surface-container-low text-primary hover:bg-primary hover:text-on-primary transition-colors w-10 h-10 rounded-DEFAULT flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center bg-white dark:bg-[#1a1c1c] pb-safe pt-2 px-2 z-50 rounded-t-none border-t border-[#c2c6d3]/15 shadow-[0_-8px_24px_-4px_rgba(26,28,28,0.06)] tap-highlight-transparent duration-200">
+<a class="flex flex-col items-center justify-center bg-[#fdd816] text-[#004181] rounded-xl px-4 py-1" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home" data-weight="fill">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="add_circle">add_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Post</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1a1c1c] dark:text-[#e2e2e2] px-4 py-1 hover:bg-[#f3f3f3] dark:hover:bg-[#2a2a2a] rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="settings">settings</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-wider">Settings</span>
+</a>
+</nav>
+</body></html>

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 
 class BottomNavBar extends ConsumerWidget {
@@ -19,21 +19,18 @@ class BottomNavBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final totalUnreadAsync = ref.watch(chatTotalUnreadProvider);
     final totalUnread = totalUnreadAsync.valueOrNull ?? 0;
+    final colors = context.smivoColors;
+    final radius = context.smivoRadius;
+    final shadows = context.smivoShadows;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(radius.bottomSheet),
+          topRight: Radius.circular(radius.bottomSheet),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        boxShadow: shadows.bottomNav,
       ),
       child: SafeArea(
         child: Padding(
@@ -99,7 +96,10 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? const Color(0xFF013DFD) : const Color(0xFF546387);
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    // NOTE: Active item uses navActiveIcon; inactive uses onSurfaceVariant.
+    final color = isSelected ? colors.navActiveIcon : colors.onSurfaceVariant;
     
     return GestureDetector(
       onTap: onTap,
@@ -107,16 +107,25 @@ class _NavBarItem extends StatelessWidget {
       child: Container(
         width: 64, // Touch target
         padding: const EdgeInsets.symmetric(vertical: 4),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: colors.navActiveBackground,
+                borderRadius: context.smivoRadius.circularFull(),
+              )
+            : null,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Badge(
               label: Text(
                 unreadCount > 99 ? '99+' : unreadCount.toString(),
-                style: const TextStyle(fontSize: 10, color: Colors.white),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: colors.onPrimary,
+                ),
               ),
               isLabelVisible: unreadCount > 0,
-              backgroundColor: Colors.red,
+              backgroundColor: colors.error,
               child: Icon(
                 isSelected ? icon : outlinedIcon,
                 color: color,
@@ -126,7 +135,7 @@ class _NavBarItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: AppTextStyles.labelSmall.copyWith(
+              style: typo.labelSmall.copyWith(
                 color: color,
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,

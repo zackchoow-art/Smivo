@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smivo - Item Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#953f01",
+                        "primary-container": "#0058ab",
+                        "on-secondary-fixed-variant": "#544600",
+                        "inverse-surface": "#2f3131",
+                        "on-primary-fixed-variant": "#00468a",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed": "#221b00",
+                        "surface-bright": "#f9f9f9",
+                        "surface-variant": "#e2e2e2",
+                        "on-primary-fixed": "#001b3d",
+                        "on-secondary-container": "#705e00",
+                        "on-tertiary-fixed-variant": "#783100",
+                        "on-surface": "#1a1c1c",
+                        "outline": "#727783",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#341100",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffe164",
+                        "inverse-primary": "#a8c8ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#d6e3ff",
+                        "error": "#ba1a1a",
+                        "secondary": "#6f5d00",
+                        "on-surface-variant": "#424752",
+                        "on-background": "#1a1c1c",
+                        "background": "#f9f9f9",
+                        "outline-variant": "#c2c6d3",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdbcb",
+                        "primary": "#004181",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#fdd816",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "tertiary": "#702d00",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#ffc3a5",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "surface-container": "#eeeeee",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary-fixed-dim": "#e7c400",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-tint": "#115eb1",
+                        "on-primary-container": "#b8d1ff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen pb-[120px]">
+<!-- Top Navigation (Item Details - Contextual, suppressing Bottom Bar) -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-md flex justify-between items-center px-6 py-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+</header>
+<main class="pt-20">
+<!-- Product Image Carousel -->
+<section class="relative w-full aspect-[4/3] md:aspect-[16/9] lg:aspect-[2/1] bg-surface-container-low overflow-hidden">
+<img alt="Vintage Mid-Century Modern Armchair" class="w-full h-full object-cover object-center" data-alt="A vintage mid-century modern armchair upholstered in mustard yellow fabric, sitting in a bright, minimalist room with natural sunlight casting soft shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK3ITEvEThGLHPLppCokXGEb3gUjJB5i9SenGXFTOvtaGJZ-m9dReSU8LZJlOdg65eftZG_8WO49BKOPuF3Og2mP8W3MR5ph2HCJvFbAz6jcRzTLtjJVOxXOwrvA2PjgGC8KqOCtgmakIksxGZh1DRPmGL5yaS84WnXrIZ6mjvkHvHU8oDzoklF8yKwd9y3-cAEvur76kSHCq7M4-_nu0I6KUZSzX0h_Ny83xu5mOZNXgZOj_10_wqXBB0SJyD4tuY7H0t83jSmwg"/>
+<!-- Carousel Indicators -->
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-on-surface"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-on-surface/30"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-on-surface/30"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-on-surface/30"></div>
+</div>
+</section>
+<div class="max-w-3xl mx-auto px-6 py-8 md:py-12">
+<!-- Header & Price -->
+<section class="mb-12">
+<div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-4">
+<div class="flex-1">
+<span class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-2 block">Books · Textbooks</span>
+<h1 class="text-display-lg font-bold text-on-surface leading-tight tracking-tight">Advanced Calculus &amp; Bio Set</h1>
+</div>
+<div class="md:text-right">
+<p class="text-display-lg font-extrabold text-on-surface tracking-tighter">$145</p>
+</div>
+</div>
+<p class="text-body-md text-on-surface-variant max-w-2xl leading-relaxed">A complete set of advanced calculus and biology textbooks. Essential for science majors. In excellent condition with minimal highlighting and clean pages.</p>
+</section>
+<!-- Product Information (Accordion Style) -->
+<section class="mb-12 border-t-[0.5px] border-outline-variant/30">
+<details class="group py-6 border-b-[0.5px] border-outline-variant/30" open="">
+<summary class="flex justify-between items-center cursor-pointer list-none">
+<h2 class="text-title-sm font-bold text-on-surface uppercase tracking-wider">Product details</h2>
+<span class="material-symbols-outlined text-on-surface transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="mt-4 text-body-md text-on-surface-variant space-y-2"><p><strong>Condition:</strong> Like New</p><p><strong>Subject:</strong> Science &amp; Math</p><p><strong>Edition:</strong> 2023</p><p><strong>Format:</strong> Hardcover</p></div>
+</details>
+<details class="group py-6 border-b-[0.5px] border-outline-variant/30">
+<summary class="flex justify-between items-center cursor-pointer list-none">
+<h2 class="text-title-sm font-bold text-on-surface uppercase tracking-wider">Measurements</h2>
+<span class="material-symbols-outlined text-on-surface transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="mt-4 text-body-md text-on-surface-variant space-y-2">
+<p>Width: 70 cm (27 1/2 ")</p>
+<p>Depth: 75 cm (29 1/2 ")</p>
+<p>Height: 80 cm (31 1/2 ")</p>
+</div>
+</details>
+<details class="group py-6 border-b-[0.5px] border-outline-variant/30">
+<summary class="flex justify-between items-center cursor-pointer list-none">
+<h2 class="text-title-sm font-bold text-on-surface uppercase tracking-wider">Pickup Location</h2>
+<span class="material-symbols-outlined text-on-surface transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="mt-4 text-body-md text-on-surface-variant flex items-start gap-3">
+<span class="material-symbols-outlined mt-0.5" data-icon="location_on">location_on</span>
+<div>
+<p class="font-bold text-on-surface">North Campus Dorms</p>
+<p>Available for pickup evenings after 6 PM.</p>
+</div>
+</div>
+</details>
+</section>
+<!-- Meet the Seller -->
+<section class="bg-surface-container-low p-6 md:p-8 rounded-xl flex items-center gap-6">
+<img alt="Seller Profile" class="w-20 h-20 rounded-full object-cover ring-4 ring-surface-container-lowest" data-alt="Close up portrait of a young college student smiling outdoors with blurred campus background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIyKt457vqsw3a9mFvzuRIdOdwHHTrLAlLHEeLQnCypqJ2LNurXC7QeYpu6mD-pwUoWLO8wYQaZ-kO0yWQsC-S_8OaKCr6gVVnhRiBykJCWZYPL4kcg_UDYQuNgOk8o35jj2n8vxfIDKKEOu6Ov6H_LD9GPOj9w7ZiXDhmueIQK40hnw2HOA22GkOp5wma32UOnXFL8LWSdd4igejGRRxhcGEuOWHhmyYrkMYDbt2-f2twkQQkJ5VGzizhyfKTOEl94sWlNCXWNCk"/>
+<div class="flex-1">
+<h3 class="text-title-sm font-bold text-on-surface mb-1">Elena M.</h3>
+<div class="flex items-center gap-1 text-secondary-fixed-dim mb-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-body-md font-bold text-on-surface ml-1">4.9 <span class="text-on-surface-variant font-normal">(12 Reviews)</span></span>
+</div>
+<p class="text-label-md text-on-surface-variant">Class of 2025 • Art History</p>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Action Bar (Fixed) -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest p-4 md:p-6 shadow-[0_-8px_24px_-4px_rgba(26,28,28,0.06)] flex gap-4 z-50">
+<div class="max-w-3xl mx-auto w-full flex gap-4">
+<button class="flex-1 bg-primary text-on-primary font-bold text-title-sm py-4 px-6 rounded DEFAULT hover:bg-primary-container transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+                Add to Bag
+            </button>
+<button class="flex-1 bg-secondary-container text-on-secondary-container font-bold text-title-sm py-4 px-6 rounded DEFAULT hover:bg-secondary-fixed transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+                Message Seller
+            </button>
+</div>
+</div>
+</body></html>

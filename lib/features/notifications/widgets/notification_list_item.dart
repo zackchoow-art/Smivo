@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/app_colors.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/notification.dart';
 
 /// A single notification row in the notification center list.

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter/services.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
 
 class CustomTextField extends StatelessWidget {
   const CustomTextField({
@@ -25,40 +24,44 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: AppTextStyles.labelLarge.copyWith(
+          style: typo.labelLarge.copyWith(
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF2B2A51), // Dark blue
+            color: colors.onSurface,
           ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: 8),
         TextField(
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
-          style: AppTextStyles.bodyLarge.copyWith(
-            color: const Color(0xFF2B2A51),
+          style: typo.bodyLarge.copyWith(
+            color: colors.onSurface,
           ),
           decoration: InputDecoration(
             hintText: hintText,
             prefixText: prefixText != null ? '$prefixText ' : null,
-            prefixStyle: AppTextStyles.bodyLarge.copyWith(
-              color: const Color(0xFF2B2A51),
+            prefixStyle: typo.bodyLarge.copyWith(
+              color: colors.onSurface,
               fontWeight: FontWeight.bold,
             ),
-            hintStyle: AppTextStyles.bodyLarge.copyWith(
-              color: const Color(0xFF585781).withValues(alpha: 0.6),
+            hintStyle: typo.bodyLarge.copyWith(
+              color: colors.onSurfaceVariant.withValues(alpha: 0.6),
             ),
             filled: true,
-            fillColor: const Color(0xFFF2EFFF), // Light purple
-            contentPadding: const EdgeInsets.all(AppSpacing.md),
+            fillColor: colors.surfaceContainerLow,
+            contentPadding: const EdgeInsets.all(12),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              borderRadius: BorderRadius.circular(radius.input),
               borderSide: BorderSide.none,
             ),
           ),

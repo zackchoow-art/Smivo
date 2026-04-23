@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smivo - Campus Marketplace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#fdd816",
+                        "on-surface-variant": "#424752",
+                        "primary-container": "#0058ab",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#00468a",
+                        "background": "#f9f9f9",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-container": "#ffc3a5",
+                        "on-secondary-fixed": "#221b00",
+                        "tertiary-container": "#953f01",
+                        "on-background": "#1a1c1c",
+                        "outline": "#727783",
+                        "on-secondary-fixed-variant": "#544600",
+                        "surface-variant": "#e2e2e2",
+                        "on-error": "#ffffff",
+                        "secondary": "#6f5d00",
+                        "on-primary-container": "#b8d1ff",
+                        "secondary-fixed": "#ffe164",
+                        "primary-fixed": "#d6e3ff",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "on-primary-fixed": "#001b3d",
+                        "on-secondary-container": "#705e00",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "inverse-primary": "#a8c8ff",
+                        "outline-variant": "#c2c6d3",
+                        "surface-tint": "#115eb1",
+                        "primary": "#004181",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#783100",
+                        "secondary-fixed-dim": "#e7c400",
+                        "on-surface": "#1a1c1c",
+                        "tertiary-fixed": "#ffdbcb",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-high": "#e8e8e8",
+                        "on-tertiary-fixed": "#341100",
+                        "inverse-surface": "#2f3131",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e2e2e2",
+                        "error": "#ba1a1a",
+                        "tertiary": "#702d00",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eeeeee"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1.5rem); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-none bg-slate-50 dark:bg-slate-950">
+<div class="flex justify-between items-center px-6 h-16 w-full max-w-7xl mx-auto">
+<!-- Leading: Avatar (User requested chat on left, avatar on right, overriding JSON structure slightly to match user request while keeping classes) -->
+<button class="relative p-2 text-primary dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chat_bubble</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-secondary-container rounded-full border border-surface-container-lowest"></span>
+</button>
+<!-- Headline / Brand -->
+<h1 class="text-2xl font-black text-[#004181] dark:text-[#0058ab] tracking-tighter">Smivo</h1>
+<!-- Trailing: Avatar -->
+<button class="w-8 h-8 rounded-full overflow-hidden hover:opacity-80 transition-opacity outline outline-2 outline-offset-2 outline-transparent hover:outline-outline-variant/30 active:scale-95 duration-200">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="close up portrait of a young man with neutral background, soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQE0CcVPku_ISXNDiFmomwNjRG1IFdttm3xDDp-sGfphlvrSjuVdFxDHKHHOGY3owZvwqjKBWcLApO0uAhUSeThcN2mcjbwoNo2aiujE1ObRog-bQlZIvJPKblNxuh1tHDDTdUJxqCOLBjcdkOHbPyBLxCWBV3OF1gbXaDV2Tzr2jL3CeUZ1vU6FkEeJQ8R7SYg7sB-YBfsSNvB4Jvgb_8sa-mPtwFtZy5_bQN8oNaVLYS3rFJXEPLU3Xi1dtCbdiiVn3Q79sQ_TQ"/>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-4 md:px-8 max-w-7xl mx-auto">
+<!-- Categories Section (Horizontal Scroll) -->
+<section class="mb-10 mt-4">
+<h2 class="text-body-md font-bold uppercase tracking-wider text-on-surface-variant mb-4 pl-2">Categories</h2>
+<div class="flex overflow-x-auto hide-scrollbar gap-4 pb-4 px-2">
+<!-- Furniture -->
+<button class="flex flex-col items-center gap-2 min-w-[72px] group">
+<div class="w-16 h-16 rounded-DEFAULT bg-surface-container-lowest flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(26,28,28,0.06)] group-hover:bg-surface-container-low transition-colors outline outline-1 outline-outline-variant/15">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">chair</span>
+</div>
+<span class="text-label-md text-on-surface">Furniture</span>
+</button>
+<!-- Electronics -->
+<button class="flex flex-col items-center gap-2 min-w-[72px] group">
+<div class="w-16 h-16 rounded-DEFAULT bg-surface-container-lowest flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(26,28,28,0.06)] group-hover:bg-surface-container-low transition-colors outline outline-1 outline-outline-variant/15">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">devices</span>
+</div>
+<span class="text-label-md text-on-surface">Electronics</span>
+</button>
+<!-- Instruments -->
+<button class="flex flex-col items-center gap-2 min-w-[72px] group">
+<div class="w-16 h-16 rounded-DEFAULT bg-surface-container-lowest flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(26,28,28,0.06)] group-hover:bg-surface-container-low transition-colors outline outline-1 outline-outline-variant/15">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">piano</span>
+</div>
+<span class="text-label-md text-on-surface">Instruments</span>
+</button>
+<!-- Books -->
+<button class="flex flex-col items-center gap-2 min-w-[72px] group">
+<div class="w-16 h-16 rounded-DEFAULT bg-surface-container-lowest flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(26,28,28,0.06)] group-hover:bg-surface-container-low transition-colors outline outline-1 outline-outline-variant/15">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">book</span>
+</div>
+<span class="text-label-md text-on-surface">Books</span>
+</button>
+<!-- Clothing -->
+<button class="flex flex-col items-center gap-2 min-w-[72px] group">
+<div class="w-16 h-16 rounded-DEFAULT bg-surface-container-lowest flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(26,28,28,0.06)] group-hover:bg-surface-container-low transition-colors outline outline-1 outline-outline-variant/15">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">checkroom</span>
+</div>
+<span class="text-label-md text-on-surface">Clothing</span>
+</button>
+<!-- Sports -->
+<button class="flex flex-col items-center gap-2 min-w-[72px] group">
+<div class="w-16 h-16 rounded-DEFAULT bg-surface-container-lowest flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(26,28,28,0.06)] group-hover:bg-surface-container-low transition-colors outline outline-1 outline-outline-variant/15">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">sports_basketball</span>
+</div>
+<span class="text-label-md text-on-surface">Sports</span>
+</button>
+<!-- Other -->
+<button class="flex flex-col items-center gap-2 min-w-[72px] group">
+<div class="w-16 h-16 rounded-DEFAULT bg-surface-container-lowest flex items-center justify-center shadow-[0_4px_12px_-4px_rgba(26,28,28,0.06)] group-hover:bg-surface-container-low transition-colors outline outline-1 outline-outline-variant/15">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">more_horiz</span>
+</div>
+<span class="text-label-md text-on-surface">Other</span>
+</button>
+</div>
+</section>
+<!-- Featured Banner (IKEA Style) -->
+<section class="mb-12">
+<div class="bg-secondary-container rounded-DEFAULT p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+<!-- Decorative element -->
+<div class="absolute -right-10 -top-10 w-40 h-40 bg-white/20 rounded-full blur-2xl"></div>
+<div class="relative z-10 max-w-md">
+<h2 class="text-headline-md font-black text-on-secondary-container mb-2 leading-tight">Heads Up! Moving out?</h2>
+<p class="text-body-md text-on-secondary-container/80 font-semibold">Sell your stuff in seconds.</p>
+</div>
+<button class="relative z-10 bg-primary hover:bg-primary-container transition-colors text-on-primary font-bold py-3 px-8 rounded-DEFAULT whitespace-nowrap shadow-[0_4px_12px_-4px_rgba(0,65,129,0.4)] active:scale-95 duration-200">
+                    Start Selling
+                </button>
+</div>
+</section>
+<!-- Trending Now Feed (Bento/Grid Layout) -->
+<section class="mb-8">
+<div class="flex items-end justify-between mb-6">
+<h2 class="text-headline-md font-bold text-on-surface tracking-tight">Trending Now</h2>
+<a class="text-body-md font-bold text-primary hover:underline" href="#">View all</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+<!-- Item Card 1 -->
+<article class="bg-surface-container-lowest rounded-DEFAULT overflow-hidden group hover:shadow-[0_8px_24px_-4px_rgba(26,28,28,0.08)] transition-all duration-300 flex flex-col h-full outline outline-1 outline-outline-variant/15">
+<div class="aspect-square bg-surface-container overflow-hidden relative">
+<img alt="Headphones" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="sleek black wireless headphones resting on a clean light gray surface, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiOF3OugtXiB80nLFyborMIPFYE7ejsSEISRIPse0MUZsa0bdzou1bwDRHFWzZ6T4zBbk1wEpOPdl5fzDAeE9jthXobh0nPDdFGpfIktxmqPzpyB6qmrJ53EztIOEJoiQOxmR0W0GCsMbJoweXVvtzbeit3lZS9ebOgJJl-MjF7MiwhiC4dSDh75PVhbh4trslBRiVCsjH_cW6K_-5WC1PDptBoqEmnnAsj7aB7Uo7NC378qFE3uby3VI7kVgWZCxIsyGp3FFW84Y"/>
+<button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">favorite</span>
+</button>
+</div>
+<div class="p-4 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-title-sm font-bold text-on-surface line-clamp-1">Sony WH-1000XM4</h3>
+<span class="text-title-sm font-black text-primary ml-2">$150</span>
+</div>
+<p class="text-body-md text-on-surface-variant line-clamp-1 mb-3">Excellent condition, used 1 semester.</p>
+<div class="mt-auto flex items-center gap-1 text-label-md text-outline">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span>North Campus</span>
+</div>
+</div>
+</article>
+<!-- Item Card 2 -->
+<article class="bg-surface-container-lowest rounded-DEFAULT overflow-hidden group hover:shadow-[0_8px_24px_-4px_rgba(26,28,28,0.08)] transition-all duration-300 flex flex-col h-full outline outline-1 outline-outline-variant/15">
+<div class="aspect-square bg-surface-container overflow-hidden relative">
+<img alt="Textbooks" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="stack of thick academic textbooks on a wooden desk, natural window light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkWWUEjo9hMSBjCk4tAy27xYHzNUcc3Ui0e2GTW7B6058tvl2xY8PEVSo6gtKyy8fWulOrWtOG7vQH9FsKCkFbU85rUE9tzZ-g6510GS96dIcr5aT9RL2HOh4fyYFdCtfn13E38jju7L7MH31yCuWVM4-NZdZ6Bfk2669NNlQ2IYep8nTuQGiugidvxeFzgfp9REpoiyi0zdf8a_CZayaQSztuXKRux-sSLIkLtYZWcYKbD8vLIL-FqEbxr2spGv4Xi5q3cS7-8z8"/>
+<button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">favorite</span>
+</button>
+</div>
+<div class="p-4 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-title-sm font-bold text-on-surface line-clamp-1">Intro to Psychology</h3>
+<span class="text-title-sm font-black text-primary ml-2">$45</span>
+</div>
+<p class="text-body-md text-on-surface-variant line-clamp-1 mb-3">8th Edition. Minor highlighting.</p>
+<div class="mt-auto flex items-center gap-1 text-label-md text-outline">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span>Main Library</span>
+</div>
+</div>
+</article>
+<!-- Item Card 3 -->
+<article class="bg-surface-container-lowest rounded-DEFAULT overflow-hidden group hover:shadow-[0_8px_24px_-4px_rgba(26,28,28,0.08)] transition-all duration-300 flex flex-col h-full outline outline-1 outline-outline-variant/15">
+<div class="aspect-square bg-surface-container overflow-hidden relative">
+<img alt="Hoodies" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="folded gray college hoodie sweatshirt on a clean white background, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAghyKRwUg01uOz8TgCzMIk7p9TR47AyeGVBjF_GHRujsi2wNbdpNMDFAjorsu_DUpjKWA7j6MuNJWgJ3xO-zx_j2mNSp5vf9_PTnFUOknTUhsJClzO-EtzjlhTxSs_O3O8reSYChm8EMpsYGwcMcSQOwURjO4GdfvBU6G9B85pFkvr6GU5kTRfcbgP8_hnNMSb-nzSw0wIDY7qYdRZMxeJGB2XA3wMRlLytWMTfjecDQ-ERdAnov7eaJ9loATGybWsD8IVwOHE9vo"/>
+<button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">favorite</span>
+</button>
+</div>
+<div class="p-4 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-title-sm font-bold text-on-surface line-clamp-1">University Hoodie</h3>
+<span class="text-title-sm font-black text-primary ml-2">$20</span>
+</div>
+<p class="text-body-md text-on-surface-variant line-clamp-1 mb-3">Size L. Never worn, tag still on.</p>
+<div class="mt-auto flex items-center gap-1 text-label-md text-outline">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span>South Dorms</span>
+</div>
+</div>
+</article>
+<!-- Item Card 4 (Tech Gear) -->
+<article class="bg-surface-container-lowest rounded-DEFAULT overflow-hidden group hover:shadow-[0_8px_24px_-4px_rgba(26,28,28,0.08)] transition-all duration-300 flex flex-col h-full outline outline-1 outline-outline-variant/15 md:hidden lg:flex">
+<div class="aspect-square bg-surface-container overflow-hidden relative">
+<img alt="Tech Gear" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="sleek modern laptop partially open on a minimal desk setup, soft blue lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVVXSBnM_LX0qgdUtIcyhLI_MfPSrNz-mysmc-fCShnBxjuvRxDyQsXL8F7i5tY0AdAQQtWEbgX6qo1nIcPLGRJCTezP13dCDhxkCwokU4__pRh-k1GTrVe9zd95GXiTMc1vTRYXk-eWadS_8l--92SDF_svfSW5rgih2IE7jnkI-IjosaT8Qwj8FGvP_l3plaM-rQy1VZRzvrHAY46WYjQJnMIqUja3NkJnpEkEfUOaP-R8oJ1wsohJwA1GEND2xAV8NlbcHHZVk"/>
+<button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">favorite</span>
+</button>
+</div>
+<div class="p-4 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-title-sm font-bold text-on-surface line-clamp-1">Dell XPS 13</h3>
+<span class="text-title-sm font-black text-primary ml-2">$650</span>
+</div>
+<p class="text-body-md text-on-surface-variant line-clamp-1 mb-3">i7, 16GB RAM. Perfect for CS majors.</p>
+<div class="mt-auto flex items-center gap-1 text-label-md text-outline">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span>West Campus</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden bg-white dark:bg-slate-900 fixed bottom-0 w-full z-50 rounded-t-none border-t border-slate-200/15 dark:border-slate-800/15 shadow-[0_-8px_24px_-4px_rgba(26,28,28,0.06)] fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-4 pb-safe bg-surface text-[#004181] dark:text-[#0058ab] font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-wider transition-all cubic-bezier(0.4,0,0.2,1) duration-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-[#004181]">
+<!-- Home (Active) -->
+<button class="flex flex-col items-center justify-center bg-[#fdd816] text-[#004181] rounded-xl px-4 py-1">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span>Home</span>
+</button>
+<!-- Chat -->
+<button class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-4 py-1">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">forum</span>
+<span>Chat</span>
+</button>
+<!-- Post (Central Action) -->
+<button class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-4 py-1">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">add_box</span>
+<span>Post</span>
+</button>
+<!-- Orders -->
+<button class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-4 py-1">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">receipt_long</span>
+<span>Orders</span>
+</button>
+</nav>
+</body></html>

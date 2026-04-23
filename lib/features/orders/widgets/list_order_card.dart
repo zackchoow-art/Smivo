@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/app_colors.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';

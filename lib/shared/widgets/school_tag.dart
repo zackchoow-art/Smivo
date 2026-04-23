@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:smivo/core/theme/app_colors.dart';
-import 'package:smivo/core/theme/app_spacing.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 
 /// Displays a school name tag chip next to user info.
 ///
@@ -16,19 +13,23 @@ class SchoolTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
+        horizontal: 8,
+        vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(radius.sm),
       ),
       child: Text(
         school,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.textSecondary,
+        style: typo.labelSmall.copyWith(
+          color: colors.onSurfaceVariant,
         ),
       ),
     );

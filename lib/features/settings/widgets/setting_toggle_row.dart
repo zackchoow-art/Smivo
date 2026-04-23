@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/settings/widgets/setting_card_container.dart';
 
 class SettingToggleRow extends StatelessWidget {
@@ -21,19 +21,22 @@ class SettingToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
     return SettingCardContainer(
       child: Row(
         children: [
           Container(
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLowest,
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF013DFD),
+              color: colors.settingsIcon,
               size: 20,
             ),
           ),
@@ -45,16 +48,16 @@ class SettingToggleRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: const Color(0xFF2B2A51),
+                  style: typo.bodyLarge.copyWith(
+                    color: colors.settingsText,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
+                  style: typo.bodySmall.copyWith(
+                    color: colors.settingsTextSecondary,
                     height: 1.3,
                   ),
                 ),
@@ -64,8 +67,9 @@ class SettingToggleRow extends StatelessWidget {
           const SizedBox(width: 16),
           CupertinoSwitch(
             value: value,
-            activeTrackColor: const Color(0xFF013DFD),
-            inactiveTrackColor: const Color(0xFF2B2A51).withValues(alpha: 0.15),
+            activeTrackColor: colors.settingsIcon,
+            inactiveTrackColor:
+                colors.settingsText.withValues(alpha: 0.15),
             onChanged: onChanged,
           ),
         ],

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
+import 'package:smivo/core/theme/app_colors.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/features/settings/providers/settings_provider.dart';
 import 'package:smivo/features/settings/widgets/setting_card_container.dart';
 import 'package:smivo/features/settings/widgets/setting_toggle_row.dart';
