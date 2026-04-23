@@ -179,6 +179,8 @@ class OrderDetailScreen extends ConsumerWidget {
         // NOTE: Show deposit only for rental orders with non-zero deposit
         if (order.orderType == 'rental' && order.depositAmount > 0)
           _infoRow('Deposit', '\$${order.depositAmount.toStringAsFixed(2)}'),
+        if (order.pickupLocation != null)
+          _infoRow('Pickup', order.pickupLocation!.name),
       ],
     );
   }

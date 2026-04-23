@@ -194,7 +194,7 @@ final selectedListingCategoryProvider =
 
 typedef _$SelectedListingCategory = AutoDisposeNotifier<String?>;
 String _$createListingActionHash() =>
-    r'addb66d0950f4abffa3f05d148a82399db52a6fc';
+    r'f310fd0fcf561d54ba8714d81cee2917b9248e70';
 
 /// Handles the async submission of the create listing form.
 ///

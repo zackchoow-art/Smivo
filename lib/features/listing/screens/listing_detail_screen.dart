@@ -461,6 +461,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                             }
                             
                             try {
+                              // NOTE: Use buyer's selected pickup if they changed it,
+                              // otherwise fall back to seller's default pickup location.
+                              final effectivePickupId = _selectedPickupLocationId 
+                                  ?? listing.pickupLocationId;
+                              
                               await ref.read(orderActionsProvider.notifier).createOrder(
                                 listingId: listing.id,
                                 sellerId: listing.sellerId,
@@ -469,6 +474,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                 rentalStartDate: rentalStart,
                                 rentalEndDate: rentalEnd,
                                 depositAmount: listing.depositAmount,
+                                pickupLocationId: effectivePickupId,
                               );
                               
                               if (!context.mounted) return;

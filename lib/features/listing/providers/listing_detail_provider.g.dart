@@ -173,7 +173,7 @@ class _ListingDetailProviderElement
 }
 
 String _$selectedRentalRateHash() =>
-    r'1fd5876cf2bd3574f75fe5ee5e738d0f2d58b4c1';
+    r'0c444cb1063da1555318c40dcba4f21ce0ae31fd';
 
 /// State for the selected rental rate (DAY, WEEK, MONTH).
 ///

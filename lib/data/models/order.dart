@@ -2,6 +2,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:smivo/data/models/user_profile.dart';
 import 'package:smivo/data/models/order_listing_preview.dart';
+import 'package:smivo/data/models/pickup_location.dart';
 
 part 'order.freezed.dart';
 part 'order.g.dart';
@@ -34,11 +35,13 @@ abstract class Order with _$Order {
     @JsonKey(name: 'deposit_amount') @Default(0.0) double depositAmount,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'pickup_location_id') String? pickupLocationId,
     
     // Nested join data — populated only by specific join queries
     UserProfile? buyer,
     UserProfile? seller,
     OrderListingPreview? listing,
+    @JsonKey(name: 'pickup_location') PickupLocation? pickupLocation,
   }) = _Order;
 
   factory Order.fromJson(Map<String, dynamic> json) =>

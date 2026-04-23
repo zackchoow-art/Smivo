@@ -37,6 +37,7 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
   depositAmount: (json['deposit_amount'] as num?)?.toDouble() ?? 0.0,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
+  pickupLocationId: json['pickup_location_id'] as String?,
   buyer:
       json['buyer'] == null
           ? null
@@ -50,6 +51,12 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
           ? null
           : OrderListingPreview.fromJson(
             json['listing'] as Map<String, dynamic>,
+          ),
+  pickupLocation:
+      json['pickup_location'] == null
+          ? null
+          : PickupLocation.fromJson(
+            json['pickup_location'] as Map<String, dynamic>,
           ),
 );
 
@@ -73,7 +80,9 @@ Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
   'deposit_amount': instance.depositAmount,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
+  'pickup_location_id': instance.pickupLocationId,
   'buyer': instance.buyer,
   'seller': instance.seller,
   'listing': instance.listing,
+  'pickup_location': instance.pickupLocation,
 };

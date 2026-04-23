@@ -24,7 +24,8 @@ class OrderRepository {
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
-            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url))
+            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url)),
+            pickup_location:pickup_locations(*)
           ''')
           .or('buyer_id.eq.$userId,seller_id.eq.$userId')
           .order('created_at', ascending: false);
@@ -43,7 +44,8 @@ class OrderRepository {
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
-            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url))
+            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url)),
+            pickup_location:pickup_locations(*)
           ''')
           .eq('id', id)
           .single();
@@ -61,6 +63,7 @@ class OrderRepository {
         ..remove('buyer')
         ..remove('seller')
         ..remove('listing')
+        ..remove('pickup_location')
         // Database-generated fields — let Postgres assign these
         ..remove('id')
         ..remove('created_at')

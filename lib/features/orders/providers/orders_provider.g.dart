@@ -222,7 +222,7 @@ final allOrdersProvider =
     );
 
 typedef _$AllOrders = AutoDisposeAsyncNotifier<List<Order>>;
-String _$orderActionsHash() => r'119e005ae68258011e687d2bb9ca2fe581119367';
+String _$orderActionsHash() => r'2394f282d83ebeb475fe739041a8fcfb67de4d7f';
 
 /// Mutation actions for a specific order.
 ///

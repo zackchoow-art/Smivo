@@ -109,6 +109,7 @@ class OrderActions extends _$OrderActions {
     DateTime? rentalStartDate,
     DateTime? rentalEndDate,
     String school = 'Smith College',
+    String? pickupLocationId,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -136,6 +137,7 @@ class OrderActions extends _$OrderActions {
         depositAmount: depositAmount,
         rentalStartDate: rentalStartDate,
         rentalEndDate: rentalEndDate,
+        pickupLocationId: pickupLocationId,
         createdAt: now,
         updatedAt: now,
       );

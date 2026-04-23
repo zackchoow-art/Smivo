@@ -275,7 +275,7 @@ class _BackSide extends StatelessWidget {
                 ),
                 Expanded(
                   child: Text(
-                    order.school, // Use order.school as fallback for pickup location context
+                    order.pickupLocation?.name ?? order.school,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: const Color(0xFF2B2A51),
                       fontWeight: FontWeight.w500,
