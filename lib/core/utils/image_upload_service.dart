@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smivo/core/theme/app_colors.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 
 /// Handles image picking and cropping for both mobile and web platforms.
 ///
@@ -73,6 +73,8 @@ class ImageUploadService {
     String sourcePath, {
     required bool isAvatar,
   }) async {
+    // NOTE: Read theme color from context for platform-native cropper UI
+    final primaryColor = context.smivoColors.primary;
     final croppedFile = await ImageCropper().cropImage(
       sourcePath: sourcePath,
       // NOTE: For avatars, force square aspect ratio.
@@ -83,7 +85,7 @@ class ImageUploadService {
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: isAvatar ? 'Crop Avatar' : 'Crop Photo',
-          toolbarColor: AppColors.primary,
+          toolbarColor: primaryColor,
           toolbarWidgetColor: Colors.white,
           initAspectRatio: isAvatar
               ? CropAspectRatioPreset.square

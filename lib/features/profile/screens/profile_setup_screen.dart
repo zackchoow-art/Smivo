@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:smivo/core/theme/app_text_styles.dart';
-import 'package:smivo/core/theme/app_colors.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,50 +34,35 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70,
-      maxWidth: 512,
-    );
-
-    if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-      });
-    }
+    final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70, maxWidth: 512);
+    if (image != null) setState(() => _selectedImage = File(image.path));
   }
 
   Future<void> _handleComplete() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your name')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter your name')));
       return;
     }
-
-    await ref.read(profileProvider.notifier).completeProfileSetup(
-          displayName: name,
-          avatarFile: _selectedImage,
-        );
-    
+    await ref.read(profileProvider.notifier).completeProfileSetup(displayName: name, avatarFile: _selectedImage);
     // Navigation is reactive via router.dart watching profile status
   }
 
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(profileProvider);
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (profile) {
           if (profile == null) return const Center(child: Text('No profile found'));
-          
           _initializeName(profile.email);
-
           return SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(32),
@@ -87,122 +70,55 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 20),
-                  Text(
-                    'Set up your Profile',
-                    style: AppTextStyles.headlineLarge,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('Set up your Profile', style: typo.headlineLarge, textAlign: TextAlign.center),
                   const SizedBox(height: 12),
-                  Text(
-                    'Help your campus community identify you.',
-                    style: AppTextStyles.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('Help your campus community identify you.', style: typo.bodyLarge, textAlign: TextAlign.center),
                   const SizedBox(height: 48),
-
-                  // ── Avatar Picker ──────────────────────────────────
+                  // Avatar Picker
                   GestureDetector(
                     onTap: _pickImage,
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              width: 4,
-                            ),
-                            image: _selectedImage != null
-                                ? DecorationImage(
-                                    image: FileImage(_selectedImage!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
-                          ),
-                          child: _selectedImage == null
-                              ? const Icon(
-                                  Icons.person_rounded,
-                                  size: 64,
-                                  color: AppColors.textTertiary,
-                                )
-                              : null,
+                    child: Stack(children: [
+                      Container(
+                        width: 120, height: 120,
+                        decoration: BoxDecoration(
+                          color: colors.surface, shape: BoxShape.circle,
+                          border: Border.all(color: colors.primary.withValues(alpha: 0.1), width: 4),
+                          image: _selectedImage != null ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover) : null,
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt_rounded,
-                              size: 20,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                        child: _selectedImage == null ? Icon(Icons.person_rounded, size: 64, color: colors.outlineVariant) : null,
+                      ),
+                      Positioned(bottom: 0, right: 0, child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: colors.primary, shape: BoxShape.circle),
+                        child: const Icon(Icons.camera_alt_rounded, size: 20, color: Colors.white),
+                      )),
+                    ]),
                   ),
                   const SizedBox(height: 48),
-
-                  // ── Name Input ─────────────────────────────────────
                   AppTextField(
-                    label: 'Display Name',
-                    hintText: 'How others see you',
-                    controller: _nameController,
-                    prefixIcon: const Icon(
-                      Icons.badge_outlined,
-                      size: 18,
-                      color: AppColors.textTertiary,
-                    ),
+                    label: 'Display Name', hintText: 'How others see you', controller: _nameController,
+                    prefixIcon: Icon(Icons.badge_outlined, size: 18, color: colors.outlineVariant),
                   ),
                   const SizedBox(height: 24),
-
-                  // ── School Info (Read-only) ────────────────────────
                   AppTextField(
-                    label: 'University',
-                    hintText: 'University',
-                    initialValue: profile.school,
-                    enabled: false,
-                    prefixIcon: const Icon(
-                      Icons.school_outlined,
-                      size: 18,
-                      color: AppColors.textTertiary,
-                    ),
+                    label: 'University', hintText: 'University', initialValue: profile.school, enabled: false,
+                    prefixIcon: Icon(Icons.school_outlined, size: 18, color: colors.outlineVariant),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    'Your school is locked based on your email domain.',
-                    style: AppTextStyles.footerText,
-                  ),
+                  Text('Your school is locked based on your email domain.',
+                    style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
                   const SizedBox(height: 48),
-
-                  // ── Save Button ────────────────────────────────────
                   SizedBox(
-                    width: double.infinity,
-                    height: 60,
+                    width: double.infinity, height: 60,
                     child: ElevatedButton(
                       onPressed: profileAsync.isLoading ? null : _handleComplete,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        elevation: 0,
+                        backgroundColor: colors.primary, foregroundColor: colors.onPrimary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.xl)), elevation: 0,
                       ),
                       child: profileAsync.isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              'Finish Setup',
-                              style: AppTextStyles.buttonLarge,
-                            ),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text('Finish Setup', style: typo.labelLarge.copyWith(color: colors.onPrimary, fontWeight: FontWeight.w700)),
                     ),
                   ),
                 ],

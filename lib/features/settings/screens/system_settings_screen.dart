@@ -16,7 +16,6 @@ class SystemSettingsScreen extends ConsumerWidget {
     final isPrivacyEnabled = ref.watch(privacySettingsStateProvider);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
