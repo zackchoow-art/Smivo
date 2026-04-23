@@ -11,7 +11,9 @@ part 'listing_detail_provider.g.dart';
 @riverpod
 class SelectedRentalRate extends _$SelectedRentalRate {
   @override
-  String build() => 'MONTH';
+  // NOTE: Default to DAY as it's the most commonly enabled rate.
+  // The RentalOptionsSection auto-selects the first available rate on build.
+  String build() => 'DAY';
 
   void setRate(String rate) {
     state = rate;

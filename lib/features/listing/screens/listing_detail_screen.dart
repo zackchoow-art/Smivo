@@ -356,20 +356,60 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                             
                             final isRental = listing.transactionType.toLowerCase() == 'rental';
                             
-                            // TEMPORARY: default to 7-day rental starting tomorrow
-                            // TODO: Read from RentalOptionsSection state
+                            double orderPrice;
                             DateTime? rentalStart;
                             DateTime? rentalEnd;
+                            
                             if (isRental) {
-                              rentalStart = DateTime.now().add(const Duration(days: 1));
-                              rentalEnd = rentalStart.add(const Duration(days: 7));
+                              // Read rental configuration from providers
+                              final selectedRate = ref.read(selectedRentalRateProvider);
+                              final startDate = ref.read(rentalStartDateProvider);
+                              
+                              // Calculate price and end date based on selected rate type
+                              if (selectedRate == 'DAY') {
+                                final endDate = ref.read(rentalEndDateProvider);
+                                final days = endDate.difference(startDate).inDays;
+                                final effectiveDays = days > 0 ? days : 1;
+                                orderPrice = (listing.rentalDailyPrice ?? 0) * effectiveDays;
+                                rentalStart = startDate;
+                                rentalEnd = endDate;
+                              } else if (selectedRate == 'WEEK') {
+                                final duration = ref.read(rentalDurationProvider);
+                                final totalDays = 7 * duration;
+                                orderPrice = (listing.rentalWeeklyPrice ?? 0) * duration;
+                                rentalStart = startDate;
+                                rentalEnd = startDate.add(Duration(days: totalDays));
+                              } else {
+                                // MONTH
+                                final duration = ref.read(rentalDurationProvider);
+                                orderPrice = (listing.rentalMonthlyPrice ?? 0) * duration;
+                                rentalStart = startDate;
+                                rentalEnd = DateTime(
+                                  startDate.year,
+                                  startDate.month + duration,
+                                  startDate.day,
+                                );
+                              }
+                              
+                              // Guard: total price must be > 0
+                              if (orderPrice <= 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Invalid rental configuration. Please select a valid rate and period.'),
+                                  ),
+                                );
+                                return;
+                              }
+                            } else {
+                              // Sale: use listing price directly
+                              orderPrice = listing.price;
                             }
                             
                             try {
                               await ref.read(orderActionsProvider.notifier).createOrder(
                                 listingId: listing.id,
                                 sellerId: listing.sellerId,
-                                price: listing.price,
+                                price: orderPrice,
                                 orderType: isRental ? 'rental' : 'sale',
                                 rentalStartDate: rentalStart,
                                 rentalEndDate: rentalEnd,

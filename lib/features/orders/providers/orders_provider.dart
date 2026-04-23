@@ -120,16 +120,9 @@ class OrderActions extends _$OrderActions {
         throw StateError('Cannot place an order on your own listing');
       }
 
-      // Calculate total price for rentals
-      double totalPrice = price;
-      if (orderType == 'rental' && 
-          rentalStartDate != null && 
-          rentalEndDate != null) {
-        final days = rentalEndDate.difference(rentalStartDate).inDays;
-        // Minimum 1 day
-        final effectiveDays = days > 0 ? days : 1;
-        totalPrice = price * effectiveDays;
-      }
+      // NOTE: price is the pre-calculated total from the UI layer.
+      // For sales: listing.price. For rentals: rate × duration.
+      final totalPrice = price;
 
       final now = DateTime.now();
       final draft = Order(
