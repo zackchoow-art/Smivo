@@ -34,6 +34,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
   bool _isPinned = false;
   double _pinnedDays = 1.0;
   bool _isSubmitting = false;
+  String _selectedCondition = 'good'; // Default condition
 
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -170,6 +171,100 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             ),
             const SizedBox(height: AppSpacing.sm),
             _CategoryPicker(),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Condition
+            Text(
+              'Condition',
+              style: AppTextStyles.labelLarge.copyWith(
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2B2A51),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                _ConditionChip(
+                  label: 'New',
+                  value: 'new',
+                  isSelected: _selectedCondition == 'new',
+                  onTap: () => setState(() => _selectedCondition = 'new'),
+                ),
+                _ConditionChip(
+                  label: 'Like New',
+                  value: 'like_new',
+                  isSelected: _selectedCondition == 'like_new',
+                  onTap: () => setState(() => _selectedCondition = 'like_new'),
+                ),
+                _ConditionChip(
+                  label: 'Good',
+                  value: 'good',
+                  isSelected: _selectedCondition == 'good',
+                  onTap: () => setState(() => _selectedCondition = 'good'),
+                ),
+                _ConditionChip(
+                  label: 'Fair',
+                  value: 'fair',
+                  isSelected: _selectedCondition == 'fair',
+                  onTap: () => setState(() => _selectedCondition = 'fair'),
+                ),
+                _ConditionChip(
+                  label: 'Poor',
+                  value: 'poor',
+                  isSelected: _selectedCondition == 'poor',
+                  onTap: () => setState(() => _selectedCondition = 'poor'),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Condition
+            Text(
+              'Condition',
+              style: AppTextStyles.labelLarge.copyWith(
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2B2A51),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                _ConditionChip(
+                  label: 'New',
+                  value: 'new',
+                  isSelected: _selectedCondition == 'new',
+                  onTap: () => setState(() => _selectedCondition = 'new'),
+                ),
+                _ConditionChip(
+                  label: 'Like New',
+                  value: 'like_new',
+                  isSelected: _selectedCondition == 'like_new',
+                  onTap: () => setState(() => _selectedCondition = 'like_new'),
+                ),
+                _ConditionChip(
+                  label: 'Good',
+                  value: 'good',
+                  isSelected: _selectedCondition == 'good',
+                  onTap: () => setState(() => _selectedCondition = 'good'),
+                ),
+                _ConditionChip(
+                  label: 'Fair',
+                  value: 'fair',
+                  isSelected: _selectedCondition == 'fair',
+                  onTap: () => setState(() => _selectedCondition = 'fair'),
+                ),
+                _ConditionChip(
+                  label: 'Poor',
+                  value: 'poor',
+                  isSelected: _selectedCondition == 'poor',
+                  onTap: () => setState(() => _selectedCondition = 'poor'),
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.xl),
 
             // Pricing
@@ -629,6 +724,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             description: _descriptionController.text,
             category: selectedCategory,
             transactionType: isSale ? 'sale' : 'rental',
+            condition: _selectedCondition,
             schoolId: profile.schoolId,
             price: price,
             dailyRate: dailyRate,
@@ -735,6 +831,44 @@ class _CategoryPicker extends ConsumerWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _ConditionChip extends StatelessWidget {
+  const _ConditionChip({
+    required this.label,
+    required this.value,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final String value;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF0546ED) : const Color(0xFFE2DFFF),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.labelLarge.copyWith(
+            color: isSelected ? Colors.white : const Color(0xFF585781),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
     );
   }
 }

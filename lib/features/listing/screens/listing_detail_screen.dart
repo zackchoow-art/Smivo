@@ -16,6 +16,23 @@ import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/data/models/pickup_location.dart';
 
+String _conditionLabel(String condition) {
+  switch (condition) {
+    case 'new':
+      return 'NEW';
+    case 'like_new':
+      return 'LIKE NEW';
+    case 'good':
+      return 'GOOD';
+    case 'fair':
+      return 'FAIR';
+    case 'poor':
+      return 'POOR';
+    default:
+      return condition.toUpperCase();
+  }
+}
+
 class ListingDetailScreen extends ConsumerStatefulWidget {
   const ListingDetailScreen({
     super.key,
@@ -99,7 +116,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           final imageUrls = listing.images.map((img) => img.imageUrl).toList();
           
           // Status tag logic
-          final statusTag = isSale ? 'LIKE NEW' : 'AVAILABLE NOW';
+          // NOTE: Show real condition for sale items, availability for rentals
+          final statusTag = isSale ? _conditionLabel(listing.condition) : 'AVAILABLE NOW';
 
           return SingleChildScrollView(
             child: Column(
