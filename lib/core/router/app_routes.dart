@@ -29,6 +29,7 @@ class AppRoutes {
   static const String sellerCenter = 'sellerCenter';
   static const String buyerCenter = 'buyerCenter';
   static const String transactionManagement = 'transactionManagement';
+  static const String notificationCenter = 'notificationCenter';
 
   // ── Route Paths ────────────────────────────────────────────
   static const String splashPath = '/';
@@ -54,4 +55,5 @@ class AppRoutes {
   static const String sellerCenterPath = '/seller-center';
   static const String buyerCenterPath = '/buyer-center';
   static const String transactionManagementPath = '/listing/:id/transactions';
+  static const String notificationCenterPath = '/notifications';
 }

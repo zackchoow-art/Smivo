@@ -7,7 +7,6 @@ import 'package:smivo/core/theme/app_spacing.dart';
 import 'package:smivo/core/theme/app_text_styles.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
-import 'package:smivo/shared/widgets/message_badge_icon.dart';
 
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key});
@@ -43,7 +42,7 @@ class HomeHeader extends ConsumerWidget {
               ),
               Row(
                 children: [
-                  MessageBadgeIcon(unreadCount: unreadCount),
+                  _NotificationBellIcon(unreadCount: unreadCount),
                   const SizedBox(width: AppSpacing.md),
                   GestureDetector(
                     onTap: () => context.pushNamed(AppRoutes.settings),
@@ -70,6 +69,60 @@ class HomeHeader extends ConsumerWidget {
               color: AppColors.onSurface.withValues(alpha: 0.7),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationBellIcon extends StatelessWidget {
+  const _NotificationBellIcon({required this.unreadCount});
+
+  final int unreadCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () => context.pushNamed(AppRoutes.notificationCenter),
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(
+            unreadCount > 0
+                ? Icons.notifications_active
+                : Icons.notifications_outlined,
+            color: AppColors.primary,
+            size: 28,
+          ),
+          if (unreadCount > 0)
+            Positioned(
+              right: -4,
+              top: -4,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCC3300),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 18,
+                  minHeight: 18,
+                ),
+                child: Center(
+                  child: Text(
+                    unreadCount > 9 ? '9+' : unreadCount.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

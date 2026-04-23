@@ -25,6 +25,7 @@ import 'package:smivo/features/seller/screens/transaction_management_screen.dart
 import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
 import 'package:smivo/shared/widgets/app_shell.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
 import 'app_routes.dart';
 
 part 'router.g.dart';
@@ -250,6 +251,13 @@ GoRouter router(Ref ref) {
         name: AppRoutes.buyerCenter,
         path: AppRoutes.buyerCenterPath,
         builder: (context, state) => const BuyerCenterScreen(),
+      ),
+
+      // ── Notification Center ──────────────────────────────
+      GoRoute(
+        name: AppRoutes.notificationCenter,
+        path: AppRoutes.notificationCenterPath,
+        builder: (context, state) => const NotificationCenterScreen(),
       ),
 
       // ── Profile & Settings (auth required) ────────────────

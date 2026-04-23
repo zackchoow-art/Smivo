@@ -18,6 +18,8 @@ abstract class AppNotification with _$AppNotification {
     required String body,
     @JsonKey(name: 'is_read') @Default(false) bool isRead,
     @JsonKey(name: 'related_order_id') String? relatedOrderId,
+    @JsonKey(name: 'action_type') @Default('none') String actionType,
+    @JsonKey(name: 'action_url') String? actionUrl,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _AppNotification;
