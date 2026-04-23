@@ -266,7 +266,7 @@ class OrderDetailScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xs),
             Text(
               price,
-              style: AppTextStyles.titleSmall.copyWith(
+              style: AppTextStyles.labelLarge.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
               ),

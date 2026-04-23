@@ -114,7 +114,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     Text(
                       'Track your campus transactions, from dorm\nessentials to textbook rentals.',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: const Color(0xFF2B2A51).withOpacity(0.7),
+                        color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                         height: 1.4,
                       ),
                     ),
@@ -214,7 +214,7 @@ class _SegmentedControl extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF013DFD).withOpacity(0.3),
+                    color: const Color(0xFF013DFD).withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -226,7 +226,7 @@ class _SegmentedControl extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: isSelected ? Colors.white : const Color(0xFF2B2A51).withOpacity(0.8),
+              color: isSelected ? Colors.white : const Color(0xFF2B2A51).withValues(alpha: 0.8),
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
               height: 1.2,
             ),
@@ -258,7 +258,7 @@ class _PromoBanner extends StatelessWidget {
             child: Icon(
               Icons.menu_book,
               size: 150,
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
           
@@ -279,7 +279,7 @@ class _PromoBanner extends StatelessWidget {
                 Text(
                   'Clean out your dorm and make\nsome quick cash before finals\nweek.',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     height: 1.4,
                   ),
                 ),

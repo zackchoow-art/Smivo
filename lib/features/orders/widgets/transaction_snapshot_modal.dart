@@ -113,7 +113,7 @@ class TransactionSnapshotModal extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFFF2EFFF),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF013DFD).withOpacity(0.1)),
+                    border: Border.all(color: const Color(0xFF013DFD).withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     children: [
@@ -123,7 +123,7 @@ class TransactionSnapshotModal extends StatelessWidget {
                         child: Text(
                           'This record is permanent and cannot be modified. It serves as official proof of transaction within Smivo.',
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: const Color(0xFF2B2A51).withOpacity(0.7),
+                            color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                             height: 1.4,
                           ),
                         ),
@@ -155,7 +155,7 @@ class _SnapshotRow extends StatelessWidget {
           child: Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: const Color(0xFF2B2A51).withOpacity(0.5),
+              color: const Color(0xFF2B2A51).withValues(alpha: 0.5),
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),

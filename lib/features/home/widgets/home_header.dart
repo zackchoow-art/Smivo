@@ -67,7 +67,7 @@ class HomeHeader extends ConsumerWidget {
           Text(
             'The digital pulse of your university. Buy, sell, and connect.',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.onSurface.withOpacity(0.7),
+              color: AppColors.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],

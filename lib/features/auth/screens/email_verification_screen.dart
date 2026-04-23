@@ -99,7 +99,7 @@ class EmailVerificationScreen extends ConsumerWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF2B2A51).withOpacity(0.04),
+                              color: const Color(0xFF2B2A51).withValues(alpha: 0.04),
                               blurRadius: 32,
                               offset: const Offset(0, 12),
                             ),
@@ -133,7 +133,7 @@ class EmailVerificationScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(32),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF2B2A51).withOpacity(0.08),
+                          color: const Color(0xFF2B2A51).withValues(alpha: 0.08),
                           blurRadius: 40,
                           offset: const Offset(0, 16),
                         ),
@@ -170,7 +170,7 @@ class EmailVerificationScreen extends ConsumerWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 15,
                             offset: const Offset(0, 10),
                           ),

@@ -37,7 +37,7 @@ class _HomeSearchBarState extends ConsumerState<HomeSearchBar> {
         decoration: InputDecoration(
           hintText: 'Search textbooks, tech, clothes...',
           hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.onSurface.withOpacity(0.5),
+            color: AppColors.onSurface.withValues(alpha: 0.5),
           ),
           filled: true,
           fillColor: const Color(0xFFF2EFFF), // Using the light purple input background seen in UI

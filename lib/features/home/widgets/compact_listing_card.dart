@@ -62,7 +62,7 @@ class CompactListingCard extends StatelessWidget {
                       child: Icon(
                         Icons.image_not_supported_outlined,
                         size: 32,
-                        color: AppColors.outlineVariant.withOpacity(0.5),
+                        color: AppColors.outlineVariant.withValues(alpha: 0.5),
                       ),
                     )
                   : null,

@@ -111,7 +111,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                             color: AppColors.surface,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               width: 4,
                             ),
                             image: _selectedImage != null

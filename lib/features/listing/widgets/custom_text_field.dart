@@ -52,7 +52,7 @@ class CustomTextField extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
             hintStyle: AppTextStyles.bodyLarge.copyWith(
-              color: const Color(0xFF585781).withOpacity(0.6),
+              color: const Color(0xFF585781).withValues(alpha: 0.6),
             ),
             filled: true,
             fillColor: const Color(0xFFF2EFFF), // Light purple

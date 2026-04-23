@@ -51,7 +51,7 @@ class AppTextStyles {
   static TextStyle get bodySmall => GoogleFonts.manrope(
         fontSize: 12,
         fontWeight: FontWeight.w400,
-        color: AppColors.onSurface.withOpacity(0.7),
+        color: AppColors.onSurface.withValues(alpha: 0.7),
       );
 
   static TextStyle get titleMedium => GoogleFonts.manrope(

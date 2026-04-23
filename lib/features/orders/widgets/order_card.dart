@@ -104,7 +104,7 @@ class _FrontSide extends StatelessWidget {
                           Text(
                             order.orderType.toUpperCase(),
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: const Color(0xFF2B2A51).withOpacity(0.7),
+                              color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -183,7 +183,7 @@ class _BackSide extends StatelessWidget {
         border: Border.all(color: AppColors.borderLight, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -226,7 +226,7 @@ class _BackSide extends StatelessWidget {
                 Text(
                   'COUNTERPARTY',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFF2B2A51).withOpacity(0.6),
+                    color: const Color(0xFF2B2A51).withValues(alpha: 0.6),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.2,
                   ),
@@ -267,7 +267,7 @@ class _BackSide extends StatelessWidget {
                   child: Text(
                     'PICKUP',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFF2B2A51).withOpacity(0.6),
+                      color: const Color(0xFF2B2A51).withValues(alpha: 0.6),
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1.2,
                     ),
@@ -302,7 +302,7 @@ class _BackSide extends StatelessWidget {
                   child: Text(
                     'View Order Snapshot',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFF013DFD).withOpacity(0.7),
+                      color: const Color(0xFF013DFD).withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,
                       decoration: TextDecoration.underline,
                     ),
@@ -340,7 +340,7 @@ class _BackSide extends StatelessWidget {
             child: Text(
               'tap anywhere to flip back',
               style: AppTextStyles.labelSmall.copyWith(
-                color: const Color(0xFF2B2A51).withOpacity(0.4),
+                color: const Color(0xFF2B2A51).withValues(alpha: 0.4),
               ),
             ),
           ),
@@ -375,7 +375,7 @@ class _BackSide extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.labelSmall.copyWith(
-                color: const Color(0xFF2B2A51).withOpacity(0.6),
+                color: const Color(0xFF2B2A51).withValues(alpha: 0.6),
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
               ),

@@ -22,7 +22,7 @@ Future<void> showChatPopup(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Dismiss',
-    barrierColor: Colors.black.withOpacity(0.2),
+    barrierColor: Colors.black.withValues(alpha: 0.2),
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) {
       return Center(
@@ -143,11 +143,11 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
       width: MediaQuery.of(context).size.width * 0.85,
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(0.9),
+        color: backgroundColor.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 40,
             offset: const Offset(0, 10),
           ),
@@ -207,7 +207,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -263,7 +263,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  color: backgroundColor.withOpacity(0.3),
+                  color: backgroundColor.withValues(alpha: 0.3),
                   child: messagesAsync.when(
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (err, _) => Center(child: Text('Error: $err')),

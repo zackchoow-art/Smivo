@@ -83,7 +83,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                           Text(
                             'English (US)',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: const Color(0xFF2B2A51).withOpacity(0.7),
+                              color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                             ),
                           ),
                         ],

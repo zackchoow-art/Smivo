@@ -33,7 +33,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
               Text(
                 'Control how and when you receive\nupdates from the campus network.',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: const Color(0xFF2B2A51).withOpacity(0.7),
+                  color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                   height: 1.4,
                 ),
               ),

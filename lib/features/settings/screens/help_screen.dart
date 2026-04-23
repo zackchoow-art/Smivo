@@ -35,7 +35,7 @@ class HelpScreen extends ConsumerWidget {
                 'Find answers to common questions\nabout campus trading.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: const Color(0xFF2B2A51).withOpacity(0.7),
+                  color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                   height: 1.4,
                 ),
               ),
@@ -53,10 +53,10 @@ class HelpScreen extends ConsumerWidget {
                     color: const Color(0xFF2B2A51),
                   ),
                   decoration: InputDecoration(
-                    icon: Icon(Icons.search, color: const Color(0xFF2B2A51).withOpacity(0.5)),
+                    icon: Icon(Icons.search, color: const Color(0xFF2B2A51).withValues(alpha: 0.5)),
                     hintText: 'Search for help...',
                     hintStyle: AppTextStyles.bodyLarge.copyWith(
-                      color: const Color(0xFF2B2A51).withOpacity(0.5),
+                      color: const Color(0xFF2B2A51).withValues(alpha: 0.5),
                     ),
                     border: InputBorder.none,
                   ),
@@ -78,7 +78,7 @@ class HelpScreen extends ConsumerWidget {
                         border: isExpanded ? Border.all(color: const Color(0xFF013DFD), width: 1.5) : Border.all(color: Colors.transparent, width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
+                            color: Colors.black.withValues(alpha: 0.02),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -101,7 +101,7 @@ class HelpScreen extends ConsumerWidget {
                                 ),
                                 Icon(
                                   isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                  color: isExpanded ? const Color(0xFF013DFD) : const Color(0xFF2B2A51).withOpacity(0.5),
+                                  color: isExpanded ? const Color(0xFF013DFD) : const Color(0xFF2B2A51).withValues(alpha: 0.5),
                                 ),
                               ],
                             ),
@@ -112,7 +112,7 @@ class HelpScreen extends ConsumerWidget {
                               child: Text(
                                 faq.answer,
                                 style: AppTextStyles.bodyMedium.copyWith(
-                                  color: const Color(0xFF2B2A51).withOpacity(0.7),
+                                  color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                                   height: 1.4,
                                 ),
                               ),

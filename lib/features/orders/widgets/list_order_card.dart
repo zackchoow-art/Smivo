@@ -37,7 +37,7 @@ class ListOrderCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -83,7 +83,7 @@ class ListOrderCard extends ConsumerWidget {
                   Text(
                     '\$${order.totalPrice.toStringAsFixed(0)} • ${_getStatusText(status)}',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.onSurface.withOpacity(0.6),
+                      color: AppColors.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   // Snapshot Link for completed orders
@@ -98,7 +98,7 @@ class ListOrderCard extends ConsumerWidget {
                         child: Text(
                           'View Order Snapshot',
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: const Color(0xFF013DFD).withOpacity(0.7),
+                            color: const Color(0xFF013DFD).withValues(alpha: 0.7),
                             fontWeight: FontWeight.w500,
                             decoration: TextDecoration.underline,
                           ),

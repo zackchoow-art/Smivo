@@ -34,7 +34,7 @@ class EditProfileScreen extends ConsumerWidget {
               Text(
                 'Manage your campus identity.',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: const Color(0xFF2B2A51).withOpacity(0.7),
+                  color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 32),
@@ -48,7 +48,7 @@ class EditProfileScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -73,7 +73,7 @@ class EditProfileScreen extends ConsumerWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -97,7 +97,7 @@ class EditProfileScreen extends ConsumerWidget {
                       'Verify your .edu email to access exclusive\ncampus features.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: const Color(0xFF2B2A51).withOpacity(0.7),
+                        color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                         height: 1.3,
                       ),
                     ),
@@ -130,7 +130,7 @@ class EditProfileScreen extends ConsumerWidget {
                         Text(
                           'alex.smith@university.edu',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: const Color(0xFF2B2A51).withOpacity(0.8),
+                            color: const Color(0xFF2B2A51).withValues(alpha: 0.8),
                           ),
                         ),
                       ],
@@ -160,7 +160,7 @@ class EditProfileScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -186,7 +186,7 @@ class EditProfileScreen extends ConsumerWidget {
                     Text(
                       'This is how you will appear to other\nstudents.',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: const Color(0xFF2B2A51).withOpacity(0.6),
+                        color: const Color(0xFF2B2A51).withValues(alpha: 0.6),
                         height: 1.3,
                       ),
                     ),
@@ -321,7 +321,7 @@ class EditProfileScreen extends ConsumerWidget {
       decoration: InputDecoration(
         prefixText: prefixText,
         prefixStyle: AppTextStyles.bodyLarge.copyWith(
-          color: const Color(0xFF2B2A51).withOpacity(0.5),
+          color: const Color(0xFF2B2A51).withValues(alpha: 0.5),
         ),
         filled: true,
         fillColor: const Color(0xFFF2EFFF),

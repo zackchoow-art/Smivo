@@ -32,7 +32,7 @@ class SettingsScreen extends StatelessWidget {
               Text(
                 'Manage your account preferences and\nconfigurations.',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: const Color(0xFF2B2A51).withOpacity(0.7),
+                  color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                   height: 1.4,
                 ),
               ),
@@ -95,7 +95,7 @@ class SettingsScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha: 0.02),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -130,7 +130,7 @@ class SettingsScreen extends StatelessWidget {
                             Text(
                               'Support, FAQs, Contact\nUs',
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: const Color(0xFF2B2A51).withOpacity(0.7),
+                                color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                                 height: 1.3,
                               ),
                             ),
@@ -169,7 +169,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                        side: BorderSide(color: const Color(0xFFD32F2F).withOpacity(0.3)),
+                        side: BorderSide(color: const Color(0xFFD32F2F).withValues(alpha: 0.3)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -202,7 +202,7 @@ class SettingsScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -238,7 +238,7 @@ class SettingsScreen extends StatelessWidget {
               subtitle,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall.copyWith(
-                color: const Color(0xFF2B2A51).withOpacity(0.7),
+                color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                 height: 1.3,
               ),
             ),

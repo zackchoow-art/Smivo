@@ -55,7 +55,7 @@ class SettingToggleRow extends StatelessWidget {
                 Text(
                   subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: const Color(0xFF2B2A51).withOpacity(0.7),
+                    color: const Color(0xFF2B2A51).withValues(alpha: 0.7),
                     height: 1.3,
                   ),
                 ),
@@ -66,7 +66,7 @@ class SettingToggleRow extends StatelessWidget {
           CupertinoSwitch(
             value: value,
             activeColor: const Color(0xFF013DFD),
-            trackColor: const Color(0xFF2B2A51).withOpacity(0.15),
+            trackColor: const Color(0xFF2B2A51).withValues(alpha: 0.15),
             onChanged: onChanged,
           ),
         ],

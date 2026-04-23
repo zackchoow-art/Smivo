@@ -59,7 +59,7 @@ class FeaturedListingCard extends StatelessWidget {
                 child: Icon(
                   Icons.image_not_supported_outlined,
                   size: 48,
-                  color: AppColors.outlineVariant.withOpacity(0.5),
+                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
                 ),
               ),
             
@@ -82,7 +82,7 @@ class FeaturedListingCard extends StatelessWidget {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withOpacity(0.8),
+                      Colors.black.withValues(alpha: 0.8),
                       Colors.transparent,
                     ],
                   ),
