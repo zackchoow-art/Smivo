@@ -1,109 +1,149 @@
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
-import 'app_text_styles.dart';
+import 'smivo_colors.dart';
+import 'smivo_radius.dart';
+import 'smivo_shadows.dart';
+import 'smivo_typography.dart';
+import 'theme_variant.dart';
 
 /// Centralized ThemeData factory for the Smivo app.
 ///
-/// Phase 1: light mode only. The structure supports adding a dark
-/// theme later by creating a parallel [darkTheme] getter.
+/// Call [buildTheme] with a [SmivoThemeVariant] to produce a fully
+/// configured [ThemeData] with all four Smivo [ThemeExtension]s
+/// (colors, radii, shadows, typography) injected.
+///
+/// The old static [lightTheme] getter is kept for backward compatibility
+/// during the migration period but delegates to the new system.
 class AppTheme {
   AppTheme._();
 
-  /// Light theme — the only active theme in Phase 1.
-  static ThemeData get lightTheme {
+  /// Build a complete [ThemeData] for the given [variant].
+  ///
+  /// This is the single entry point used by [MaterialApp.theme].
+  /// All component themes (buttons, inputs, cards, nav) are derived
+  /// from the variant's token set so they stay in sync automatically.
+  static ThemeData buildTheme(SmivoThemeVariant variant) {
+    final colors = SmivoColors.fromVariant(variant);
+    final radius = SmivoRadius.fromVariant(variant);
+    final shadows = SmivoShadows.fromVariant(variant);
+    final typo = SmivoTypography.fromVariant(variant);
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
+        seedColor: colors.primary,
         brightness: Brightness.light,
-        surface: AppColors.surface,
-        error: AppColors.error,
+        surface: colors.surface,
+        error: colors.error,
       ),
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: colors.background,
+
+      // ── AppBar ───────────────────────────────────────────
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.onSurface,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: AppTextStyles.headlineSmall,
+        titleTextStyle: typo.headlineSmall,
       ),
+
+      // ── ElevatedButton ───────────────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textOnPrimary,
+          backgroundColor: colors.primary,
+          foregroundColor: colors.onPrimary,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(radius.button),
           ),
-          textStyle: AppTextStyles.labelLarge,
+          textStyle: typo.labelLarge,
         ),
       ),
+
+      // ── OutlinedButton ───────────────────────────────────
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: colors.primary,
           minimumSize: const Size(double.infinity, 48),
-          side: const BorderSide(color: AppColors.primary),
+          side: BorderSide(color: colors.primary),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(radius.button),
           ),
-          textStyle: AppTextStyles.labelLarge,
+          textStyle: typo.labelLarge,
         ),
       ),
+
+      // ── InputDecoration ──────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: colors.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(radius.input),
+          borderSide: BorderSide(color: colors.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(radius.input),
+          borderSide: BorderSide(color: colors.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.primary,
-            width: 2,
-          ),
+          borderRadius: BorderRadius.circular(radius.input),
+          borderSide: BorderSide(color: colors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error),
+          borderRadius: BorderRadius.circular(radius.input),
+          borderSide: BorderSide(color: colors.error),
         ),
-        hintStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textTertiary,
+        hintStyle: typo.bodyMedium.copyWith(
+          color: colors.onSurfaceVariant,
         ),
       ),
+
+      // ── Card ─────────────────────────────────────────────
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: colors.surfaceContainerLowest,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(radius.card),
+          side: colors.useDividers
+              ? BorderSide(color: colors.outlineVariant)
+              : BorderSide.none,
         ),
       ),
-      dividerTheme: const DividerThemeData(
-        color: AppColors.divider,
-        thickness: 1,
-        space: 1,
+
+      // ── Divider ──────────────────────────────────────────
+      dividerTheme: DividerThemeData(
+        color: colors.useDividers
+            ? colors.dividerColor
+            : Colors.transparent,
+        thickness: colors.useDividers ? 1 : 0,
+        space: colors.useDividers ? 1 : 0,
       ),
-      bottomNavigationBarTheme:
-          const BottomNavigationBarThemeData(
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
+
+      // ── BottomNavigationBar ──────────────────────────────
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: colors.surfaceContainerLowest,
+        selectedItemColor: colors.primary,
+        unselectedItemColor: colors.onSurfaceVariant,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0,
       ),
+
+      // ── Extensions ───────────────────────────────────────
+      extensions: [colors, radius, shadows, typo],
     );
   }
 
-  // TODO: Add darkTheme getter in Phase 2 for dark mode support.
+  /// Legacy getter for backward compatibility during migration.
+  ///
+  /// Delegates to [buildTheme] with [SmivoThemeVariant.teal].
+  /// Widgets and tests that still reference [AppTheme.lightTheme]
+  /// will continue to work unchanged.
+  @Deprecated('Use AppTheme.buildTheme(variant) instead. '
+      'This getter will be removed after the theme migration.')
+  static ThemeData get lightTheme => buildTheme(SmivoThemeVariant.teal);
 }
