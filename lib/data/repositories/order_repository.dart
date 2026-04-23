@@ -58,18 +58,40 @@ class OrderRepository {
   /// Fetches all orders for a specific listing.
   Future<List<Order>> fetchOrdersByListing(String listingId) async {
     try {
+      // FIXME: Debug — simple query first to isolate join issues
+      final rawData = await _client
+          .from(AppConstants.tableOrders)
+          .select()
+          .eq('listing_id', listingId);
+      // ignore: avoid_print
+      print('[fetchOrdersByListing] RAW query for listingId=$listingId returned ${rawData.length} rows');
+
+      if (rawData.isEmpty) return [];
+
+      // Fetch with full joins using order IDs from the raw query
+      final orderIds = rawData.map((r) => r['id'] as String).toList();
       final data = await _client
           .from(AppConstants.tableOrders)
           .select('''
             *,
             buyer:user_profiles!buyer_id(*),
-            seller:user_profiles!seller_id(*)
+            seller:user_profiles!seller_id(*),
+            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url)),
+            pickup_location:pickup_locations(*)
           ''')
-          .eq('listing_id', listingId)
+          .inFilter('id', orderIds)
           .order('created_at', ascending: false);
+      // ignore: avoid_print
+      print('[fetchOrdersByListing] JOIN query returned ${data.length} rows');
       return data.map((json) => Order.fromJson(json)).toList();
     } on PostgrestException catch (e) {
+      // ignore: avoid_print
+      print('[fetchOrdersByListing] PostgrestException: ${e.message}');
       throw DatabaseException(e.message, e);
+    } catch (e) {
+      // ignore: avoid_print
+      print('[fetchOrdersByListing] Unexpected error: $e');
+      rethrow;
     }
   }
 

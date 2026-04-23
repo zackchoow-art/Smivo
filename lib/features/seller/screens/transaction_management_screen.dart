@@ -207,10 +207,24 @@ class _OrdersTab extends ConsumerWidget {
     final ordersAsync = ref.watch(listingOrdersProvider(listingId));
     final actionsState = ref.watch(orderActionsProvider);
 
+    // FIXME: Debug — trace provider state
+    // ignore: avoid_print
+    print('[_OrdersTab] ordersAsync state: $ordersAsync');
+
     return ordersAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      loading: () {
+        // ignore: avoid_print
+        print('[_OrdersTab] STATE: loading');
+        return const Center(child: CircularProgressIndicator());
+      },
+      error: (e, _) {
+        // ignore: avoid_print
+        print('[_OrdersTab] STATE: error — $e');
+        return Center(child: Text('Error: $e'));
+      },
       data: (orders) {
+        // ignore: avoid_print
+        print('[_OrdersTab] STATE: data — ${orders.length} orders');
         if (orders.isEmpty) {
           return Center(
             child: Column(
