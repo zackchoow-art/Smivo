@@ -7,8 +7,15 @@ import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
-import 'package:smivo/features/orders/screens/orders_screen.dart'; // For orderCounterparty helper
+import 'package:smivo/data/models/user_profile.dart';
 import 'flip_card.dart';
+
+/// Returns the other party's profile from an order's perspective.
+/// If [currentUserId] is the buyer, returns the seller. Otherwise buyer.
+UserProfile? orderCounterparty(Order order, String? currentUserId) {
+  if (currentUserId == null) return null;
+  return (order.buyerId == currentUserId) ? order.seller : order.buyer;
+}
 
 class OrderCard extends ConsumerWidget {
   final Order order;

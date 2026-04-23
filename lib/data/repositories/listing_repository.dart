@@ -110,6 +110,20 @@ class ListingRepository {
     }
   }
 
+  /// Fetches all listings owned by [userId] with full joins.
+  Future<List<Listing>> fetchUserListings(String userId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableListings)
+          .select('*, images:listing_images(*), seller:user_profiles!seller_id(*), pickup_location:pickup_locations!pickup_location_id(*)')
+          .eq('seller_id', userId)
+          .order('created_at', ascending: false);
+      return data.map((json) => Listing.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   // ──────────────────────────────────────────────────────────────
   // WRITE OPERATIONS
   // ──────────────────────────────────────────────────────────────

@@ -20,6 +20,8 @@ import 'package:smivo/features/settings/screens/help_screen.dart';
 import 'package:smivo/features/settings/screens/notification_settings_screen.dart';
 import 'package:smivo/features/settings/screens/settings_screen.dart';
 import 'package:smivo/features/settings/screens/system_settings_screen.dart';
+import 'package:smivo/features/seller/screens/seller_center_screen.dart';
+import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
 import 'package:smivo/shared/widgets/app_shell.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'app_routes.dart';
@@ -225,6 +227,20 @@ GoRouter router(Ref ref) {
         path: AppRoutes.orderDetailPath,
         builder: (context, state) =>
             OrderDetailScreen(orderId: state.pathParameters['id']!),
+      ),
+
+      // ── Seller Center ─────────────────────────────────────
+      GoRoute(
+        name: AppRoutes.sellerCenter,
+        path: AppRoutes.sellerCenterPath,
+        builder: (context, state) => const SellerCenterScreen(),
+      ),
+
+      // ── Buyer Center ─────────────────────────────────────
+      GoRoute(
+        name: AppRoutes.buyerCenter,
+        path: AppRoutes.buyerCenterPath,
+        builder: (context, state) => const BuyerCenterScreen(),
       ),
 
       // ── Profile & Settings (auth required) ────────────────

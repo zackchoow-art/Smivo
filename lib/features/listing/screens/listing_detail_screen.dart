@@ -367,6 +367,36 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                               ],
                             ),
                             const SizedBox(height: AppSpacing.xl),
+
+                            // Manage Transactions button
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  // TODO: Navigate to transaction management
+                                  // (Task 015 will implement this)
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Transaction management coming soon'),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.manage_search),
+                                label: const Text('Manage Transactions'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: AppSpacing.md),
+                                  side: BorderSide(
+                                    color: AppColors.primary.withValues(alpha: 0.5),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        AppSpacing.radiusSm),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
                           ],
                           
                           // Primary Action Button — hidden on own listing
