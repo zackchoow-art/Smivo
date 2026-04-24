@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/settings/widgets/setting_card_container.dart';
 

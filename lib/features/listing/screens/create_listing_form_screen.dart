@@ -147,11 +147,11 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
                 hintText: 'Required for rentals', prefixText: '\$ ',
                 prefixStyle: typo.bodyLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.bold),
                 filled: true, fillColor: colors.surfaceContainerLow, contentPadding: const EdgeInsets.all(12),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
                   borderSide: _depositHasError ? BorderSide(color: colors.error, width: 2) : BorderSide.none),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
                   borderSide: _depositHasError ? BorderSide(color: colors.error, width: 2) : BorderSide.none),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
                   borderSide: BorderSide(color: _depositHasError ? colors.error : colors.primary, width: 2)),
               ),
             ),
@@ -168,7 +168,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
                 if (locations.isEmpty) return const Text('No pickup locations available');
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.sm)),
+                  decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.input)),
                   child: DropdownButtonHideUnderline(child: DropdownButton<PickupLocation>(
                     value: _selectedPickup, hint: const Text('Select pickup location'), isExpanded: true,
                     icon: Icon(Icons.arrow_drop_down, color: colors.onSurfaceVariant),
@@ -192,7 +192,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             onPressed: _isSubmitting ? null : () => _handleSubmit(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.primary, padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.sm)), elevation: 0),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.button)), elevation: 0),
             child: _isSubmitting
               ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
               : Text(isSale ? 'List Item for Sale' : 'Post Rental', style: typo.titleMedium.copyWith(color: colors.onPrimary)),
@@ -222,13 +222,13 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
           prefixText: '\$ ', hintText: enabled ? '' : '—',
           prefixStyle: typo.bodyLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.bold),
           filled: true, fillColor: enabled ? colors.surfaceContainerLow : Colors.grey.shade100, contentPadding: const EdgeInsets.all(12),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
             borderSide: hasError ? BorderSide(color: colors.error, width: 2) : BorderSide.none),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
             borderSide: hasError ? BorderSide(color: colors.error, width: 2) : BorderSide.none),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
             borderSide: BorderSide(color: hasError ? colors.error : colors.primary, width: 2)),
-          disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm), borderSide: BorderSide(color: Colors.grey.shade200)),
+          disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input), borderSide: BorderSide(color: Colors.grey.shade200)),
         ),
       )),
     ]);

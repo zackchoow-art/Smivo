@@ -160,7 +160,7 @@ class _TotalRentBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.sm)),
+      decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.card)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Rental Period: $periodText', style: typo.bodyMedium.copyWith(color: colors.onSurface)),
         const SizedBox(height: 4),
@@ -185,7 +185,7 @@ class _DateBox extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)), borderRadius: BorderRadius.circular(radius.sm)),
+        decoration: BoxDecoration(border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)), borderRadius: BorderRadius.circular(radius.input)),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text(text, style: typo.bodyMedium),
           const Icon(Icons.calendar_today_outlined, size: 16),
@@ -244,7 +244,7 @@ class _StepperConfigurator extends ConsumerWidget {
             const SizedBox(width: 8),
             Expanded(child: Container(
               height: 48, alignment: Alignment.center,
-              decoration: BoxDecoration(border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)), borderRadius: BorderRadius.circular(radius.sm)),
+              decoration: BoxDecoration(border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)), borderRadius: BorderRadius.circular(radius.input)),
               child: Text(duration.toString(), style: typo.titleMedium),
             )),
             const SizedBox(width: 8),
@@ -269,7 +269,7 @@ class _StepperButton extends StatelessWidget {
     final radius = context.smivoRadius;
     return Container(
       width: 40, height: 48, alignment: Alignment.center,
-      decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.sm)),
+      decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.button)),
       child: Text(text, style: typo.headlineSmall.copyWith(color: colors.primary)),
     );
   }

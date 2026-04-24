@@ -243,6 +243,7 @@ GoRouter router(Ref ref) {
         path: AppRoutes.transactionManagementPath,
         builder: (context, state) => TransactionManagementScreen(
           listingId: state.pathParameters['id']!,
+          initialTab: int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0,
         ),
       ),
 

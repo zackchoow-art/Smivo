@@ -10,26 +10,33 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/seller/providers/transaction_stats_provider.dart';
 import 'package:smivo/features/seller/providers/listing_views_provider.dart';
+import 'package:smivo/features/chat/widgets/chat_popup.dart';
 
 class TransactionManagementScreen extends ConsumerWidget {
-  const TransactionManagementScreen({super.key, required this.listingId});
+  const TransactionManagementScreen({
+    super.key,
+    required this.listingId,
+    this.initialTab = 0,
+  });
   final String listingId;
+  final int initialTab;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     return DefaultTabController(
       length: 3,
+      initialIndex: initialTab,
       child: Scaffold(
         backgroundColor: colors.surfaceContainerLowest,
         appBar: AppBar(
           title: const Text('Manage Transactions'),
-          bottom: const TabBar(tabs: [Tab(text: 'Views'), Tab(text: 'Saves'), Tab(text: 'Orders')]),
+          bottom: const TabBar(tabs: [Tab(text: 'Views'), Tab(text: 'Saves'), Tab(text: 'Offers')]),
         ),
         body: TabBarView(children: [
           _ViewsTab(listingId: listingId),
           _SavesTab(listingId: listingId),
-          _OrdersTab(listingId: listingId),
+          _OffersTab(listingId: listingId),
         ]),
       ),
     );
@@ -59,31 +66,45 @@ class _ViewsTab extends ConsumerWidget {
             Text('No views yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
           ]));
         }
-        return Column(children: [
-          Padding(padding: const EdgeInsets.all(16.0), child: Row(children: [
-            Text('Total Views: ${views.length}', style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold, color: colors.primary)),
-          ])),
-          Expanded(child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: views.length,
-            itemBuilder: (context, index) {
-              final view = views[index];
-              final timeStr = DateFormat('MMM d, h:mm a').format(view.viewedAt.toLocal());
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.md)),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: colors.surfaceContainerHigh,
-                    backgroundImage: view.viewerAvatarUrl != null ? NetworkImage(view.viewerAvatarUrl!) : null,
-                    child: view.viewerAvatarUrl == null ? Icon(Icons.person, color: colors.onSurface) : null,
-                  ),
-                  title: Text(view.viewerName ?? 'Anonymous Guest', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                  subtitle: Text('Viewed on $timeStr', style: typo.bodySmall),
+        return ListView.builder(
+          padding: const EdgeInsets.all(16), itemCount: views.length,
+          itemBuilder: (context, index) {
+            final view = views[index];
+            final timeStr = DateFormat('MMM d, h:mm a').format(view.viewedAt.toLocal());
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(radius.md),
+                border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
+              ),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                CircleAvatar(
+                  backgroundColor: colors.surfaceContainerHigh,
+                  backgroundImage: view.viewerAvatarUrl != null ? NetworkImage(view.viewerAvatarUrl!) : null,
+                  child: view.viewerAvatarUrl == null ? Icon(Icons.person, color: colors.onSurface) : null,
                 ),
-              );
-            },
-          )),
-        ]);
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(view.viewerName ?? 'Anonymous Guest', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                    IconButton(
+                      icon: const Icon(Icons.chat_outlined, size: 20),
+                      padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat coming soon')));
+                      },
+                    ),
+                  ]),
+                  Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
+                  const SizedBox(height: 4),
+                  Text('Viewed on $timeStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+                ])),
+              ]),
+            );
+          },
+        );
       },
     );
   }
@@ -117,14 +138,35 @@ class _SavesTab extends ConsumerWidget {
           itemBuilder: (context, index) {
             final save = saves[index];
             final dateStr = DateFormat('MMM d, yyyy').format(save.createdAt);
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.md)),
-              child: ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.person)),
-                title: Text('User', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                subtitle: Text('Saved on $dateStr', style: typo.bodySmall),
+            // NOTE: fetchSavedByListing joins user profiles but SavedListing model doesn't have it yet.
+            // For now use placeholder but the design matches.
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(radius.md),
+                border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
               ),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const CircleAvatar(child: Icon(Icons.person)),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text('User', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                    IconButton(
+                      icon: const Icon(Icons.chat_outlined, size: 20),
+                      padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat coming soon')));
+                      },
+                    ),
+                  ]),
+                  Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
+                  const SizedBox(height: 4),
+                  Text('Saved on $dateStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+                ])),
+              ]),
             );
           },
         );
@@ -133,9 +175,9 @@ class _SavesTab extends ConsumerWidget {
   }
 }
 
-/// Orders tab — shows all orders with Accept buttons.
-class _OrdersTab extends ConsumerWidget {
-  const _OrdersTab({required this.listingId});
+/// Offers tab — shows all orders with Accept buttons.
+class _OffersTab extends ConsumerWidget {
+  const _OffersTab({required this.listingId});
   final String listingId;
 
   @override
@@ -145,114 +187,165 @@ class _OrdersTab extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
-    // FIXME: Debug — trace provider state
-    // ignore: avoid_print
-    print('[_OrdersTab] ordersAsync state: $ordersAsync');
-
     return ordersAsync.when(
-      loading: () {
-        // ignore: avoid_print
-        print('[_OrdersTab] STATE: loading');
-        return const Center(child: CircularProgressIndicator());
-      },
-      error: (e, _) {
-        // ignore: avoid_print
-        print('[_OrdersTab] STATE: error — $e');
-        return Center(child: Text('Error: $e'));
-      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
       data: (orders) {
-        // ignore: avoid_print
-        print('[_OrdersTab] STATE: data — ${orders.length} orders');
         if (orders.isEmpty) {
-          return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.receipt_long_outlined, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
-            const SizedBox(height: 12),
-            Text('No orders yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-          ]));
+          return Center(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.receipt_long_outlined, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
+              const SizedBox(height: 12),
+              Text('No offers yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+            ]),
+          );
         }
         return ListView.builder(
-          padding: const EdgeInsets.all(16), itemCount: orders.length,
+          padding: const EdgeInsets.all(16),
+          itemCount: orders.length,
           itemBuilder: (context, index) {
             final order = orders[index];
-            return _OrderCard(order: order, isActing: actionsState.isLoading,
-              onAccept: order.status == 'pending' ? () {
-                ref.read(orderActionsProvider.notifier).acceptOrder(order.id);
-                ref.invalidate(listingOrdersProvider(listingId));
-              } : null);
+            return _buildOrderCard(context, ref, order, actionsState.isLoading);
           },
         );
       },
     );
   }
-}
 
-class _OrderCard extends ConsumerWidget {
-  const _OrderCard({required this.order, required this.isActing, this.onAccept});
-  final Order order;
-  final bool isActing;
-  final VoidCallback? onAccept;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final buyerName = order.buyer?.displayName ?? 'Unknown Buyer';
-    final dateStr = DateFormat('MMM d, yyyy').format(order.createdAt);
-    final isPending = order.status == 'pending';
+  Widget _buildOrderCard(BuildContext context, WidgetRef ref, Order order, bool isActing) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
+    final buyerName = order.buyer?.displayName ?? 'Unknown Buyer';
+    final dateStr = DateFormat('MMM d, h:mm a').format(order.createdAt.toLocal());
+    final isPending = order.status == 'pending';
 
-    final (statusColor, statusLabel) = switch (order.status) {
-      'pending' => (colors.statusPending, 'Pending'),
-      'confirmed' => (colors.statusConfirmed, 'Accepted'),
-      'completed' => (colors.success, 'Completed'),
-      'cancelled' => (colors.statusCancelled, 'Cancelled'),
-      _ => (colors.outlineVariant, order.status),
-    };
+    Color statusColor;
+    String statusLabel;
+    switch (order.status) {
+      case 'pending':
+        statusColor = Colors.orange;
+        statusLabel = 'Pending';
+      case 'confirmed':
+        statusColor = colors.primary;
+        statusLabel = 'Accepted';
+      case 'completed':
+        statusColor = colors.success;
+        statusLabel = 'Completed';
+      case 'cancelled':
+        statusColor = colors.error;
+        statusLabel = 'Cancelled';
+      default:
+        statusColor = colors.outlineVariant;
+        statusLabel = order.status;
+    }
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.md)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            CircleAvatar(backgroundColor: statusColor.withValues(alpha: 0.1), child: Icon(Icons.person, color: statusColor, size: 20)),
-            const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(radius.md),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          CircleAvatar(
+            backgroundColor: statusColor.withValues(alpha: 0.1),
+            backgroundImage: order.buyer?.avatarUrl != null ? NetworkImage(order.buyer!.avatarUrl!) : null,
+            child: order.buyer?.avatarUrl == null ? Icon(Icons.person, color: statusColor, size: 20) : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text(buyerName, style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-              Text('${order.orderType.toUpperCase()} · $dateStr', style: typo.bodySmall),
-            ])),
-            IconButton(
-              icon: const Icon(Icons.chat_outlined, size: 20), tooltip: 'Message buyer',
-              onPressed: () async {
-                final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
-                if (currentUserId == null) return;
-                final chatRepo = ref.read(chatRepositoryProvider);
-                final room = await chatRepo.getOrCreateChatRoom(listingId: order.listingId, buyerId: order.buyerId, sellerId: order.sellerId);
-                if (context.mounted) context.pushNamed(AppRoutes.chatRoom, pathParameters: {'id': room.id});
-              },
+              Row(children: [
+                IconButton(
+                  icon: const Icon(Icons.chat_outlined, size: 20),
+                  padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+                  onPressed: () async {
+                    final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
+                    if (currentUserId == null) return;
+                    final chatRepo = ref.read(chatRepositoryProvider);
+                    final room = await chatRepo.getOrCreateChatRoom(
+                      listingId: order.listingId,
+                      buyerId: order.buyerId,
+                      sellerId: order.sellerId,
+                    );
+                    if (!context.mounted) return;
+                    showChatPopup(
+                      context,
+                      chatRoomId: room.id,
+                      otherUserName: order.buyer?.displayName ?? 'Buyer',
+                      otherUserAvatar: order.buyer?.avatarUrl,
+                      listingTitle: order.listing?.title ?? '',
+                      listingPrice: order.totalPrice,
+                      listingImageUrl: order.listing?.images.firstOrNull?.imageUrl,
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(radius.xl),
+                  ),
+                  child: Text(statusLabel, style: typo.labelSmall.copyWith(
+                    color: statusColor, fontWeight: FontWeight.w700, fontSize: 10,
+                  )),
+                ),
+              ]),
+            ]),
+            Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
+            const SizedBox(height: 4),
+            Text('Submitted on $dateStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+          ])),
+        ]),
+        if (isPending) ...[
+          const SizedBox(height: 16),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(
+              '\$${order.totalPrice.toStringAsFixed(0)}',
+              style: typo.titleMedium.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-              child: Text(statusLabel, style: typo.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.w700)),
+            GestureDetector(
+              onTap: isActing ? null : () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Accept Offer'),
+                    content: Text('Accept this offer from $buyerName? Other pending offers will be cancelled.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: TextButton.styleFrom(foregroundColor: colors.primary),
+                        child: const Text('Accept'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  await ref.read(orderActionsProvider.notifier).acceptOrder(order.id);
+                  if (!context.mounted) return;
+                  context.goNamed(AppRoutes.sellerCenter);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                decoration: BoxDecoration(
+                  color: colors.primary,
+                  borderRadius: BorderRadius.circular(radius.button),
+                ),
+                child: Text(isActing ? '...' : 'Accept',
+                  style: typo.labelLarge.copyWith(color: colors.onPrimary, fontWeight: FontWeight.bold)),
+              ),
             ),
           ]),
-          if (isPending && onAccept != null) ...[
-            const SizedBox(height: 12),
-            Row(children: [
-              Expanded(child: Text('\$${order.totalPrice.toStringAsFixed(0)}',
-                style: typo.titleMedium.copyWith(color: colors.primary, fontWeight: FontWeight.bold))),
-              ElevatedButton(
-                onPressed: isActing ? null : onAccept,
-                style: ElevatedButton.styleFrom(backgroundColor: colors.success,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.sm))),
-                child: Text(isActing ? 'Processing...' : 'Accept', style: TextStyle(color: colors.onPrimary)),
-              ),
-            ]),
-          ],
-        ]),
-      ),
+        ],
+      ]),
     );
   }
 }

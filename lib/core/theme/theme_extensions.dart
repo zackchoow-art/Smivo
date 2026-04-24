@@ -13,22 +13,24 @@ export 'smivo_typography.dart';
 /// Convenience extensions on [BuildContext] to access Smivo theme tokens.
 ///
 /// Usage: `context.smivoColors.primary`, `context.smivoRadius.card`, etc.
-/// These are null-safe shortcuts that avoid the verbose
-/// `Theme.of(context).extension<SmivoColors>()!` pattern.
+///
+/// NOTE: Uses null-aware fallback instead of `!` to prevent
+/// Unexpected null value crashes in edge cases (e.g. nested
+/// ConsumerWidget inside TabBarView/PageView).
 extension SmivoThemeExtension on BuildContext {
   /// Semantic color palette for the active theme variant.
   SmivoColors get smivoColors =>
-      Theme.of(this).extension<SmivoColors>()!;
+      Theme.of(this).extension<SmivoColors>() ?? SmivoColors.teal();
 
   /// Border-radius tokens for the active theme variant.
   SmivoRadius get smivoRadius =>
-      Theme.of(this).extension<SmivoRadius>()!;
+      Theme.of(this).extension<SmivoRadius>() ?? SmivoRadius.teal();
 
   /// Shadow tokens for the active theme variant.
   SmivoShadows get smivoShadows =>
-      Theme.of(this).extension<SmivoShadows>()!;
+      Theme.of(this).extension<SmivoShadows>() ?? SmivoShadows.teal();
 
   /// Typography tokens for the active theme variant.
   SmivoTypography get smivoTypo =>
-      Theme.of(this).extension<SmivoTypography>()!;
+      Theme.of(this).extension<SmivoTypography>() ?? SmivoTypography.teal();
 }

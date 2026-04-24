@@ -137,13 +137,4 @@ class AppTheme {
       extensions: [colors, radius, shadows, typo],
     );
   }
-
-  /// Legacy getter for backward compatibility during migration.
-  ///
-  /// Delegates to [buildTheme] with [SmivoThemeVariant.teal].
-  /// Widgets and tests that still reference [AppTheme.lightTheme]
-  /// will continue to work unchanged.
-  @Deprecated('Use AppTheme.buildTheme(variant) instead. '
-      'This getter will be removed after the theme migration.')
-  static ThemeData get lightTheme => buildTheme(SmivoThemeVariant.teal);
 }

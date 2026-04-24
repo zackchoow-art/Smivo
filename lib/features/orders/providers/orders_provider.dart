@@ -157,11 +157,21 @@ class OrderActions extends _$OrderActions {
   }
 
   /// Seller accepts a pending order, transitioning it to 'confirmed'.
+  /// Also cancels all other pending orders for the same listing.
   Future<void> acceptOrder(String orderId) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(orderRepositoryProvider)
-          .updateOrderStatus(orderId, 'confirmed');
+      final repo = ref.read(orderRepositoryProvider);
+      
+      // 1. Fetch order to get listingId
+      final order = await repo.fetchOrder(orderId);
+      
+      // 2. Update status to confirmed
+      await repo.updateOrderStatus(orderId, 'confirmed');
+      
+      // 3. Cancel other pending orders
+      await repo.cancelOtherPendingOrders(order.listingId, orderId);
+      
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
       state = const AsyncValue.data(null);

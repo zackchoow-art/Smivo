@@ -56,19 +56,20 @@ class OrderRepository {
   }
 
   /// Fetches all orders for a specific listing.
+  ///
+  /// NOTE: Uses a two-step query to avoid PostgREST join ambiguity
+  /// with multiple user_profiles foreign keys (buyer_id, seller_id).
   Future<List<Order>> fetchOrdersByListing(String listingId) async {
     try {
-      // FIXME: Debug — simple query first to isolate join issues
+      // Step 1: Simple query to get order IDs for this listing
       final rawData = await _client
           .from(AppConstants.tableOrders)
           .select()
           .eq('listing_id', listingId);
-      // ignore: avoid_print
-      print('[fetchOrdersByListing] RAW query for listingId=$listingId returned ${rawData.length} rows');
 
       if (rawData.isEmpty) return [];
 
-      // Fetch with full joins using order IDs from the raw query
+      // Step 2: Fetch with full joins using the known order IDs
       final orderIds = rawData.map((r) => r['id'] as String).toList();
       final data = await _client
           .from(AppConstants.tableOrders)
@@ -81,17 +82,9 @@ class OrderRepository {
           ''')
           .inFilter('id', orderIds)
           .order('created_at', ascending: false);
-      // ignore: avoid_print
-      print('[fetchOrdersByListing] JOIN query returned ${data.length} rows');
       return data.map((json) => Order.fromJson(json)).toList();
     } on PostgrestException catch (e) {
-      // ignore: avoid_print
-      print('[fetchOrdersByListing] PostgrestException: ${e.message}');
       throw DatabaseException(e.message, e);
-    } catch (e) {
-      // ignore: avoid_print
-      print('[fetchOrdersByListing] Unexpected error: $e');
-      rethrow;
     }
   }
 
@@ -235,6 +228,20 @@ class OrderRepository {
           .maybeSingle();
       if (data == null) return null;
       return Order.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Cancels all other pending orders for a listing when one is accepted.
+  Future<void> cancelOtherPendingOrders(String listingId, String acceptedOrderId) async {
+    try {
+      await _client
+          .from(AppConstants.tableOrders)
+          .update({'status': 'cancelled'})
+          .eq('listing_id', listingId)
+          .eq('status', 'pending')
+          .neq('id', acceptedOrderId);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

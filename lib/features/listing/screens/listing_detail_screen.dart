@@ -121,7 +121,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     const SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.sm)),
+                      decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.input)),
                       child: !listing.allowPickupChange
                         ? Container(alignment: Alignment.centerLeft, height: 48,
                             child: Text(listing.pickupLocation?.name ?? 'Not specified', style: typo.titleMedium.copyWith(color: colors.onSurface)))
@@ -178,22 +178,39 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   Text('LISTING STATS', style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
                   const SizedBox(height: 8),
                   Row(children: [
-                    _StatCard(icon: Icons.visibility_outlined, label: 'Views', count: listing.viewCount),
-                    const SizedBox(width: 12),
-                    _StatCard(icon: Icons.bookmark_outline, label: 'Saves', count: listing.saveCount),
-                    const SizedBox(width: 12),
-                    _StatCard(icon: Icons.chat_bubble_outline, label: 'Inquiries', count: listing.inquiryCount),
-                  ]),
-                  const SizedBox(height: 24),
-                  SizedBox(width: double.infinity, child: OutlinedButton.icon(
-                    onPressed: () => context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}),
-                    icon: const Icon(Icons.manage_search), label: const Text('Manage Transactions'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: BorderSide(color: colors.primary.withValues(alpha: 0.5)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.sm)),
+                    _StatCard(
+                      icon: Icons.visibility_outlined,
+                      label: 'Views',
+                      count: listing.viewCount,
+                      onTap: () => context.pushNamed(
+                        AppRoutes.transactionManagement,
+                        pathParameters: {'id': listing.id},
+                        queryParameters: {'tab': '0'},
+                      ),
                     ),
-                  )),
+                    const SizedBox(width: 12),
+                    _StatCard(
+                      icon: Icons.bookmark_outline,
+                      label: 'Saves',
+                      count: listing.saveCount,
+                      onTap: () => context.pushNamed(
+                        AppRoutes.transactionManagement,
+                        pathParameters: {'id': listing.id},
+                        queryParameters: {'tab': '1'},
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _StatCard(
+                      icon: Icons.local_offer_outlined,
+                      label: 'Offers',
+                      count: listing.inquiryCount,
+                      onTap: () => context.pushNamed(
+                        AppRoutes.transactionManagement,
+                        pathParameters: {'id': listing.id},
+                        queryParameters: {'tab': '2'},
+                      ),
+                    ),
+                  ]),
                   const SizedBox(height: 24),
                 ],
                 // Primary Action Button — hidden on own listing
@@ -205,7 +222,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       final submittedDate = DateFormat('MMM d, yyyy · h:mm a').format(order.createdAt.toLocal());
                       return Container(
                         width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.sm)),
+                        decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.card)),
                         child: Column(children: [
                           Icon(Icons.check_circle, color: colors.success, size: 28),
                           const SizedBox(height: 4),
@@ -270,7 +287,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.primary, padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.sm)), elevation: 0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.button)), elevation: 0),
                       child: Text(isSale ? 'Place Order' : 'Request to Rent', style: typo.titleMedium.copyWith(color: colors.onPrimary)),
                     ));
                   },
@@ -315,25 +332,34 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.icon, required this.label, required this.count});
+  const _StatCard({
+    required this.icon,
+    required this.label,
+    required this.count,
+    this.onTap,
+  });
   final IconData icon;
   final String label;
   final int count;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    return Expanded(child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.md)),
-      child: Column(children: [
-        Icon(icon, color: colors.primary, size: 24),
-        const SizedBox(height: 4),
-        Text(count.toString(), style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
-        Text(label, style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
-      ]),
+    return Expanded(child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.md)),
+        child: Column(children: [
+          Icon(icon, color: colors.primary, size: 24),
+          const SizedBox(height: 4),
+          Text(count.toString(), style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+          Text(label, style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
+        ]),
+      ),
     ));
   }
 }
