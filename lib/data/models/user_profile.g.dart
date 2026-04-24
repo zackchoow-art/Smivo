@@ -26,6 +26,8 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
       json['updated_at'] == null
           ? null
           : DateTime.parse(json['updated_at'] as String),
+  emailNotificationsEnabled:
+      json['email_notifications_enabled'] as bool? ?? true,
 );
 
 Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
@@ -40,4 +42,5 @@ Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
       'schoolData': instance.schoolData,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
+      'email_notifications_enabled': instance.emailNotificationsEnabled,
     };

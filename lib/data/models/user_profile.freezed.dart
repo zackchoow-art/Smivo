@@ -16,7 +16,8 @@ T _$identity<T>(T value) => value;
 mixin _$UserProfile {
 
  String get id; String get email;@JsonKey(name: 'display_name') String? get displayName;@JsonKey(name: 'avatar_url') String? get avatarUrl; String get school;@JsonKey(name: 'school_id') String get schoolId;@JsonKey(name: 'is_verified') bool get isVerified;// Nested join — populated when querying with school join
- School? get schoolData;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
+ School? get schoolData;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;// User preference for receiving email notifications
+@JsonKey(name: 'email_notifications_enabled') bool get emailNotificationsEnabled;
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +30,16 @@ $UserProfileCopyWith<UserProfile> get copyWith => _$UserProfileCopyWithImpl<User
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.school, school) || other.school == school)&&(identical(other.schoolId, schoolId) || other.schoolId == schoolId)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified)&&(identical(other.schoolData, schoolData) || other.schoolData == schoolData)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.school, school) || other.school == school)&&(identical(other.schoolId, schoolId) || other.schoolId == schoolId)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified)&&(identical(other.schoolData, schoolData) || other.schoolData == schoolData)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.emailNotificationsEnabled, emailNotificationsEnabled) || other.emailNotificationsEnabled == emailNotificationsEnabled));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,displayName,avatarUrl,school,schoolId,isVerified,schoolData,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,email,displayName,avatarUrl,school,schoolId,isVerified,schoolData,createdAt,updatedAt,emailNotificationsEnabled);
 
 @override
 String toString() {
-  return 'UserProfile(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, school: $school, schoolId: $schoolId, isVerified: $isVerified, schoolData: $schoolData, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'UserProfile(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, school: $school, schoolId: $schoolId, isVerified: $isVerified, schoolData: $schoolData, createdAt: $createdAt, updatedAt: $updatedAt, emailNotificationsEnabled: $emailNotificationsEnabled)';
 }
 
 
@@ -49,7 +50,7 @@ abstract mixin class $UserProfileCopyWith<$Res>  {
   factory $UserProfileCopyWith(UserProfile value, $Res Function(UserProfile) _then) = _$UserProfileCopyWithImpl;
 @useResult
 $Res call({
- String id, String email,@JsonKey(name: 'display_name') String? displayName,@JsonKey(name: 'avatar_url') String? avatarUrl, String school,@JsonKey(name: 'school_id') String schoolId,@JsonKey(name: 'is_verified') bool isVerified, School? schoolData,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id, String email,@JsonKey(name: 'display_name') String? displayName,@JsonKey(name: 'avatar_url') String? avatarUrl, String school,@JsonKey(name: 'school_id') String schoolId,@JsonKey(name: 'is_verified') bool isVerified, School? schoolData,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt,@JsonKey(name: 'email_notifications_enabled') bool emailNotificationsEnabled
 });
 
 
@@ -66,7 +67,7 @@ class _$UserProfileCopyWithImpl<$Res>
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? displayName = freezed,Object? avatarUrl = freezed,Object? school = null,Object? schoolId = null,Object? isVerified = null,Object? schoolData = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? displayName = freezed,Object? avatarUrl = freezed,Object? school = null,Object? schoolId = null,Object? isVerified = null,Object? schoolData = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? emailNotificationsEnabled = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -78,7 +79,8 @@ as String,isVerified: null == isVerified ? _self.isVerified : isVerified // igno
 as bool,schoolData: freezed == schoolData ? _self.schoolData : schoolData // ignore: cast_nullable_to_non_nullable
 as School?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,emailNotificationsEnabled: null == emailNotificationsEnabled ? _self.emailNotificationsEnabled : emailNotificationsEnabled // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of UserProfile
@@ -175,10 +177,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email, @JsonKey(name: 'display_name')  String? displayName, @JsonKey(name: 'avatar_url')  String? avatarUrl,  String school, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'is_verified')  bool isVerified,  School? schoolData, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email, @JsonKey(name: 'display_name')  String? displayName, @JsonKey(name: 'avatar_url')  String? avatarUrl,  String school, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'is_verified')  bool isVerified,  School? schoolData, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'email_notifications_enabled')  bool emailNotificationsEnabled)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserProfile() when $default != null:
-return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.school,_that.schoolId,_that.isVerified,_that.schoolData,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.school,_that.schoolId,_that.isVerified,_that.schoolData,_that.createdAt,_that.updatedAt,_that.emailNotificationsEnabled);case _:
   return orElse();
 
 }
@@ -196,10 +198,10 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.sch
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email, @JsonKey(name: 'display_name')  String? displayName, @JsonKey(name: 'avatar_url')  String? avatarUrl,  String school, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'is_verified')  bool isVerified,  School? schoolData, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email, @JsonKey(name: 'display_name')  String? displayName, @JsonKey(name: 'avatar_url')  String? avatarUrl,  String school, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'is_verified')  bool isVerified,  School? schoolData, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'email_notifications_enabled')  bool emailNotificationsEnabled)  $default,) {final _that = this;
 switch (_that) {
 case _UserProfile():
-return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.school,_that.schoolId,_that.isVerified,_that.schoolData,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.school,_that.schoolId,_that.isVerified,_that.schoolData,_that.createdAt,_that.updatedAt,_that.emailNotificationsEnabled);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -216,10 +218,10 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.sch
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email, @JsonKey(name: 'display_name')  String? displayName, @JsonKey(name: 'avatar_url')  String? avatarUrl,  String school, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'is_verified')  bool isVerified,  School? schoolData, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email, @JsonKey(name: 'display_name')  String? displayName, @JsonKey(name: 'avatar_url')  String? avatarUrl,  String school, @JsonKey(name: 'school_id')  String schoolId, @JsonKey(name: 'is_verified')  bool isVerified,  School? schoolData, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'email_notifications_enabled')  bool emailNotificationsEnabled)?  $default,) {final _that = this;
 switch (_that) {
 case _UserProfile() when $default != null:
-return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.school,_that.schoolId,_that.isVerified,_that.schoolData,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.school,_that.schoolId,_that.isVerified,_that.schoolData,_that.createdAt,_that.updatedAt,_that.emailNotificationsEnabled);case _:
   return null;
 
 }
@@ -231,7 +233,7 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.sch
 @JsonSerializable()
 
 class _UserProfile implements UserProfile {
-  const _UserProfile({required this.id, required this.email, @JsonKey(name: 'display_name') this.displayName, @JsonKey(name: 'avatar_url') this.avatarUrl, this.school = 'Smith College', @JsonKey(name: 'school_id') required this.schoolId, @JsonKey(name: 'is_verified') this.isVerified = false, this.schoolData, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt});
+  const _UserProfile({required this.id, required this.email, @JsonKey(name: 'display_name') this.displayName, @JsonKey(name: 'avatar_url') this.avatarUrl, this.school = 'Smith College', @JsonKey(name: 'school_id') required this.schoolId, @JsonKey(name: 'is_verified') this.isVerified = false, this.schoolData, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt, @JsonKey(name: 'email_notifications_enabled') this.emailNotificationsEnabled = true});
   factory _UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
 
 @override final  String id;
@@ -245,6 +247,8 @@ class _UserProfile implements UserProfile {
 @override final  School? schoolData;
 @override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime? updatedAt;
+// User preference for receiving email notifications
+@override@JsonKey(name: 'email_notifications_enabled') final  bool emailNotificationsEnabled;
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
@@ -259,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.school, school) || other.school == school)&&(identical(other.schoolId, schoolId) || other.schoolId == schoolId)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified)&&(identical(other.schoolData, schoolData) || other.schoolData == schoolData)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.school, school) || other.school == school)&&(identical(other.schoolId, schoolId) || other.schoolId == schoolId)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified)&&(identical(other.schoolData, schoolData) || other.schoolData == schoolData)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.emailNotificationsEnabled, emailNotificationsEnabled) || other.emailNotificationsEnabled == emailNotificationsEnabled));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,displayName,avatarUrl,school,schoolId,isVerified,schoolData,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,email,displayName,avatarUrl,school,schoolId,isVerified,schoolData,createdAt,updatedAt,emailNotificationsEnabled);
 
 @override
 String toString() {
-  return 'UserProfile(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, school: $school, schoolId: $schoolId, isVerified: $isVerified, schoolData: $schoolData, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'UserProfile(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, school: $school, schoolId: $schoolId, isVerified: $isVerified, schoolData: $schoolData, createdAt: $createdAt, updatedAt: $updatedAt, emailNotificationsEnabled: $emailNotificationsEnabled)';
 }
 
 
@@ -279,7 +283,7 @@ abstract mixin class _$UserProfileCopyWith<$Res> implements $UserProfileCopyWith
   factory _$UserProfileCopyWith(_UserProfile value, $Res Function(_UserProfile) _then) = __$UserProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email,@JsonKey(name: 'display_name') String? displayName,@JsonKey(name: 'avatar_url') String? avatarUrl, String school,@JsonKey(name: 'school_id') String schoolId,@JsonKey(name: 'is_verified') bool isVerified, School? schoolData,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id, String email,@JsonKey(name: 'display_name') String? displayName,@JsonKey(name: 'avatar_url') String? avatarUrl, String school,@JsonKey(name: 'school_id') String schoolId,@JsonKey(name: 'is_verified') bool isVerified, School? schoolData,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt,@JsonKey(name: 'email_notifications_enabled') bool emailNotificationsEnabled
 });
 
 
@@ -296,7 +300,7 @@ class __$UserProfileCopyWithImpl<$Res>
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? displayName = freezed,Object? avatarUrl = freezed,Object? school = null,Object? schoolId = null,Object? isVerified = null,Object? schoolData = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? displayName = freezed,Object? avatarUrl = freezed,Object? school = null,Object? schoolId = null,Object? isVerified = null,Object? schoolData = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,Object? emailNotificationsEnabled = null,}) {
   return _then(_UserProfile(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -308,7 +312,8 @@ as String,isVerified: null == isVerified ? _self.isVerified : isVerified // igno
 as bool,schoolData: freezed == schoolData ? _self.schoolData : schoolData // ignore: cast_nullable_to_non_nullable
 as School?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,emailNotificationsEnabled: null == emailNotificationsEnabled ? _self.emailNotificationsEnabled : emailNotificationsEnabled // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

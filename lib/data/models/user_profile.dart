@@ -19,6 +19,8 @@ abstract class UserProfile with _$UserProfile {
     School? schoolData,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
+    // User preference for receiving email notifications
+    @JsonKey(name: 'email_notifications_enabled') @Default(true) bool emailNotificationsEnabled,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

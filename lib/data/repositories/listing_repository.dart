@@ -267,6 +267,21 @@ class ListingRepository {
     }
   }
 
+  /// Updates a listing's status to a specific value.
+  ///
+  /// Valid statuses: active, inactive, reserved, sold, rented.
+  /// Used for automatic lifecycle transitions (e.g., sold on accept).
+  Future<void> updateListingStatus(String id, String status) async {
+    try {
+      await _client
+          .from(AppConstants.tableListings)
+          .update({'status': status})
+          .eq('id', id);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Delists a listing by setting its status to 'inactive'.
   ///
   /// NOTE: DB CHECK constraint only allows: active, inactive, reserved,

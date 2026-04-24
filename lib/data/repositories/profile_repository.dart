@@ -77,6 +77,23 @@ class ProfileRepository {
       );
     }
   }
+  /// Updates the user's email notification preference.
+  ///
+  /// Isolated update — only touches the email_notifications_enabled column
+  /// to avoid accidentally overwriting other profile data.
+  Future<void> updateEmailNotificationPref({
+    required String userId,
+    required bool enabled,
+  }) async {
+    try {
+      await _client
+          .from('user_profiles')
+          .update({'email_notifications_enabled': enabled})
+          .eq('id', userId);
+    } on supabase.PostgrestException catch (e) {
+      throw AppException.database('Failed to update email pref: ${e.message}', e);
+    }
+  }
 }
 
 @riverpod

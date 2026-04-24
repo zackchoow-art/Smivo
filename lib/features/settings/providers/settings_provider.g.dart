@@ -148,5 +148,26 @@ final weeklyEmailDigestNotifStateProvider =
     );
 
 typedef _$WeeklyEmailDigestNotifState = AutoDisposeNotifier<bool>;
+String _$emailNotificationsStateHash() =>
+    r'd5eaf316ee9a748ab8b1839523ede02a647b8169';
+
+/// Persisted email notification preference — reads from user profile,
+/// writes to DB via profile repository.
+///
+/// Copied from [EmailNotificationsState].
+@ProviderFor(EmailNotificationsState)
+final emailNotificationsStateProvider =
+    AutoDisposeNotifierProvider<EmailNotificationsState, bool>.internal(
+      EmailNotificationsState.new,
+      name: r'emailNotificationsStateProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$emailNotificationsStateHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$EmailNotificationsState = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

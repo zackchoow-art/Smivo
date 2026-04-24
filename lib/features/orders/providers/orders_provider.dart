@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/order.dart';
+import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/data/repositories/order_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 
@@ -158,12 +159,13 @@ class OrderActions extends _$OrderActions {
 
   /// Seller accepts a pending order, transitioning it to 'confirmed'.
   /// Also cancels all other pending orders for the same listing.
+  /// For sale orders: listing status → 'sold' (removed from home feed).
   Future<void> acceptOrder(String orderId) async {
     state = const AsyncValue.loading();
     try {
       final repo = ref.read(orderRepositoryProvider);
       
-      // 1. Fetch order to get listingId
+      // 1. Fetch order to get listingId and orderType
       final order = await repo.fetchOrder(orderId);
       
       // 2. Update status to confirmed
@@ -171,6 +173,13 @@ class OrderActions extends _$OrderActions {
       
       // 3. Cancel other pending orders
       await repo.cancelOtherPendingOrders(order.listingId, orderId);
+      
+      // 4. Sale: auto-mark listing as 'sold' (removes from home feed)
+      //    Rental: keep listing active until delivery is confirmed
+      if (order.orderType == 'sale') {
+        await ref.read(listingRepositoryProvider)
+            .updateListingStatus(order.listingId, 'sold');
+      }
       
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
@@ -236,6 +245,10 @@ class OrderActions extends _$OrderActions {
             updated.rentalStatus == null) {
           await ref.read(orderRepositoryProvider)
               .updateRentalStatus(order.id, 'active');
+          // NOTE: Mark listing as 'rented' once rental is active
+          // This removes it from the home feed
+          await ref.read(listingRepositoryProvider)
+              .updateListingStatus(order.listingId, 'rented');
         }
       }
 
