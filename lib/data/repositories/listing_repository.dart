@@ -267,6 +267,21 @@ class ListingRepository {
     }
   }
 
+  /// Delists a listing by setting its status to 'inactive'.
+  ///
+  /// NOTE: DB CHECK constraint only allows: active, inactive, reserved,
+  /// sold, rented. 'cancelled' is NOT a valid listing status.
+  Future<void> delistListing(String id) async {
+    try {
+      await _client
+          .from(AppConstants.tableListings)
+          .update({'status': 'inactive'})
+          .eq('id', id);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Records a view event for a listing.
   /// Silently fails if the insert errors (non-critical).
   Future<void> recordView({

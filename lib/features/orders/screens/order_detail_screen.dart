@@ -62,7 +62,10 @@ class OrderDetailScreen extends ConsumerWidget {
         ],
         if (order.status == 'confirmed' || order.status == 'completed') _buildDeliveryStatus(context, order),
         if (order.status == 'confirmed' || order.status == 'completed') ...[
-          EvidencePhotoSection(orderId: order.id, canUpload: order.status == 'confirmed' && (isBuyer || isSeller)),
+          EvidencePhotoSection(
+            orderId: order.id,
+            canUpload: _canUploadEvidence(order, isBuyer, isSeller),
+          ),
           const SizedBox(height: 16),
         ],
         Builder(builder: (context) {
@@ -383,6 +386,21 @@ class OrderDetailScreen extends ConsumerWidget {
         TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Yes')),
       ],
     ));
+  }
+
+  bool _canUploadEvidence(Order order, bool isBuyer, bool isSeller) {
+    if (!isBuyer && !isSeller) return false;
+
+    if (order.orderType == 'sale') {
+      // Sale: allow upload only before delivery is confirmed
+      return order.status == 'confirmed' &&
+          !(order.deliveryConfirmedByBuyer) &&
+          !(order.deliveryConfirmedBySeller);
+    } else {
+      // Rental: allow upload during active/return phases
+      final rs = order.rentalStatus;
+      return rs == 'active' || rs == 'return_requested';
+    }
   }
 }
 

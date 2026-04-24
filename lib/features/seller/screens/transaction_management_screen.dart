@@ -149,11 +149,19 @@ class _SavesTab extends ConsumerWidget {
                 border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
               ),
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const CircleAvatar(child: Icon(Icons.person)),
+                CircleAvatar(
+                  backgroundColor: colors.surfaceContainerHigh,
+                  backgroundImage: save.user?.avatarUrl != null && save.user!.avatarUrl!.isNotEmpty
+                      ? NetworkImage(save.user!.avatarUrl!)
+                      : null,
+                  child: save.user?.avatarUrl == null || save.user!.avatarUrl!.isEmpty
+                      ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5))
+                      : null,
+                ),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text('User', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                    Text(save.user?.displayName ?? 'Anonymous User', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                     IconButton(
                       icon: const Icon(Icons.chat_outlined, size: 20),
                       padding: EdgeInsets.zero, constraints: const BoxConstraints(),
@@ -251,9 +259,13 @@ class _OffersTab extends ConsumerWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           CircleAvatar(
-            backgroundColor: statusColor.withValues(alpha: 0.1),
-            backgroundImage: order.buyer?.avatarUrl != null ? NetworkImage(order.buyer!.avatarUrl!) : null,
-            child: order.buyer?.avatarUrl == null ? Icon(Icons.person, color: statusColor, size: 20) : null,
+            backgroundColor: colors.surfaceContainerHigh,
+            backgroundImage: order.buyer?.avatarUrl != null && order.buyer!.avatarUrl!.isNotEmpty
+                ? NetworkImage(order.buyer!.avatarUrl!)
+                : null,
+            child: order.buyer?.avatarUrl == null || order.buyer!.avatarUrl!.isEmpty
+                ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 20)
+                : null,
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -280,6 +292,7 @@ class _OffersTab extends ConsumerWidget {
                       otherUserAvatar: order.buyer?.avatarUrl,
                       listingTitle: order.listing?.title ?? '',
                       listingPrice: order.totalPrice,
+                      priceLabel: order.orderType == 'rental' ? _formatRentalSummary(order) : null,
                       listingImageUrl: order.listing?.images.firstOrNull?.imageUrl,
                     );
                   },
@@ -330,7 +343,7 @@ class _OffersTab extends ConsumerWidget {
                 if (confirmed == true) {
                   await ref.read(orderActionsProvider.notifier).acceptOrder(order.id);
                   if (!context.mounted) return;
-                  context.goNamed(AppRoutes.sellerCenter);
+                  context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id});
                 }
               },
               child: Container(
@@ -348,4 +361,14 @@ class _OffersTab extends ConsumerWidget {
       ]),
     );
   }
+}
+
+String _formatRentalSummary(Order order) {
+  if (order.rentalStartDate == null || order.rentalEndDate == null) {
+    return 'Total: \$${order.totalPrice.toStringAsFixed(0)}';
+  }
+  final days = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+  final duration = days > 0 ? days : 1;
+  final unitLabel = duration == 1 ? 'Day' : 'Days';
+  return '$duration $unitLabel, Total: \$${order.totalPrice.toStringAsFixed(0)}';
 }

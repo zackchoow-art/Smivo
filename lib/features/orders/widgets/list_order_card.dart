@@ -110,7 +110,9 @@ class ListOrderCard extends ConsumerWidget {
       if (!context.mounted) return;
       showChatPopup(context, chatRoomId: chatRoom.id,
         otherUserName: otherProfile?.displayName ?? 'User', otherUserAvatar: otherProfile?.avatarUrl,
-        listingTitle: order.listing?.title ?? 'Order', listingPrice: order.totalPrice,
+        listingTitle: order.listing?.title ?? 'Order',
+        listingPrice: order.totalPrice,
+        priceLabel: order.orderType == 'rental' ? _formatRentalSummary(order) : null,
         listingImageUrl: order.listing?.images.firstOrNull?.imageUrl);
     } catch (e) {
       if (!context.mounted) return;
@@ -122,4 +124,14 @@ class ListOrderCard extends ConsumerWidget {
     'pending' => 'Action Needed', 'confirmed' => 'In Progress',
     'completed' => 'Completed', 'cancelled' => 'Cancelled', _ => s.toUpperCase(),
   };
+
+  String _formatRentalSummary(Order order) {
+    if (order.rentalStartDate == null || order.rentalEndDate == null) {
+      return 'Total: \$${order.totalPrice.toStringAsFixed(0)}';
+    }
+    final days = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+    final duration = days > 0 ? days : 1;
+    final unitLabel = duration == 1 ? 'Day' : 'Days';
+    return '$duration $unitLabel, Total: \$${order.totalPrice.toStringAsFixed(0)}';
+  }
 }

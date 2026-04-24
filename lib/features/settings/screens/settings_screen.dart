@@ -17,7 +17,7 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: const CustomAppBar(showBackButton: true),
+      appBar: const CustomAppBar(showBackButton: true, showActions: false),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),

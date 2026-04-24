@@ -17,6 +17,7 @@ Future<void> showChatPopup(
   required String listingTitle,
   required double listingPrice,
   String? listingImageUrl,
+  String? priceLabel,
 }) {
   return showGeneralDialog(
     context: context,
@@ -35,6 +36,7 @@ Future<void> showChatPopup(
             listingTitle: listingTitle,
             listingPrice: listingPrice,
             listingImageUrl: listingImageUrl,
+            priceLabel: priceLabel,
           ),
         ),
       );
@@ -63,6 +65,7 @@ class ChatPopupWidget extends ConsumerStatefulWidget {
     required this.listingTitle,
     required this.listingPrice,
     this.listingImageUrl,
+    this.priceLabel,
   });
 
   final String chatRoomId;
@@ -71,6 +74,7 @@ class ChatPopupWidget extends ConsumerStatefulWidget {
   final String listingTitle;
   final double listingPrice;
   final String? listingImageUrl;
+  final String? priceLabel;
 
   @override
   ConsumerState<ChatPopupWidget> createState() => _ChatPopupWidgetState();
@@ -163,11 +167,12 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundImage: widget.otherUserAvatar != null
+                      backgroundColor: colors.surfaceContainerHigh,
+                      backgroundImage: widget.otherUserAvatar != null && widget.otherUserAvatar!.isNotEmpty
                           ? NetworkImage(widget.otherUserAvatar!)
                           : null,
-                      child: widget.otherUserAvatar == null
-                          ? const Icon(Icons.person)
+                      child: widget.otherUserAvatar == null || widget.otherUserAvatar!.isEmpty
+                          ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 28)
                           : null,
                     ),
                     const SizedBox(width: 12),
@@ -246,7 +251,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                         ),
                       ),
                       Text(
-                        '\$${widget.listingPrice.toStringAsFixed(0)}',
+                        widget.priceLabel ?? '\$${widget.listingPrice.toStringAsFixed(0)}',
                         style: typo.labelLarge.copyWith(
                           color: colors.primary,
                           fontWeight: FontWeight.w800,
@@ -387,8 +392,9 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
           children: [
             CircleAvatar(
               radius: 12,
-              backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-              child: avatarUrl == null ? const Icon(Icons.person, size: 12) : null,
+              backgroundColor: colors.surfaceContainerHigh,
+              backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+              child: avatarUrl == null || avatarUrl.isEmpty ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 12) : null,
             ),
             const SizedBox(width: 8),
             Flexible(
@@ -470,8 +476,9 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 12,
-              backgroundImage: myAvatarUrl != null ? NetworkImage(myAvatarUrl) : null,
-              child: myAvatarUrl == null ? const Icon(Icons.person, size: 12) : null,
+              backgroundColor: colors.surfaceContainerHigh,
+              backgroundImage: myAvatarUrl != null && myAvatarUrl.isNotEmpty ? NetworkImage(myAvatarUrl) : null,
+              child: myAvatarUrl == null || myAvatarUrl.isEmpty ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 12) : null,
             ),
           ],
         ),

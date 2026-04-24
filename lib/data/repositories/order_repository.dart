@@ -246,6 +246,19 @@ class OrderRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  /// Cancels all pending orders for a listing (used when delisting).
+  Future<void> cancelAllPendingOrders(String listingId) async {
+    try {
+      await _client
+          .from(AppConstants.tableOrders)
+          .update({'status': 'cancelled'})
+          .eq('listing_id', listingId)
+          .eq('status', 'pending');
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod

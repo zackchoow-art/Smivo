@@ -13,6 +13,10 @@ _SavedListing _$SavedListingFromJson(Map<String, dynamic> json) =>
       listingId: json['listing_id'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      user:
+          json['user'] == null
+              ? null
+              : UserProfile.fromJson(json['user'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$SavedListingToJson(_SavedListing instance) =>
@@ -22,4 +26,5 @@ Map<String, dynamic> _$SavedListingToJson(_SavedListing instance) =>
       'listing_id': instance.listingId,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
+      'user': instance.user,
     };

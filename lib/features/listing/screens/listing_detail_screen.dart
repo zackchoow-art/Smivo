@@ -14,6 +14,10 @@ import 'package:intl/intl.dart';
 import 'package:smivo/features/listing/providers/saved_listing_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
+import 'package:smivo/data/models/listing.dart';
+import 'package:smivo/data/repositories/listing_repository.dart';
+import 'package:smivo/data/repositories/order_repository.dart';
+import 'package:smivo/data/models/order.dart';
 
 String _conditionLabel(String condition) {
   switch (condition) {
@@ -62,6 +66,37 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             child: Text('OK', style: TextStyle(color: colors.onPrimary)),
           ),
         ]),
+      ),
+    );
+  }
+
+  void _showDelistDialog(BuildContext context, WidgetRef ref, Listing listing) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delist Item'),
+        content: Text('Are you sure you want to delist "${listing.title}"? '
+          'This will cancel all pending offers and remove it from the marketplace.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Keep Listed')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              // 1. Update listing status to cancelled
+              final listingRepo = ref.read(listingRepositoryProvider);
+              await listingRepo.delistListing(listing.id);
+              // 2. Cancel all pending orders for this listing
+              final orderRepo = ref.read(orderRepositoryProvider);
+              await orderRepo.cancelAllPendingOrders(listing.id);
+              // 3. Navigate back
+              if (context.mounted) {
+                context.goNamed(AppRoutes.sellerCenter);
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delist'),
+          ),
+        ],
       ),
     );
   }
@@ -163,9 +198,22 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       final chatRoom = await ref.read(chatRepositoryProvider).getOrCreateChatRoom(
                         listingId: listing.id, buyerId: user.id, sellerId: listing.sellerId);
                       if (!context.mounted) return;
-                      showChatPopup(context, chatRoomId: chatRoom.id, otherUserName: listing.seller?.displayName ?? 'Seller',
-                        otherUserAvatar: listing.seller?.avatarUrl, listingTitle: listing.title,
-                        listingPrice: listing.price, listingImageUrl: listing.images.firstOrNull?.imageUrl);
+
+                      // Use existing order info if available
+                      final order = existingOrder.valueOrNull;
+                      final price = order?.totalPrice ?? listing.price;
+                      final priceLabel = order != null && order.orderType == 'rental'
+                          ? _formatRentalSummary(order)
+                          : null;
+
+                      showChatPopup(context,
+                        chatRoomId: chatRoom.id,
+                        otherUserName: listing.seller?.displayName ?? 'Seller',
+                        otherUserAvatar: listing.seller?.avatarUrl,
+                        listingTitle: listing.title,
+                        listingPrice: price,
+                        priceLabel: priceLabel,
+                        listingImageUrl: listing.images.firstOrNull?.imageUrl);
                     } catch (e) {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -212,6 +260,19 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     ),
                   ]),
                   const SizedBox(height: 24),
+                  if (listing.status == 'active') ...[
+                    SizedBox(width: double.infinity, child: OutlinedButton.icon(
+                      onPressed: () => _showDelistDialog(context, ref, listing),
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                      label: const Text('Delist This Item', style: TextStyle(color: Colors.red)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: const BorderSide(color: Colors.red, width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.button)),
+                      ),
+                    )),
+                    const SizedBox(height: 24),
+                  ],
                 ],
                 // Primary Action Button — hidden on own listing
                 if (!isOwnListing) existingOrder.when(
@@ -221,14 +282,76 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     if (order != null) {
                       final submittedDate = DateFormat('MMM d, yyyy · h:mm a').format(order.createdAt.toLocal());
                       return Container(
-                        width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.card)),
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(radius.card),
+                        ),
                         child: Column(children: [
                           Icon(Icons.check_circle, color: colors.success, size: 28),
                           const SizedBox(height: 4),
-                          Text('Application Submitted', style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+                          Text('Application Submitted',
+                            style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          Text(submittedDate, style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
+                          Text(submittedDate,
+                            style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
+                          const SizedBox(height: 8),
+                          // Price display — different format for sale vs rental
+                          if (order.orderType == 'rental') ...[
+                            Text(
+                              _formatRentalSummary(order),
+                              style: typo.bodyMedium.copyWith(
+                                color: colors.primary, fontWeight: FontWeight.w600),
+                            ),
+                          ] else ...[
+                            Text(
+                              '\$${order.totalPrice.toStringAsFixed(0)}',
+                              style: typo.titleMedium.copyWith(
+                                color: colors.primary, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                          // Cancel button — only for pending orders
+                          if (order.status == 'pending') ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Cancel Application'),
+                                      content: const Text(
+                                        'Are you sure you want to cancel your application?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx, false),
+                                          child: const Text('Keep'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx, true),
+                                          style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                          child: const Text('Cancel Application'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true && context.mounted) {
+                                    await ref.read(orderActionsProvider.notifier)
+                                        .cancelOrder(order.id);
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: colors.error,
+                                  side: BorderSide(color: colors.error),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(radius.button)),
+                                ),
+                                child: const Text('Cancel Application'),
+                              ),
+                            ),
+                          ],
                         ]),
                       );
                     }
@@ -329,6 +452,16 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
       ),
     );
   }
+}
+
+String _formatRentalSummary(Order order) {
+  if (order.rentalStartDate == null || order.rentalEndDate == null) {
+    return 'Total: \$${order.totalPrice.toStringAsFixed(0)}';
+  }
+  final days = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+  final duration = days > 0 ? days : 1;
+  final unitLabel = duration == 1 ? 'Day' : 'Days';
+  return '$duration $unitLabel, Total: \$${order.totalPrice.toStringAsFixed(0)}';
 }
 
 class _StatCard extends StatelessWidget {

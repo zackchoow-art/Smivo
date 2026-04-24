@@ -6,12 +6,14 @@ import 'package:smivo/shared/widgets/message_badge_icon.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final bool showBackButton;
+  final bool showActions;
   final int unreadMessageCount;
 
   const CustomAppBar({
     super.key,
     this.title,
     this.showBackButton = true,
+    this.showActions = true,
     this.unreadMessageCount = 3, // Default to 3 for demonstration
   });
 
@@ -47,10 +49,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             )
           : null,
-      actions: [
-        MessageBadgeIcon(unreadCount: unreadMessageCount),
-        const SizedBox(width: 8),
-      ],
+      actions: showActions
+          ? [
+              MessageBadgeIcon(unreadCount: unreadMessageCount),
+              const SizedBox(width: 8),
+            ]
+          : null,
     );
   }
 

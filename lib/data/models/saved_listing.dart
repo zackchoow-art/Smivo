@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:smivo/data/models/user_profile.dart';
 
 part 'saved_listing.freezed.dart';
 part 'saved_listing.g.dart';
@@ -16,6 +17,7 @@ abstract class SavedListing with _$SavedListing {
     @JsonKey(name: 'listing_id') required String listingId,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    UserProfile? user,
   }) = _SavedListing;
 
   factory SavedListing.fromJson(Map<String, dynamic> json) =>
