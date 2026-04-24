@@ -47,6 +47,9 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
       json['return_requested_at'] == null
           ? null
           : DateTime.parse(json['return_requested_at'] as String),
+  reminderDaysBefore: (json['reminder_days_before'] as num?)?.toInt() ?? 1,
+  reminderEmail: json['reminder_email'] as bool? ?? false,
+  reminderSent: json['reminder_sent'] as bool? ?? false,
   buyer:
       json['buyer'] == null
           ? null
@@ -93,6 +96,9 @@ Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
   'rental_status': instance.rentalStatus,
   'deposit_refunded_at': instance.depositRefundedAt?.toIso8601String(),
   'return_requested_at': instance.returnRequestedAt?.toIso8601String(),
+  'reminder_days_before': instance.reminderDaysBefore,
+  'reminder_email': instance.reminderEmail,
+  'reminder_sent': instance.reminderSent,
   'buyer': instance.buyer,
   'seller': instance.seller,
   'listing': instance.listing,

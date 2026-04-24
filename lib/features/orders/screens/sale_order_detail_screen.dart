@@ -1,0 +1,324 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/data/models/order.dart';
+import 'package:smivo/features/orders/providers/order_chat_provider.dart';
+import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/features/orders/widgets/chat_history_section.dart';
+import 'package:smivo/features/orders/widgets/evidence_photo_section.dart';
+import 'package:smivo/features/orders/widgets/order_financial_summary.dart';
+import 'package:smivo/features/orders/widgets/order_header_card.dart';
+import 'package:smivo/features/orders/widgets/order_info_section.dart';
+import 'package:smivo/features/orders/widgets/order_timeline.dart';
+
+class SaleOrderDetailScreen extends ConsumerWidget {
+  const SaleOrderDetailScreen({
+    super.key,
+    required this.order,
+    required this.orderId,
+    required this.currentUserId,
+  });
+
+  final Order order;
+  final String orderId;
+  final String? currentUserId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isBuyer = order.buyerId == currentUserId;
+    final isSeller = order.sellerId == currentUserId;
+    final actionsState = ref.watch(orderActionsProvider);
+    final isActing = actionsState.isLoading;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          OrderHeaderCard(order: order),
+          const SizedBox(height: 16),
+          OrderTimeline(steps: _buildSaleSteps(order)),
+          const SizedBox(height: 16),
+          OrderFinancialSummary(order: order),
+          const SizedBox(height: 16),
+          OrderInfoSection(
+            order: order,
+            counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
+          ),
+          const SizedBox(height: 16),
+          if (order.status == 'confirmed' || order.status == 'completed') ...[
+            _buildDeliveryStatus(context, order),
+            const SizedBox(height: 16),
+            EvidencePhotoSection(
+              orderId: order.id,
+              canUpload: _canUploadEvidence(order, isBuyer, isSeller),
+            ),
+            const SizedBox(height: 16),
+          ],
+          _buildChatSection(ref, order),
+          _buildActions(context, ref, order, isBuyer, isSeller, isActing),
+        ],
+      ),
+    );
+  }
+
+  List<TimelineStep> _buildSaleSteps(Order order) {
+    return [
+      TimelineStep(
+        label: 'Order Placed',
+        date: order.createdAt,
+        isCompleted: true,
+      ),
+      TimelineStep(
+        label: 'Accepted',
+        date: order.status != 'pending' && order.status != 'cancelled'
+            ? order.updatedAt
+            : null,
+        isCompleted: order.status == 'confirmed' || order.status == 'completed',
+      ),
+      TimelineStep(
+        label: 'Picked Up',
+        date: order.status == 'completed' ? order.updatedAt : null,
+        isCompleted: order.status == 'completed',
+      ),
+    ];
+  }
+
+  Widget _buildDeliveryStatus(BuildContext context, Order order) {
+    final typo = context.smivoTypo;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Delivery Confirmation', style: typo.titleMedium),
+        const SizedBox(height: 8),
+        _infoRow(context, 'Buyer', order.deliveryConfirmedByBuyer ? '✓ Confirmed' : 'Waiting'),
+        _infoRow(context, 'Seller', order.deliveryConfirmedBySeller ? '✓ Confirmed' : 'Waiting'),
+      ],
+    );
+  }
+
+  Widget _infoRow(BuildContext context, String label, String value) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+            ),
+          ),
+          Expanded(child: Text(value, style: typo.bodyMedium)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatSection(WidgetRef ref, Order order) {
+    final chatRoomAsync = ref.watch(orderChatRoomIdProvider(
+      listingId: order.listingId,
+      buyerId: order.buyerId,
+      sellerId: order.sellerId,
+    ));
+
+    return chatRoomAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (chatRoomId) {
+        if (chatRoomId == null) return const SizedBox.shrink();
+        return Column(
+          children: [
+            ChatHistorySection(
+              chatRoomId: chatRoomId,
+              currentUserId: currentUserId ?? '',
+            ),
+            const SizedBox(height: 16),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildActions(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isBuyer,
+    bool isSeller,
+    bool isActing,
+  ) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    switch (order.status) {
+      case 'pending':
+        return Column(
+          children: [
+            if (isSeller)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isActing
+                      ? null
+                      : () async => await ref
+                          .read(orderActionsProvider.notifier)
+                          .acceptOrder(order.id),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    isActing ? 'Processing...' : 'Accept Order',
+                    style: typo.titleMedium.copyWith(color: colors.onPrimary),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            _buildCancelButton(context, ref, order, isActing),
+          ],
+        );
+      case 'confirmed':
+        if (isBuyer) {
+          return Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isActing
+                      ? null
+                      : () async => await ref
+                          .read(orderActionsProvider.notifier)
+                          .confirmDelivery(order),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    isActing ? 'Processing...' : 'Confirm Pickup',
+                    style: typo.titleMedium.copyWith(color: colors.onPrimary),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildCancelButton(context, ref, order, isActing),
+            ],
+          );
+        } else {
+          return Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(radius.md),
+                ),
+                child: Text(
+                  'Waiting for buyer to confirm pickup',
+                  style: typo.bodyMedium,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildCancelButton(context, ref, order, isActing),
+            ],
+          );
+        }
+      case 'completed':
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(radius.md),
+          ),
+          child: const Text('✓ Order completed successfully'),
+        );
+      case 'cancelled':
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(radius.md),
+          ),
+          child: const Text('✕ Order was cancelled'),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildCancelButton(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isActing,
+  ) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final canCancel = order.status == 'pending' ||
+        (order.status == 'confirmed' &&
+            !order.deliveryConfirmedByBuyer &&
+            !order.deliveryConfirmedBySeller);
+    if (!canCancel) return const SizedBox.shrink();
+
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: isActing
+            ? null
+            : () async {
+                final confirmed = await _showConfirmDialog(
+                  context,
+                  'Cancel Order',
+                  'Are you sure you want to cancel this order?',
+                );
+                if (confirmed == true) {
+                  await ref
+                      .read(orderActionsProvider.notifier)
+                      .cancelOrder(order.id);
+                }
+              },
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colors.error,
+          side: BorderSide(color: colors.error),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        child: Text(isActing ? 'Processing...' : 'Cancel Order', style: typo.titleMedium),
+      ),
+    );
+  }
+
+  Future<bool?> _showConfirmDialog(
+    BuildContext context,
+    String title,
+    String message,
+  ) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _canUploadEvidence(Order order, bool isBuyer, bool isSeller) {
+    if (!isBuyer && !isSeller) return false;
+    return order.status == 'confirmed' &&
+        !(order.deliveryConfirmedByBuyer) &&
+        !(order.deliveryConfirmedBySeller);
+  }
+}

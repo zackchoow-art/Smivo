@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderEvidence {
 
- String get id;@JsonKey(name: 'order_id') String get orderId;@JsonKey(name: 'uploader_id') String get uploaderId;@JsonKey(name: 'image_url') String get imageUrl; String? get caption;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt; UserProfile? get uploader;
+ String get id;@JsonKey(name: 'order_id') String get orderId;@JsonKey(name: 'uploader_id') String get uploaderId;@JsonKey(name: 'image_url') String get imageUrl;@JsonKey(name: 'evidence_type') String get evidenceType; String? get caption;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt; UserProfile? get uploader;
 /// Create a copy of OrderEvidence
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OrderEvidenceCopyWith<OrderEvidence> get copyWith => _$OrderEvidenceCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderEvidence&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.uploaderId, uploaderId) || other.uploaderId == uploaderId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.uploader, uploader) || other.uploader == uploader));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderEvidence&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.uploaderId, uploaderId) || other.uploaderId == uploaderId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.evidenceType, evidenceType) || other.evidenceType == evidenceType)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.uploader, uploader) || other.uploader == uploader));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,uploaderId,imageUrl,caption,createdAt,updatedAt,uploader);
+int get hashCode => Object.hash(runtimeType,id,orderId,uploaderId,imageUrl,evidenceType,caption,createdAt,updatedAt,uploader);
 
 @override
 String toString() {
-  return 'OrderEvidence(id: $id, orderId: $orderId, uploaderId: $uploaderId, imageUrl: $imageUrl, caption: $caption, createdAt: $createdAt, updatedAt: $updatedAt, uploader: $uploader)';
+  return 'OrderEvidence(id: $id, orderId: $orderId, uploaderId: $uploaderId, imageUrl: $imageUrl, evidenceType: $evidenceType, caption: $caption, createdAt: $createdAt, updatedAt: $updatedAt, uploader: $uploader)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OrderEvidenceCopyWith<$Res>  {
   factory $OrderEvidenceCopyWith(OrderEvidence value, $Res Function(OrderEvidence) _then) = _$OrderEvidenceCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'order_id') String orderId,@JsonKey(name: 'uploader_id') String uploaderId,@JsonKey(name: 'image_url') String imageUrl, String? caption,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? uploader
+ String id,@JsonKey(name: 'order_id') String orderId,@JsonKey(name: 'uploader_id') String uploaderId,@JsonKey(name: 'image_url') String imageUrl,@JsonKey(name: 'evidence_type') String evidenceType, String? caption,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? uploader
 });
 
 
@@ -65,12 +65,13 @@ class _$OrderEvidenceCopyWithImpl<$Res>
 
 /// Create a copy of OrderEvidence
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderId = null,Object? uploaderId = null,Object? imageUrl = null,Object? caption = freezed,Object? createdAt = null,Object? updatedAt = null,Object? uploader = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderId = null,Object? uploaderId = null,Object? imageUrl = null,Object? evidenceType = null,Object? caption = freezed,Object? createdAt = null,Object? updatedAt = null,Object? uploader = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
 as String,uploaderId: null == uploaderId ? _self.uploaderId : uploaderId // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String,evidenceType: null == evidenceType ? _self.evidenceType : evidenceType // ignore: cast_nullable_to_non_nullable
 as String,caption: freezed == caption ? _self.caption : caption // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -172,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'uploader_id')  String uploaderId, @JsonKey(name: 'image_url')  String imageUrl,  String? caption, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? uploader)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'uploader_id')  String uploaderId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'evidence_type')  String evidenceType,  String? caption, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? uploader)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderEvidence() when $default != null:
-return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.caption,_that.createdAt,_that.updatedAt,_that.uploader);case _:
+return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.evidenceType,_that.caption,_that.createdAt,_that.updatedAt,_that.uploader);case _:
   return orElse();
 
 }
@@ -193,10 +194,10 @@ return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.cap
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'uploader_id')  String uploaderId, @JsonKey(name: 'image_url')  String imageUrl,  String? caption, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? uploader)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'uploader_id')  String uploaderId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'evidence_type')  String evidenceType,  String? caption, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? uploader)  $default,) {final _that = this;
 switch (_that) {
 case _OrderEvidence():
-return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.caption,_that.createdAt,_that.updatedAt,_that.uploader);case _:
+return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.evidenceType,_that.caption,_that.createdAt,_that.updatedAt,_that.uploader);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -213,10 +214,10 @@ return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.cap
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'uploader_id')  String uploaderId, @JsonKey(name: 'image_url')  String imageUrl,  String? caption, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? uploader)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'uploader_id')  String uploaderId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'evidence_type')  String evidenceType,  String? caption, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? uploader)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderEvidence() when $default != null:
-return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.caption,_that.createdAt,_that.updatedAt,_that.uploader);case _:
+return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.evidenceType,_that.caption,_that.createdAt,_that.updatedAt,_that.uploader);case _:
   return null;
 
 }
@@ -228,13 +229,14 @@ return $default(_that.id,_that.orderId,_that.uploaderId,_that.imageUrl,_that.cap
 @JsonSerializable()
 
 class _OrderEvidence implements OrderEvidence {
-  const _OrderEvidence({required this.id, @JsonKey(name: 'order_id') required this.orderId, @JsonKey(name: 'uploader_id') required this.uploaderId, @JsonKey(name: 'image_url') required this.imageUrl, this.caption, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, this.uploader});
+  const _OrderEvidence({required this.id, @JsonKey(name: 'order_id') required this.orderId, @JsonKey(name: 'uploader_id') required this.uploaderId, @JsonKey(name: 'image_url') required this.imageUrl, @JsonKey(name: 'evidence_type') this.evidenceType = 'delivery', this.caption, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, this.uploader});
   factory _OrderEvidence.fromJson(Map<String, dynamic> json) => _$OrderEvidenceFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'order_id') final  String orderId;
 @override@JsonKey(name: 'uploader_id') final  String uploaderId;
 @override@JsonKey(name: 'image_url') final  String imageUrl;
+@override@JsonKey(name: 'evidence_type') final  String evidenceType;
 @override final  String? caption;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
@@ -253,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderEvidence&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.uploaderId, uploaderId) || other.uploaderId == uploaderId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.uploader, uploader) || other.uploader == uploader));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderEvidence&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.uploaderId, uploaderId) || other.uploaderId == uploaderId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.evidenceType, evidenceType) || other.evidenceType == evidenceType)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.uploader, uploader) || other.uploader == uploader));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,uploaderId,imageUrl,caption,createdAt,updatedAt,uploader);
+int get hashCode => Object.hash(runtimeType,id,orderId,uploaderId,imageUrl,evidenceType,caption,createdAt,updatedAt,uploader);
 
 @override
 String toString() {
-  return 'OrderEvidence(id: $id, orderId: $orderId, uploaderId: $uploaderId, imageUrl: $imageUrl, caption: $caption, createdAt: $createdAt, updatedAt: $updatedAt, uploader: $uploader)';
+  return 'OrderEvidence(id: $id, orderId: $orderId, uploaderId: $uploaderId, imageUrl: $imageUrl, evidenceType: $evidenceType, caption: $caption, createdAt: $createdAt, updatedAt: $updatedAt, uploader: $uploader)';
 }
 
 
@@ -273,7 +275,7 @@ abstract mixin class _$OrderEvidenceCopyWith<$Res> implements $OrderEvidenceCopy
   factory _$OrderEvidenceCopyWith(_OrderEvidence value, $Res Function(_OrderEvidence) _then) = __$OrderEvidenceCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'order_id') String orderId,@JsonKey(name: 'uploader_id') String uploaderId,@JsonKey(name: 'image_url') String imageUrl, String? caption,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? uploader
+ String id,@JsonKey(name: 'order_id') String orderId,@JsonKey(name: 'uploader_id') String uploaderId,@JsonKey(name: 'image_url') String imageUrl,@JsonKey(name: 'evidence_type') String evidenceType, String? caption,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? uploader
 });
 
 
@@ -290,12 +292,13 @@ class __$OrderEvidenceCopyWithImpl<$Res>
 
 /// Create a copy of OrderEvidence
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderId = null,Object? uploaderId = null,Object? imageUrl = null,Object? caption = freezed,Object? createdAt = null,Object? updatedAt = null,Object? uploader = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderId = null,Object? uploaderId = null,Object? imageUrl = null,Object? evidenceType = null,Object? caption = freezed,Object? createdAt = null,Object? updatedAt = null,Object? uploader = freezed,}) {
   return _then(_OrderEvidence(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
 as String,uploaderId: null == uploaderId ? _self.uploaderId : uploaderId // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String,evidenceType: null == evidenceType ? _self.evidenceType : evidenceType // ignore: cast_nullable_to_non_nullable
 as String,caption: freezed == caption ? _self.caption : caption // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable

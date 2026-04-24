@@ -34,11 +34,12 @@ class OrderEvidenceRepository {
     required String uploaderId,
     required Uint8List imageBytes,
     required String fileName,
+    String evidenceType = 'delivery',
     String? caption,
   }) async {
     try {
-      // Upload to storage
-      final path = '$orderId/evidence/$uploaderId/$fileName';
+      // Upload to storage: {orderId}/evidence/{evidenceType}/{uploaderId}/{fileName}
+      final path = '$orderId/evidence/$evidenceType/$uploaderId/$fileName';
       await _client.storage
           .from(AppConstants.bucketOrderFiles)
           .uploadBinary(path, imageBytes);
@@ -54,6 +55,7 @@ class OrderEvidenceRepository {
             'order_id': orderId,
             'uploader_id': uploaderId,
             'image_url': imageUrl,
+            'evidence_type': evidenceType,
             'caption': caption,
           })
           .select()

@@ -307,4 +307,24 @@ class OrderActions extends _$OrderActions {
       state = AsyncValue.error(e, st);
     }
   }
+
+  /// Updates rental reminder preferences.
+  Future<void> updateReminderPreferences({
+    required String orderId,
+    required int daysBefore,
+    required bool sendEmail,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(orderRepositoryProvider).updateReminderPreferences(
+        orderId: orderId,
+        daysBefore: daysBefore,
+        sendEmail: sendEmail,
+      );
+      ref.invalidate(orderDetailProvider(orderId));
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
 }

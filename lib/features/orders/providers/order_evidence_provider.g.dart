@@ -161,7 +161,7 @@ class _OrderEvidenceProviderElement
   String get orderId => (origin as OrderEvidenceProvider).orderId;
 }
 
-String _$evidenceUploaderHash() => r'1fe9eec12aedeecb0edf10c9c7d98db794875833';
+String _$evidenceUploaderHash() => r'56e42ca1eaec387100b5afdf633e787889b895ab';
 
 /// Mutation provider for uploading evidence.
 ///

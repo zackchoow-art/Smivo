@@ -40,6 +40,11 @@ abstract class Order with _$Order {
     @JsonKey(name: 'deposit_refunded_at') DateTime? depositRefundedAt,
     @JsonKey(name: 'return_requested_at') DateTime? returnRequestedAt,
     
+    // Rental reminder preferences
+    @JsonKey(name: 'reminder_days_before') @Default(1) int reminderDaysBefore,
+    @JsonKey(name: 'reminder_email') @Default(false) bool reminderEmail,
+    @JsonKey(name: 'reminder_sent') @Default(false) bool reminderSent,
+    
     // Nested join data — populated only by specific join queries
     UserProfile? buyer,
     UserProfile? seller,

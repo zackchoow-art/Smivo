@@ -13,6 +13,7 @@ abstract class OrderEvidence with _$OrderEvidence {
     @JsonKey(name: 'order_id') required String orderId,
     @JsonKey(name: 'uploader_id') required String uploaderId,
     @JsonKey(name: 'image_url') required String imageUrl,
+    @JsonKey(name: 'evidence_type') @Default('delivery') String evidenceType,
     String? caption,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,

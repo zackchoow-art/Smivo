@@ -69,8 +69,11 @@ Future<Listing> listingDetail(Ref ref, String id) async {
   final listing = await repository.fetchListing(id);
 
   // Fire-and-forget: record this view for analytics
+  // NOTE: Skip recording if the viewer is the seller (own listing)
   final userId = ref.read(authStateProvider).valueOrNull?.id;
-  repository.recordView(listingId: id, viewerId: userId);
+  if (userId != null && userId != listing.sellerId) {
+    repository.recordView(listingId: id, viewerId: userId);
+  }
 
   return listing;
 }

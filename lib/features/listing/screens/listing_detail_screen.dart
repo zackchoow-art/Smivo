@@ -230,33 +230,43 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       icon: Icons.visibility_outlined,
                       label: 'Views',
                       count: listing.viewCount,
-                      onTap: () => context.pushNamed(
-                        AppRoutes.transactionManagement,
-                        pathParameters: {'id': listing.id},
-                        queryParameters: {'tab': '0'},
-                      ),
+                      onTap: () async {
+                        await context.pushNamed(
+                          AppRoutes.transactionManagement,
+                          pathParameters: {'id': listing.id},
+                          queryParameters: {'tab': '0'},
+                        );
+                        // NOTE: Refresh stats when returning from transaction management
+                        ref.invalidate(listingDetailProvider(widget.id));
+                      },
                     ),
                     const SizedBox(width: 12),
                     _StatCard(
                       icon: Icons.bookmark_outline,
                       label: 'Saves',
                       count: listing.saveCount,
-                      onTap: () => context.pushNamed(
-                        AppRoutes.transactionManagement,
-                        pathParameters: {'id': listing.id},
-                        queryParameters: {'tab': '1'},
-                      ),
+                      onTap: () async {
+                        await context.pushNamed(
+                          AppRoutes.transactionManagement,
+                          pathParameters: {'id': listing.id},
+                          queryParameters: {'tab': '1'},
+                        );
+                        ref.invalidate(listingDetailProvider(widget.id));
+                      },
                     ),
                     const SizedBox(width: 12),
                     _StatCard(
                       icon: Icons.local_offer_outlined,
                       label: 'Offers',
                       count: listing.inquiryCount,
-                      onTap: () => context.pushNamed(
-                        AppRoutes.transactionManagement,
-                        pathParameters: {'id': listing.id},
-                        queryParameters: {'tab': '2'},
-                      ),
+                      onTap: () async {
+                        await context.pushNamed(
+                          AppRoutes.transactionManagement,
+                          pathParameters: {'id': listing.id},
+                          queryParameters: {'tab': '2'},
+                        );
+                        ref.invalidate(listingDetailProvider(widget.id));
+                      },
                     ),
                   ]),
                   const SizedBox(height: 24),

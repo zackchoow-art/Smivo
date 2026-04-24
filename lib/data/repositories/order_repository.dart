@@ -247,6 +247,26 @@ class OrderRepository {
     }
   }
 
+  /// Updates rental reminder preferences for an order.
+  Future<void> updateReminderPreferences({
+    required String orderId,
+    required int daysBefore,
+    required bool sendEmail,
+  }) async {
+    try {
+      await _client
+          .from(AppConstants.tableOrders)
+          .update({
+            'reminder_days_before': daysBefore,
+            'reminder_email': sendEmail,
+            'reminder_sent': false, // Reset so new reminder can fire
+          })
+          .eq('id', orderId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Cancels all pending orders for a listing (used when delisting).
   Future<void> cancelAllPendingOrders(String listingId) async {
     try {

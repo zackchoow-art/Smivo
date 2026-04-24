@@ -24,6 +24,7 @@ class EvidenceUploader extends _$EvidenceUploader {
     required String orderId,
     required Uint8List imageBytes,
     required String fileName,
+    String evidenceType = 'delivery',
     String? caption,
   }) async {
     state = const AsyncValue.loading();
@@ -37,6 +38,7 @@ class EvidenceUploader extends _$EvidenceUploader {
         uploaderId: user.id,
         imageBytes: imageBytes,
         fileName: fileName,
+        evidenceType: evidenceType,
         caption: caption,
       );
 
