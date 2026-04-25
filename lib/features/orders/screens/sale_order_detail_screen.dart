@@ -70,24 +70,51 @@ class SaleOrderDetailScreen extends ConsumerWidget {
   }
 
   List<TimelineStep> _buildSaleSteps(Order order) {
+    // NOTE: 'missed' is treated like 'cancelled' for timeline display purposes
+    final isTerminated = order.status == 'cancelled' ||
+        order.status == 'missed';
+
     return [
       TimelineStep(
         label: 'Order Placed',
         date: order.createdAt,
         isCompleted: true,
+        subtitle: 'by ${order.buyer?.displayName ?? 'Buyer'}',
       ),
       TimelineStep(
         label: 'Accepted',
-        date: order.status != 'pending' && order.status != 'cancelled'
+        date: !isTerminated && order.status != 'pending'
             ? order.updatedAt
             : null,
-        isCompleted: order.status == 'confirmed' || order.status == 'completed',
+        isCompleted:
+            order.status == 'confirmed' || order.status == 'completed',
+        subtitle:
+            order.status != 'pending' && !isTerminated
+                ? '${order.buyer?.displayName ?? 'Buyer'}\'s offer'
+                : null,
       ),
       TimelineStep(
         label: 'Picked Up',
         date: order.status == 'completed' ? order.updatedAt : null,
         isCompleted: order.status == 'completed',
+        subtitle: order.pickupLocation?.name,
       ),
+      // NOTE: Append terminal steps for cancelled / missed states
+      if (order.status == 'cancelled')
+        TimelineStep(
+          label: 'Cancelled',
+          date: order.updatedAt,
+          isCompleted: true,
+          isCancelled: true,
+        ),
+      if (order.status == 'missed')
+        TimelineStep(
+          label: 'Offer Missed',
+          date: order.updatedAt,
+          isCompleted: true,
+          isCancelled: true,
+          subtitle: 'Another offer was accepted',
+        ),
     ];
   }
 
@@ -166,23 +193,32 @@ class SaleOrderDetailScreen extends ConsumerWidget {
       case 'pending':
         return Column(
           children: [
+            // NOTE: Accept is now handled exclusively from Transaction Management
+            // dashboard — seller sees an informational card here instead.
             if (isSeller)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isActing
-                      ? null
-                      : () async => await ref
-                          .read(orderActionsProvider.notifier)
-                          .acceptOrder(order.id),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    isActing ? 'Processing...' : 'Accept Order',
-                    style: typo.titleMedium.copyWith(color: colors.onPrimary),
-                  ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(radius.md),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.hourglass_top,
+                      color: colors.outlineVariant,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Review this request in Transaction Management',
+                        style: typo.bodyMedium.copyWith(
+                          color: colors.outlineVariant,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             const SizedBox(height: 8),

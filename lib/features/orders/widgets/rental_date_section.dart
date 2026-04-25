@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 
@@ -15,22 +16,25 @@ class RentalDateSection extends StatelessWidget {
       children: [
         Text('Rental Period', style: typo.titleMedium),
         const SizedBox(height: 8),
+        // Duration row: computed from date range (daily / weekly / monthly)
+        _infoRow(context, 'Duration', _computeRentalDuration(order)),
         _infoRow(
           context,
           'Start',
-          order.rentalStartDate!.toLocal().toString().split(' ')[0],
+          _formatDate(order.rentalStartDate!),
         ),
-        if (order.rentalEndDate != null)
-          _infoRow(
-            context,
-            'End',
-            order.rentalEndDate!.toLocal().toString().split(' ')[0],
-          ),
+        _infoRow(
+          context,
+          'End',
+          order.rentalEndDate != null
+              ? _formatDate(order.rentalEndDate!)
+              : '—',
+        ),
         if (order.returnConfirmedAt != null)
           _infoRow(
             context,
             'Returned',
-            order.returnConfirmedAt!.toLocal().toString().split(' ')[0],
+            _formatDate(order.returnConfirmedAt!),
           ),
       ],
     );
@@ -55,5 +59,27 @@ class RentalDateSection extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime dt) =>
+      DateFormat('MMM d, yyyy').format(dt.toLocal());
+
+  /// Infers rental duration label from the date range.
+  /// Priority: monthly → weekly → daily.
+  String _computeRentalDuration(Order order) {
+    if (order.rentalStartDate == null || order.rentalEndDate == null) {
+      return '—';
+    }
+    final days =
+        order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+    if (days >= 30 && days % 30 == 0) {
+      final months = days ~/ 30;
+      return '$months Month${months > 1 ? 's' : ''}';
+    }
+    if (days >= 7 && days % 7 == 0) {
+      final weeks = days ~/ 7;
+      return '$weeks Week${weeks > 1 ? 's' : ''}';
+    }
+    return '$days Day${days > 1 ? 's' : ''}';
   }
 }

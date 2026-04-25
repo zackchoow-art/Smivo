@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 
@@ -15,34 +16,53 @@ class OrderInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typo = context.smivoTypo;
+    final isRental = order.orderType == 'rental';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Order Info', style: typo.titleMedium),
         const SizedBox(height: 8),
+        // 1. Listed date
+        _infoRow(context, 'Listed', _formatDate(order.createdAt)),
+        // 2. Transaction type
+        _infoRow(context, 'Type', isRental ? 'Rent' : 'Sale'),
+        // 3. Status
         _infoRow(context, 'Status', _statusText(order.status)),
-        _infoRow(context, 'Type', order.orderType.toUpperCase()),
+        // 4. Pickup location
+        if (order.pickupLocation != null)
+          _infoRow(context, 'Pickup', order.pickupLocation!.name),
+        // 5. Price / Rental Total
         _infoRow(
           context,
-          'Date',
-          order.createdAt.toLocal().toString().split(' ')[0],
+          isRental ? 'Rental Total' : 'Price',
+          '\$${order.totalPrice.toStringAsFixed(2)}',
         ),
-        _infoRow(context, 'Counterparty', counterpartyName ?? 'Unknown'),
-        // NOTE: Show deposit only for rental orders with non-zero deposit
-        if (order.orderType == 'rental' && order.depositAmount > 0)
+        // NOTE: For rentals with deposit, show deposit and a Grand Total row
+        if (isRental && order.depositAmount > 0) ...[ 
           _infoRow(
             context,
             'Deposit',
             '\$${order.depositAmount.toStringAsFixed(2)}',
           ),
-        if (order.pickupLocation != null)
-          _infoRow(context, 'Pickup', order.pickupLocation!.name),
+          const Divider(),
+          _infoRow(
+            context,
+            'Grand Total',
+            '\$${(order.totalPrice + order.depositAmount).toStringAsFixed(2)}',
+            isBold: true,
+          ),
+        ],
       ],
     );
   }
 
-  Widget _infoRow(BuildContext context, String label, String value) {
+  Widget _infoRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool isBold = false,
+  }) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
@@ -57,11 +77,22 @@ class OrderInfoSection extends StatelessWidget {
               style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
             ),
           ),
-          Expanded(child: Text(value, style: typo.bodyMedium)),
+          Expanded(
+            child: Text(
+              value,
+              style: typo.bodyMedium.copyWith(
+                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                color: isBold ? colors.primary : null,
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+
+  String _formatDate(DateTime dt) =>
+      DateFormat('MMM d, yyyy').format(dt.toLocal());
 
   String _statusText(String status) {
     switch (status) {
@@ -73,6 +104,8 @@ class OrderInfoSection extends StatelessWidget {
         return 'Completed';
       case 'cancelled':
         return 'Cancelled';
+      case 'missed':
+        return 'Missed';
       default:
         return status;
     }

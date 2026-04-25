@@ -56,13 +56,16 @@ class OrderFinancialSummary extends StatelessWidget {
               'Deposit',
               '\$${order.depositAmount.toStringAsFixed(2)}',
             ),
-          const Divider(),
-          _summaryRow(
-            context,
-            'Total',
-            '\$${order.totalPrice.toStringAsFixed(2)}',
-            isBold: true,
-          ),
+          // NOTE: Rental orders display Grand Total in OrderInfoSection instead
+          if (order.orderType != 'rental') ...[ 
+            const Divider(),
+            _summaryRow(
+              context,
+              'Total',
+              '\$${order.totalPrice.toStringAsFixed(2)}',
+              isBold: true,
+            ),
+          ],
         ],
       ),
     );

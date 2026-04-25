@@ -110,23 +110,43 @@ class RentalOrderDetailScreen extends ConsumerWidget {
   }
 
   List<TimelineStep> _buildRentalSteps(Order order) {
-    final steps = [
-      TimelineStep(label: 'Order Placed', date: order.createdAt, isCompleted: true),
+    // NOTE: 'missed' treated same as 'cancelled' for terminal display
+    final isTerminated = order.status == 'cancelled' ||
+        order.status == 'missed';
+    final delivered = order.deliveryConfirmedByBuyer &&
+        order.deliveryConfirmedBySeller;
+
+    final steps = <TimelineStep>[
+      TimelineStep(
+        label: 'Order Placed',
+        date: order.createdAt,
+        isCompleted: true,
+        subtitle: 'by ${order.buyer?.displayName ?? 'Buyer'}',
+      ),
       TimelineStep(
         label: 'Accepted',
-        date: order.status != 'pending' && order.status != 'cancelled' ? order.updatedAt : null,
-        isCompleted: order.status == 'confirmed' || order.status == 'completed',
+        date: !isTerminated && order.status != 'pending'
+            ? order.updatedAt
+            : null,
+        isCompleted:
+            order.status == 'confirmed' || order.status == 'completed',
+        subtitle:
+            order.status != 'pending' && !isTerminated
+                ? '${order.buyer?.displayName ?? 'Buyer'}\'s offer'
+                : null,
       ),
       TimelineStep(
         label: 'Delivered',
-        date: order.deliveryConfirmedByBuyer && order.deliveryConfirmedBySeller ? order.updatedAt : null,
-        isCompleted: order.deliveryConfirmedByBuyer && order.deliveryConfirmedBySeller,
+        date: delivered ? order.updatedAt : null,
+        isCompleted: delivered,
+        subtitle: order.pickupLocation?.name,
       ),
     ];
 
-    if (order.rentalStatus == 'active' || 
-        order.rentalStatus == 'return_requested' || 
-        order.rentalStatus == 'returned' || 
+    // NOTE: Rental lifecycle steps added only when relevant status is reached
+    if (order.rentalStatus == 'active' ||
+        order.rentalStatus == 'return_requested' ||
+        order.rentalStatus == 'returned' ||
         order.rentalStatus == 'deposit_refunded' ||
         order.status == 'completed') {
       steps.add(TimelineStep(
@@ -135,7 +155,40 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         isCompleted: order.returnConfirmedAt != null,
       ));
     }
-    
+
+    if (order.depositRefundedAt != null) {
+      steps.add(TimelineStep(
+        label: 'Deposit Refunded',
+        date: order.depositRefundedAt,
+        isCompleted: true,
+      ));
+    }
+
+    if (order.status == 'completed') {
+      steps.add(TimelineStep(
+        label: 'Completed',
+        date: order.updatedAt,
+        isCompleted: true,
+      ));
+    }
+    if (order.status == 'cancelled') {
+      steps.add(TimelineStep(
+        label: 'Cancelled',
+        date: order.updatedAt,
+        isCompleted: true,
+        isCancelled: true,
+      ));
+    }
+    if (order.status == 'missed') {
+      steps.add(TimelineStep(
+        label: 'Offer Missed',
+        date: order.updatedAt,
+        isCompleted: true,
+        isCancelled: true,
+        subtitle: 'Another offer was accepted',
+      ));
+    }
+
     return steps;
   }
 
@@ -213,23 +266,31 @@ class RentalOrderDetailScreen extends ConsumerWidget {
       case 'pending':
         return Column(
           children: [
+            // NOTE: Accept is handled from Transaction Management dashboard only
             if (isSeller)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isActing
-                      ? null
-                      : () async => await ref
-                          .read(orderActionsProvider.notifier)
-                          .acceptOrder(order.id),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    isActing ? 'Processing...' : 'Accept Order',
-                    style: typo.titleMedium.copyWith(color: colors.onPrimary),
-                  ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(radius.md),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.hourglass_top,
+                      color: colors.outlineVariant,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Review this request in Transaction Management',
+                        style: typo.bodyMedium.copyWith(
+                          color: colors.outlineVariant,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             const SizedBox(height: 8),
