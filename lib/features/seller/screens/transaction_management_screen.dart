@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/utils/price_format.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -446,7 +447,7 @@ class _OffersTab extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  '\$${order.totalPrice.toStringAsFixed(0)}',
+                  formatOrderPrice(order),
                   style: typo.titleMedium.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
                 ),
               ]),
@@ -495,7 +496,7 @@ class _OffersTab extends ConsumerWidget {
                       otherUserEmail: order.buyer?.email,
                       listingTitle: order.listing?.title ?? '',
                       listingPrice: order.totalPrice,
-                      priceLabel: order.orderType == 'rental' ? _formatRentalSummary(order) : null,
+                      priceLabel: formatOrderPriceLabel(order) ?? (order.orderType == 'rental' ? _formatRentalSummary(order) : null),
                       listingImageUrl: order.listing?.images.firstOrNull?.imageUrl,
                     );
                   },
@@ -521,11 +522,21 @@ class _OffersTab extends ConsumerWidget {
                       );
 
                       if (confirmed == true) {
-                        await ref.read(orderActionsProvider.notifier).acceptOrder(order.id);
-                        // NOTE: Refresh the offers list so accepted/missed statuses show
-                        ref.invalidate(listingOrdersProvider(listingId));
-                        if (!context.mounted) return;
-                        context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id});
+                        try {
+                          await ref.read(orderActionsProvider.notifier).acceptOrder(order.id);
+                          // NOTE: Refresh the offers list so accepted/missed statuses show
+                          ref.invalidate(listingOrdersProvider(listingId));
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Offer accepted successfully')),
+                          );
+                          context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id});
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to accept: $e')),
+                          );
+                        }
                       }
                     },
                     child: Container(
@@ -549,6 +560,7 @@ class _OffersTab extends ConsumerWidget {
 }
 
 String _formatRentalSummary(Order order) {
+  if (order.totalPrice == 0) return formatOrderPrice(order);
   if (order.rentalStartDate == null || order.rentalEndDate == null) {
     return 'Total: \$${order.totalPrice.toStringAsFixed(0)}';
   }

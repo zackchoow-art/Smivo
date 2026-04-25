@@ -3,6 +3,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/utils/price_format.dart';
 import 'package:smivo/features/seller/providers/seller_center_provider.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/listing.dart';
@@ -218,9 +219,10 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     final fullListing = listings.where((l) => l.id == o.listingId).firstOrNull;
                     historyItems.add(_HistoryItem(
                       title: o.listing?.title ?? fullListing?.title ?? 'Order',
-                      subtitle: '\$${o.totalPrice.toStringAsFixed(0)} · Completed',
+                      subtitle: '${formatOrderPrice(o)} · Completed',
                       isCompleted: true,
                       orderId: o.id,
+                      listingId: o.listingId,
                       createdAt: fullListing?.createdAt ?? o.createdAt,
                       updatedAt: o.updatedAt,
                       imageUrl: o.listing?.images.firstOrNull?.imageUrl ?? fullListing?.images.firstOrNull?.imageUrl,
@@ -246,6 +248,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       isMergedCancelled: true,
                       mergedOrders: groupOrders,
                       listing: fullListing,
+                      listingId: entry.key,
                       createdAt: fullListing?.createdAt ?? groupOrders.first.createdAt,
                       updatedAt: groupOrders.first.updatedAt, // Use most recent update
                       imageUrl: fullListing?.images.firstOrNull?.imageUrl ?? listingPreview?.images.firstOrNull?.imageUrl,
@@ -261,6 +264,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       subtitle: 'Delisted',
                       isCompleted: false,
                       isDelisted: true,
+                      listingId: l.id,
                       createdAt: l.createdAt,
                       updatedAt: l.updatedAt,
                       imageUrl: l.images.firstOrNull?.imageUrl,
@@ -291,7 +295,10 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         // Left: Image + Title/Subtitle (Listing Detail)
                         Expanded(
                           child: GestureDetector(
-                            onTap: item.onTap, // For History items, this is currently the main action
+                            // Left side: listing detail navigation
+                            onTap: item.listingId != null
+                              ? () => context.pushNamed(AppRoutes.listingDetail, pathParameters: {'id': item.listingId!})
+                              : item.onTap,
                             behavior: HitTestBehavior.opaque,
                             child: Row(children: [
                               ClipRRect(
@@ -313,9 +320,10 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         const SizedBox(width: 12),
                         // Right: Timestamps (Order Detail or Main Tap)
                         GestureDetector(
-                          onTap: item.isCompleted && item.orderId != null
+                          // Right side: order detail or fallback action
+                          onTap: item.orderId != null
                             ? () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': item.orderId!})
-                            : item.onTap,
+                            : (item.isMergedCancelled ? item.onTap : null),
                           behavior: HitTestBehavior.opaque,
                           child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                             if (item.createdAt != null)
@@ -443,7 +451,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                             overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 2),
                         Text(
-                          '\$${order.totalPrice.toStringAsFixed(0)} · ${order.buyer?.displayName ?? 'Buyer'}',
+                          '${formatOrderPrice(order)} · ${order.buyer?.displayName ?? 'Buyer'}',
                           style: typo.bodySmall.copyWith(
                               color: colors.onSurface
                                   .withValues(alpha: 0.6)),
@@ -671,6 +679,7 @@ class _HistoryItem {
     this.updatedAt,
     this.imageUrl,
     this.orderId,
+    this.listingId,
   });
 
   final String title;
@@ -685,4 +694,5 @@ class _HistoryItem {
   final DateTime? updatedAt;
   final String? imageUrl;
   final String? orderId;
+  final String? listingId;
 }

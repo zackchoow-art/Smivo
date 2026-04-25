@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/core/utils/price_format.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/user_profile.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
@@ -110,11 +111,37 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
   Widget _buildUserRow(BuildContext context, String role, UserProfile user) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
+    final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
+    // NOTE: Don't show message button for the current user's own row
+    final isSelf = user.id == currentUserId;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
+          // Left column: role label
+          SizedBox(
+            width: 48,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: role == 'Buyer'
+                    ? colors.primary.withValues(alpha: 0.1)
+                    : colors.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                role,
+                textAlign: TextAlign.center,
+                style: typo.labelSmall.copyWith(
+                  color: role == 'Buyer' ? colors.primary : colors.success,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           CircleAvatar(
             radius: 18,
             backgroundColor: colors.surfaceContainerHigh,
@@ -133,23 +160,12 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(role,
-                        style: typo.labelSmall.copyWith(
-                            color: colors.outlineVariant,
-                            fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        user.displayName ?? 'Unknown',
-                        style: typo.bodyMedium
-                            .copyWith(fontWeight: FontWeight.w600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                Text(
+                  user.displayName ?? 'Unknown',
+                  style: typo.bodyMedium
+                      .copyWith(fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 if (user.email.isNotEmpty)
                   Text(user.email,
@@ -158,13 +174,14 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
               ],
             ),
           ),
-          IconButton(
-            icon: Icon(Icons.chat_outlined,
-                size: 18, color: colors.primary),
-            tooltip: 'Message $role',
-            onPressed: () => _openChat(user),
-            visualDensity: VisualDensity.compact,
-          ),
+          if (!isSelf)
+            IconButton(
+              icon: Icon(Icons.chat_outlined,
+                  size: 18, color: colors.primary),
+              tooltip: 'Message $role',
+              onPressed: () => _openChat(user),
+              visualDensity: VisualDensity.compact,
+            ),
         ],
       ),
     );
@@ -192,6 +209,7 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
       otherUserEmail: user.email,
       listingTitle: order.listing?.title ?? '',
       listingPrice: order.totalPrice,
+      priceLabel: formatOrderPriceLabel(order),
       listingImageUrl: order.listing?.images.firstOrNull?.imageUrl,
     );
   }

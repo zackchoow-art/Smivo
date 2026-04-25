@@ -3,6 +3,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/utils/price_format.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
@@ -65,7 +66,7 @@ class ListOrderCard extends ConsumerWidget {
       children: [
         Text(title, style: typo.titleMedium.copyWith(height: 1.2)),
         const SizedBox(height: 4),
-        Text('\$${order.totalPrice.toStringAsFixed(0)} • ${_statusText(status)}',
+        Text('${formatOrderPrice(order)} • ${_statusText(status)}',
           style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
         if (status == 'completed')
           GestureDetector(
@@ -114,7 +115,7 @@ class ListOrderCard extends ConsumerWidget {
         otherUserEmail: otherProfile?.email,
         listingTitle: order.listing?.title ?? 'Order',
         listingPrice: order.totalPrice,
-        priceLabel: order.orderType == 'rental' ? _formatRentalSummary(order) : null,
+        priceLabel: formatOrderPriceLabel(order) ?? (order.orderType == 'rental' ? _formatRentalSummary(order) : null),
         listingImageUrl: order.listing?.images.firstOrNull?.imageUrl);
     } catch (e) {
       if (!context.mounted) return;
@@ -128,6 +129,7 @@ class ListOrderCard extends ConsumerWidget {
   };
 
   String _formatRentalSummary(Order order) {
+    if (order.totalPrice == 0) return formatOrderPrice(order);
     if (order.rentalStartDate == null || order.rentalEndDate == null) {
       return 'Total: \$${order.totalPrice.toStringAsFixed(0)}';
     }
