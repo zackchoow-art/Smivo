@@ -114,7 +114,7 @@ class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings>
               const SizedBox(width: 12),
               Expanded(
                 child: DropdownButtonFormField<int>(
-                  value: _selectedDays,
+                  initialValue: _selectedDays,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     border: OutlineInputBorder(

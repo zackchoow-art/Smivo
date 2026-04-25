@@ -54,15 +54,10 @@ class HomeListings extends _$HomeListings {
 
     // Fetch from repository based on current filters.
     if (query.trim().isNotEmpty) {
-      final results = await repository.searchListings(query.trim());
-      
-      // If a category is also selected, filter the search results.
-      if (category != 'All') {
-        return results.where((l) => 
-          l.category.toLowerCase() == category.toLowerCase()
-        ).toList();
-      }
-      return results;
+      return repository.searchListings(
+        query.trim(),
+        category: category == 'All' ? null : category,
+      );
     } else {
       // Normal feed fetch (all or specific category).
       return repository.fetchListings(

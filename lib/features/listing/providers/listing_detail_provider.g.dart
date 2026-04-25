@@ -312,6 +312,163 @@ class _ExistingBuyerOrderProviderElement
   String get listingId => (origin as ExistingBuyerOrderProvider).listingId;
 }
 
+String _$listingHasConfirmedOrderHash() =>
+    r'6fe69a6198d5f248e78e60721c631551e9f0d227';
+
+/// Checks if a listing has any confirmed (in-progress) orders.
+///
+/// Used to hide the delist button when a rental listing has been accepted
+/// by the seller but the listing status is still 'active' (pre-delivery).
+///
+/// Copied from [listingHasConfirmedOrder].
+@ProviderFor(listingHasConfirmedOrder)
+const listingHasConfirmedOrderProvider = ListingHasConfirmedOrderFamily();
+
+/// Checks if a listing has any confirmed (in-progress) orders.
+///
+/// Used to hide the delist button when a rental listing has been accepted
+/// by the seller but the listing status is still 'active' (pre-delivery).
+///
+/// Copied from [listingHasConfirmedOrder].
+class ListingHasConfirmedOrderFamily extends Family<AsyncValue<bool>> {
+  /// Checks if a listing has any confirmed (in-progress) orders.
+  ///
+  /// Used to hide the delist button when a rental listing has been accepted
+  /// by the seller but the listing status is still 'active' (pre-delivery).
+  ///
+  /// Copied from [listingHasConfirmedOrder].
+  const ListingHasConfirmedOrderFamily();
+
+  /// Checks if a listing has any confirmed (in-progress) orders.
+  ///
+  /// Used to hide the delist button when a rental listing has been accepted
+  /// by the seller but the listing status is still 'active' (pre-delivery).
+  ///
+  /// Copied from [listingHasConfirmedOrder].
+  ListingHasConfirmedOrderProvider call(String listingId) {
+    return ListingHasConfirmedOrderProvider(listingId);
+  }
+
+  @override
+  ListingHasConfirmedOrderProvider getProviderOverride(
+    covariant ListingHasConfirmedOrderProvider provider,
+  ) {
+    return call(provider.listingId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'listingHasConfirmedOrderProvider';
+}
+
+/// Checks if a listing has any confirmed (in-progress) orders.
+///
+/// Used to hide the delist button when a rental listing has been accepted
+/// by the seller but the listing status is still 'active' (pre-delivery).
+///
+/// Copied from [listingHasConfirmedOrder].
+class ListingHasConfirmedOrderProvider extends AutoDisposeFutureProvider<bool> {
+  /// Checks if a listing has any confirmed (in-progress) orders.
+  ///
+  /// Used to hide the delist button when a rental listing has been accepted
+  /// by the seller but the listing status is still 'active' (pre-delivery).
+  ///
+  /// Copied from [listingHasConfirmedOrder].
+  ListingHasConfirmedOrderProvider(String listingId)
+    : this._internal(
+        (ref) => listingHasConfirmedOrder(
+          ref as ListingHasConfirmedOrderRef,
+          listingId,
+        ),
+        from: listingHasConfirmedOrderProvider,
+        name: r'listingHasConfirmedOrderProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$listingHasConfirmedOrderHash,
+        dependencies: ListingHasConfirmedOrderFamily._dependencies,
+        allTransitiveDependencies:
+            ListingHasConfirmedOrderFamily._allTransitiveDependencies,
+        listingId: listingId,
+      );
+
+  ListingHasConfirmedOrderProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.listingId,
+  }) : super.internal();
+
+  final String listingId;
+
+  @override
+  Override overrideWith(
+    FutureOr<bool> Function(ListingHasConfirmedOrderRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: ListingHasConfirmedOrderProvider._internal(
+        (ref) => create(ref as ListingHasConfirmedOrderRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        listingId: listingId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<bool> createElement() {
+    return _ListingHasConfirmedOrderProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ListingHasConfirmedOrderProvider &&
+        other.listingId == listingId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, listingId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin ListingHasConfirmedOrderRef on AutoDisposeFutureProviderRef<bool> {
+  /// The parameter `listingId` of this provider.
+  String get listingId;
+}
+
+class _ListingHasConfirmedOrderProviderElement
+    extends AutoDisposeFutureProviderElement<bool>
+    with ListingHasConfirmedOrderRef {
+  _ListingHasConfirmedOrderProviderElement(super.provider);
+
+  @override
+  String get listingId =>
+      (origin as ListingHasConfirmedOrderProvider).listingId;
+}
+
 String _$selectedRentalRateHash() =>
     r'0c444cb1063da1555318c40dcba4f21ce0ae31fd';
 

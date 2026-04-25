@@ -82,14 +82,19 @@ class ListingRepository {
   }
 
   /// Searches active listings by keyword in title and description.
-  Future<List<Listing>> searchListings(String query) async {
+  Future<List<Listing>> searchListings(String query, {String? category}) async {
     try {
-      final data = await _client
+      var dbQuery = _client
           .from(AppConstants.tableListings)
           .select('*, images:listing_images(*)')
           .eq('status', AppConstants.listingActive)
-          .or('title.ilike.%$query%,description.ilike.%$query%')
-          .order('created_at', ascending: false);
+          .or('title.ilike.%$query%,description.ilike.%$query%');
+
+      if (category != null) {
+        dbQuery = dbQuery.eq('category', category.toLowerCase());
+      }
+
+      final data = await dbQuery.order('created_at', ascending: false);
       return data.map((json) => Listing.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

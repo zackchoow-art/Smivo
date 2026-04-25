@@ -291,11 +291,20 @@ class OrderActions extends _$OrderActions {
   }
 
   /// Seller confirms the item has been returned.
-  Future<void> confirmReturn(String orderId) async {
+  ///
+  /// If deposit is 0, skips the refund step and completes the order directly.
+  Future<void> confirmReturn(String orderId, {double depositAmount = 0}) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(orderRepositoryProvider)
-          .updateRentalStatus(orderId, 'returned');
+      final repo = ref.read(orderRepositoryProvider);
+      await repo.updateRentalStatus(orderId, 'returned');
+
+      // NOTE: Skip deposit refund step when no deposit was charged
+      if (depositAmount <= 0) {
+        await repo.updateRentalStatus(orderId, 'deposit_refunded');
+        await repo.updateOrderStatus(orderId, 'completed');
+      }
+
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
       state = const AsyncValue.data(null);

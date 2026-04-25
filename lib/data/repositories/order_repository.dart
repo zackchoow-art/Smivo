@@ -267,6 +267,23 @@ class OrderRepository {
     }
   }
 
+  /// Checks if any confirmed (non-completed, non-cancelled) order exists for a listing.
+  ///
+  /// Used to prevent delisting while an active transaction is in progress.
+  Future<bool> hasConfirmedOrderForListing(String listingId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableOrders)
+          .select('id')
+          .eq('listing_id', listingId)
+          .eq('status', 'confirmed')
+          .limit(1);
+      return data.isNotEmpty;
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Cancels all pending orders for a listing (used when delisting).
   Future<void> cancelAllPendingOrders(String listingId) async {
     try {

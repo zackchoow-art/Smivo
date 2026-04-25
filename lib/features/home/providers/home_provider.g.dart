@@ -46,7 +46,7 @@ final searchQueryProvider =
     );
 
 typedef _$SearchQuery = AutoDisposeNotifier<String>;
-String _$homeListingsHash() => r'92760a43bbcbb17eee571aecb7bf49569e84d0d0';
+String _$homeListingsHash() => r'b9198025e312b4610f843f1dcdf33d02750436ed';
 
 /// Main provider for listings on the Home Screen.
 ///

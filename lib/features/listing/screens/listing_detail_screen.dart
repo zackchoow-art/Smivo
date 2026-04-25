@@ -271,16 +271,30 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   ]),
                   const SizedBox(height: 24),
                   if (listing.status == 'active') ...[
-                    SizedBox(width: double.infinity, child: OutlinedButton.icon(
-                      onPressed: () => _showDelistDialog(context, ref, listing),
-                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-                      label: const Text('Delist This Item', style: TextStyle(color: Colors.red)),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: const BorderSide(color: Colors.red, width: 1.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.button)),
-                      ),
-                    )),
+                    // NOTE: Hide delist button if listing has confirmed orders
+                    // (rental accepted but pre-delivery: listing is still 'active')
+                    Builder(builder: (context) {
+                      final hasConfirmed = ref.watch(
+                        listingHasConfirmedOrderProvider(listing.id),
+                      );
+                      return hasConfirmed.when(
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                        data: (hasOrder) {
+                          if (hasOrder) return const SizedBox.shrink();
+                          return SizedBox(width: double.infinity, child: OutlinedButton.icon(
+                            onPressed: () => _showDelistDialog(context, ref, listing),
+                            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                            label: const Text('Delist This Item', style: TextStyle(color: Colors.red)),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              side: const BorderSide(color: Colors.red, width: 1.5),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.button)),
+                            ),
+                          ));
+                        },
+                      );
+                    }),
                     const SizedBox(height: 24),
                   ],
                 ],

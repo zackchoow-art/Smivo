@@ -50,8 +50,24 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
             loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
             error: (e, _) => SliverFillRemaining(child: Center(child: Text('Error: $e'))),
             data: (orders) {
+              // REQUESTED: pending orders
               final requested = orders.where((o) => o.status == 'pending').toList();
-              final active = orders.where((o) => o.status == 'confirmed').toList();
+
+              // AWAITING DELIVERY: confirmed but delivery not yet done by both
+              final awaitingDelivery = orders.where((o) =>
+                o.status == 'confirmed' &&
+                !(o.deliveryConfirmedByBuyer && o.deliveryConfirmedBySeller),
+              ).toList();
+
+              // ACTIVE TRANSACTIONS: rental orders in active lifecycle
+              final activeTransactions = orders.where((o) =>
+                o.status == 'confirmed' &&
+                o.deliveryConfirmedByBuyer &&
+                o.deliveryConfirmedBySeller &&
+                o.rentalStatus != null,
+              ).toList();
+
+              // HISTORY: completed or cancelled
               final history = orders.where((o) => o.status == 'completed' || o.status == 'cancelled').toList();
               
               if (orders.isEmpty) {
@@ -65,7 +81,8 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
               }
               return SliverMainAxisGroup(slivers: [
                 ..._buildSection('REQUESTED', requested, Icons.hourglass_top, colors.warning),
-                ..._buildSection('ACTIVE', active, Icons.local_shipping, colors.primary),
+                ..._buildSection('AWAITING DELIVERY', awaitingDelivery, Icons.local_shipping, colors.primary),
+                ..._buildSection('ACTIVE TRANSACTIONS', activeTransactions, Icons.sync, colors.success),
                 ..._buildSection('HISTORY', history, Icons.history, colors.outlineVariant),
               ]);
             },
@@ -94,14 +111,13 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
           final order = orders[index];
-          final isMissed = order.status == 'cancelled';
           final listing = order.listing;
           final imageUrl = listing?.images.isNotEmpty == true ? listing!.images.first.imageUrl : null;
           final sellerName = order.seller?.displayName ?? 'Seller';
           final dateStr = DateFormat('MMM d').format(order.createdAt);
 
           if (_isListView) {
-            return _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color, isMissed);
+            return _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color);
           }
 
           return Container(
@@ -133,7 +149,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
                     Text(dateStr, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
                   ])),
                   const SizedBox(width: 8),
-                  _StatusChip(status: order.status),
+                  _StatusChip(order: order),
                 ]),
               ]),
             ),
@@ -143,7 +159,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
     ];
   }
 
-  Widget _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color, isMissed) {
+  Widget _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -170,7 +186,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
           Text(dateStr, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.4))),
           const SizedBox(width: 8),
-          _StatusChip(status: order.status, isCompact: true),
+          _StatusChip(order: order, isCompact: true),
         ]),
         onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
       ),
@@ -178,27 +194,59 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
   }
 }
 
+/// Displays a context-aware status chip for buyer orders.
+///
+/// Uses both order status and rental status to show the most
+/// meaningful label for the buyer's current state.
 class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.status, this.isCompact = false});
-  final String status;
+  const _StatusChip({required this.order, this.isCompact = false});
+  final dynamic order;
   final bool isCompact;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final (bgColor, textColor, label) = switch (status) {
-      'pending' => (colors.statusPending.withValues(alpha: 0.15), colors.statusPending, 'Pending'),
-      'confirmed' => (colors.statusConfirmed.withValues(alpha: 0.15), colors.statusConfirmed, 'Active'),
-      'completed' => (colors.success.withValues(alpha: 0.15), colors.success, 'Done'),
-      'cancelled' => (colors.statusCancelled.withValues(alpha: 0.15), colors.statusCancelled, 'Missed'),
-      _ => (colors.outlineVariant.withValues(alpha: 0.15), colors.outlineVariant, status),
-    };
+
+    final (bgColor, textColor, label) = _resolveChip(colors);
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: isCompact ? 6 : 10, vertical: isCompact ? 2 : 4),
       decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(context.smivoRadius.full)),
       child: Text(label, style: (isCompact ? typo.labelSmall : typo.labelSmall).copyWith(
         color: textColor, fontWeight: FontWeight.w700, fontSize: isCompact ? 10 : null)),
     );
+  }
+
+  (Color, Color, String) _resolveChip(dynamic colors) {
+    final status = order.status as String;
+    final rentalStatus = order.rentalStatus as String?;
+
+    return switch (status) {
+      'pending' => (colors.statusPending.withValues(alpha: 0.15), colors.statusPending, 'Pending'),
+      'confirmed' => _confirmedChip(colors, rentalStatus),
+      'completed' => (colors.success.withValues(alpha: 0.15), colors.success, 'Done'),
+      'cancelled' => (colors.statusCancelled.withValues(alpha: 0.15), colors.statusCancelled, 'Missed'),
+      _ => (colors.outlineVariant.withValues(alpha: 0.15), colors.outlineVariant, status),
+    };
+  }
+
+  /// More granular chip labels for confirmed orders based on delivery/rental state.
+  (Color, Color, String) _confirmedChip(dynamic colors, String? rentalStatus) {
+    final deliveredByBoth = (order.deliveryConfirmedByBuyer as bool) &&
+        (order.deliveryConfirmedBySeller as bool);
+
+    if (!deliveredByBoth) {
+      return (colors.statusConfirmed.withValues(alpha: 0.15), colors.statusConfirmed, 'Pickup');
+    }
+
+    // Delivery done — show rental lifecycle status
+    return switch (rentalStatus) {
+      'active' => (colors.success.withValues(alpha: 0.15), colors.success, 'Active'),
+      'return_requested' => (colors.warning.withValues(alpha: 0.15), colors.warning, 'Returning'),
+      'returned' => (colors.primary.withValues(alpha: 0.15), colors.primary, 'Returned'),
+      'deposit_refunded' => (colors.success.withValues(alpha: 0.15), colors.success, 'Refunded'),
+      _ => (colors.statusConfirmed.withValues(alpha: 0.15), colors.statusConfirmed, 'Active'),
+    };
   }
 }

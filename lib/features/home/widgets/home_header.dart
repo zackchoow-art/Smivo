@@ -5,6 +5,7 @@ import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
+import 'package:smivo/features/profile/providers/profile_provider.dart';
 
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key});
@@ -13,8 +14,13 @@ class HomeHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unreadAsync = ref.watch(totalUnreadNotificationsProvider);
     final unreadCount = unreadAsync.valueOrNull ?? 0;
+    final profileAsync = ref.watch(profileProvider);
+    final profile = profileAsync.valueOrNull;
+
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
+
+    final schoolName = profile?.school ?? AppConstants.defaultSchool;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -29,14 +35,33 @@ class HomeHeader extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Campus',
-                    style: typo.headlineMedium,
+                    'Smivo',
+                    style: typo.headlineMedium.copyWith(color: colors.primary),
                   ),
                   Text(
-                    AppConstants.defaultSchool.replaceAll(' ', ''),
+                    schoolName.replaceAll(' ', ''),
                     style: typo.headlineLarge.copyWith(
-                      color: colors.primary,
+                      color: colors.secondaryGradientStart,
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (profile != null) ...[
+                        Text(
+                          '${profile.displayName ?? 'User'} • ${profile.email} • Verified ',
+                          style: typo.labelSmall.copyWith(color: colors.success),
+                        ),
+                        Icon(Icons.verified, size: 14, color: colors.success),
+                      ] else ...[
+                        Icon(Icons.account_circle, size: 14, color: colors.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Text(
+                          '未登录',
+                          style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

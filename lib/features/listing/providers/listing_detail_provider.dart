@@ -91,3 +91,13 @@ Future<Order?> existingBuyerOrder(Ref ref, String listingId) async {
     buyerId: user.id,
   );
 }
+
+/// Checks if a listing has any confirmed (in-progress) orders.
+///
+/// Used to hide the delist button when a rental listing has been accepted
+/// by the seller but the listing status is still 'active' (pre-delivery).
+@riverpod
+Future<bool> listingHasConfirmedOrder(Ref ref, String listingId) async {
+  final repo = ref.watch(orderRepositoryProvider);
+  return repo.hasConfirmedOrderForListing(listingId);
+}

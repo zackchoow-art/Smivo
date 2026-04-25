@@ -349,7 +349,10 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             child: ElevatedButton.icon(
               onPressed: isActing
                   ? null
-                  : () => ref.read(orderActionsProvider.notifier).confirmReturn(order.id),
+                  : () => ref.read(orderActionsProvider.notifier).confirmReturn(
+                        order.id,
+                        depositAmount: order.depositAmount,
+                      ),
               icon: const Icon(Icons.check),
               label: Text(isActing ? 'Processing...' : 'Confirm Return'),
               style: ElevatedButton.styleFrom(
