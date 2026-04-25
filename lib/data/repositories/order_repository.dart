@@ -144,6 +144,18 @@ class OrderRepository {
     }
   }
 
+  /// Accepts an order and marks all other pending orders for the same listing as missed.
+  Future<void> acceptOrderAndRejectOthers(String orderId, String listingId) async {
+    try {
+      await _client.rpc('accept_order_and_reject_others', params: {
+        'p_order_id': orderId,
+        'p_listing_id': listingId,
+      });
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Updates an order's status (e.g. 'cancelled').
   Future<Order> updateOrderStatus(String id, String status) async {
     try {

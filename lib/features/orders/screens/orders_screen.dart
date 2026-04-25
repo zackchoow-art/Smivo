@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/features/orders/providers/orders_provider.dart';
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
+    final pendingBuyerCount = ref.watch(pendingBuyerOrdersCountProvider).valueOrNull ?? 0;
+    final pendingSellerCount = ref.watch(pendingSellerOrdersCountProvider).valueOrNull ?? 0;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -41,6 +45,7 @@ class OrdersScreen extends StatelessWidget {
                 subtitle: 'Your purchase requests,\naccepted orders, and history.',
                 gradient: [colors.gradientStart, colors.gradientEnd],
                 onTap: () => context.pushNamed(AppRoutes.buyerCenter),
+                badgeCount: pendingBuyerCount,
               ),
               const SizedBox(height: 16),
 
@@ -51,6 +56,7 @@ class OrdersScreen extends StatelessWidget {
                 subtitle: 'Active listings, incoming\norders, and sales history.',
                 gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
                 onTap: () => context.pushNamed(AppRoutes.sellerCenter),
+                badgeCount: pendingSellerCount,
               ),
             ],
           ),
@@ -67,6 +73,7 @@ class _HubCard extends StatelessWidget {
     required this.subtitle,
     required this.gradient,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   final IconData icon;
@@ -74,6 +81,7 @@ class _HubCard extends StatelessWidget {
   final String subtitle;
   final List<Color> gradient;
   final VoidCallback onTap;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -107,12 +115,30 @@ class _HubCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: typo.headlineSmall.copyWith(
-                      color: colors.onPrimary,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: typo.headlineSmall.copyWith(
+                          color: colors.onPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      if (badgeCount > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: colors.error,
+                            borderRadius: BorderRadius.circular(radius.full),
+                          ),
+                          child: Text(
+                            badgeCount > 99 ? '99+' : badgeCount.toString(),
+                            style: typo.labelSmall.copyWith(color: colors.onPrimary, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Text(

@@ -7,6 +7,7 @@ import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/data/repositories/order_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/features/notifications/providers/notification_provider.dart';
 
 part 'orders_provider.g.dart';
 
@@ -168,11 +169,8 @@ class OrderActions extends _$OrderActions {
       // 1. Fetch order to get listingId and orderType
       final order = await repo.fetchOrder(orderId);
       
-      // 2. Update status to confirmed
-      await repo.updateOrderStatus(orderId, 'confirmed');
-      
-      // 3. Cancel other pending orders
-      await repo.cancelOtherPendingOrders(order.listingId, orderId);
+      // 2. Update status to confirmed and mark others as missed
+      await repo.acceptOrderAndRejectOthers(orderId, order.listingId);
       
       // 4. Sale: auto-mark listing as 'sold' (removes from home feed)
       //    Rental: keep listing active until delivery is confirmed
@@ -349,4 +347,26 @@ class OrderActions extends _$OrderActions {
       state = AsyncValue.error(e, st);
     }
   }
+}
+
+@riverpod
+Future<int> unreadOrderUpdatesCount(Ref ref) async {
+  final notifications = await ref.watch(notificationListProvider.future);
+  return notifications.where((n) => !n.isRead && n.actionType == 'order').length;
+}
+
+@riverpod
+Future<int> pendingBuyerOrdersCount(Ref ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return 0;
+  final allOrdersList = await ref.watch(allOrdersProvider.future);
+  return allOrdersList.where((o) => o.buyerId == user.id && o.status == 'pending').length;
+}
+
+@riverpod
+Future<int> pendingSellerOrdersCount(Ref ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return 0;
+  final allOrdersList = await ref.watch(allOrdersProvider.future);
+  return allOrdersList.where((o) => o.sellerId == user.id && o.status == 'pending').length;
 }

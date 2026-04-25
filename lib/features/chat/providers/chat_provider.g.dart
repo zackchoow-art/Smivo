@@ -26,6 +26,157 @@ final chatTotalUnreadProvider = AutoDisposeFutureProvider<int>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ChatTotalUnreadRef = AutoDisposeFutureProviderRef<int>;
+String _$chatRoomHash() => r'7347a75114d390e9e5e5d2e8ecf18a66986785c1';
+
+/// Copied from Dart SDK
+class _SystemHash {
+  _SystemHash._();
+
+  static int combine(int hash, int value) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + value);
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
+    return hash ^ (hash >> 6);
+  }
+
+  static int finish(int hash) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
+    // ignore: parameter_assignments
+    hash = hash ^ (hash >> 11);
+    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
+  }
+}
+
+/// Fetches details for a single chat room.
+///
+/// Copied from [chatRoom].
+@ProviderFor(chatRoom)
+const chatRoomProvider = ChatRoomFamily();
+
+/// Fetches details for a single chat room.
+///
+/// Copied from [chatRoom].
+class ChatRoomFamily extends Family<AsyncValue<ChatRoom>> {
+  /// Fetches details for a single chat room.
+  ///
+  /// Copied from [chatRoom].
+  const ChatRoomFamily();
+
+  /// Fetches details for a single chat room.
+  ///
+  /// Copied from [chatRoom].
+  ChatRoomProvider call(String chatRoomId) {
+    return ChatRoomProvider(chatRoomId);
+  }
+
+  @override
+  ChatRoomProvider getProviderOverride(covariant ChatRoomProvider provider) {
+    return call(provider.chatRoomId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'chatRoomProvider';
+}
+
+/// Fetches details for a single chat room.
+///
+/// Copied from [chatRoom].
+class ChatRoomProvider extends AutoDisposeFutureProvider<ChatRoom> {
+  /// Fetches details for a single chat room.
+  ///
+  /// Copied from [chatRoom].
+  ChatRoomProvider(String chatRoomId)
+    : this._internal(
+        (ref) => chatRoom(ref as ChatRoomRef, chatRoomId),
+        from: chatRoomProvider,
+        name: r'chatRoomProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$chatRoomHash,
+        dependencies: ChatRoomFamily._dependencies,
+        allTransitiveDependencies: ChatRoomFamily._allTransitiveDependencies,
+        chatRoomId: chatRoomId,
+      );
+
+  ChatRoomProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.chatRoomId,
+  }) : super.internal();
+
+  final String chatRoomId;
+
+  @override
+  Override overrideWith(
+    FutureOr<ChatRoom> Function(ChatRoomRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: ChatRoomProvider._internal(
+        (ref) => create(ref as ChatRoomRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        chatRoomId: chatRoomId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<ChatRoom> createElement() {
+    return _ChatRoomProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ChatRoomProvider && other.chatRoomId == chatRoomId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, chatRoomId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin ChatRoomRef on AutoDisposeFutureProviderRef<ChatRoom> {
+  /// The parameter `chatRoomId` of this provider.
+  String get chatRoomId;
+}
+
+class _ChatRoomProviderElement
+    extends AutoDisposeFutureProviderElement<ChatRoom>
+    with ChatRoomRef {
+  _ChatRoomProviderElement(super.provider);
+
+  @override
+  String get chatRoomId => (origin as ChatRoomProvider).chatRoomId;
+}
+
 String _$chatRoomListHash() => r'bb95f37304540f7d80e7b44f76378a909a23330f';
 
 /// Fetches the user's chat rooms and subscribes to global message
@@ -51,27 +202,6 @@ final chatRoomListProvider =
 
 typedef _$ChatRoomList = AutoDisposeAsyncNotifier<List<ChatRoom>>;
 String _$chatMessagesHash() => r'c7bab1e54c16e8d88036ac3fd9fd50ae129df550';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
 
 abstract class _$ChatMessages
     extends BuildlessAutoDisposeAsyncNotifier<List<Message>> {

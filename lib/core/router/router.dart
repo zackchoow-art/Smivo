@@ -105,7 +105,8 @@ GoRouter router(Ref ref) {
             currentPath == AppRoutes.loginPath) {
           return null;
         }
-        return '${AppRoutes.emailVerificationPath}?email=${user.email}';
+        final email = user.email ?? '';
+        return '${AppRoutes.emailVerificationPath}?email=$email';
       }
 
       // ─── STATE 4: Guest (Not Logged In) ──────────────────
@@ -115,7 +116,9 @@ GoRouter router(Ref ref) {
           return null;
         }
         // Redirect protected routes to login with returnTo param
-        return '${AppRoutes.loginPath}?returnTo=$currentPath';
+        // URL encode the returnTo path to be safe
+        final encodedPath = Uri.encodeComponent(currentPath);
+        return '${AppRoutes.loginPath}?returnTo=$encodedPath';
       }
 
       return null;

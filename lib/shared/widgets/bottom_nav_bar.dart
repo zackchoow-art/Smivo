@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
+import 'package:smivo/features/orders/providers/orders_provider.dart';
 
 class BottomNavBar extends ConsumerWidget {
   const BottomNavBar({
@@ -19,6 +20,8 @@ class BottomNavBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final totalUnreadAsync = ref.watch(chatTotalUnreadProvider);
     final totalUnread = totalUnreadAsync.valueOrNull ?? 0;
+    final unreadOrderUpdatesAsync = ref.watch(unreadOrderUpdatesCountProvider);
+    final unreadOrderUpdates = unreadOrderUpdatesAsync.valueOrNull ?? 0;
     final colors = context.smivoColors;
     final radius = context.smivoRadius;
     final shadows = context.smivoShadows;
@@ -68,6 +71,7 @@ class BottomNavBar extends ConsumerWidget {
                 label: 'ORDERS',
                 isSelected: currentIndex == 2,
                 onTap: () => onTap(2),
+                unreadCount: unreadOrderUpdates,
               ),
             ],
           ),

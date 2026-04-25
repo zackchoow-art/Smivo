@@ -13,33 +13,47 @@ part 'notification_provider.g.dart';
 @riverpod
 class NotificationList extends _$NotificationList {
   RealtimeChannel? _channel;
+  bool _isDisposed = false;
 
   @override
   Future<List<AppNotification>> build() async {
     final user = ref.watch(authStateProvider).valueOrNull;
-    if (user == null) return [];
+    
+    // Cleanup if user logs out or build re-runs
+    if (user == null) {
+      _unsubscribe();
+      return [];
+    }
 
-    // Clean up subscription on dispose
-    ref.onDispose(() {
-      _channel?.unsubscribe();
-      _channel = null;
-    });
+    // Subscribe once per Notifier instance lifecycle
+    if (_channel == null) {
+      final repository = ref.read(notificationRepositoryProvider);
+      
+      _channel = repository.subscribeToNotifications(
+        userId: user.id,
+        onNotification: (newNotification) {
+          // Safety check: don't update state if we're disposed or disposing
+          if (_isDisposed) return;
+          
+          final current = state.valueOrNull ?? [];
+          if (current.any((n) => n.id == newNotification.id)) return;
+          state = AsyncValue.data([newNotification, ...current]);
+        },
+      );
+
+      ref.onDispose(() {
+        _isDisposed = true;
+        _unsubscribe();
+      });
+    }
 
     final repository = ref.read(notificationRepositoryProvider);
-
-    // Subscribe to new notifications for this user
-    _channel = repository.subscribeToNotifications(
-      userId: user.id,
-      onNotification: (newNotification) {
-        // Prepend new notification to the current list
-        final current = state.valueOrNull ?? [];
-        if (current.any((n) => n.id == newNotification.id)) return;
-        state = AsyncValue.data([newNotification, ...current]);
-      },
-    );
-
-    // Initial fetch
     return repository.fetchNotifications(user.id);
+  }
+
+  void _unsubscribe() {
+    _channel?.unsubscribe();
+    _channel = null;
   }
 
   /// Marks a single notification as read.

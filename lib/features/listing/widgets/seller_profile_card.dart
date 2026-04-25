@@ -9,6 +9,7 @@ class SellerProfileCard extends StatelessWidget {
     required this.rating,
     required this.reviewCount,
     this.label = 'SELLER',
+    this.email,
     this.onMessageTap,
   });
 
@@ -17,6 +18,7 @@ class SellerProfileCard extends StatelessWidget {
   final String rating;
   final int reviewCount;
   final String label;
+  final String? email;
   final VoidCallback? onMessageTap;
 
   @override
@@ -48,6 +50,13 @@ class SellerProfileCard extends StatelessWidget {
                   name,
                   style: typo.titleMedium,
                 ),
+                if (email != null)
+                  Text(
+                    email!,
+                    style: typo.bodySmall.copyWith(
+                      color: colors.outlineVariant,
+                    ),
+                  ),
                 Row(
                   children: [
                     Icon(Icons.star, color: colors.primary, size: 16),

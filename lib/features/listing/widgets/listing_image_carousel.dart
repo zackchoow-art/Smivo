@@ -5,12 +5,12 @@ class ListingImageCarousel extends StatefulWidget {
   const ListingImageCarousel({
     super.key,
     required this.imageUrls,
-    required this.tagText,
+    this.tagText,
     required this.isSale,
   });
 
   final List<String> imageUrls;
-  final String tagText;
+  final String? tagText;
   final bool isSale;
 
   @override
@@ -80,45 +80,46 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
           ),
 
           // Status Tag
-          Positioned(
-            left: 16,
-            bottom: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-              decoration: BoxDecoration(
-                color: widget.isSale 
-                  ? colors.onPrimary.withValues(alpha: 0.3)
-                  : colors.onSurface.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(radius.chip),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.isSale) ...[
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: colors.priceAccent,
-                        shape: BoxShape.circle,
+          if (widget.tagText != null)
+            Positioned(
+              left: 16,
+              bottom: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: widget.isSale 
+                    ? colors.onPrimary.withValues(alpha: 0.3)
+                    : colors.onSurface.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(radius.chip),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.isSale) ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: colors.priceAccent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      widget.tagText!,
+                      style: typo.labelSmall.copyWith(
+                        color: colors.onPrimary,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(width: 8),
                   ],
-                  Text(
-                    widget.tagText,
-                    style: typo.labelSmall.copyWith(
-                      color: colors.onPrimary,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
 
           // Pagination Dots (only if multiple images)
           if (widget.imageUrls.length > 1)

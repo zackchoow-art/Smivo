@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/data/models/message.dart';
@@ -117,17 +116,57 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       }
     });
 
+    final roomAsync = ref.watch(chatRoomProvider(widget.chatRoomId));
+    final typo = context.smivoTypo;
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        title: const Text('Chat'),
         backgroundColor: colors.surfaceContainerLowest,
         elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+        leading: const BackButton(),
+        title: roomAsync.when(
+          loading: () => const SizedBox(),
+          error: (_, __) => const Text('Error'),
+          data: (room) {
+            final otherUser = room.buyerId == currentUserId ? room.seller : room.buyer;
+            return Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: colors.surfaceContainerHigh,
+                  backgroundImage: otherUser?.avatarUrl != null && otherUser!.avatarUrl!.trim().isNotEmpty
+                      ? NetworkImage(otherUser.avatarUrl!)
+                      : null,
+                  child: otherUser?.avatarUrl == null || otherUser!.avatarUrl!.trim().isEmpty
+                      ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 18)
+                      : null,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        otherUser?.displayName ?? 'User',
+                        style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (otherUser?.email != null)
+                        Text(
+                          otherUser!.email,
+                          style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
+        titleSpacing: 0,
       ),
       body: Column(
         children: [
@@ -241,41 +280,24 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avatarUrl = message.sender?.avatarUrl;
-    final initials = message.sender?.displayName?.substring(0, 1).toUpperCase() ?? '?';
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isMine) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: colors.surfaceContainerHigh,
-              backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-              child: avatarUrl == null 
-                  ? Text(
-                      initials,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colors.onSurface,
-                      ),
-                    ) 
-                  : null,
-            ),
-            const SizedBox(width: 8),
-          ],
+          const SizedBox(width: 8),
           Flexible(
             child: Column(
               crossAxisAlignment: isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: message.messageType == 'image' 
+                      ? EdgeInsets.zero 
+                      : const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: isMine
                         ? colors.chatBubbleSelf
@@ -283,32 +305,58 @@ class _MessageBubble extends StatelessWidget {
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(radius.lg),
                       topRight: Radius.circular(radius.lg),
-                      bottomLeft: Radius.circular(isMine ? radius.lg : 4),
-                      bottomRight: Radius.circular(isMine ? 4 : radius.lg),
+                      bottomLeft: Radius.circular(isMine ? radius.lg : radius.xs),
+                      bottomRight: Radius.circular(isMine ? radius.xs : radius.lg),
                     ),
-                    boxShadow: [
-                      if (!isMine)
-                        BoxShadow(
-                          color: colors.shadow,
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                    ],
                   ),
                   child: message.messageType == 'image' && message.imageUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(radius.md),
-                          child: Image.network(
-                            message.imageUrl!,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const SizedBox(
+                      ? GestureDetector(
+                          onTap: () => showDialog(
+                            context: context,
+                            builder: (_) => Dialog(
+                              backgroundColor: Colors.transparent,
+                              insetPadding: EdgeInsets.zero,
+                              child: Stack(
+                                children: [
+                                  InteractiveViewer(
+                                    child: Center(
+                                      child: Image.network(message.imageUrl!),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 40,
+                                    right: 20,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(radius.card),
+                            child: Image.network(
+                              message.imageUrl!,
+                              width: 200,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
                                 width: 200,
-                                height: 200,
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            },
+                                height: 150,
+                                color: colors.surfaceContainerHigh,
+                                child: const Icon(Icons.broken_image),
+                              ),
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  width: 200,
+                                  height: 150,
+                                  color: colors.surfaceContainerHigh,
+                                  child: const Center(child: CircularProgressIndicator()),
+                                );
+                              },
+                            ),
                           ),
                         )
                       : Text(
@@ -317,37 +365,24 @@ class _MessageBubble extends StatelessWidget {
                             color: isMine
                                 ? colors.chatBubbleTextSelf
                                 : colors.chatBubbleTextOther,
+                            height: 1.4,
                           ),
                         ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  timeago.format(message.createdAt, locale: 'en_short'),
-                  style: typo.bodySmall.copyWith(
-                    color: colors.outlineVariant,
-                    fontSize: 10,
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
+                  child: Text(
+                    DateFormat('yyyy-MM-dd HH:mm').format(message.createdAt.toLocal()),
+                    style: typo.labelSmall.copyWith(
+                      color: colors.outlineVariant,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          if (isMine) ...[
-            const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: colors.surfaceContainerHigh,
-              backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-              child: avatarUrl == null 
-                  ? Text(
-                      initials,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colors.onSurface,
-                      ),
-                    ) 
-                  : null,
-            ),
-          ],
+          const SizedBox(width: 8),
         ],
       ),
     );

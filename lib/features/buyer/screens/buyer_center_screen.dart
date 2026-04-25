@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/buyer/providers/buyer_center_provider.dart';
+import 'package:smivo/features/notifications/providers/notification_provider.dart';
 
 class BuyerCenterScreen extends ConsumerStatefulWidget {
   const BuyerCenterScreen({super.key});
@@ -19,6 +20,8 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
   @override
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(buyerOrdersProvider);
+    final notificationsAsync = ref.watch(notificationListProvider);
+    final notifications = notificationsAsync.valueOrNull ?? [];
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
@@ -85,10 +88,10 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
                 ])));
               }
               return SliverMainAxisGroup(slivers: [
-                ..._buildSection('REQUESTED', requested, Icons.hourglass_top, colors.warning),
-                ..._buildSection('AWAITING DELIVERY', awaitingDelivery, Icons.local_shipping, colors.primary),
-                ..._buildSection('ACTIVE TRANSACTIONS', activeTransactions, Icons.sync, colors.success),
-                ..._buildSection('HISTORY', history, Icons.history, colors.outlineVariant),
+                ..._buildSection('REQUESTED', requested, Icons.hourglass_top, colors.warning, notifications),
+                ..._buildSection('AWAITING DELIVERY', awaitingDelivery, Icons.local_shipping, colors.primary, notifications),
+                ..._buildSection('ACTIVE TRANSACTIONS', activeTransactions, Icons.sync, colors.success, notifications),
+                ..._buildSection('HISTORY', history, Icons.history, colors.outlineVariant, notifications),
               ]);
             },
           ),
@@ -99,7 +102,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
     );
   }
 
-  List<Widget> _buildSection(String title, List orders, IconData icon, Color color) {
+  List<Widget> _buildSection(String title, List orders, IconData icon, Color color, List notifications) {
     if (orders.isEmpty) return [];
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -121,9 +124,10 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
           final imageUrl = listing?.images.isNotEmpty == true ? listing!.images.first.imageUrl : null;
           final sellerName = order.seller?.displayName ?? 'Seller';
           final dateStr = DateFormat('MMM d').format(order.createdAt);
+          final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
 
           if (_isListView) {
-            return _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color);
+            return _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color, hasUnread);
           }
 
           return Container(
@@ -155,7 +159,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
                     Text(dateStr, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
                   ])),
                   const SizedBox(width: 8),
-                  _StatusChip(order: order),
+                  _StatusChip(order: order, hasUnread: hasUnread),
                 ]),
               ]),
             ),
@@ -165,7 +169,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
     ];
   }
 
-  Widget _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color) {
+  Widget _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color, bool hasUnread) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -192,7 +196,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
           Text(dateStr, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.4))),
           const SizedBox(width: 8),
-          _StatusChip(order: order, isCompact: true),
+          _StatusChip(order: order, isCompact: true, hasUnread: hasUnread),
         ]),
         onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
       ),
@@ -205,9 +209,10 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
 /// Uses both order status and rental status to show the most
 /// meaningful label for the buyer's current state.
 class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.order, this.isCompact = false});
+  const _StatusChip({required this.order, this.isCompact = false, this.hasUnread = false});
   final dynamic order;
   final bool isCompact;
+  final bool hasUnread;
 
   @override
   Widget build(BuildContext context) {
@@ -216,11 +221,27 @@ class _StatusChip extends StatelessWidget {
 
     final (bgColor, textColor, label) = _resolveChip(colors);
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: isCompact ? 6 : 10, vertical: isCompact ? 2 : 4),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(context.smivoRadius.full)),
-      child: Text(label, style: (isCompact ? typo.labelSmall : typo.labelSmall).copyWith(
-        color: textColor, fontWeight: FontWeight.w700, fontSize: isCompact ? 10 : null)),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (hasUnread) ...[
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: colors.error,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: isCompact ? 6 : 10, vertical: isCompact ? 2 : 4),
+          decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(context.smivoRadius.full)),
+          child: Text(label, style: (isCompact ? typo.labelSmall : typo.labelSmall).copyWith(
+            color: textColor, fontWeight: FontWeight.w700, fontSize: isCompact ? 10 : null)),
+        ),
+      ],
     );
   }
 

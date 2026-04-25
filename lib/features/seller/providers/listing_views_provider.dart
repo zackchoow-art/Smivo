@@ -15,6 +15,7 @@ class ListingView {
     required this.listingId,
     this.viewerName,
     this.viewerAvatarUrl,
+    this.viewerEmail,
     required this.viewedAt,
   });
 
@@ -22,6 +23,7 @@ class ListingView {
   final String listingId;
   final String? viewerName;
   final String? viewerAvatarUrl;
+  final String? viewerEmail;
   final DateTime viewedAt;
 }
 
@@ -31,7 +33,7 @@ Future<List<ListingView>> listingViews(Ref ref, String listingId) async {
   try {
     final data = await client
         .from(AppConstants.tableListingViews)
-        .select('*, viewer:user_profiles!viewer_id(display_name, avatar_url)')
+        .select('*, viewer:user_profiles!viewer_id(display_name, avatar_url, email)')
         .eq('listing_id', listingId)
         .order('viewed_at', ascending: false)
         .limit(100);
@@ -41,6 +43,7 @@ Future<List<ListingView>> listingViews(Ref ref, String listingId) async {
       listingId: json['listing_id'] as String,
       viewerName: (json['viewer'] as Map<String, dynamic>?)?['display_name'] as String?,
       viewerAvatarUrl: (json['viewer'] as Map<String, dynamic>?)?['avatar_url'] as String?,
+      viewerEmail: (json['viewer'] as Map<String, dynamic>?)?['email'] as String?,
       viewedAt: DateTime.parse(json['viewed_at'] as String),
     )).toList();
   } on PostgrestException catch (e) {

@@ -124,7 +124,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           final existingOrder = ref.watch(existingBuyerOrderProvider(listing.id));
           final imageUrls = listing.images.map((img) => img.imageUrl).toList();
           // NOTE: Show real condition for sale items, availability for rentals
-          final statusTag = isSale ? _conditionLabel(listing.condition) : 'AVAILABLE NOW';
+          final statusTag = isSale ? null : 'AVAILABLE NOW';
 
           return Stack(children: [
             RefreshIndicator(
@@ -136,6 +136,14 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
               ListingImageCarousel(imageUrls: imageUrls, tagText: statusTag, isSale: isSale),
               Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(listing.title, style: typo.displayLarge.copyWith(fontSize: 32, letterSpacing: -1, height: 1.1)),
+                const SizedBox(height: 4),
+                Text(_conditionLabel(listing.condition).toUpperCase(),
+                  style: typo.bodyMedium.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.55),
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
                 if (isSale) ...[
                   const SizedBox(height: 8),
                   Text('\$${listing.price.toStringAsFixed(0)}', style: typo.headlineLarge.copyWith(color: colors.priceAccent, fontStyle: FontStyle.italic)),
@@ -145,7 +153,29 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 const SizedBox(height: 8),
                 Text(listing.description ?? 'No description provided.', style: typo.bodyLarge),
                 const SizedBox(height: 24),
-                if (!isSale) ...[RentalOptionsSection(listing: listing), const SizedBox(height: 24)],
+                if (!isSale) ...[
+                  if (!isOwnListing) RentalOptionsSection(listing: listing),
+                  if (isOwnListing) ...[
+                    const SizedBox(height: 16),
+                    // Read-only rental rates display
+                    Row(children: [
+                      if (listing.rentalDailyPrice != null && listing.rentalDailyPrice! > 0)
+                        _ReadOnlyRateCard(label: 'Day', price: listing.rentalDailyPrice!),
+                      if (listing.rentalDailyPrice != null && listing.rentalDailyPrice! > 0 && 
+                          ((listing.rentalWeeklyPrice != null && listing.rentalWeeklyPrice! > 0) || 
+                           (listing.rentalMonthlyPrice != null && listing.rentalMonthlyPrice! > 0)))
+                        const SizedBox(width: 12),
+                      if (listing.rentalWeeklyPrice != null && listing.rentalWeeklyPrice! > 0)
+                        _ReadOnlyRateCard(label: 'Week', price: listing.rentalWeeklyPrice!),
+                      if (listing.rentalWeeklyPrice != null && listing.rentalWeeklyPrice! > 0 && 
+                          (listing.rentalMonthlyPrice != null && listing.rentalMonthlyPrice! > 0))
+                        const SizedBox(width: 12),
+                      if (listing.rentalMonthlyPrice != null && listing.rentalMonthlyPrice! > 0)
+                        _ReadOnlyRateCard(label: 'Month', price: listing.rentalMonthlyPrice!),
+                    ]),
+                  ],
+                  const SizedBox(height: 24)
+                ],
                 // Pickup Location Selector
                 Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Icon(Icons.location_on_outlined, color: colors.priceAccent),
@@ -153,7 +183,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                       Text('PICKUP LOCATION', style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
-                      if (listing.allowPickupChange) GestureDetector(
+                      if (listing.allowPickupChange && !isOwnListing) GestureDetector(
                         onTap: () {},
                         child: Text('Change Location', style: typo.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
                       ),
@@ -162,7 +192,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.input)),
-                      child: !listing.allowPickupChange
+                      child: !listing.allowPickupChange || isOwnListing
                         ? Container(alignment: Alignment.centerLeft, height: 48,
                             child: Text(listing.pickupLocation?.name ?? 'Not specified', style: typo.titleMedium.copyWith(color: colors.onSurface)))
                         : DropdownButtonHideUnderline(child: Consumer(builder: (context, ref, _) {
@@ -188,43 +218,51 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 ]),
                 const SizedBox(height: 24),
                 // Seller Section — hidden on own listing
-                if (seller != null && !isOwnListing) SellerProfileCard(
-                  name: seller.displayName ?? 'Anonymous Student',
-                  avatarUrl: seller.avatarUrl ?? 'https://i.pravatar.cc/150?u=${seller.id}',
-                  rating: '4.9', reviewCount: 12,
-                  label: isSale ? 'SELLER' : 'LISTED BY',
-                  onMessageTap: () async {
-                    final user = ref.read(authStateProvider).valueOrNull;
-                    if (user == null) { context.pushNamed(AppRoutes.login); return; }
-                    if (user.id == listing.sellerId) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('This is your own listing'))); return;
-                    }
-                    try {
-                      final chatRoom = await ref.read(chatRepositoryProvider).getOrCreateChatRoom(
-                        listingId: listing.id, buyerId: user.id, sellerId: listing.sellerId);
-                      if (!context.mounted) return;
+                if (seller != null && !isOwnListing) ...[
+                  Text('Seller', style: typo.labelLarge),
+                  const SizedBox(height: 8),
+                  SellerProfileCard(
+                    name: seller.displayName ?? 'Anonymous Student',
+                    email: seller.email,
+                    avatarUrl: (seller.avatarUrl != null && seller.avatarUrl!.isNotEmpty) 
+                        ? seller.avatarUrl! 
+                        : 'https://i.pravatar.cc/150?u=${seller.id}',
+                    rating: '4.9', reviewCount: 12,
+                    label: isSale ? 'SELLER' : 'LISTED BY',
+                    onMessageTap: () async {
+                      final user = ref.read(authStateProvider).valueOrNull;
+                      if (user == null) { context.pushNamed(AppRoutes.login); return; }
+                      if (user.id == listing.sellerId) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('This is your own listing'))); return;
+                      }
+                      try {
+                        final chatRoom = await ref.read(chatRepositoryProvider).getOrCreateChatRoom(
+                          listingId: listing.id, buyerId: user.id, sellerId: listing.sellerId);
+                        if (!context.mounted) return;
 
-                      // Use existing order info if available
-                      final order = existingOrder.valueOrNull;
-                      final price = order?.totalPrice ?? listing.price;
-                      final priceLabel = order != null && order.orderType == 'rental'
-                          ? _formatRentalSummary(order)
-                          : null;
+                        // Use existing order info if available
+                        final order = existingOrder.valueOrNull;
+                        final price = order?.totalPrice ?? listing.price;
+                        final priceLabel = order != null && order.orderType == 'rental'
+                            ? _formatRentalSummary(order)
+                            : null;
 
-                      showChatPopup(context,
-                        chatRoomId: chatRoom.id,
-                        otherUserName: listing.seller?.displayName ?? 'Seller',
-                        otherUserAvatar: listing.seller?.avatarUrl,
-                        listingTitle: listing.title,
-                        listingPrice: price,
-                        priceLabel: priceLabel,
-                        listingImageUrl: listing.images.firstOrNull?.imageUrl);
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                    }
-                  },
-                ),
+                        showChatPopup(context,
+                          chatRoomId: chatRoom.id,
+                          otherUserName: listing.seller?.displayName ?? 'Seller',
+                          otherUserAvatar: listing.seller?.avatarUrl,
+                          otherUserEmail: listing.seller?.email,
+                          listingTitle: listing.title,
+                          listingPrice: price,
+                          priceLabel: priceLabel,
+                          listingImageUrl: listing.images.firstOrNull?.imageUrl);
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                      }
+                    },
+                  ),
+                ],
                 const SizedBox(height: 24),
                 // Stats Section — only visible on own listing
                 if (isOwnListing) ...[
@@ -431,7 +469,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           if (!context.mounted) return;
                           await _showOrderSuccessDialog(context);
                           if (!context.mounted) return;
-                          context.goNamed(AppRoutes.orders);
+                          context.goNamed(AppRoutes.home);
                         } catch (e) {
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to place order: ${e.toString()}'), backgroundColor: colors.error));
@@ -440,7 +478,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.primary, padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.button)), elevation: 0),
-                      child: Text(isSale ? 'Place Order' : 'Request to Rent', style: typo.titleMedium.copyWith(color: colors.onPrimary)),
+                      child: Text(isSale ? 'Request to Buy' : 'Request to Rent', style: typo.titleMedium.copyWith(color: colors.onPrimary)),
                     ));
                   },
                 ),
@@ -481,6 +519,33 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
         },
       ),
     );
+  }
+}
+
+class _ReadOnlyRateCard extends StatelessWidget {
+  const _ReadOnlyRateCard({required this.label, required this.price});
+  final String label;
+  final double price;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    return Expanded(child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
+      child: Column(children: [
+        Text(label, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w600)),
+        const SizedBox(height: 4),
+        Text('\$${price.toStringAsFixed(0)}', style: typo.titleMedium.copyWith(color: colors.primary, fontWeight: FontWeight.bold)),
+      ]),
+    ));
   }
 }
 

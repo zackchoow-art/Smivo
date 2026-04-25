@@ -179,6 +179,64 @@ class _OrderDetailProviderElement
   String get orderId => (origin as OrderDetailProvider).orderId;
 }
 
+String _$unreadOrderUpdatesCountHash() =>
+    r'755c023d9908483c8f20a9c36cae051cd766c757';
+
+/// See also [unreadOrderUpdatesCount].
+@ProviderFor(unreadOrderUpdatesCount)
+final unreadOrderUpdatesCountProvider = AutoDisposeFutureProvider<int>.internal(
+  unreadOrderUpdatesCount,
+  name: r'unreadOrderUpdatesCountProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$unreadOrderUpdatesCountHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef UnreadOrderUpdatesCountRef = AutoDisposeFutureProviderRef<int>;
+String _$pendingBuyerOrdersCountHash() =>
+    r'94739f85bdd1d17a53aef6da1fcd1bfb7bc67705';
+
+/// See also [pendingBuyerOrdersCount].
+@ProviderFor(pendingBuyerOrdersCount)
+final pendingBuyerOrdersCountProvider = AutoDisposeFutureProvider<int>.internal(
+  pendingBuyerOrdersCount,
+  name: r'pendingBuyerOrdersCountProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pendingBuyerOrdersCountHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef PendingBuyerOrdersCountRef = AutoDisposeFutureProviderRef<int>;
+String _$pendingSellerOrdersCountHash() =>
+    r'b12da80f95278cf007d66c0f3b679c903f7b5871';
+
+/// See also [pendingSellerOrdersCount].
+@ProviderFor(pendingSellerOrdersCount)
+final pendingSellerOrdersCountProvider =
+    AutoDisposeFutureProvider<int>.internal(
+      pendingSellerOrdersCount,
+      name: r'pendingSellerOrdersCountProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$pendingSellerOrdersCountHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef PendingSellerOrdersCountRef = AutoDisposeFutureProviderRef<int>;
 String _$selectedOrdersTabHash() => r'f83cc35478509dc892152616cfc4b09b6fd4c726';
 
 /// Current tab state for the orders screen.
@@ -222,7 +280,7 @@ final allOrdersProvider =
     );
 
 typedef _$AllOrders = AutoDisposeAsyncNotifier<List<Order>>;
-String _$orderActionsHash() => r'9238a0bdac7860952e26dc4b88fbe2fcd215f076';
+String _$orderActionsHash() => r'57cb492a4cc0362a4bb46038e9aef55fbe16ae6a';
 
 /// Mutation actions for a specific order.
 ///

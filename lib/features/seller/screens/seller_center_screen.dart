@@ -6,6 +6,8 @@ import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/seller/providers/seller_center_provider.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/listing.dart';
+import 'package:intl/intl.dart';
+import 'package:smivo/features/notifications/providers/notification_provider.dart';
 
 class SellerCenterScreen extends ConsumerStatefulWidget {
   const SellerCenterScreen({super.key});
@@ -21,6 +23,8 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
   Widget build(BuildContext context) {
     final listingsAsync = ref.watch(myListingsProvider);
     final ordersAsync = ref.watch(sellerOrdersProvider);
+    final notificationsAsync = ref.watch(notificationListProvider);
+    final notifications = notificationsAsync.valueOrNull ?? [];
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -129,7 +133,8 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                 sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
                   final order = awaitingDelivery[index];
                   final statusLabel = order.orderType == 'sale' ? 'Awaiting Pickup' : 'Awaiting Delivery';
-                  return _buildOrderCard(order, statusLabel);
+                  final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                  return _buildOrderCard(order, statusLabel, hasUnread);
                 }, childCount: awaitingDelivery.length)),
               );
             },
@@ -165,7 +170,8 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                 sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
                   final order = activeTransactions[index];
                   final statusLabel = order.rentalStatus?.replaceAll('_', ' ').toUpperCase() ?? order.status.toUpperCase();
-                  return _buildOrderCard(order, statusLabel);
+                  final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                  return _buildOrderCard(order, statusLabel, hasUnread);
                 }, childCount: activeTransactions.length)),
               );
             },
@@ -209,10 +215,15 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
 
                   // Add completed orders individually
                   for (final o in completedOrders) {
+                    final fullListing = listings.where((l) => l.id == o.listingId).firstOrNull;
                     historyItems.add(_HistoryItem(
-                      title: o.listing?.title ?? 'Order',
+                      title: o.listing?.title ?? fullListing?.title ?? 'Order',
                       subtitle: '\$${o.totalPrice.toStringAsFixed(0)} · Completed',
                       isCompleted: true,
+                      orderId: o.id,
+                      createdAt: fullListing?.createdAt ?? o.createdAt,
+                      updatedAt: o.updatedAt,
+                      imageUrl: o.listing?.images.firstOrNull?.imageUrl ?? fullListing?.images.firstOrNull?.imageUrl,
                       onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': o.id}),
                     ));
                   }
@@ -224,11 +235,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     }
                     
                     final groupOrders = entry.value;
-                    final listing = groupOrders.first.listing;
-                    // Note: We need the full listing for stats, but order.listing is only a preview.
-                    // We'll try to find the real listing from myListings.
+                    final listingPreview = groupOrders.first.listing;
                     final fullListing = listings.where((l) => l.id == entry.key).firstOrNull;
-                    final title = fullListing?.title ?? listing?.title ?? 'Listing';
+                    final title = fullListing?.title ?? listingPreview?.title ?? 'Listing';
                     
                     historyItems.add(_HistoryItem(
                       title: title,
@@ -237,6 +246,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       isMergedCancelled: true,
                       mergedOrders: groupOrders,
                       listing: fullListing,
+                      createdAt: fullListing?.createdAt ?? groupOrders.first.createdAt,
+                      updatedAt: groupOrders.first.updatedAt, // Use most recent update
+                      imageUrl: fullListing?.images.firstOrNull?.imageUrl ?? listingPreview?.images.firstOrNull?.imageUrl,
                       onTap: () => _showMergedCancelledDetails(context, fullListing, groupOrders),
                     ));
                   }
@@ -249,6 +261,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       subtitle: 'Delisted',
                       isCompleted: false,
                       isDelisted: true,
+                      createdAt: l.createdAt,
+                      updatedAt: l.updatedAt,
+                      imageUrl: l.images.firstOrNull?.imageUrl,
                       onTap: () => context.pushNamed(AppRoutes.listingDetail, pathParameters: {'id': l.id}),
                     ));
                   }
@@ -264,23 +279,55 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
                       final item = historyItems[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        decoration: BoxDecoration(
-                          color: colors.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(radius.card),
-                          border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-                        ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: _getHistoryItemColor(context, item).withValues(alpha: 0.1),
-                            child: Icon(_getHistoryItemIcon(item), color: _getHistoryItemColor(context, item), size: 20),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(radius.card),
+                        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(children: [
+                        // Left: Image + Title/Subtitle (Listing Detail)
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: item.onTap, // For History items, this is currently the main action
+                            behavior: HitTestBehavior.opaque,
+                            child: Row(children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(radius.sm),
+                                child: item.imageUrl != null
+                                  ? Image.network(item.imageUrl!, width: 40, height: 40, fit: BoxFit.cover)
+                                  : Container(width: 40, height: 40, color: colors.surfaceContainerHigh, 
+                                      child: Icon(Icons.image, size: 20, color: colors.onSurface.withValues(alpha: 0.3))),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(item.title, style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                                  maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text(item.subtitle, style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+                              ])),
+                            ]),
                           ),
-                          title: Text(item.title, style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                          subtitle: Text(item.subtitle, style: typo.bodySmall),
-                          onTap: item.onTap,
                         ),
-                      );
+                        const SizedBox(width: 12),
+                        // Right: Timestamps (Order Detail or Main Tap)
+                        GestureDetector(
+                          onTap: item.isCompleted && item.orderId != null
+                            ? () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': item.orderId!})
+                            : item.onTap,
+                          behavior: HitTestBehavior.opaque,
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                            if (item.createdAt != null)
+                              Text(DateFormat('MM/dd HH:mm').format(item.createdAt!), 
+                                style: typo.labelSmall.copyWith(fontSize: 10, color: colors.onSurface.withValues(alpha: 0.4))),
+                            if (item.updatedAt != null)
+                              Text(DateFormat('MM/dd HH:mm').format(item.updatedAt!), 
+                                style: typo.labelSmall.copyWith(fontSize: 10, fontWeight: FontWeight.bold, color: colors.primary)),
+                          ]),
+                        ),
+                      ]),
+                    );
                     }, childCount: historyItems.length)),
                   );
                 },
@@ -344,7 +391,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     );
   }
 
-  Widget _buildOrderCard(order, String statusLabel) {
+  Widget _buildOrderCard(order, String statusLabel, bool hasUnread) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -366,7 +413,17 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
               ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5))
               : null,
         ),
-        title: Text(order.listing?.title ?? 'Transaction', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            Expanded(child: Text(order.listing?.title ?? 'Transaction', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold))),
+            if (hasUnread)
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: colors.error, shape: BoxShape.circle),
+              ),
+          ],
+        ),
         subtitle: Text('\$${order.totalPrice.toStringAsFixed(0)} · ${order.buyer?.displayName ?? 'Buyer'}\n$statusLabel', style: typo.bodySmall),
         isThreeLine: true,
         onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
@@ -426,20 +483,6 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     ]);
   }
 
-  Color _getHistoryItemColor(BuildContext context, _HistoryItem item) {
-    final colors = context.smivoColors;
-    if (item.isCompleted) return colors.success;
-    if (item.isMergedCancelled) return colors.warning;
-    if (item.isDelisted) return colors.onSurface.withValues(alpha: 0.5);
-    return colors.error;
-  }
-
-  IconData _getHistoryItemIcon(_HistoryItem item) {
-    if (item.isCompleted) return Icons.check_circle;
-    if (item.isMergedCancelled) return Icons.playlist_remove;
-    if (item.isDelisted) return Icons.remove_circle;
-    return Icons.cancel;
-  }
 
   Widget _buildListViewItem(listing, imageUrl) {
     final colors = context.smivoColors;
@@ -480,10 +523,10 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
         Row(mainAxisSize: MainAxisSize.min, children: [
           _buildMiniStat(Icons.visibility_outlined, listing.viewCount, () =>
             context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '0'})),
-          const SizedBox(width: 8),
+          const SizedBox(width: 16),
           _buildMiniStat(Icons.bookmark_outline, listing.saveCount, () =>
             context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '1'})),
-          const SizedBox(width: 8),
+          const SizedBox(width: 16),
           _buildMiniStat(Icons.local_offer_outlined, listing.inquiryCount, () =>
             context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '2'})),
         ]),
@@ -496,10 +539,15 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final typo = context.smivoTypo;
     return GestureDetector(
       onTap: onTap,
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 14, color: colors.primary),
-        Text('$count', style: typo.labelSmall.copyWith(fontWeight: FontWeight.bold, fontSize: 10)),
-      ]),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+        alignment: Alignment.center,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 14, color: colors.primary),
+          Text('$count', style: typo.labelSmall.copyWith(fontWeight: FontWeight.bold, fontSize: 10)),
+        ]),
+      ),
     );
   }
 
@@ -513,7 +561,6 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
         Icon(icon, size: 16, color: colors.primary),
         const SizedBox(height: 2),
         Text(count, style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold, color: colors.primary)),
-        Text(label, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
       ]),
     );
   }
@@ -529,6 +576,10 @@ class _HistoryItem {
     this.mergedOrders,
     this.listing,
     required this.onTap,
+    this.createdAt,
+    this.updatedAt,
+    this.imageUrl,
+    this.orderId,
   });
 
   final String title;
@@ -539,4 +590,8 @@ class _HistoryItem {
   final List<Order>? mergedOrders;
   final dynamic listing; // Can be Listing or OrderListingPreview
   final VoidCallback onTap;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? imageUrl;
+  final String? orderId;
 }

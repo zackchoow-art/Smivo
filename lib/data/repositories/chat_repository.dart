@@ -42,6 +42,25 @@ class ChatRepository {
       throw DatabaseException(e.message, e);
     }
   }
+  /// Fetches a single chat room by [id] with context data.
+  Future<ChatRoom> fetchChatRoom(String id) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableChatRooms)
+          .select('''
+            *,
+            buyer:user_profiles!buyer_id(*),
+            seller:user_profiles!seller_id(*),
+            listing:listings(id, title, images:listing_images(image_url))
+          ''')
+          .eq('id', id)
+          .single();
+      return ChatRoom.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
 
   /// Fetches or creates a chat room for a listing between buyer and seller.
   Future<ChatRoom> getOrCreateChatRoom({

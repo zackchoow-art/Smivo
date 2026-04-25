@@ -22,8 +22,13 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            ref.invalidate(homeListingsProvider);
-            await ref.read(homeListingsProvider.future);
+            try {
+              ref.invalidate(homeListingsProvider);
+              await ref.read(homeListingsProvider.future);
+            } catch (e) {
+              // Silently handle error here, the AsyncValue.error will
+              // be caught by ref.watch(homeListingsProvider) and show in UI.
+            }
           },
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -38,9 +43,11 @@ class HomeScreen extends ConsumerWidget {
             
             listingsAsync.when(
               loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (error, stack) => SliverFillRemaining(
+                hasScrollBody: false,
                 child: Center(
                   child: Text(
                     'Error loading listings',
@@ -51,6 +58,7 @@ class HomeScreen extends ConsumerWidget {
               data: (listings) {
                 if (listings.isEmpty) {
                   return SliverFillRemaining(
+                    hasScrollBody: false,
                     child: Center(
                       child: Text(
                         'No listings found.',
@@ -60,29 +68,23 @@ class HomeScreen extends ConsumerWidget {
                   );
                 }
 
-                // First 3 items are featured, the rest are compact
-                final featuredItems = listings.take(3).toList();
-                final compactItems = listings.skip(3).toList();
-
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        if (index < featuredItems.length) {
+                        // First 3 items are featured, the rest are compact
+                        if (index < 3 && index < listings.length) {
                           return FeaturedListingCard(
-                            listing: featuredItems[index],
+                            listing: listings[index],
                           );
                         } else {
-                          final compactIndex =
-                              index - featuredItems.length;
                           return CompactListingCard(
-                            listing: compactItems[compactIndex],
+                            listing: listings[index],
                           );
                         }
                       },
-                      childCount:
-                          featuredItems.length + compactItems.length,
+                      childCount: listings.length,
                     ),
                   ),
                 );

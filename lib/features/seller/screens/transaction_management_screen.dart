@@ -11,6 +11,7 @@ import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/seller/providers/transaction_stats_provider.dart';
 import 'package:smivo/features/seller/providers/listing_views_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
+import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 
 class TransactionManagementScreen extends ConsumerWidget {
   const TransactionManagementScreen({
@@ -24,6 +25,11 @@ class TransactionManagementScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    
+    final listingAsync = ref.watch(listingDetailProvider(listingId));
+
     return DefaultTabController(
       length: 3,
       initialIndex: initialTab,
@@ -31,7 +37,57 @@ class TransactionManagementScreen extends ConsumerWidget {
         backgroundColor: colors.surfaceContainerLowest,
         appBar: AppBar(
           title: const Text('Manage Transactions'),
-          bottom: const TabBar(tabs: [Tab(text: 'Views'), Tab(text: 'Saves'), Tab(text: 'Offers')]),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(100),
+            child: Column(
+              children: [
+                listingAsync.when(
+                  loading: () => const SizedBox(height: 64),
+                  error: (_, __) => const SizedBox(height: 64),
+                  data: (listing) {
+                    final imageUrl = listing.images.firstOrNull?.imageUrl;
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(radius.card),
+                      ),
+                      child: Row(
+                        children: [
+                          if (imageUrl != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(radius.sm),
+                              child: Image.network(imageUrl, width: 48, height: 48, fit: BoxFit.cover),
+                            )
+                          else
+                            Container(
+                              width: 48, height: 48,
+                              decoration: BoxDecoration(
+                                color: colors.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(radius.sm),
+                              ),
+                              child: Icon(Icons.image_not_supported, size: 20, color: colors.outlineVariant),
+                            ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(listing.title, style: typo.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text('\$${listing.price.toStringAsFixed(0)}', style: typo.bodyMedium.copyWith(color: colors.primary, fontWeight: FontWeight.w600)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const TabBar(tabs: [Tab(text: 'Views'), Tab(text: 'Saves'), Tab(text: 'Offers')]),
+              ],
+            ),
+          ),
         ),
         body: TabBarView(children: [
           _ViewsTab(listingId: listingId),
@@ -88,24 +144,41 @@ class _ViewsTab extends ConsumerWidget {
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 CircleAvatar(
                   backgroundColor: colors.surfaceContainerHigh,
-                  backgroundImage: view.viewerAvatarUrl != null ? NetworkImage(view.viewerAvatarUrl!) : null,
-                  child: view.viewerAvatarUrl == null ? Icon(Icons.person, color: colors.onSurface) : null,
+                  backgroundImage: view.viewerAvatarUrl != null && view.viewerAvatarUrl!.trim().isNotEmpty
+                      ? NetworkImage(view.viewerAvatarUrl!)
+                      : null,
+                  child: view.viewerAvatarUrl == null || view.viewerAvatarUrl!.trim().isEmpty
+                      ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5))
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(view.viewerName ?? 'Anonymous Guest', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                    IconButton(
-                      icon: const Icon(Icons.chat_outlined, size: 20),
-                      padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(view.viewerName ?? 'Anonymous Guest', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                          Text(view.viewerEmail ?? '', style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.chat_outlined, size: 16),
+                      label: const Text('Chat'),
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat coming soon')));
                       },
                     ),
                   ]),
-                  Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
                   const SizedBox(height: 4),
-                  Text('Viewed on $timeStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+                  Row(
+                    children: [
+                      Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
+                      const SizedBox(width: 8),
+                      Text('Viewed on $timeStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+                    ],
+                  ),
                 ])),
               ]),
             );
@@ -164,28 +237,41 @@ class _SavesTab extends ConsumerWidget {
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 CircleAvatar(
                   backgroundColor: colors.surfaceContainerHigh,
-                  backgroundImage: save.user?.avatarUrl != null && save.user!.avatarUrl!.isNotEmpty
+                  backgroundImage: save.user?.avatarUrl != null && save.user!.avatarUrl!.trim().isNotEmpty
                       ? NetworkImage(save.user!.avatarUrl!)
                       : null,
-                  child: save.user?.avatarUrl == null || save.user!.avatarUrl!.isEmpty
+                  child: save.user?.avatarUrl == null || save.user!.avatarUrl!.trim().isEmpty
                       ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5))
                       : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(save.user?.displayName ?? 'Anonymous User', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                    IconButton(
-                      icon: const Icon(Icons.chat_outlined, size: 20),
-                      padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(save.user?.displayName ?? 'Anonymous User', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                          Text(save.user?.email ?? '', style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.chat_outlined, size: 16),
+                      label: const Text('Chat'),
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat coming soon')));
                       },
                     ),
                   ]),
-                  Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
                   const SizedBox(height: 4),
-                  Text('Saved on $dateStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+                  Row(
+                    children: [
+                      Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
+                      const SizedBox(width: 8),
+                      Text('Saved on $dateStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+                    ],
+                  ),
                 ])),
               ]),
             );
@@ -269,33 +355,71 @@ class _OffersTab extends ConsumerWidget {
         statusLabel = order.status;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(radius.md),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          CircleAvatar(
-            backgroundColor: colors.surfaceContainerHigh,
-            backgroundImage: order.buyer?.avatarUrl != null && order.buyer!.avatarUrl!.isNotEmpty
-                ? NetworkImage(order.buyer!.avatarUrl!)
-                : null,
-            child: order.buyer?.avatarUrl == null || order.buyer!.avatarUrl!.isEmpty
-                ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 20)
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(buyerName, style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-              Row(children: [
-                IconButton(
-                  icon: const Icon(Icons.chat_outlined, size: 20),
-                  padding: EdgeInsets.zero, constraints: const BoxConstraints(),
+    return GestureDetector(
+      onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(radius.md),
+          border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            CircleAvatar(
+              backgroundColor: colors.surfaceContainerHigh,
+              backgroundImage: order.buyer?.avatarUrl != null && order.buyer!.avatarUrl!.trim().isNotEmpty
+                  ? NetworkImage(order.buyer!.avatarUrl!)
+                  : null,
+              child: order.buyer?.avatarUrl == null || order.buyer!.avatarUrl!.trim().isEmpty
+                  ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 20)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(buyerName, style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                      Text(order.buyer?.email ?? '', style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+                Text(
+                  '\$${order.totalPrice.toStringAsFixed(0)}',
+                  style: typo.titleMedium.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
+                ),
+              ]),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
+                  const SizedBox(width: 8),
+                  Text('Submitted on $dateStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+                ],
+              ),
+            ])),
+          ]),
+          const SizedBox(height: 16),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(radius.xl),
+              ),
+              child: Text(statusLabel, style: typo.labelSmall.copyWith(
+                color: statusColor, fontWeight: FontWeight.w700, fontSize: 10,
+              )),
+            ),
+            Row(
+              children: [
+                TextButton.icon(
+                  icon: const Icon(Icons.chat_outlined, size: 16),
+                  label: const Text('Chat'),
                   onPressed: () async {
                     final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
                     if (currentUserId == null) return;
@@ -311,6 +435,7 @@ class _OffersTab extends ConsumerWidget {
                       chatRoomId: room.id,
                       otherUserName: order.buyer?.displayName ?? 'Buyer',
                       otherUserAvatar: order.buyer?.avatarUrl,
+                      otherUserEmail: order.buyer?.email,
                       listingTitle: order.listing?.title ?? '',
                       listingPrice: order.totalPrice,
                       priceLabel: order.orderType == 'rental' ? _formatRentalSummary(order) : null,
@@ -318,68 +443,48 @@ class _OffersTab extends ConsumerWidget {
                     );
                   },
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(radius.xl),
-                  ),
-                  child: Text(statusLabel, style: typo.labelSmall.copyWith(
-                    color: statusColor, fontWeight: FontWeight.w700, fontSize: 10,
-                  )),
-                ),
-              ]),
-            ]),
-            Text('★★★★☆ 4.0', style: typo.bodySmall.copyWith(color: colors.priceAccent)),
-            const SizedBox(height: 4),
-            Text('Submitted on $dateStr', style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
-          ])),
-        ]),
-        if (isPending) ...[
-          const SizedBox(height: 16),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(
-              '\$${order.totalPrice.toStringAsFixed(0)}',
-              style: typo.titleMedium.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
-            ),
-            GestureDetector(
-              onTap: isActing ? null : () async {
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Accept Offer'),
-                    content: Text('Accept this offer from $buyerName? Other pending offers will be cancelled.'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        style: TextButton.styleFrom(foregroundColor: colors.primary),
-                        child: const Text('Accept'),
-                      ),
-                    ],
-                  ),
-                );
+                if (isPending) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: isActing ? null : () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Accept Offer'),
+                          content: Text('Accept this offer from $buyerName? Other pending offers will be cancelled.'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: TextButton.styleFrom(foregroundColor: colors.primary),
+                              child: const Text('Accept'),
+                            ),
+                          ],
+                        ),
+                      );
 
-                if (confirmed == true) {
-                  await ref.read(orderActionsProvider.notifier).acceptOrder(order.id);
-                  if (!context.mounted) return;
-                  context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id});
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                decoration: BoxDecoration(
-                  color: colors.primary,
-                  borderRadius: BorderRadius.circular(radius.button),
-                ),
-                child: Text(isActing ? '...' : 'Accept',
-                  style: typo.labelLarge.copyWith(color: colors.onPrimary, fontWeight: FontWeight.bold)),
-              ),
+                      if (confirmed == true) {
+                        await ref.read(orderActionsProvider.notifier).acceptOrder(order.id);
+                        if (!context.mounted) return;
+                        context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id});
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: colors.primary,
+                        borderRadius: BorderRadius.circular(radius.button),
+                      ),
+                      child: Text(isActing ? '...' : 'Accept',
+                        style: typo.labelLarge.copyWith(color: colors.onPrimary, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ]),
-        ],
-      ]),
+        ]),
+      ),
     );
   }
 }

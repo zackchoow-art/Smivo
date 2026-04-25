@@ -109,7 +109,9 @@ class ListOrderCard extends ConsumerWidget {
         listingId: order.listingId, buyerId: order.buyerId, sellerId: order.sellerId);
       if (!context.mounted) return;
       showChatPopup(context, chatRoomId: chatRoom.id,
-        otherUserName: otherProfile?.displayName ?? 'User', otherUserAvatar: otherProfile?.avatarUrl,
+        otherUserName: otherProfile?.displayName ?? 'User', 
+        otherUserAvatar: otherProfile?.avatarUrl,
+        otherUserEmail: otherProfile?.email,
         listingTitle: order.listing?.title ?? 'Order',
         listingPrice: order.totalPrice,
         priceLabel: order.orderType == 'rental' ? _formatRentalSummary(order) : null,

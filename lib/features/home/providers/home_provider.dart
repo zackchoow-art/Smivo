@@ -37,15 +37,18 @@ class SearchQuery extends _$SearchQuery {
 @riverpod
 class HomeListings extends _$HomeListings {
   RealtimeChannel? _channel;
+  bool _isDisposed = false;
 
   @override
   Future<List<Listing>> build() async {
+    // Only subscribe once per Notifier instance lifecycle
     if (_channel == null) {
+      _subscribe();
       ref.onDispose(() {
+        _isDisposed = true;
         _channel?.unsubscribe();
         _channel = null;
       });
-      _subscribe();
     }
 
     final category = ref.watch(selectedCategoryProvider);
@@ -75,7 +78,10 @@ class HomeListings extends _$HomeListings {
           schema: 'public',
           table: 'listings',
           callback: (payload) {
-            ref.invalidateSelf();
+            // Safety check: don't invalidate if we're disposed or disposing
+            if (!_isDisposed) {
+              ref.invalidateSelf();
+            }
           },
         )
         .subscribe();

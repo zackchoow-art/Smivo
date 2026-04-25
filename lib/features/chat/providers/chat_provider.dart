@@ -186,3 +186,14 @@ Future<int> chatTotalUnread(Ref ref) async {
     return sum + (isBuyer ? room.unreadCountBuyer : room.unreadCountSeller);
   });
 }
+/// Fetches details for a single chat room.
+@riverpod
+Future<ChatRoom> chatRoom(Ref ref, String chatRoomId) async {
+  // Check cache first
+  final list = ref.watch(chatRoomListProvider).valueOrNull;
+  final cached = list?.firstWhere((r) => r.id == chatRoomId);
+  if (cached != null) return cached;
+
+  final repository = ref.watch(chatRepositoryProvider);
+  return repository.fetchChatRoom(chatRoomId);
+}

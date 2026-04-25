@@ -14,6 +14,7 @@ Future<void> showChatPopup(
   required String chatRoomId,
   required String otherUserName,
   String? otherUserAvatar,
+  String? otherUserEmail,
   required String listingTitle,
   required double listingPrice,
   String? listingImageUrl,
@@ -23,7 +24,7 @@ Future<void> showChatPopup(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Dismiss',
-    barrierColor: Colors.black.withValues(alpha: 0.2),
+    barrierColor: context.smivoColors.shadow.withValues(alpha: 0.3),
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) {
       return Center(
@@ -33,6 +34,7 @@ Future<void> showChatPopup(
             chatRoomId: chatRoomId,
             otherUserName: otherUserName,
             otherUserAvatar: otherUserAvatar,
+            otherUserEmail: otherUserEmail,
             listingTitle: listingTitle,
             listingPrice: listingPrice,
             listingImageUrl: listingImageUrl,
@@ -62,6 +64,7 @@ class ChatPopupWidget extends ConsumerStatefulWidget {
     required this.chatRoomId,
     required this.otherUserName,
     this.otherUserAvatar,
+    this.otherUserEmail,
     required this.listingTitle,
     required this.listingPrice,
     this.listingImageUrl,
@@ -71,6 +74,7 @@ class ChatPopupWidget extends ConsumerStatefulWidget {
   final String chatRoomId;
   final String otherUserName;
   final String? otherUserAvatar;
+  final String? otherUserEmail;
   final String listingTitle;
   final double listingPrice;
   final String? listingImageUrl;
@@ -168,10 +172,10 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: colors.surfaceContainerHigh,
-                      backgroundImage: widget.otherUserAvatar != null && widget.otherUserAvatar!.isNotEmpty
+                      backgroundImage: widget.otherUserAvatar != null && widget.otherUserAvatar!.trim().isNotEmpty
                           ? NetworkImage(widget.otherUserAvatar!)
                           : null,
-                      child: widget.otherUserAvatar == null || widget.otherUserAvatar!.isEmpty
+                      child: widget.otherUserAvatar == null || widget.otherUserAvatar!.trim().isEmpty
                           ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 28)
                           : null,
                     ),
@@ -188,6 +192,11 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                               fontSize: 18,
                             ),
                           ),
+                          if (widget.otherUserEmail != null)
+                            Text(
+                              widget.otherUserEmail!,
+                              style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                            ),
                         ],
                       ),
                     ),
@@ -383,6 +392,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
   ) {
     final typo = context.smivoTypo;
     final colors = context.smivoColors;
+    final radius = context.smivoRadius;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,39 +400,34 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            CircleAvatar(
-              radius: 12,
-              backgroundColor: colors.surfaceContainerHigh,
-              backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
-              child: avatarUrl == null || avatarUrl.isEmpty ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 12) : null,
-            ),
-            const SizedBox(width: 8),
             Flexible(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: bgColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                    bottomRight: Radius.circular(16),
-                    bottomLeft: Radius.circular(4),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(radius.lg),
+                    topRight: Radius.circular(radius.lg),
+                    bottomRight: Radius.circular(radius.lg),
+                    bottomLeft: Radius.circular(radius.xs),
                   ),
                 ),
-                child: Text(
-                  msg.content,
-                  style: typo.bodyMedium.copyWith(
-                    color: textColor,
-                    height: 1.4,
-                  ),
-                ),
+                child: msg.messageType == 'image' && msg.imageUrl != null
+                    ? _buildImageMessage(msg.imageUrl!)
+                    : Text(
+                        msg.content,
+                        style: typo.bodyMedium.copyWith(
+                          color: textColor,
+                          height: 1.4,
+                        ),
+                      ),
               ),
             ),
-            const SizedBox(width: 32),
+            const SizedBox(width: 48),
           ],
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 32, top: 4),
+          padding: const EdgeInsets.only(left: 4, top: 4),
           child: Text(
             timeago.format(msg.createdAt, locale: 'en_short'),
             style: typo.labelSmall.copyWith(
@@ -443,6 +448,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
   ) {
     final typo = context.smivoTypo;
     final colors = context.smivoColors;
+    final radius = context.smivoRadius;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -457,33 +463,28 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: bgColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(4),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(radius.lg),
+                    topRight: Radius.circular(radius.lg),
+                    bottomLeft: Radius.circular(radius.lg),
+                    bottomRight: Radius.circular(radius.xs),
                   ),
                 ),
-                child: Text(
-                  msg.content,
-                  style: typo.bodyMedium.copyWith(
-                    color: textColor,
-                    height: 1.4,
-                  ),
-                ),
+                child: msg.messageType == 'image' && msg.imageUrl != null
+                    ? _buildImageMessage(msg.imageUrl!)
+                    : Text(
+                        msg.content,
+                        style: typo.bodyMedium.copyWith(
+                          color: textColor,
+                          height: 1.4,
+                        ),
+                      ),
               ),
-            ),
-            const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 12,
-              backgroundColor: colors.surfaceContainerHigh,
-              backgroundImage: myAvatarUrl != null && myAvatarUrl.isNotEmpty ? NetworkImage(myAvatarUrl) : null,
-              child: myAvatarUrl == null || myAvatarUrl.isEmpty ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 12) : null,
             ),
           ],
         ),
         Padding(
-          padding: const EdgeInsets.only(right: 32, top: 4),
+          padding: const EdgeInsets.only(right: 4, top: 4),
           child: Text(
             timeago.format(msg.createdAt, locale: 'en_short'),
             style: typo.labelSmall.copyWith(
@@ -493,6 +494,42 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildImageMessage(String url) {
+    final radius = context.smivoRadius;
+    final colors = context.smivoColors;
+    
+    return Container(
+      constraints: const BoxConstraints(
+        maxWidth: 200,
+        maxHeight: 300,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius.sm),
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: 200,
+              height: 150,
+              color: colors.surfaceContainerHigh,
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 200,
+              height: 150,
+              color: colors.surfaceContainerHigh,
+              child: const Center(child: Icon(Icons.broken_image)),
+            );
+          },
+        ),
+      ),
     );
   }
 }
