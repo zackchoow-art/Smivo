@@ -55,9 +55,9 @@ Expansion model: one school = one isolated community zone.
 - Never embed nested objects as JSON unless truly unstructured data
 - All queries go through Supabase client — no raw SQL from Flutter except
   in Edge Functions
-- Migrations are stored in supabase/migrations/ (00001–00020)
+- Migrations are stored in supabase/migrations/ (00001–00032)
 
-## Implemented Features (as of v3.0)
+## Implemented Features (as of v4.0)
 
 ### Guest Access
 - Home feed browsable without login
@@ -79,9 +79,11 @@ Expansion model: one school = one isolated community zone.
 
 ### Transaction Management Dashboard
 - Accessed from listing detail (own listings only)
-- Three tabs: Views (placeholder), Saves, Orders
-- Orders tab: displays all applications with buyer info, status chips
-- Accept button for pending orders
+- Three tabs: Views, Saves, Offers
+- Offers tab: buyer avatar, name, email, order amount, status chips
+- Accept button for pending orders (atomically rejects competing offers)
+- Chat button to message buyers directly
+- Listing preview section at top showing item name and price
 
 ### Discovery (Buyer)
 - Home feed with category filter chips
@@ -94,48 +96,66 @@ Expansion model: one school = one isolated community zone.
 - Bookmark/save toggle (hidden for own listings)
 - "Application Submitted" card replaces action button for pending orders
 - Rental options section with date picker and rate selection
+- Condition label displayed below title (not on image)
+- Seller card shows avatar, name, email, and message button
+- Seller's own view: read-only rental rate cards, read-only pickup location
 
 ### Transactions
-- Submit purchase request or rental application
-- Seller accepts or declines via Transaction Management or Order Detail
+- Submit purchase request ("Request to Buy") or rental application
+- Seller accepts via Transaction Management dashboard
+  (Accept atomically sets competing offers to 'missed')
 - Sale order flow: pending → confirmed → buyer confirms pickup → completed
 - Rental order flow: pending → confirmed → dual delivery confirmation →
   active → buyer requests return → seller confirms return →
   seller refunds deposit → completed
 - Cancel allowed before delivery confirmation
+- Missed status for competing offers that lost
 
 ### Buyer Center
 - Accessed from Orders hub
-- Three sections: Requested (pending), Active (confirmed), History (completed/cancelled)
-- Status chips per order (Pending/Active/Done/Missed)
+- Four sections: Requested (pending), Awaiting Delivery, Active Transactions, History
+- Status chips per order (Pending/Pickup/Active/Returning/Returned/Refunded/Done/Missed)
+- Red dot indicators for unread order updates
+- Badge count on hub entry card
 - Tap to navigate to order detail
 
 ### Seller Center
 - Accessed from Orders hub
-- Active Listings section (with view counts, tap to detail)
-- Completed Sales section (with status indicators)
+- Active Listings section (icon-only stats: views, saves, offers)
+- Awaiting Delivery section
+- Active Transactions section
+- History section (dual timestamp, partitioned tap navigation)
+- Red dot indicators for unread order updates
+- Badge count on hub entry card
 
 ### Orders Hub
 - Replaced legacy "My Orders" tab
 - Two gradient cards: Buyer Center / Seller Center
+- Badge counts showing pending orders per role
+- Bottom navigation bar shows unread order update count
 - Clean entry point to role-specific order management
 
 ### Order Detail
-- Full-page view with sections:
-  - Listing card (image + title + price)
-  - Order timeline (visual step progression with timestamps)
-  - Financial summary card (type, rates, deposit, total)
-  - Order info (status, counterparty, pickup location)
-  - Rental period (start/end dates, return timestamp)
-  - Delivery confirmation status (dual-party for rentals)
-  - Evidence photos (up to 5, camera capture, horizontal gallery)
-  - Chat history (collapsible, full conversation transcript)
-  - Rental lifecycle actions (Request Return → Confirm Return → Refund Deposit)
-  - Action buttons (Accept, Confirm Pickup, Cancel)
+- Separate screens for Sale vs Rental orders
+- Three-column timeline: date (left) → dot/line (center) → status/subtitle (right)
+  - Dynamic steps based on order lifecycle
+  - Cancelled/missed steps shown in red
+  - Subtitles show buyer name, pickup location, etc.
+- Financial summary card (type, rates, deposit; total only for sale)
+- Order info section (listed date, type, status, pickup, price, deposit, grand total)
+- Rental period section (duration, start/end dates, return date)
+- Delivery confirmation status (dual-party for rentals)
+- Evidence photos: delivery + return evidence (up to 5 each)
+- Chat history (collapsible, full conversation transcript)
+- Rental extension card (inline quantity selector for buyer, detail view for seller)
+- Rental reminder settings (buyer only, active rentals)
+- Rental lifecycle actions (Request Return → Confirm Return → Refund Deposit)
+- Action buttons (Confirm Pickup, Cancel; Accept removed from this page)
 
 ### Evidence Photos
 - Upload up to 5 photos per order before confirming delivery
-- Stored in `order-evidence` Supabase Storage bucket
+- Separate sections for delivery evidence and return evidence (rentals)
+- Stored in `order-files` Supabase Storage bucket
 - Referenced via `order_evidence` table with RLS
 - Both buyer and seller can upload
 
@@ -147,7 +167,11 @@ Expansion model: one school = one isolated community zone.
 - 1-on-1 messaging between buyer and seller, tied to a specific listing
 - Real-time via Supabase Realtime
 - Message history persisted in PostgreSQL
+- Chat room: partner avatar + name + email in AppBar
+- Message bubbles without avatars, with yyyy-MM-dd HH:mm timestamps
+- Image messages: inline preview with tap-to-view lightbox
 - Chat history viewable from order detail (collapsible section)
+- Unread message count badge on bottom nav bar
 
 ### Settings
 - Personal info: name, avatar, .edu email (read-only after verify)
@@ -159,6 +183,24 @@ Expansion model: one school = one isolated community zone.
 ### Notifications
 - In-app notification center
 - Real-time order status updates
+- Unread count badges: bottom nav bar (orders), hub cards, order list red dots
+- Notification types: order_placed, order_accepted, order_cancelled,
+  order_completed, rental_extension, rental_reminder
+
+### Rental Period Adjustments
+- Buyer can request extension or shortening of active rentals
+- Quantity-based adjustment (preserves rental rate type: daily/weekly/monthly)
+- Inline UI with real-time price calculation
+- Seller approves or rejects with optional rejection note
+- On approval: order dates and total price update automatically via DB trigger
+- SnackBar feedback for all actions
+- Tracked in `rental_extensions` table with full audit trail
+
+### Theme System
+- SmivoThemeExtension with semantic design tokens
+- Two theme variants: Teal (default) and IKEA
+- All UI components use theme tokens (colors, typography, radius, shadows)
+- Runtime theme switching via Riverpod provider
 
 ## Future Features (Phase 2+)
 
@@ -203,4 +245,5 @@ new | like_new | good | fair | poor
 - Push notification deep links (basic notifications only)
 - Admin dashboard
 - Multi-language UI (English only for now)
-- View tracking per user (Views tab is placeholder)
+- View tracking per user (Views tab shows anonymous counts only)
+- AI listing assistant and AI-powered search (Phase 2+)

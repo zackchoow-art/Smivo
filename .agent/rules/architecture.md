@@ -86,7 +86,8 @@ Cross-feature data sharing goes through a provider, not direct import.
 - Nullable fields must be explicitly typed (String? not String)
 - Current models: Listing, ListingImage, Order, OrderEvidence,
   OrderListingPreview, ChatRoom, ChatListingPreview, Message,
-  UserProfile, SavedListing, PickupLocation, School, Notification, Category
+  UserProfile, SavedListing, PickupLocation, School, Notification,
+  Category, RentalExtension
 
 ## Providers (Riverpod)
 
@@ -109,8 +110,8 @@ Cross-feature data sharing goes through a provider, not direct import.
   never instantiate Supabase.instance directly inside a repository
 - Current repositories: AuthRepository, ChatRepository, ListingRepository,
   NotificationRepository, OrderEvidenceRepository, OrderRepository,
-  PickupLocationRepository, ProfileRepository, SavedRepository,
-  SchoolRepository, StorageRepository
+  PickupLocationRepository, ProfileRepository, RentalExtensionRepository,
+  SavedRepository, SchoolRepository, StorageRepository
 
 ## Error Handling
 
@@ -128,10 +129,11 @@ Cross-feature data sharing goes through a provider, not direct import.
 - Route configuration lives entirely in core/router/router.dart
 - Auth guard implemented once in GoRouter redirect — not duplicated in screens
 - Deep link support stubbed from day one (even if not active in Phase 1)
-- Current top-level routes: home, chat, orders (hub), sellerCenter,
-  buyerCenter, listingDetail, createListing, orderDetail,
-  transactionManagement, settings, editProfile, help,
-  notificationSettings, systemSettings, profileSetup
+- Current top-level routes: splash, login, register, emailVerification,
+  profileSetup, home, listingDetail, createListing, editListing,
+  myListings, chatList, chatRoom, orders, orderDetail, profile,
+  settings (with sub-routes: profile, system, notifications, help),
+  sellerCenter, buyerCenter, transactionManagement, notificationCenter
 
 ## Order Status Machine
 
@@ -140,20 +142,35 @@ Orders follow this lifecycle:
 ### Sale Orders:
   pending → confirmed → completed
   pending → cancelled (by buyer or seller)
-  confirmed → cancelled (by buyer or seller)
+  pending → missed (seller accepted another buyer's offer)
+  confirmed → cancelled (by buyer or seller, before pickup)
 
 ### Rental Orders:
   pending → confirmed → (dual delivery confirmation) →
   rental_status: active → return_requested → returned → deposit_refunded →
   completed
+  pending → missed (seller accepted another buyer's offer)
 
 Rental status field (rental_status) is NULL for sale orders.
+
+### Accept Logic:
+  When seller accepts one buyer's offer, all other pending orders for
+  the same listing are atomically set to 'missed' via the
+  `accept_order_and_reject_others` RPC function.
+
+### Rental Period Adjustments:
+  Active rentals support extension/shortening requests via
+  `rental_extensions` table. Buyer submits → seller approves/rejects.
+  On approval, order dates and total_price update automatically
+  via database trigger.
 
 ## Supabase Storage Buckets
 
 - `listing-images`: Product photos (public read, owner-path upload)
 - `avatars`: User avatars (public read, authenticated upload)
-- `order-evidence`: Delivery evidence photos (public read, authenticated upload)
+- `order-files`: Consolidated bucket for chat images and delivery/return
+  evidence photos, organized by order ID subfolders
+  (public read, authenticated upload)
 
 ## Supabase Realtime
 
@@ -192,6 +209,6 @@ Rental status field (rental_status) is NULL for sale orders.
 
 - All migrations stored in supabase/migrations/
 - Naming: 00NNN_description.sql (sequential numbering)
-- Current range: 00001–00020 (20 migrations applied)
+- Current range: 00001–00032 (30 migrations applied)
 - SQL must be executed manually in Supabase Dashboard or via `supabase db push`
 - Agent creates .sql files; user is responsible for execution
