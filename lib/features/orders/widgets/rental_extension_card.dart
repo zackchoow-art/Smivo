@@ -6,7 +6,7 @@ import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/rental_extension.dart';
 import 'package:smivo/features/orders/providers/rental_extension_provider.dart';
 
-class RentalExtensionCard extends ConsumerWidget {
+class RentalExtensionCard extends ConsumerStatefulWidget {
   const RentalExtensionCard({
     super.key,
     required this.order,
@@ -19,8 +19,43 @@ class RentalExtensionCard extends ConsumerWidget {
   final bool isSeller;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final extensionsAsync = ref.watch(orderExtensionsProvider(order.id));
+  ConsumerState<RentalExtensionCard> createState() => _RentalExtensionCardState();
+}
+
+class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
+  bool _isAdjusting = false;
+  int _quantityOffset = 0;
+  bool _isSubmitting = false;
+
+  ({String rateType, int quantity, double unitPrice}) _inferRentalRate(Order order) {
+    if (order.rentalStartDate == null || order.rentalEndDate == null) {
+      return (rateType: 'daily', quantity: 1, unitPrice: order.listing?.rentalDailyPrice ?? 0);
+    }
+    final days = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+    final listing = order.listing;
+    
+    // Check monthly first
+    if (days >= 30 && days % 30 == 0 && (listing?.rentalMonthlyPrice ?? 0) > 0) {
+      return (rateType: 'monthly', quantity: days ~/ 30, unitPrice: listing!.rentalMonthlyPrice!);
+    }
+    // Then weekly
+    if (days >= 7 && days % 7 == 0 && (listing?.rentalWeeklyPrice ?? 0) > 0) {
+      return (rateType: 'weekly', quantity: days ~/ 7, unitPrice: listing!.rentalWeeklyPrice!);
+    }
+    // Default to daily
+    return (rateType: 'daily', quantity: days, unitPrice: listing?.rentalDailyPrice ?? 0);
+  }
+
+  void _resetAdjustment() {
+    setState(() {
+      _isAdjusting = false;
+      _quantityOffset = 0;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final extensionsAsync = ref.watch(orderExtensionsProvider(widget.order.id));
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -46,7 +81,7 @@ class RentalExtensionCard extends ConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => Text('Error: $err', style: typo.bodySmall.copyWith(color: colors.error)),
             data: (extensions) {
-              if (extensions.isEmpty && !isBuyer) {
+              if (extensions.isEmpty && !widget.isBuyer) {
                 return Text(
                   'No change requests yet.',
                   style: typo.bodySmall.copyWith(color: colors.outlineVariant),
@@ -54,35 +89,20 @@ class RentalExtensionCard extends ConsumerWidget {
               }
 
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ...extensions.map((ext) => _buildExtensionItem(context, ref, ext)),
-                  if (isBuyer && order.rentalStatus == 'active') ...[
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showRequestDialog(context, ref, 'extend'),
-                            icon: const Icon(Icons.add_circle_outline, size: 18),
-                            label: const Text('Extend'),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
+                  if (widget.isBuyer && widget.order.rentalStatus == 'active') ...[
+                    if (!_isAdjusting)
+                      OutlinedButton(
+                        onPressed: () => setState(() => _isAdjusting = true),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showRequestDialog(context, ref, 'shorten'),
-                            icon: const Icon(Icons.remove_circle_outline, size: 18),
-                            label: const Text('Shorten'),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                        child: const Text('Adjust Rental Period'),
+                      )
+                    else
+                      _buildAdjustmentUI(context),
                   ],
                 ],
               );
@@ -93,11 +113,208 @@ class RentalExtensionCard extends ConsumerWidget {
     );
   }
 
+  Widget _buildAdjustmentUI(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    final rateInfo = _inferRentalRate(widget.order);
+    final originalEndDate = widget.order.rentalEndDate!;
+    final currentQuantity = rateInfo.quantity;
+    final newQuantity = currentQuantity + _quantityOffset;
+    
+    final canDecrease = newQuantity > 1; // Can't shorten to 0 or less
+    final canIncrease = newQuantity < 365;
+
+    int daysPerUnit = 1;
+    if (rateInfo.rateType == 'monthly') daysPerUnit = 30;
+    if (rateInfo.rateType == 'weekly') daysPerUnit = 7;
+
+    final daysDiff = _quantityOffset * daysPerUnit;
+    final newEndDate = originalEndDate.add(Duration(days: daysDiff));
+    final priceDiff = _quantityOffset * rateInfo.unitPrice;
+    final newTotal = widget.order.totalPrice + priceDiff;
+    final requestType = _quantityOffset > 0 ? 'extend' : 'shorten';
+
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(radius.md),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Adjust Rental Period', style: typo.titleMedium),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: _resetAdjustment,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Rate:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+              Text(rateInfo.rateType.toUpperCase(), style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Quantity:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: canDecrease ? () => setState(() => _quantityOffset--) : null,
+                    icon: const Icon(Icons.remove_circle_outline),
+                    color: colors.primary,
+                  ),
+                  SizedBox(
+                    width: 40,
+                    child: Text(
+                      newQuantity.toString(),
+                      textAlign: TextAlign.center,
+                      style: typo.titleMedium,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: canIncrease ? () => setState(() => _quantityOffset++) : null,
+                    icon: const Icon(Icons.add_circle_outline),
+                    color: colors.primary,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          if (_quantityOffset != 0) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Divider(),
+            ),
+            Text(
+              _quantityOffset > 0 
+                ? 'Extension (+$_quantityOffset ${rateInfo.rateType})'
+                : 'Early Return ($_quantityOffset ${rateInfo.rateType})',
+              style: typo.bodyMedium.copyWith(
+                color: _quantityOffset > 0 ? colors.primary : colors.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('New end date:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+                Text(DateFormat.yMMMd().format(newEndDate), style: typo.bodyMedium),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Days change:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+                Text('${daysDiff > 0 ? '+' : ''}$daysDiff', style: typo.bodyMedium),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Price change:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+                Text('${priceDiff >= 0 ? '+' : '-'}\$${priceDiff.abs().toStringAsFixed(2)}', style: typo.bodyMedium),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('New rental total:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+                Text('\$${newTotal.toStringAsFixed(2)}', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _isSubmitting ? null : () => _submitRequest(
+                requestType: requestType,
+                originalEndDate: originalEndDate,
+                newEndDate: newEndDate,
+                priceDiff: priceDiff,
+                newTotal: newTotal,
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.primary,
+                foregroundColor: colors.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: _isSubmitting 
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Submit Request'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submitRequest({
+    required String requestType,
+    required DateTime originalEndDate,
+    required DateTime newEndDate,
+    required double priceDiff,
+    required double newTotal,
+  }) async {
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(rentalExtensionActionsProvider.notifier).requestExtension(
+        orderId: widget.order.id,
+        requestedBy: widget.order.buyerId,
+        requestType: requestType,
+        originalEndDate: originalEndDate,
+        newEndDate: newEndDate,
+        priceDiff: priceDiff,
+        newTotal: newTotal,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Request submitted successfully'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _resetAdjustment();
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
   Widget _buildExtensionItem(BuildContext context, WidgetRef ref, RentalExtension ext) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final isPending = ext.status == 'pending';
+    
+    final originalEndDate = ext.originalEndDate;
+    final daysDiff = ext.newEndDate.difference(originalEndDate).inDays;
+    final grandTotal = ext.newTotal + widget.order.depositAmount;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -122,7 +339,7 @@ class RentalExtensionCard extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    ext.requestType == 'extend' ? 'Extension Request' : 'Shorten Request',
+                    ext.requestType == 'extend' ? 'Extension Request' : 'Early Return Request',
                     style: typo.titleMedium,
                   ),
                 ],
@@ -132,32 +349,50 @@ class RentalExtensionCard extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'New end date: ${DateFormat.yMMMd().format(ext.newEndDate)}',
+            'Submitted: ${DateFormat.yMMMd().add_jm().format(ext.createdAt)}',
+            style: typo.bodySmall.copyWith(color: colors.outlineVariant),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${DateFormat.yMMMd().format(originalEndDate)} → ${DateFormat.yMMMd().format(ext.newEndDate)}',
+            style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Days change: ${daysDiff > 0 ? '+' : ''}$daysDiff days',
             style: typo.bodyMedium,
           ),
           Text(
-            'Price change: ${ext.priceDiff >= 0 ? '+' : ''}\$${ext.priceDiff.toStringAsFixed(2)} → New Total: \$${ext.newTotal.toStringAsFixed(2)}',
-            style: typo.bodySmall.copyWith(color: colors.outlineVariant),
+            'Price change: ${ext.priceDiff >= 0 ? '+' : '-'}\$${ext.priceDiff.abs().toStringAsFixed(2)}',
+            style: typo.bodyMedium,
+          ),
+          Text(
+            'New rental total: \$${ext.newTotal.toStringAsFixed(2)}',
+            style: typo.bodyMedium,
+          ),
+          Text(
+            'Grand total (w/ deposit): \$${grandTotal.toStringAsFixed(2)}',
+            style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold),
           ),
           if (ext.status == 'rejected' && ext.rejectionNote != null) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
               'Note: ${ext.rejectionNote}',
               style: typo.bodySmall.copyWith(color: colors.error),
             ),
           ],
-          if (isSeller && isPending) ...[
+          if (widget.isSeller && isPending) ...[
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => _handleReject(context, ref, ext),
+                  onPressed: () => _handleReject(ref, ext),
                   child: Text('Reject', style: TextStyle(color: colors.error)),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () => _handleApprove(context, ref, ext),
+                  onPressed: () => _handleApprove(ref, ext),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.primary,
                     foregroundColor: colors.onPrimary,
@@ -211,78 +446,7 @@ class RentalExtensionCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _showRequestDialog(BuildContext context, WidgetRef ref, String type) async {
-    final originalEndDate = order.rentalEndDate;
-    if (originalEndDate == null) return;
-
-    final initialDate = type == 'extend' 
-        ? originalEndDate.add(const Duration(days: 1))
-        : originalEndDate.subtract(const Duration(days: 1));
-
-    final firstDate = type == 'extend' 
-        ? originalEndDate.add(const Duration(days: 1))
-        : DateTime.now().add(const Duration(days: 1)); // Can't shorten to a date in the past
-
-    final lastDate = type == 'extend'
-        ? originalEndDate.add(const Duration(days: 365))
-        : originalEndDate.subtract(const Duration(days: 1));
-
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: initialDate.isAfter(lastDate) ? lastDate : (initialDate.isBefore(firstDate) ? firstDate : initialDate),
-      firstDate: firstDate,
-      lastDate: lastDate,
-      helpText: type == 'extend' ? 'SELECT NEW END DATE' : 'SELECT EARLIER RETURN DATE',
-    );
-
-    if (pickedDate == null || !context.mounted) return;
-
-    // Calculate price diff
-    final dailyRate = order.listing?.rentalDailyPrice ?? 0;
-    final diffDays = pickedDate.difference(originalEndDate).inDays;
-    final priceDiff = diffDays * dailyRate;
-    final newTotal = order.totalPrice + priceDiff;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(type == 'extend' ? 'Confirm Extension' : 'Confirm Early Return'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Current end: ${DateFormat.yMMMd().format(originalEndDate)}'),
-            Text('New end: ${DateFormat.yMMMd().format(pickedDate)}'),
-            const Divider(height: 24),
-            Text('Days diff: ${diffDays >= 0 ? '+' : ''}$diffDays days'),
-            Text('Price diff: ${priceDiff >= 0 ? '+' : ''}\$${priceDiff.toStringAsFixed(2)}'),
-            Text(
-              'New Total: \$${newTotal.toStringAsFixed(2)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      await ref.read(rentalExtensionActionsProvider.notifier).requestExtension(
-        orderId: order.id,
-        requestedBy: order.buyerId,
-        requestType: type,
-        originalEndDate: originalEndDate,
-        newEndDate: pickedDate,
-        priceDiff: priceDiff.toDouble(),
-        newTotal: newTotal,
-      );
-    }
-  }
-
-  Future<void> _handleApprove(BuildContext context, WidgetRef ref, RentalExtension ext) async {
+  Future<void> _handleApprove(WidgetRef ref, RentalExtension ext) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -296,11 +460,25 @@ class RentalExtensionCard extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      await ref.read(rentalExtensionActionsProvider.notifier).approveExtension(ext.id, order.id);
+      await ref.read(rentalExtensionActionsProvider.notifier).approveExtension(ext.id, widget.order.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Extension approved'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _handleReject(BuildContext context, WidgetRef ref, RentalExtension ext) async {
+  Future<void> _handleReject(WidgetRef ref, RentalExtension ext) async {
     final noteController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
@@ -331,9 +509,23 @@ class RentalExtensionCard extends ConsumerWidget {
     if (confirmed == true) {
       await ref.read(rentalExtensionActionsProvider.notifier).rejectExtension(
         ext.id, 
-        order.id, 
+        widget.order.id, 
         note: noteController.text.isEmpty ? null : noteController.text,
       );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Extension rejected'),
+              ],
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

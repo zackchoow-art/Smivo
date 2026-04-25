@@ -82,13 +82,15 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
           ],
-          // Rental extension section — show when rental is active or later to show history
-          RentalExtensionCard(
-            order: order,
-            isBuyer: isBuyer,
-            isSeller: isSeller,
-          ),
-          const SizedBox(height: 16),
+          if (order.rentalStatus != null) ...[
+            // Rental extension section — show when rental is active or later to show history
+            RentalExtensionCard(
+              order: order,
+              isBuyer: isBuyer,
+              isSeller: isSeller,
+            ),
+            const SizedBox(height: 16),
+          ],
           // Rental reminder settings — only for active rentals, buyer only
           if (order.rentalStatus == 'active' && isBuyer) ...[
             RentalReminderSettings(
