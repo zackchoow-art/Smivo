@@ -26,7 +26,12 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
       backgroundColor: colors.surfaceContainerLowest,
       body: SafeArea(
         bottom: false,
-        child: CustomScrollView(slivers: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(buyerOrdersProvider);
+            await ref.read(buyerOrdersProvider.future);
+          },
+          child: CustomScrollView(physics: const AlwaysScrollableScrollPhysics(), slivers: [
           SliverPadding(
             padding: const EdgeInsets.all(24),
             sliver: SliverToBoxAdapter(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -89,6 +94,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ]),
+        ),
       ),
     );
   }

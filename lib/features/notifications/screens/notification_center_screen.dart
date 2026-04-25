@@ -36,21 +36,34 @@ class NotificationCenterScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: notificationsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text('Error loading notifications', style: typo.bodyMedium.copyWith(color: colors.error)),
-        ),
-        data: (notifications) {
-          if (notifications.isEmpty) return _buildEmptyState(context);
-          return ListView.builder(
-            itemCount: notifications.length,
-            itemBuilder: (context, index) {
-              final notification = notifications[index];
-              return NotificationListItem(notification: notification, onTap: () => _handleTap(context, ref, notification));
-            },
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(notificationListProvider);
+          await ref.read(notificationListProvider.future);
         },
+        child: notificationsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 100),
+                child: Text('Error loading notifications', style: typo.bodyMedium.copyWith(color: colors.error)),
+              ),
+            ),
+          ),
+          data: (notifications) {
+            if (notifications.isEmpty) return _buildEmptyState(context);
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+                return NotificationListItem(notification: notification, onTap: () => _handleTap(context, ref, notification));
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -58,16 +71,22 @@ class NotificationCenterScreen extends ConsumerWidget {
   Widget _buildEmptyState(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.notifications_none_outlined, size: 64, color: colors.outlineVariant.withValues(alpha: 0.5)),
-          const SizedBox(height: 12),
-          Text('No notifications yet', style: typo.bodyLarge.copyWith(color: colors.outlineVariant)),
-          const SizedBox(height: 4),
-          Text("We'll notify you when something happens.", style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
-        ],
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 100),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.notifications_none_outlined, size: 64, color: colors.outlineVariant.withValues(alpha: 0.5)),
+              const SizedBox(height: 12),
+              Text('No notifications yet', style: typo.bodyLarge.copyWith(color: colors.outlineVariant)),
+              const SizedBox(height: 4),
+              Text("We'll notify you when something happens.", style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -127,7 +127,12 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           final statusTag = isSale ? _conditionLabel(listing.condition) : 'AVAILABLE NOW';
 
           return Stack(children: [
-            SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(listingDetailProvider(widget.id));
+                await ref.read(listingDetailProvider(widget.id).future);
+              },
+              child: SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               ListingImageCarousel(imageUrls: imageUrls, tagText: statusTag, isSale: isSale),
               Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(listing.title, style: typo.displayLarge.copyWith(fontSize: 32, letterSpacing: -1, height: 1.1)),
@@ -442,6 +447,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 const SizedBox(height: 100),
               ])),
             ])),
+            ),
             // Fixed floating back button
             Positioned(
               top: MediaQuery.of(context).padding.top + 8, left: 12,

@@ -55,19 +55,25 @@ class _ViewsTab extends ConsumerWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    return viewsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
-      data: (views) {
-        if (views.isEmpty) {
-          return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.visibility_outlined, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
-            const SizedBox(height: 12),
-            Text('No views yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-          ]));
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.all(16), itemCount: views.length,
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(listingViewsProvider(listingId));
+        await ref.read(listingViewsProvider(listingId).future);
+      },
+      child: viewsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Container(height: 300, alignment: Alignment.center, child: Text('Error: $e'))),
+        data: (views) {
+          if (views.isEmpty) {
+            return SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Container(height: 300, alignment: Alignment.center, child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.visibility_outlined, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
+              const SizedBox(height: 12),
+              Text('No views yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+            ])));
+          }
+          return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16), itemCount: views.length,
           itemBuilder: (context, index) {
             final view = views[index];
             final timeStr = DateFormat('MMM d, h:mm a').format(view.viewedAt.toLocal());
@@ -104,8 +110,9 @@ class _ViewsTab extends ConsumerWidget {
               ]),
             );
           },
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -122,19 +129,25 @@ class _SavesTab extends ConsumerWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    return savesAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
-      data: (saves) {
-        if (saves.isEmpty) {
-          return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.bookmark_border, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
-            const SizedBox(height: 12),
-            Text('No saves yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-          ]));
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.all(16), itemCount: saves.length,
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(listingSavesProvider(listingId));
+        await ref.read(listingSavesProvider(listingId).future);
+      },
+      child: savesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Container(height: 300, alignment: Alignment.center, child: Text('Error: $e'))),
+        data: (saves) {
+          if (saves.isEmpty) {
+            return SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Container(height: 300, alignment: Alignment.center, child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.bookmark_border, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
+              const SizedBox(height: 12),
+              Text('No saves yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+            ])));
+          }
+          return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16), itemCount: saves.length,
           itemBuilder: (context, index) {
             final save = saves[index];
             final dateStr = DateFormat('MMM d, yyyy').format(save.createdAt);
@@ -177,8 +190,9 @@ class _SavesTab extends ConsumerWidget {
               ]),
             );
           },
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -195,28 +209,35 @@ class _OffersTab extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
-    return ordersAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
-      data: (orders) {
-        if (orders.isEmpty) {
-          return Center(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Icon(Icons.receipt_long_outlined, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
-              const SizedBox(height: 12),
-              Text('No offers yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-            ]),
-          );
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: orders.length,
-          itemBuilder: (context, index) {
-            final order = orders[index];
-            return _buildOrderCard(context, ref, order, actionsState.isLoading);
-          },
-        );
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(listingOrdersProvider(listingId));
+        await ref.read(listingOrdersProvider(listingId).future);
       },
+      child: ordersAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Container(height: 300, alignment: Alignment.center, child: Text('Error: $e'))),
+        data: (orders) {
+          if (orders.isEmpty) {
+            return SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Container(height: 300, alignment: Alignment.center,
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.receipt_long_outlined, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
+                const SizedBox(height: 12),
+                Text('No offers yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+              ]),
+            ));
+          }
+          return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
+              return _buildOrderCard(context, ref, order, actionsState.isLoading);
+            },
+          );
+        },
+      ),
     );
   }
 

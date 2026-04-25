@@ -30,8 +30,14 @@ class SaleOrderDetailScreen extends ConsumerWidget {
     final actionsState = ref.watch(orderActionsProvider);
     final isActing = actionsState.isLoading;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(orderDetailProvider(order.id));
+        await ref.read(orderDetailProvider(order.id).future);
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -58,6 +64,7 @@ class SaleOrderDetailScreen extends ConsumerWidget {
           _buildChatSection(ref, order),
           _buildActions(context, ref, order, isBuyer, isSeller, isActing),
         ],
+      ),
       ),
     );
   }

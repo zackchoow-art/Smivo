@@ -33,8 +33,14 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     final actionsState = ref.watch(orderActionsProvider);
     final isActing = actionsState.isLoading;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(orderDetailProvider(order.id));
+        await ref.read(orderDetailProvider(order.id).future);
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -98,6 +104,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             _buildRentalLifecycleActions(context, ref, order, isBuyer, isSeller, isActing),
           ],
         ],
+      ),
       ),
     );
   }

@@ -29,7 +29,16 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
       backgroundColor: colors.surfaceContainerLowest,
       body: SafeArea(
         bottom: false,
-        child: CustomScrollView(slivers: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(myListingsProvider);
+            ref.invalidate(sellerOrdersProvider);
+            await Future.wait([
+              ref.read(myListingsProvider.future),
+              ref.read(sellerOrdersProvider.future),
+            ]);
+          },
+          child: CustomScrollView(physics: const AlwaysScrollableScrollPhysics(), slivers: [
           SliverPadding(
             padding: const EdgeInsets.all(24),
             sliver: SliverToBoxAdapter(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -280,6 +289,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ]),
+        ),
       ),
     );
   }

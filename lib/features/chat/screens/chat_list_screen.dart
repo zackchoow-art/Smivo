@@ -70,31 +70,46 @@ class ChatListScreen extends ConsumerWidget {
               
               // Chat List
               Expanded(
-                child: chatRoomsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Error loading conversations'),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: () => ref.invalidate(chatRoomListProvider),
-                          child: const Text('Retry'),
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(chatRoomListProvider);
+                    await ref.read(chatRoomListProvider.future);
+                  },
+                  child: chatRoomsAsync.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Error loading conversations'),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () => ref.invalidate(chatRoomListProvider),
+                              child: const Text('Retry'),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  data: (rooms) {
-                    if (rooms.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No conversations yet. Start chatting from a listing.',
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    }
-                    return ListView.builder(
+                    data: (rooms) {
+                      if (rooms.isEmpty) {
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: const Center(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 100),
+                              child: Text(
+                                'No conversations yet. Start chatting from a listing.',
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.zero,
                       itemCount: rooms.length,
                       itemBuilder: (context, index) {
@@ -142,7 +157,8 @@ class ChatListScreen extends ConsumerWidget {
                         );
                       },
                     );
-                  },
+                    },
+                  ),
                 ),
               ),
             ],

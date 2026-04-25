@@ -20,8 +20,14 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: colors.background,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(homeListingsProvider);
+            await ref.read(homeListingsProvider.future);
+          },
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
             const SliverToBoxAdapter(child: HomeHeader()),
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -84,6 +90,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             
           ],
+          ),
         ),
       ),
     );
