@@ -16,6 +16,9 @@ Future<List<Message>> orderChatMessages(
 }
 
 /// Finds the chat room for a listing between buyer and seller.
+///
+/// NOTE: Queries both buyer's and seller's chat rooms to ensure
+/// visibility regardless of which party is viewing the order.
 @riverpod
 Future<String?> orderChatRoomId(
   Ref ref, {
@@ -25,11 +28,19 @@ Future<String?> orderChatRoomId(
 }) async {
   final repo = ref.watch(chatRepositoryProvider);
   try {
-    final rooms = await repo.fetchChatRooms(buyerId);
-    final match = rooms.where(
+    // Try buyer's rooms first
+    final buyerRooms = await repo.fetchChatRooms(buyerId);
+    final match = buyerRooms.where(
         (r) => r.listingId == listingId && 
                r.sellerId == sellerId).firstOrNull;
-    return match?.id;
+    if (match != null) return match.id;
+
+    // Fallback: try seller's rooms (covers case when current user is seller)
+    final sellerRooms = await repo.fetchChatRooms(sellerId);
+    final sellerMatch = sellerRooms.where(
+        (r) => r.listingId == listingId &&
+               r.buyerId == buyerId).firstOrNull;
+    return sellerMatch?.id;
   } catch (_) {
     return null;
   }

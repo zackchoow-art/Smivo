@@ -161,9 +161,12 @@ class _OrderChatMessagesProviderElement
   String get chatRoomId => (origin as OrderChatMessagesProvider).chatRoomId;
 }
 
-String _$orderChatRoomIdHash() => r'24a9e45414aa0c5fcbc2ba92a91f0694819caa1e';
+String _$orderChatRoomIdHash() => r'3109790c764c99bfbc2e60e7a5b2306799df0775';
 
 /// Finds the chat room for a listing between buyer and seller.
+///
+/// NOTE: Queries both buyer's and seller's chat rooms to ensure
+/// visibility regardless of which party is viewing the order.
 ///
 /// Copied from [orderChatRoomId].
 @ProviderFor(orderChatRoomId)
@@ -171,14 +174,23 @@ const orderChatRoomIdProvider = OrderChatRoomIdFamily();
 
 /// Finds the chat room for a listing between buyer and seller.
 ///
+/// NOTE: Queries both buyer's and seller's chat rooms to ensure
+/// visibility regardless of which party is viewing the order.
+///
 /// Copied from [orderChatRoomId].
 class OrderChatRoomIdFamily extends Family<AsyncValue<String?>> {
   /// Finds the chat room for a listing between buyer and seller.
+  ///
+  /// NOTE: Queries both buyer's and seller's chat rooms to ensure
+  /// visibility regardless of which party is viewing the order.
   ///
   /// Copied from [orderChatRoomId].
   const OrderChatRoomIdFamily();
 
   /// Finds the chat room for a listing between buyer and seller.
+  ///
+  /// NOTE: Queries both buyer's and seller's chat rooms to ensure
+  /// visibility regardless of which party is viewing the order.
   ///
   /// Copied from [orderChatRoomId].
   OrderChatRoomIdProvider call({
@@ -221,9 +233,15 @@ class OrderChatRoomIdFamily extends Family<AsyncValue<String?>> {
 
 /// Finds the chat room for a listing between buyer and seller.
 ///
+/// NOTE: Queries both buyer's and seller's chat rooms to ensure
+/// visibility regardless of which party is viewing the order.
+///
 /// Copied from [orderChatRoomId].
 class OrderChatRoomIdProvider extends AutoDisposeFutureProvider<String?> {
   /// Finds the chat room for a listing between buyer and seller.
+  ///
+  /// NOTE: Queries both buyer's and seller's chat rooms to ensure
+  /// visibility regardless of which party is viewing the order.
   ///
   /// Copied from [orderChatRoomId].
   OrderChatRoomIdProvider({

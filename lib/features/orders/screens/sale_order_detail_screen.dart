@@ -50,6 +50,8 @@ class SaleOrderDetailScreen extends ConsumerWidget {
           OrderInfoSection(
             order: order,
             counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
+            buyer: order.buyer,
+            seller: order.seller,
           ),
           const SizedBox(height: 16),
           if (order.status == 'confirmed' || order.status == 'completed') ...[
@@ -193,35 +195,6 @@ class SaleOrderDetailScreen extends ConsumerWidget {
       case 'pending':
         return Column(
           children: [
-            // NOTE: Accept is now handled exclusively from Transaction Management
-            // dashboard — seller sees an informational card here instead.
-            if (isSeller)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(radius.md),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.hourglass_top,
-                      color: colors.outlineVariant,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Review this request in Transaction Management',
-                        style: typo.bodyMedium.copyWith(
-                          color: colors.outlineVariant,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 8),
             _buildCancelButton(context, ref, order, isActing),
           ],
         );
@@ -229,21 +202,26 @@ class SaleOrderDetailScreen extends ConsumerWidget {
         if (isBuyer) {
           return Column(
             children: [
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isActing
-                      ? null
-                      : () async => await ref
-                          .read(orderActionsProvider.notifier)
-                          .confirmDelivery(order),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    isActing ? 'Processing...' : 'Confirm Pickup',
-                    style: typo.titleMedium.copyWith(color: colors.onPrimary),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 360),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isActing
+                          ? null
+                          : () async => await ref
+                              .read(orderActionsProvider.notifier)
+                              .confirmDelivery(order),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        isActing ? 'Processing...' : 'Confirm Pickup',
+                        style: typo.titleMedium.copyWith(color: colors.onPrimary),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -307,29 +285,34 @@ class SaleOrderDetailScreen extends ConsumerWidget {
             !order.deliveryConfirmedBySeller);
     if (!canCancel) return const SizedBox.shrink();
 
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: isActing
-            ? null
-            : () async {
-                final confirmed = await _showConfirmDialog(
-                  context,
-                  'Cancel Order',
-                  'Are you sure you want to cancel this order?',
-                );
-                if (confirmed == true) {
-                  await ref
-                      .read(orderActionsProvider.notifier)
-                      .cancelOrder(order.id);
-                }
-              },
-        style: OutlinedButton.styleFrom(
-          foregroundColor: colors.error,
-          side: BorderSide(color: colors.error),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: isActing
+                ? null
+                : () async {
+                    final confirmed = await _showConfirmDialog(
+                      context,
+                      'Cancel Order',
+                      'Are you sure you want to cancel this order?',
+                    );
+                    if (confirmed == true) {
+                      await ref
+                          .read(orderActionsProvider.notifier)
+                          .cancelOrder(order.id);
+                    }
+                  },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colors.error,
+              side: BorderSide(color: colors.error),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: Text(isActing ? 'Processing...' : 'Cancel Order', style: typo.titleMedium),
+          ),
         ),
-        child: Text(isActing ? 'Processing...' : 'Cancel Order', style: typo.titleMedium),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/rental_extension.dart';
+import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/orders/providers/rental_extension_provider.dart';
 
 class RentalExtensionCard extends ConsumerStatefulWidget {
@@ -461,6 +462,8 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
 
     if (confirmed == true) {
       await ref.read(rentalExtensionActionsProvider.notifier).approveExtension(ext.id, widget.order.id);
+      // NOTE: Refresh order data so updated dates/prices appear immediately
+      ref.invalidate(orderDetailProvider(widget.order.id));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -468,7 +471,7 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
               children: [
                 Icon(Icons.check_circle, color: Colors.white),
                 SizedBox(width: 8),
-                Text('Extension approved'),
+                Text('Extension approved — dates and price updated'),
               ],
             ),
             backgroundColor: Colors.green,
@@ -512,6 +515,8 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
         widget.order.id, 
         note: noteController.text.isEmpty ? null : noteController.text,
       );
+      // NOTE: Refresh order data after rejection
+      ref.invalidate(orderDetailProvider(widget.order.id));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

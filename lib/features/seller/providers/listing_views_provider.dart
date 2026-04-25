@@ -13,6 +13,7 @@ class ListingView {
   const ListingView({
     required this.id,
     required this.listingId,
+    this.viewerId,
     this.viewerName,
     this.viewerAvatarUrl,
     this.viewerEmail,
@@ -21,6 +22,7 @@ class ListingView {
 
   final String id;
   final String listingId;
+  final String? viewerId;
   final String? viewerName;
   final String? viewerAvatarUrl;
   final String? viewerEmail;
@@ -41,6 +43,7 @@ Future<List<ListingView>> listingViews(Ref ref, String listingId) async {
     return (data as List).map((json) => ListingView(
       id: json['id'] as String,
       listingId: json['listing_id'] as String,
+      viewerId: json['viewer_id'] as String?,
       viewerName: (json['viewer'] as Map<String, dynamic>?)?['display_name'] as String?,
       viewerAvatarUrl: (json['viewer'] as Map<String, dynamic>?)?['avatar_url'] as String?,
       viewerEmail: (json['viewer'] as Map<String, dynamic>?)?['email'] as String?,

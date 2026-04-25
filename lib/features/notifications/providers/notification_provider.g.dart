@@ -29,7 +29,7 @@ final totalUnreadNotificationsProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef TotalUnreadNotificationsRef = AutoDisposeFutureProviderRef<int>;
-String _$notificationListHash() => r'2647797fc2d36e6c34c70fe59935729f6f3458fe';
+String _$notificationListHash() => r'7f58995001eb1b526f4adfa6f19b42c494dbc9a1';
 
 /// Fetches the user's notification list and subscribes to new ones
 /// in real-time. Refreshes itself when new notifications arrive.

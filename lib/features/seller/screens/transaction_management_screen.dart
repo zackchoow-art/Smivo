@@ -37,63 +37,78 @@ class TransactionManagementScreen extends ConsumerWidget {
         backgroundColor: colors.surfaceContainerLowest,
         appBar: AppBar(
           title: const Text('Manage Transactions'),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(100),
-            child: Column(
-              children: [
-                listingAsync.when(
-                  loading: () => const SizedBox(height: 64),
-                  error: (_, __) => const SizedBox(height: 64),
-                  data: (listing) {
-                    final imageUrl = listing.images.firstOrNull?.imageUrl;
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(radius.card),
-                      ),
-                      child: Row(
-                        children: [
-                          if (imageUrl != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(radius.sm),
-                              child: Image.network(imageUrl, width: 48, height: 48, fit: BoxFit.cover),
-                            )
-                          else
-                            Container(
-                              width: 48, height: 48,
-                              decoration: BoxDecoration(
-                                color: colors.surfaceContainerHigh,
-                                borderRadius: BorderRadius.circular(radius.sm),
-                              ),
-                              child: Icon(Icons.image_not_supported, size: 20, color: colors.outlineVariant),
-                            ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(listing.title, style: typo.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
-                                Text('\$${listing.price.toStringAsFixed(0)}', style: typo.bodyMedium.copyWith(color: colors.primary, fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                const TabBar(tabs: [Tab(text: 'Views'), Tab(text: 'Saves'), Tab(text: 'Offers')]),
-              ],
-            ),
-          ),
+          bottom: const TabBar(tabs: [Tab(text: 'Views'), Tab(text: 'Saves'), Tab(text: 'Offers')]),
         ),
-        body: TabBarView(children: [
-          _ViewsTab(listingId: listingId),
-          _SavesTab(listingId: listingId),
-          _OffersTab(listingId: listingId),
-        ]),
+        body: Column(
+          children: [
+            // Listing preview — moved out of AppBar to fix overlap
+            listingAsync.when(
+              loading: () => const SizedBox(height: 64),
+              error: (_, __) => const SizedBox(height: 64),
+              data: (listing) {
+                final imageUrl = listing.images.firstOrNull?.imageUrl;
+                final isRental = listing.transactionType == 'rental';
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(radius.card),
+                  ),
+                  child: Row(
+                    children: [
+                      if (imageUrl != null)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(radius.sm),
+                          child: Image.network(imageUrl, width: 48, height: 48, fit: BoxFit.cover),
+                        )
+                      else
+                        Container(
+                          width: 48, height: 48,
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(radius.sm),
+                          ),
+                          child: Icon(Icons.image_not_supported, size: 20, color: colors.outlineVariant),
+                        ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(listing.title, style: typo.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                            if (!isRental)
+                              Text('\$${listing.price.toStringAsFixed(0)}', style: typo.bodyMedium.copyWith(color: colors.primary, fontWeight: FontWeight.w600))
+                            else
+                              // NOTE: Show all available rental rates for rental listings
+                              Wrap(
+                                spacing: 8,
+                                children: [
+                                  if (listing.rentalDailyPrice != null)
+                                    Text('\$${listing.rentalDailyPrice!.toStringAsFixed(0)}/day', style: typo.bodySmall.copyWith(color: colors.primary, fontWeight: FontWeight.w600)),
+                                  if (listing.rentalWeeklyPrice != null)
+                                    Text('\$${listing.rentalWeeklyPrice!.toStringAsFixed(0)}/wk', style: typo.bodySmall.copyWith(color: colors.primary, fontWeight: FontWeight.w600)),
+                                  if (listing.rentalMonthlyPrice != null)
+                                    Text('\$${listing.rentalMonthlyPrice!.toStringAsFixed(0)}/mo', style: typo.bodySmall.copyWith(color: colors.primary, fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            Expanded(
+              child: TabBarView(children: [
+                _ViewsTab(listingId: listingId),
+                _SavesTab(listingId: listingId),
+                _OffersTab(listingId: listingId),
+              ]),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -166,8 +181,28 @@ class _ViewsTab extends ConsumerWidget {
                     TextButton.icon(
                       icon: const Icon(Icons.chat_outlined, size: 16),
                       label: const Text('Chat'),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat coming soon')));
+                      // NOTE: Only enable chat if the viewer has a userId (not anonymous)
+                      onPressed: view.viewerId == null ? null : () async {
+                        final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
+                        if (currentUserId == null) return;
+                        final chatRepo = ref.read(chatRepositoryProvider);
+                        final room = await chatRepo.getOrCreateChatRoom(
+                          listingId: listingId,
+                          buyerId: view.viewerId!,
+                          sellerId: currentUserId,
+                        );
+                        final listingData = ref.read(listingDetailProvider(listingId)).valueOrNull;
+                        if (!context.mounted) return;
+                        showChatPopup(
+                          context,
+                          chatRoomId: room.id,
+                          otherUserName: view.viewerName ?? 'Viewer',
+                          otherUserAvatar: view.viewerAvatarUrl,
+                          otherUserEmail: view.viewerEmail,
+                          listingTitle: listingData?.title ?? '',
+                          listingPrice: listingData?.price ?? 0,
+                          listingImageUrl: listingData?.images.firstOrNull?.imageUrl,
+                        );
                       },
                     ),
                   ]),
@@ -259,8 +294,27 @@ class _SavesTab extends ConsumerWidget {
                     TextButton.icon(
                       icon: const Icon(Icons.chat_outlined, size: 16),
                       label: const Text('Chat'),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat coming soon')));
+                      onPressed: () async {
+                        final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
+                        if (currentUserId == null || save.userId.isEmpty) return;
+                        final chatRepo = ref.read(chatRepositoryProvider);
+                        final room = await chatRepo.getOrCreateChatRoom(
+                          listingId: listingId,
+                          buyerId: save.userId,
+                          sellerId: currentUserId,
+                        );
+                        final listingData = ref.read(listingDetailProvider(listingId)).valueOrNull;
+                        if (!context.mounted) return;
+                        showChatPopup(
+                          context,
+                          chatRoomId: room.id,
+                          otherUserName: save.user?.displayName ?? 'User',
+                          otherUserAvatar: save.user?.avatarUrl,
+                          otherUserEmail: save.user?.email,
+                          listingTitle: listingData?.title ?? '',
+                          listingPrice: listingData?.price ?? 0,
+                          listingImageUrl: listingData?.images.firstOrNull?.imageUrl,
+                        );
                       },
                     ),
                   ]),
@@ -350,6 +404,9 @@ class _OffersTab extends ConsumerWidget {
       case 'cancelled':
         statusColor = colors.error;
         statusLabel = 'Cancelled';
+      case 'missed':
+        statusColor = colors.outlineVariant;
+        statusLabel = 'Missed';
       default:
         statusColor = colors.outlineVariant;
         statusLabel = order.status;
@@ -465,6 +522,8 @@ class _OffersTab extends ConsumerWidget {
 
                       if (confirmed == true) {
                         await ref.read(orderActionsProvider.notifier).acceptOrder(order.id);
+                        // NOTE: Refresh the offers list so accepted/missed statuses show
+                        ref.invalidate(listingOrdersProvider(listingId));
                         if (!context.mounted) return;
                         context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id});
                       }

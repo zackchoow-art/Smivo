@@ -102,10 +102,15 @@ class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
-            'Remind me before rental expires',
+            'Return Reminder Timing',
             style: typo.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'A reminder is always sent before the rental expires. Adjust how early you want to be notified.',
+            style: typo.bodySmall.copyWith(color: colors.outlineVariant),
           ),
           const SizedBox(height: 16),
           Row(

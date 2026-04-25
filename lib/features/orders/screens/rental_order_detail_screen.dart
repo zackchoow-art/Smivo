@@ -53,6 +53,8 @@ class RentalOrderDetailScreen extends ConsumerWidget {
           OrderInfoSection(
             order: order,
             counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
+            buyer: order.buyer,
+            seller: order.seller,
           ),
           const SizedBox(height: 16),
           if (order.rentalStartDate != null) ...[
@@ -268,34 +270,6 @@ class RentalOrderDetailScreen extends ConsumerWidget {
       case 'pending':
         return Column(
           children: [
-            // NOTE: Accept is handled from Transaction Management dashboard only
-            if (isSeller)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(radius.md),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.hourglass_top,
-                      color: colors.outlineVariant,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Review this request in Transaction Management',
-                        style: typo.bodyMedium.copyWith(
-                          color: colors.outlineVariant,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 8),
             _buildCancelButton(context, ref, order, isActing),
           ],
         );
@@ -322,21 +296,26 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         }
         return Column(
           children: [
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isActing
-                    ? null
-                    : () async => await ref
-                        .read(orderActionsProvider.notifier)
-                        .confirmDelivery(order),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: Text(
-                  isActing ? 'Processing...' : 'Confirm Delivery',
-                  style: typo.titleMedium.copyWith(color: colors.onPrimary),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isActing
+                        ? null
+                        : () async => await ref
+                            .read(orderActionsProvider.notifier)
+                            .confirmDelivery(order),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text(
+                      isActing ? 'Processing...' : 'Confirm Delivery',
+                      style: typo.titleMedium.copyWith(color: colors.onPrimary),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -382,18 +361,23 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     switch (order.rentalStatus) {
       case 'active':
         if (isBuyer) {
-          return SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: isActing
-                  ? null
-                  : () => ref.read(orderActionsProvider.notifier).requestReturn(order.id),
-              icon: const Icon(Icons.assignment_return),
-              label: Text(isActing ? 'Processing...' : 'Request Return'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.warning,
-                foregroundColor: colors.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: isActing
+                      ? null
+                      : () => ref.read(orderActionsProvider.notifier).requestReturn(order.id),
+                  icon: const Icon(Icons.assignment_return),
+                  label: Text(isActing ? 'Processing...' : 'Request Return'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.warning,
+                    foregroundColor: colors.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
               ),
             ),
           );
@@ -414,21 +398,26 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         );
       case 'return_requested':
         if (isSeller) {
-          return SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: isActing
-                  ? null
-                  : () => ref.read(orderActionsProvider.notifier).confirmReturn(
-                        order.id,
-                        depositAmount: order.depositAmount,
-                      ),
-              icon: const Icon(Icons.check),
-              label: Text(isActing ? 'Processing...' : 'Confirm Return'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primary,
-                foregroundColor: colors.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: isActing
+                      ? null
+                      : () => ref.read(orderActionsProvider.notifier).confirmReturn(
+                            order.id,
+                            depositAmount: order.depositAmount,
+                          ),
+                  icon: const Icon(Icons.check),
+                  label: Text(isActing ? 'Processing...' : 'Confirm Return'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: colors.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
               ),
             ),
           );
@@ -454,22 +443,27 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         );
       case 'returned':
         if (isSeller && order.depositAmount > 0) {
-          return SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: isActing
-                  ? null
-                  : () => ref.read(orderActionsProvider.notifier).refundDeposit(order.id),
-              icon: const Icon(Icons.payments),
-              label: Text(
-                isActing
-                    ? 'Processing...'
-                    : 'Confirm Deposit Refund (\$${order.depositAmount.toStringAsFixed(0)})',
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.success,
-                foregroundColor: colors.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: isActing
+                      ? null
+                      : () => ref.read(orderActionsProvider.notifier).refundDeposit(order.id),
+                  icon: const Icon(Icons.payments),
+                  label: Text(
+                    isActing
+                        ? 'Processing...'
+                        : 'Confirm Deposit Refund (\$${order.depositAmount.toStringAsFixed(0)})',
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.success,
+                    foregroundColor: colors.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
               ),
             ),
           );
@@ -532,29 +526,34 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             !order.deliveryConfirmedBySeller);
     if (!canCancel) return const SizedBox.shrink();
 
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: isActing
-            ? null
-            : () async {
-                final confirmed = await _showConfirmDialog(
-                  context,
-                  'Cancel Order',
-                  'Are you sure you want to cancel this order?',
-                );
-                if (confirmed == true) {
-                  await ref
-                      .read(orderActionsProvider.notifier)
-                      .cancelOrder(order.id);
-                }
-              },
-        style: OutlinedButton.styleFrom(
-          foregroundColor: colors.error,
-          side: BorderSide(color: colors.error),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: isActing
+                ? null
+                : () async {
+                    final confirmed = await _showConfirmDialog(
+                      context,
+                      'Cancel Order',
+                      'Are you sure you want to cancel this order?',
+                    );
+                    if (confirmed == true) {
+                      await ref
+                          .read(orderActionsProvider.notifier)
+                          .cancelOrder(order.id);
+                    }
+                  },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colors.error,
+              side: BorderSide(color: colors.error),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: Text(isActing ? 'Processing...' : 'Cancel Order', style: typo.titleMedium),
+          ),
         ),
-        child: Text(isActing ? 'Processing...' : 'Cancel Order', style: typo.titleMedium),
       ),
     );
   }

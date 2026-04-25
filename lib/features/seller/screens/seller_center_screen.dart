@@ -396,37 +396,128 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
+    final listingTitle = order.listing?.title ?? 'Transaction';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(radius.card),
         border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
       ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: colors.surfaceContainerHigh,
-          backgroundImage: order.buyer?.avatarUrl != null && order.buyer!.avatarUrl!.isNotEmpty
-              ? NetworkImage(order.buyer!.avatarUrl!)
-              : null,
-          child: order.buyer?.avatarUrl == null || order.buyer!.avatarUrl!.isEmpty
-              ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5))
-              : null,
-        ),
-        title: Row(
-          children: [
-            Expanded(child: Text(order.listing?.title ?? 'Transaction', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold))),
-            if (hasUnread)
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(color: colors.error, shape: BoxShape.circle),
+      child: Row(
+        children: [
+          // Left side: image + title → Listing Detail
+          Expanded(
+            child: GestureDetector(
+              onTap: () => context.pushNamed(
+                AppRoutes.listingDetail,
+                pathParameters: {'id': order.listingId},
               ),
-          ],
-        ),
-        subtitle: Text('\$${order.totalPrice.toStringAsFixed(0)} · ${order.buyer?.displayName ?? 'Buyer'}\n$statusLabel', style: typo.bodySmall),
-        isThreeLine: true,
-        onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: colors.surfaceContainerHigh,
+                    backgroundImage: order.buyer?.avatarUrl != null &&
+                            order.buyer!.avatarUrl!.isNotEmpty
+                        ? NetworkImage(order.buyer!.avatarUrl!)
+                        : null,
+                    child: order.buyer?.avatarUrl == null ||
+                            order.buyer!.avatarUrl!.isEmpty
+                        ? Icon(Icons.person,
+                            color:
+                                colors.onSurface.withValues(alpha: 0.5))
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(listingTitle,
+                            style: typo.bodyMedium
+                                .copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 2),
+                        Text(
+                          '\$${order.totalPrice.toStringAsFixed(0)} · ${order.buyer?.displayName ?? 'Buyer'}',
+                          style: typo.bodySmall.copyWith(
+                              color: colors.onSurface
+                                  .withValues(alpha: 0.6)),
+                        ),
+                        const SizedBox(height: 2),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(radius.full),
+                          ),
+                          child: Text(statusLabel,
+                              style: typo.labelSmall.copyWith(
+                                color: colors.primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10,
+                              )),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Right side: timestamps → Order Detail
+          GestureDetector(
+            onTap: () => context.pushNamed(
+              AppRoutes.orderDetail,
+              pathParameters: {'id': order.id},
+            ),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 64, minHeight: 44),
+              alignment: Alignment.centerRight,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (hasUnread)
+                    Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.only(bottom: 4),
+                      decoration: BoxDecoration(
+                          color: colors.error, shape: BoxShape.circle),
+                    ),
+                  Text(
+                    DateFormat('MM/dd HH:mm')
+                        .format(order.createdAt.toLocal()),
+                    style: typo.labelSmall.copyWith(
+                        fontSize: 10,
+                        color:
+                            colors.onSurface.withValues(alpha: 0.4)),
+                  ),
+                  Text(
+                    DateFormat('MM/dd HH:mm')
+                        .format(order.updatedAt.toLocal()),
+                    style: typo.labelSmall.copyWith(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary),
+                  ),
+                  const SizedBox(height: 4),
+                  Icon(Icons.chevron_right,
+                      size: 16,
+                      color: colors.onSurface.withValues(alpha: 0.3)),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
