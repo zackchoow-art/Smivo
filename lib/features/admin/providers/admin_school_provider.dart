@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/school.dart';
 import 'package:smivo/data/repositories/school_repository.dart';
+import 'package:smivo/data/repositories/school_data_repository.dart';
 
 part 'admin_school_provider.g.dart';
 
@@ -11,10 +12,14 @@ class AdminSchoolController extends _$AdminSchoolController {
     return ref.watch(schoolRepositoryProvider).fetchAllSchools();
   }
 
-  Future<void> addSchool(School school) async {
+  Future<void> addSchool(School school, {bool seedDefaults = false}) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final newSchool = await ref.read(schoolRepositoryProvider).createSchool(school);
+      // Seed default categories, conditions, pickup locations, FAQs
+      if (seedDefaults) {
+        await ref.read(schoolDataRepositoryProvider).seedSchoolDefaults(newSchool.id);
+      }
       final currentList = state.valueOrNull ?? [];
       return [...currentList, newSchool]..sort((a, b) => a.name.compareTo(b.name));
     });

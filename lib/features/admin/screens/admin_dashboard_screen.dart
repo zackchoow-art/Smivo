@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/admin/providers/admin_dashboard_provider.dart';
+import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
 /// Admin dashboard with platform metrics and recent activity.
 class AdminDashboardScreen extends ConsumerWidget {
@@ -126,23 +127,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                           ? DateFormat('MMM d, yyyy HH:mm').format(DateTime.parse(order['created_at']))
                           : '-';
 
-                      Color statusColor;
-                      switch (status) {
-                        case 'pending':
-                          statusColor = const Color(0xFFD97706);
-                          break;
-                        case 'confirmed':
-                          statusColor = colors.primary;
-                          break;
-                        case 'completed':
-                          statusColor = const Color(0xFF059669);
-                          break;
-                        case 'cancelled':
-                          statusColor = colors.error;
-                          break;
-                        default:
-                          statusColor = colors.onSurfaceVariant;
-                      }
+                      // NOTE: Use DB-driven status colors via StatusResolver
+                      final resolver = ref.watch(statusResolverProvider).valueOrNull;
+                      final statusColor = resolver?.orderColor(status) ?? colors.onSurfaceVariant;
 
                       return Column(
                         children: [
@@ -184,7 +171,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                status.toUpperCase(),
+                                resolver?.orderLabel(status) ?? status.toUpperCase(),
                                 style: typo.labelSmall.copyWith(
                                   color: statusColor,
                                   fontWeight: FontWeight.bold,

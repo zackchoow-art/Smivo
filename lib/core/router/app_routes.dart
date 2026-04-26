@@ -65,7 +65,9 @@ class AppRoutes {
   static const String adminOrders = 'adminOrders';
   static const String adminSchools = 'adminSchools';
   static const String adminCategories = 'adminCategories';
+  static const String adminConditions = 'adminConditions';
   static const String adminFaqs = 'adminFaqs';
+  static const String adminDictionary = 'adminDictionary';
 
   static const String adminLoginPath = '/admin';
   static const String adminDashboardPath = '/admin/dashboard';
@@ -74,5 +76,7 @@ class AppRoutes {
   static const String adminOrdersPath = '/admin/orders';
   static const String adminSchoolsPath = '/admin/schools';
   static const String adminCategoriesPath = '/admin/categories';
+  static const String adminConditionsPath = '/admin/conditions';
   static const String adminFaqsPath = '/admin/faqs';
+  static const String adminDictionaryPath = '/admin/dictionary';
 }

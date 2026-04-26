@@ -9,6 +9,7 @@ import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
+import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
@@ -252,7 +253,11 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
                       final order = activeTransactions[index];
-                      final statusLabel = order.rentalStatus?.replaceAll('_', ' ').toUpperCase() ?? order.status.toUpperCase();
+                      // NOTE: Use DB-driven labels via StatusResolver
+                      final resolver = ref.watch(statusResolverProvider).valueOrNull;
+                      final statusLabel = order.rentalStatus != null
+                          ? (resolver?.rentalLabel(order.rentalStatus!) ?? order.rentalStatus!.replaceAll('_', ' ').toUpperCase())
+                          : (resolver?.orderLabel(order.status) ?? order.status.toUpperCase());
                       final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
                       return _buildOrderCard(order, statusLabel, hasUnread);
                     }, childCount: activeTransactions.length)),
@@ -492,7 +497,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
             ),
             const SizedBox(width: 8),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(listing.title, style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+              Text(listing.title, style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 4),
               RichText(
                 text: TextSpan(

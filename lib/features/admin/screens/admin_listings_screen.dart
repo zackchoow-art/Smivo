@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/admin/providers/admin_listings_provider.dart';
+import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
 /// Admin screen for viewing and searching all listings.
 class AdminListingsScreen extends ConsumerStatefulWidget {
@@ -117,20 +118,9 @@ class _AdminListingsScreenState extends ConsumerState<AdminListingsScreen> {
                       ],
                       rows: filtered.map((l) {
                         final status = l['status'] ?? 'unknown';
-                        Color statusColor;
-                        switch (status) {
-                          case 'active':
-                            statusColor = colors.success;
-                            break;
-                          case 'sold':
-                            statusColor = colors.primary;
-                            break;
-                          case 'delisted':
-                            statusColor = colors.error;
-                            break;
-                          default:
-                            statusColor = colors.onSurfaceVariant;
-                        }
+                        // NOTE: Use DB-driven listing status colors via StatusResolver
+                        final resolver = ref.watch(statusResolverProvider).valueOrNull;
+                        final statusColor = resolver?.listingColor(status) ?? colors.onSurfaceVariant;
 
                         return DataRow(cells: [
                           DataCell(SizedBox(
@@ -151,7 +141,7 @@ class _AdminListingsScreenState extends ConsumerState<AdminListingsScreen> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              status.toString().toUpperCase(),
+                              resolver?.listingLabel(status) ?? status.toString().toUpperCase(),
                               style: typo.labelSmall.copyWith(
                                 color: statusColor,
                                 fontWeight: FontWeight.bold,

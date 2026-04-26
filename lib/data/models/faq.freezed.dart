@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Faq {
 
- String get id; String get category; String get question; String get answer;@JsonKey(name: 'display_order') int get displayOrder;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;// NOTE: null = global FAQ (visible to all schools)
+@JsonKey(name: 'school_id') String? get schoolId; String get category; String get question; String get answer;@JsonKey(name: 'display_order') int get displayOrder;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of Faq
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $FaqCopyWith<Faq> get copyWith => _$FaqCopyWithImpl<Faq>(this as Faq, _$identity
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Faq&&(identical(other.id, id) || other.id == id)&&(identical(other.category, category) || other.category == category)&&(identical(other.question, question) || other.question == question)&&(identical(other.answer, answer) || other.answer == answer)&&(identical(other.displayOrder, displayOrder) || other.displayOrder == displayOrder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Faq&&(identical(other.id, id) || other.id == id)&&(identical(other.schoolId, schoolId) || other.schoolId == schoolId)&&(identical(other.category, category) || other.category == category)&&(identical(other.question, question) || other.question == question)&&(identical(other.answer, answer) || other.answer == answer)&&(identical(other.displayOrder, displayOrder) || other.displayOrder == displayOrder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,category,question,answer,displayOrder,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,schoolId,category,question,answer,displayOrder,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Faq(id: $id, category: $category, question: $question, answer: $answer, displayOrder: $displayOrder, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Faq(id: $id, schoolId: $schoolId, category: $category, question: $question, answer: $answer, displayOrder: $displayOrder, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $FaqCopyWith<$Res>  {
   factory $FaqCopyWith(Faq value, $Res Function(Faq) _then) = _$FaqCopyWithImpl;
 @useResult
 $Res call({
- String id, String category, String question, String answer,@JsonKey(name: 'display_order') int displayOrder,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'school_id') String? schoolId, String category, String question, String answer,@JsonKey(name: 'display_order') int displayOrder,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -65,10 +66,11 @@ class _$FaqCopyWithImpl<$Res>
 
 /// Create a copy of Faq
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? category = null,Object? question = null,Object? answer = null,Object? displayOrder = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? schoolId = freezed,Object? category = null,Object? question = null,Object? answer = null,Object? displayOrder = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String,schoolId: freezed == schoolId ? _self.schoolId : schoolId // ignore: cast_nullable_to_non_nullable
+as String?,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,question: null == question ? _self.question : question // ignore: cast_nullable_to_non_nullable
 as String,answer: null == answer ? _self.answer : answer // ignore: cast_nullable_to_non_nullable
 as String,displayOrder: null == displayOrder ? _self.displayOrder : displayOrder // ignore: cast_nullable_to_non_nullable
@@ -159,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String category,  String question,  String answer, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'school_id')  String? schoolId,  String category,  String question,  String answer, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Faq() when $default != null:
-return $default(_that.id,_that.category,_that.question,_that.answer,_that.displayOrder,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.schoolId,_that.category,_that.question,_that.answer,_that.displayOrder,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -180,10 +182,10 @@ return $default(_that.id,_that.category,_that.question,_that.answer,_that.displa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String category,  String question,  String answer, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'school_id')  String? schoolId,  String category,  String question,  String answer, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Faq():
-return $default(_that.id,_that.category,_that.question,_that.answer,_that.displayOrder,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.schoolId,_that.category,_that.question,_that.answer,_that.displayOrder,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +202,10 @@ return $default(_that.id,_that.category,_that.question,_that.answer,_that.displa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String category,  String question,  String answer, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'school_id')  String? schoolId,  String category,  String question,  String answer, @JsonKey(name: 'display_order')  int displayOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Faq() when $default != null:
-return $default(_that.id,_that.category,_that.question,_that.answer,_that.displayOrder,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.schoolId,_that.category,_that.question,_that.answer,_that.displayOrder,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -215,10 +217,12 @@ return $default(_that.id,_that.category,_that.question,_that.answer,_that.displa
 @JsonSerializable()
 
 class _Faq implements Faq {
-  const _Faq({required this.id, required this.category, required this.question, required this.answer, @JsonKey(name: 'display_order') required this.displayOrder, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _Faq({required this.id, @JsonKey(name: 'school_id') this.schoolId, required this.category, required this.question, required this.answer, @JsonKey(name: 'display_order') required this.displayOrder, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
   factory _Faq.fromJson(Map<String, dynamic> json) => _$FaqFromJson(json);
 
 @override final  String id;
+// NOTE: null = global FAQ (visible to all schools)
+@override@JsonKey(name: 'school_id') final  String? schoolId;
 @override final  String category;
 @override final  String question;
 @override final  String answer;
@@ -239,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Faq&&(identical(other.id, id) || other.id == id)&&(identical(other.category, category) || other.category == category)&&(identical(other.question, question) || other.question == question)&&(identical(other.answer, answer) || other.answer == answer)&&(identical(other.displayOrder, displayOrder) || other.displayOrder == displayOrder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Faq&&(identical(other.id, id) || other.id == id)&&(identical(other.schoolId, schoolId) || other.schoolId == schoolId)&&(identical(other.category, category) || other.category == category)&&(identical(other.question, question) || other.question == question)&&(identical(other.answer, answer) || other.answer == answer)&&(identical(other.displayOrder, displayOrder) || other.displayOrder == displayOrder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,category,question,answer,displayOrder,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,schoolId,category,question,answer,displayOrder,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Faq(id: $id, category: $category, question: $question, answer: $answer, displayOrder: $displayOrder, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Faq(id: $id, schoolId: $schoolId, category: $category, question: $question, answer: $answer, displayOrder: $displayOrder, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -259,7 +263,7 @@ abstract mixin class _$FaqCopyWith<$Res> implements $FaqCopyWith<$Res> {
   factory _$FaqCopyWith(_Faq value, $Res Function(_Faq) _then) = __$FaqCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String category, String question, String answer,@JsonKey(name: 'display_order') int displayOrder,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'school_id') String? schoolId, String category, String question, String answer,@JsonKey(name: 'display_order') int displayOrder,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -276,10 +280,11 @@ class __$FaqCopyWithImpl<$Res>
 
 /// Create a copy of Faq
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? category = null,Object? question = null,Object? answer = null,Object? displayOrder = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? schoolId = freezed,Object? category = null,Object? question = null,Object? answer = null,Object? displayOrder = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Faq(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String,schoolId: freezed == schoolId ? _self.schoolId : schoolId // ignore: cast_nullable_to_non_nullable
+as String?,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,question: null == question ? _self.question : question // ignore: cast_nullable_to_non_nullable
 as String,answer: null == answer ? _self.answer : answer // ignore: cast_nullable_to_non_nullable
 as String,displayOrder: null == displayOrder ? _self.displayOrder : displayOrder // ignore: cast_nullable_to_non_nullable

@@ -80,7 +80,9 @@ class AdminShellScreen extends StatelessWidget {
       _NavItem('Orders', Icons.receipt_long_outlined, Icons.receipt_long, AppRoutes.adminOrdersPath, AppRoutes.adminOrders),
       _NavItem('Schools', Icons.school_outlined, Icons.school, AppRoutes.adminSchoolsPath, AppRoutes.adminSchools),
       _NavItem('Categories', Icons.category_outlined, Icons.category, AppRoutes.adminCategoriesPath, AppRoutes.adminCategories),
+      _NavItem('Conditions', Icons.star_half_outlined, Icons.star_half, AppRoutes.adminConditionsPath, AppRoutes.adminConditions),
       _NavItem('FAQs', Icons.help_outline, Icons.help, AppRoutes.adminFaqsPath, AppRoutes.adminFaqs),
+      _NavItem('Dictionary', Icons.book_outlined, Icons.book, AppRoutes.adminDictionaryPath, AppRoutes.adminDictionary),
     ];
   }
 

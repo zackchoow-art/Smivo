@@ -8,6 +8,7 @@ part of 'faq.dart';
 
 _Faq _$FaqFromJson(Map<String, dynamic> json) => _Faq(
   id: json['id'] as String,
+  schoolId: json['school_id'] as String?,
   category: json['category'] as String,
   question: json['question'] as String,
   answer: json['answer'] as String,
@@ -18,6 +19,7 @@ _Faq _$FaqFromJson(Map<String, dynamic> json) => _Faq(
 
 Map<String, dynamic> _$FaqToJson(_Faq instance) => <String, dynamic>{
   'id': instance.id,
+  'school_id': instance.schoolId,
   'category': instance.category,
   'question': instance.question,
   'answer': instance.answer,

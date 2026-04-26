@@ -18,8 +18,16 @@ import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/data/repositories/order_repository.dart';
 import 'package:smivo/data/models/order.dart';
+import 'package:smivo/features/shared/providers/school_data_provider.dart';
 
-String _conditionLabel(String condition) {
+/// Resolves a condition slug to a display label.
+/// Accepts an optional conditions list from DB for dynamic lookup.
+String _conditionLabel(String condition, [List? conditions]) {
+  // NOTE: Try DB lookup first, fallback to hardcoded switch
+  if (conditions != null) {
+    final match = conditions.where((c) => c.slug == condition).firstOrNull;
+    if (match != null) return match.name.toUpperCase();
+  }
   switch (condition) {
     case 'new': return 'NEW';
     case 'like_new': return 'LIKE NEW';
@@ -125,6 +133,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           final imageUrls = listing.images.map((img) => img.imageUrl).toList();
           // NOTE: Show real condition for sale items, availability for rentals
           final statusTag = isSale ? null : 'AVAILABLE NOW';
+          // Load DB conditions for dynamic label resolution
+          final conditionsList = ref.watch(mySchoolConditionsProvider).valueOrNull;
 
           return Stack(children: [
             RefreshIndicator(
@@ -137,7 +147,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
               Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(listing.title, style: typo.displayLarge.copyWith(fontSize: 32, letterSpacing: -1, height: 1.1)),
                 const SizedBox(height: 4),
-                Text(_conditionLabel(listing.condition).toUpperCase(),
+                Text(_conditionLabel(listing.condition, conditionsList).toUpperCase(),
                   style: typo.bodyMedium.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.55),
                     fontWeight: FontWeight.w500,

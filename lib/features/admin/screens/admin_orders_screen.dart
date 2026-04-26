@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/admin/providers/admin_orders_provider.dart';
+import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
 /// Admin screen for viewing and searching all orders.
 class AdminOrdersScreen extends ConsumerStatefulWidget {
@@ -118,26 +119,9 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
                       ],
                       rows: filtered.map((o) {
                         final status = o['status'] ?? 'unknown';
-                        Color statusColor;
-                        switch (status) {
-                          case 'pending':
-                            statusColor = Colors.orange;
-                            break;
-                          case 'confirmed':
-                            statusColor = colors.primary;
-                            break;
-                          case 'completed':
-                            statusColor = colors.success;
-                            break;
-                          case 'cancelled':
-                            statusColor = colors.error;
-                            break;
-                          case 'missed':
-                            statusColor = colors.onSurfaceVariant;
-                            break;
-                          default:
-                            statusColor = colors.onSurfaceVariant;
-                        }
+                        // NOTE: Use DB-driven status colors via StatusResolver
+                        final resolver = ref.watch(statusResolverProvider).valueOrNull;
+                        final statusColor = resolver?.orderColor(status) ?? colors.onSurfaceVariant;
 
                         return DataRow(cells: [
                           DataCell(SizedBox(
@@ -159,7 +143,7 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              status.toString().toUpperCase(),
+                              resolver?.orderLabel(status) ?? status.toString().toUpperCase(),
                               style: typo.labelSmall.copyWith(
                                 color: statusColor,
                                 fontWeight: FontWeight.bold,

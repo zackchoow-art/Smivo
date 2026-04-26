@@ -3,7 +3,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
-import 'package:smivo/core/constants/app_constants.dart';
+import 'package:smivo/features/shared/providers/school_data_provider.dart';
 import 'package:smivo/data/models/pickup_location.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/features/listing/providers/create_listing_provider.dart';
@@ -116,7 +116,7 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
                   const SizedBox(height: 32),
                   const PhotoPickerSection(),
           const SizedBox(height: 24),
-          CustomTextField(label: 'Item Title', hintText: "Name of the item you're selling", controller: _titleController),
+          CustomTextField(label: 'Item Title', hintText: "Name of the item", controller: _titleController),
           const SizedBox(height: 24),
           CustomTextField(label: 'Item Description', hintText: "Describe its condition, features, and why someone should buy it...", maxLines: 4, controller: _descriptionController),
           const SizedBox(height: 24),
@@ -341,57 +341,67 @@ class _CategoryTabBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = ref.watch(selectedListingCategoryProvider);
     final colors = context.smivoColors;
-    final categories = AppConstants.categories;
-    final initialIndex = categories.indexOf(selectedCategory ?? '');
+    final categoriesAsync = ref.watch(mySchoolCategoriesProvider);
 
-    return DefaultTabController(
-      length: categories.length,
-      initialIndex: initialIndex != -1 ? initialIndex : 0,
-      child: TabBar(
-        isScrollable: true,
-        tabAlignment: TabAlignment.start,
-        onTap: (index) => ref.read(selectedListingCategoryProvider.notifier).setCategory(categories[index]),
-        labelColor: colors.primary,
-        unselectedLabelColor: colors.onSurfaceVariant,
-        indicatorColor: colors.primary,
-        dividerColor: Colors.transparent,
-        tabs: categories.map((c) => Tab(text: c)).toList(),
-      ),
+    return categoriesAsync.when(
+      loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
+      error: (_, __) => const SizedBox(height: 48, child: Center(child: Text('Failed to load categories'))),
+      data: (cats) {
+        final slugs = cats.map((c) => c.slug).toList();
+        final initialIndex = slugs.indexOf(selectedCategory ?? '');
+
+        return DefaultTabController(
+          length: slugs.length,
+          initialIndex: initialIndex != -1 ? initialIndex : 0,
+          child: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            onTap: (index) => ref.read(selectedListingCategoryProvider.notifier).setCategory(slugs[index]),
+            labelColor: colors.primary,
+            unselectedLabelColor: colors.onSurfaceVariant,
+            indicatorColor: colors.primary,
+            dividerColor: Colors.transparent,
+            tabs: cats.map((c) => Tab(text: c.name)).toList(),
+          ),
+        );
+      },
     );
   }
 }
 
-class _ConditionTabBar extends StatelessWidget {
+class _ConditionTabBar extends ConsumerWidget {
   final String selectedCondition;
   final ValueChanged<String> onChanged;
 
   const _ConditionTabBar({required this.selectedCondition, required this.onChanged});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
-    final conditions = [
-      {'label': 'New', 'value': 'new'},
-      {'label': 'Like New', 'value': 'like_new'},
-      {'label': 'Good', 'value': 'good'},
-      {'label': 'Fair', 'value': 'fair'},
-      {'label': 'Poor', 'value': 'poor'},
-    ];
-    final initialIndex = conditions.indexWhere((c) => c['value'] == selectedCondition);
+    final conditionsAsync = ref.watch(mySchoolConditionsProvider);
 
-    return DefaultTabController(
-      length: conditions.length,
-      initialIndex: initialIndex != -1 ? initialIndex : 2, // Default to 'Good'
-      child: TabBar(
-        isScrollable: true,
-        tabAlignment: TabAlignment.start,
-        onTap: (index) => onChanged(conditions[index]['value']!),
-        labelColor: colors.primary,
-        unselectedLabelColor: colors.onSurfaceVariant,
-        indicatorColor: colors.primary,
-        dividerColor: Colors.transparent,
-        tabs: conditions.map((c) => Tab(text: c['label']!)).toList(),
-      ),
+    return conditionsAsync.when(
+      loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
+      error: (_, __) => const SizedBox(height: 48, child: Center(child: Text('Failed to load conditions'))),
+      data: (conditions) {
+        final initialIndex = conditions.indexWhere((c) => c.slug == selectedCondition);
+
+        return DefaultTabController(
+          length: conditions.length,
+          initialIndex: initialIndex != -1 ? initialIndex : 2, // Default to 'Good'
+          child: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            onTap: (index) => onChanged(conditions[index].slug),
+            labelColor: colors.primary,
+            unselectedLabelColor: colors.onSurfaceVariant,
+            indicatorColor: colors.primary,
+            dividerColor: Colors.transparent,
+            tabs: conditions.map((c) => Tab(text: c.name)).toList(),
+          ),
+        );
+      },
     );
   }
 }
+

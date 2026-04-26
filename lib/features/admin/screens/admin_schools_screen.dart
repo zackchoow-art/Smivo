@@ -138,7 +138,17 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _domainCtrl;
   late final TextEditingController _colorCtrl;
+  late final TextEditingController _addressCtrl;
+  late final TextEditingController _cityCtrl;
+  late final TextEditingController _stateCtrl;
+  late final TextEditingController _zipCtrl;
+  late final TextEditingController _latCtrl;
+  late final TextEditingController _lngCtrl;
+  late final TextEditingController _websiteCtrl;
+  late final TextEditingController _descCtrl;
+  late final TextEditingController _studentCountCtrl;
   late bool _isActive;
+  bool _seedDefaults = true;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -148,6 +158,15 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
     _nameCtrl = TextEditingController(text: widget.school?.name ?? '');
     _domainCtrl = TextEditingController(text: widget.school?.emailDomain ?? '');
     _colorCtrl = TextEditingController(text: widget.school?.primaryColor ?? '');
+    _addressCtrl = TextEditingController(text: widget.school?.address ?? '');
+    _cityCtrl = TextEditingController(text: widget.school?.city ?? '');
+    _stateCtrl = TextEditingController(text: widget.school?.state ?? '');
+    _zipCtrl = TextEditingController(text: widget.school?.zipCode ?? '');
+    _latCtrl = TextEditingController(text: widget.school?.latitude?.toString() ?? '');
+    _lngCtrl = TextEditingController(text: widget.school?.longitude?.toString() ?? '');
+    _websiteCtrl = TextEditingController(text: widget.school?.websiteUrl ?? '');
+    _descCtrl = TextEditingController(text: widget.school?.description ?? '');
+    _studentCountCtrl = TextEditingController(text: widget.school?.studentCount?.toString() ?? '');
     _isActive = widget.school?.isActive ?? false;
   }
 
@@ -157,6 +176,15 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
     _nameCtrl.dispose();
     _domainCtrl.dispose();
     _colorCtrl.dispose();
+    _addressCtrl.dispose();
+    _cityCtrl.dispose();
+    _stateCtrl.dispose();
+    _zipCtrl.dispose();
+    _latCtrl.dispose();
+    _lngCtrl.dispose();
+    _websiteCtrl.dispose();
+    _descCtrl.dispose();
+    _studentCountCtrl.dispose();
     super.dispose();
   }
 
@@ -170,12 +198,24 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
       emailDomain: _domainCtrl.text.trim(),
       primaryColor: _colorCtrl.text.trim().isEmpty ? null : _colorCtrl.text.trim(),
       isActive: _isActive,
+      address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+      city: _cityCtrl.text.trim().isEmpty ? null : _cityCtrl.text.trim(),
+      state: _stateCtrl.text.trim().isEmpty ? null : _stateCtrl.text.trim(),
+      zipCode: _zipCtrl.text.trim().isEmpty ? null : _zipCtrl.text.trim(),
+      latitude: double.tryParse(_latCtrl.text.trim()),
+      longitude: double.tryParse(_lngCtrl.text.trim()),
+      websiteUrl: _websiteCtrl.text.trim().isEmpty ? null : _websiteCtrl.text.trim(),
+      description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      studentCount: int.tryParse(_studentCountCtrl.text.trim()),
       createdAt: widget.school?.createdAt ?? DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
     if (widget.school == null) {
-      ref.read(adminSchoolControllerProvider.notifier).addSchool(newSchool);
+      ref.read(adminSchoolControllerProvider.notifier).addSchool(
+        newSchool,
+        seedDefaults: _seedDefaults,
+      );
     } else {
       ref.read(adminSchoolControllerProvider.notifier).updateSchool(newSchool);
     }
@@ -189,41 +229,108 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
 
     return AlertDialog(
       title: Text(isEditing ? 'Edit School' : 'New School'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Name (e.g. Smith College)'),
-                validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _slugCtrl,
-                decoration: const InputDecoration(labelText: 'Slug (e.g. smith)'),
-                validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _domainCtrl,
-                decoration: const InputDecoration(labelText: 'Email Domain (e.g. smith.edu)'),
-                validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _colorCtrl,
-                decoration: const InputDecoration(labelText: 'Primary Color Hex (optional)'),
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('Is Active'),
-                value: _isActive,
-                onChanged: (val) => setState(() => _isActive = val),
-              ),
-            ],
+      content: SizedBox(
+        width: 500,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Basic Info ──
+                Text('Basic Info', style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(labelText: 'Name (e.g. Smith College)'),
+                  validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _slugCtrl,
+                        decoration: const InputDecoration(labelText: 'Slug'),
+                        validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _domainCtrl,
+                        decoration: const InputDecoration(labelText: 'Email Domain'),
+                        validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _descCtrl,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                  maxLines: 2,
+                ),
+
+                const SizedBox(height: 24),
+                Text('Location', style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _addressCtrl,
+                  decoration: const InputDecoration(labelText: 'Address'),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: TextFormField(controller: _cityCtrl, decoration: const InputDecoration(labelText: 'City'))),
+                    const SizedBox(width: 12),
+                    Expanded(child: TextFormField(controller: _stateCtrl, decoration: const InputDecoration(labelText: 'State'))),
+                    const SizedBox(width: 12),
+                    Expanded(child: TextFormField(controller: _zipCtrl, decoration: const InputDecoration(labelText: 'ZIP'))),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: TextFormField(controller: _latCtrl, decoration: const InputDecoration(labelText: 'Latitude'), keyboardType: TextInputType.number)),
+                    const SizedBox(width: 12),
+                    Expanded(child: TextFormField(controller: _lngCtrl, decoration: const InputDecoration(labelText: 'Longitude'), keyboardType: TextInputType.number)),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+                Text('Branding', style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: TextFormField(controller: _colorCtrl, decoration: const InputDecoration(labelText: 'Primary Color Hex'))),
+                    const SizedBox(width: 12),
+                    Expanded(child: TextFormField(controller: _websiteCtrl, decoration: const InputDecoration(labelText: 'Website URL'))),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _studentCountCtrl,
+                  decoration: const InputDecoration(labelText: 'Student Count'),
+                  keyboardType: TextInputType.number,
+                ),
+
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('Is Active'),
+                  value: _isActive,
+                  onChanged: (val) => setState(() => _isActive = val),
+                ),
+                if (!isEditing)
+                  SwitchListTile(
+                    title: const Text('Seed Default Data'),
+                    subtitle: const Text('Create default categories, conditions, pickup locations'),
+                    value: _seedDefaults,
+                    onChanged: (val) => setState(() => _seedDefaults = val),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -240,3 +347,4 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
     );
   }
 }
+

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/core/providers/theme_provider.dart';
 import 'package:smivo/core/theme/theme_variant.dart';
+import 'package:smivo/features/shared/providers/school_data_provider.dart';
 
 
 class HomeCategoryChips extends ConsumerWidget {
@@ -17,12 +17,25 @@ class HomeCategoryChips extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    
-    // Prepend 'All' to the list of categories
-    final categories = ['All', ...AppConstants.categories];
+    final categoriesAsync = ref.watch(mySchoolCategoriesProvider);
+
+    // NOTE: Build category slug list from DB, with 'All' prepended
+    final categories = categoriesAsync.when(
+      data: (cats) => ['All', ...cats.map((c) => c.slug)],
+      loading: () => ['All'],
+      error: (_, __) => ['All'],
+    );
+
+    // Build a display name lookup map for pretty labels
+    final nameMap = <String, String>{'All': 'All'};
+    if (categoriesAsync.hasValue) {
+      for (final cat in categoriesAsync.value!) {
+        nameMap[cat.slug] = cat.name;
+      }
+    }
 
     if (themeVariant == SmivoThemeVariant.teal) {
-      final initialIndex = categories.indexOf(selectedCategory ?? 'All');
+      final initialIndex = categories.indexOf(selectedCategory);
       return DefaultTabController(
         length: categories.length,
         initialIndex: initialIndex != -1 ? initialIndex : 0,
@@ -37,7 +50,7 @@ class HomeCategoryChips extends ConsumerWidget {
             unselectedLabelColor: colors.onSurfaceVariant,
             indicatorColor: colors.primary,
             dividerColor: Colors.transparent,
-            tabs: categories.map((c) => Tab(text: c[0].toUpperCase() + c.substring(1))).toList(),
+            tabs: categories.map((c) => Tab(text: nameMap[c] ?? c)).toList(),
           ),
         ),
       );
@@ -67,7 +80,7 @@ class HomeCategoryChips extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(radius.chip),
               ),
               child: Text(
-                category[0].toUpperCase() + category.substring(1),
+                nameMap[category] ?? category,
                 style: typo.labelLarge.copyWith(
                   color: isSelected
                       ? colors.onPrimary

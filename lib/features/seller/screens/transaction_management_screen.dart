@@ -13,6 +13,7 @@ import 'package:smivo/features/seller/providers/transaction_stats_provider.dart'
 import 'package:smivo/features/seller/providers/listing_views_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
+import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
 class TransactionManagementScreen extends ConsumerWidget {
   const TransactionManagementScreen({
@@ -397,28 +398,10 @@ class _OffersTab extends ConsumerWidget {
     final dateStr = DateFormat('MMM d, h:mm a').format(order.createdAt.toLocal());
     final isPending = order.status == 'pending';
 
-    Color statusColor;
-    String statusLabel;
-    switch (order.status) {
-      case 'pending':
-        statusColor = Colors.orange;
-        statusLabel = 'Pending';
-      case 'confirmed':
-        statusColor = colors.primary;
-        statusLabel = 'Accepted';
-      case 'completed':
-        statusColor = colors.success;
-        statusLabel = 'Completed';
-      case 'cancelled':
-        statusColor = colors.error;
-        statusLabel = 'Cancelled';
-      case 'missed':
-        statusColor = colors.outlineVariant;
-        statusLabel = 'Missed';
-      default:
-        statusColor = colors.outlineVariant;
-        statusLabel = order.status;
-    }
+    // NOTE: Use DB-driven status labels and colors via StatusResolver
+    final resolver = ref.watch(statusResolverProvider).valueOrNull;
+    final statusColor = resolver?.orderColor(order.status) ?? colors.outlineVariant;
+    final statusLabel = resolver?.orderLabel(order.status) ?? order.status;
 
     return GestureDetector(
       onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),

@@ -8,6 +8,7 @@ import 'package:smivo/data/models/user_profile.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
+import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
 /// Collapsible order information section with buyer/seller profiles.
 ///
@@ -90,8 +91,8 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
                 _infoRow(context, 'Listed', _formatDate(widget.order.createdAt)),
                 // 2. Transaction type
                 _infoRow(context, 'Type', isRental ? 'Rent' : 'Sale'),
-                // 3. Status
-                _infoRow(context, 'Status', _statusText(widget.order.status)),
+                // 3. Status — use DB-driven label via StatusResolver
+                _infoRow(context, 'Status', _resolveStatusLabel(widget.order.status)),
                 // 4. Pickup location
                 if (widget.order.pickupLocation != null)
                   _infoRow(context, 'Pickup', widget.order.pickupLocation!.name),
@@ -267,20 +268,12 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
   String _formatDate(DateTime dt) =>
       DateFormat('MMM d, yyyy · h:mm a').format(dt.toLocal());
 
-  String _statusText(String status) {
-    switch (status) {
-      case 'pending':
-        return 'Pending';
-      case 'confirmed':
-        return 'In Progress';
-      case 'completed':
-        return 'Completed';
-      case 'cancelled':
-        return 'Cancelled';
-      case 'missed':
-        return 'Missed';
-      default:
-        return status;
-    }
+  String _resolveStatusLabel(String status) {
+    final resolver = ref.read(statusResolverProvider).valueOrNull;
+    if (resolver != null) return resolver.orderLabel(status);
+    // Fallback if resolver not yet loaded
+    return status.split('_').map((w) =>
+      w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}'
+    ).join(' ');
   }
 }

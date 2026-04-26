@@ -7,7 +7,7 @@ part of 'admin_school_provider.dart';
 // **************************************************************************
 
 String _$adminSchoolControllerHash() =>
-    r'5d4eff2391b3aeb4fd9bb2217446f59553787932';
+    r'8a22ef35fc6632a1306ce4f7a89d9947d9b9ed5d';
 
 /// See also [AdminSchoolController].
 @ProviderFor(AdminSchoolController)
