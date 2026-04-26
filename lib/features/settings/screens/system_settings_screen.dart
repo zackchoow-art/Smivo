@@ -25,9 +25,9 @@ class SystemSettingsScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('System Settings', style: typo.headlineLarge.copyWith(color: colors.settingsText, fontWeight: FontWeight.w900)),
+              Text('System Settings', style: typo.headlineLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.w900)),
               const SizedBox(height: 32),
-              Text('Display', style: typo.titleMedium.copyWith(color: colors.settingsText, fontWeight: FontWeight.w800)),
+              Text('Display', style: typo.titleMedium.copyWith(color: colors.onSurface, fontWeight: FontWeight.w800)),
               const SizedBox(height: 16),
               // Theme variant picker
               SettingCardContainer(
@@ -39,9 +39,9 @@ class SystemSettingsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 16),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('App Theme', style: typo.bodyLarge.copyWith(color: colors.settingsText, fontWeight: FontWeight.w700)),
+                    Text('App Theme', style: typo.bodyLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 2),
-                    Text('Choose a visual style', style: typo.bodySmall.copyWith(color: colors.settingsTextSecondary)),
+                    Text('Choose a visual style', style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant)),
                     const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
@@ -72,11 +72,11 @@ class SystemSettingsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 16),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Language', style: typo.bodyLarge.copyWith(color: colors.settingsText, fontWeight: FontWeight.w700)),
+                    Text('Language', style: typo.bodyLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 2),
-                    Text('English (US)', style: typo.bodySmall.copyWith(color: colors.settingsTextSecondary)),
+                    Text('English (US)', style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant)),
                   ])),
-                  Icon(Icons.chevron_right, color: colors.settingsText),
+                  Icon(Icons.chevron_right, color: colors.onSurface),
                 ]),
               ),
               const SizedBox(height: 48),

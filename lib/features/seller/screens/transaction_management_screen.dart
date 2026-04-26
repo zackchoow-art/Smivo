@@ -37,7 +37,14 @@ class TransactionManagementScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: colors.surfaceContainerLowest,
         appBar: AppBar(
-          title: const Text('Manage Transactions'),
+          backgroundColor: colors.surfaceContainerLowest,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new, size: 20, color: colors.onSurface),
+            onPressed: () => context.pop(),
+          ),
+          title: Text('Manage Transactions', style: typo.headlineSmall.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
           bottom: const TabBar(tabs: [Tab(text: 'Views'), Tab(text: 'Saves'), Tab(text: 'Offers')]),
         ),
         body: Column(

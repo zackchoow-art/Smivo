@@ -31,10 +31,11 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: colors.background,
+        backgroundColor: colors.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: colors.onSurface),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -43,7 +44,7 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
             }
           },
         ),
-        title: Text('Notifications', style: typo.headlineSmall),
+        title: Text('Notifications', style: typo.headlineSmall.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
         actions: [
           TextButton(
             onPressed: () async {

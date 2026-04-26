@@ -48,7 +48,7 @@ class SettingToggleRow extends StatelessWidget {
                 Text(
                   title,
                   style: typo.bodyLarge.copyWith(
-                    color: colors.settingsText,
+                    color: colors.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -56,7 +56,7 @@ class SettingToggleRow extends StatelessWidget {
                 Text(
                   subtitle,
                   style: typo.bodySmall.copyWith(
-                    color: colors.settingsTextSecondary,
+                    color: colors.onSurfaceVariant,
                     height: 1.3,
                   ),
                 ),
@@ -68,7 +68,7 @@ class SettingToggleRow extends StatelessWidget {
             value: value,
             activeTrackColor: colors.settingsIcon,
             inactiveTrackColor:
-                colors.settingsText.withValues(alpha: 0.15),
+                colors.onSurface.withValues(alpha: 0.15),
             onChanged: onChanged,
           ),
         ],

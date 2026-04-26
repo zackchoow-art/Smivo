@@ -62,7 +62,7 @@ class _NotificationSettingsScreenState
               Text(
                 'Notification\nSettings',
                 style: typo.headlineLarge.copyWith(
-                  color: colors.settingsText,
+                  color: colors.onSurface,
                   fontWeight: FontWeight.w900,
                   height: 1.1,
                 ),
@@ -71,7 +71,7 @@ class _NotificationSettingsScreenState
               Text(
                 'Control how and when you receive\nupdates from the campus network.',
                 style: typo.bodyMedium.copyWith(
-                  color: colors.settingsTextSecondary,
+                  color: colors.onSurfaceVariant,
                   height: 1.4,
                 ),
               ),

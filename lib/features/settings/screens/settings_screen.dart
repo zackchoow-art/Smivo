@@ -24,10 +24,10 @@ class SettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Settings', style: typo.headlineLarge.copyWith(color: colors.settingsText, fontWeight: FontWeight.w900)),
+              Text('Settings', style: typo.headlineLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.w900)),
               const SizedBox(height: 8),
               Text('Manage your account preferences and\nconfigurations.',
-                style: typo.bodyMedium.copyWith(color: colors.settingsTextSecondary, height: 1.4)),
+                style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant, height: 1.4)),
               const SizedBox(height: 32),
               GridView.count(
                 crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
@@ -61,11 +61,11 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Help', style: typo.titleMedium.copyWith(color: colors.settingsText, fontWeight: FontWeight.w800)),
+                      Text('Help', style: typo.titleMedium.copyWith(color: colors.onSurface, fontWeight: FontWeight.w800)),
                       const SizedBox(height: 4),
-                      Text('Support, FAQs, Contact\nUs', style: typo.bodyMedium.copyWith(color: colors.settingsTextSecondary, height: 1.3)),
+                      Text('Support, FAQs, Contact\nUs', style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant, height: 1.3)),
                     ])),
-                    Icon(Icons.chevron_right, color: colors.settingsText),
+                    Icon(Icons.chevron_right, color: colors.onSurface),
                   ]),
                 ),
               ),
@@ -152,9 +152,9 @@ class SettingsScreen extends StatelessWidget {
             child: Icon(icon, color: colors.settingsIcon),
           ),
           const SizedBox(height: 16),
-          Text(title, textAlign: TextAlign.center, style: typo.titleMedium.copyWith(color: colors.settingsText, fontWeight: FontWeight.w800, height: 1.2)),
+          Text(title, textAlign: TextAlign.center, style: typo.titleMedium.copyWith(color: colors.onSurface, fontWeight: FontWeight.w800, height: 1.2)),
           const SizedBox(height: 8),
-          Text(subtitle, textAlign: TextAlign.center, style: typo.bodySmall.copyWith(color: colors.settingsTextSecondary, height: 1.3)),
+          Text(subtitle, textAlign: TextAlign.center, style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant, height: 1.3)),
         ]),
       ),
     );

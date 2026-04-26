@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/buyer/providers/buyer_center_provider.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
+import 'package:smivo/shared/widgets/custom_app_bar.dart';
 
 class BuyerCenterScreen extends ConsumerStatefulWidget {
   const BuyerCenterScreen({super.key});
@@ -36,6 +37,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
+      appBar: const CustomAppBar(showActions: false),
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
@@ -47,13 +49,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
           SliverPadding(
             padding: const EdgeInsets.all(24),
             sliver: SliverToBoxAdapter(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Row(children: [
-                  IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 20), onPressed: () => Navigator.of(context).pop()),
-                  const SizedBox(width: 8),
-                  Text('Buyer Center', style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900)),
-                ]),
-              ]),
+              Text('Buyer Center', style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900, color: colors.onSurface)),
               const SizedBox(height: 8),
               Text('Track your purchase requests and orders.', style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
               const SizedBox(height: 16),

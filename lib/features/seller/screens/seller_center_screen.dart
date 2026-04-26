@@ -9,6 +9,7 @@ import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
+import 'package:smivo/shared/widgets/custom_app_bar.dart';
 
 class SellerCenterScreen extends ConsumerStatefulWidget {
   const SellerCenterScreen({super.key});
@@ -49,6 +50,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
+      appBar: const CustomAppBar(showActions: false),
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
@@ -64,27 +66,12 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
           SliverPadding(
             padding: const EdgeInsets.all(24),
             sliver: SliverToBoxAdapter(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.goNamed(AppRoutes.orders);
-                    }
-                  },
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Seller Center',
-                    style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ]),
+              Text(
+                'Seller Center',
+                style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900, color: colors.onSurface),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
               const SizedBox(height: 8),
               Text('Manage your listings and sales.', style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
               const SizedBox(height: 16),

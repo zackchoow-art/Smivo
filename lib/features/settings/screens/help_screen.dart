@@ -46,11 +46,11 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text('Help', style: typo.headlineLarge.copyWith(color: colors.settingsText, fontWeight: FontWeight.w900)),
+              Text('Help', style: typo.headlineLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.w900)),
               const SizedBox(height: 16),
               Text('Find answers to common questions\nabout campus trading.',
                 textAlign: TextAlign.center,
-                style: typo.bodyMedium.copyWith(color: colors.settingsTextSecondary, height: 1.4)),
+                style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant, height: 1.4)),
               const SizedBox(height: 32),
               Container(
                 decoration: BoxDecoration(color: colors.settingsIconBg, borderRadius: BorderRadius.circular(radius.card)),
@@ -62,15 +62,15 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                       _searchQuery = value;
                     });
                   },
-                  style: typo.bodyLarge.copyWith(color: colors.settingsText),
+                  style: typo.bodyLarge.copyWith(color: colors.onSurface),
                   decoration: InputDecoration(
-                    icon: Icon(Icons.search, color: colors.settingsText.withValues(alpha: 0.5)),
+                    icon: Icon(Icons.search, color: colors.onSurface.withValues(alpha: 0.5)),
                     hintText: 'Search for help...',
-                    hintStyle: typo.bodyLarge.copyWith(color: colors.settingsText.withValues(alpha: 0.5)),
+                    hintStyle: typo.bodyLarge.copyWith(color: colors.onSurface.withValues(alpha: 0.5)),
                     border: InputBorder.none,
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                            icon: Icon(Icons.clear, color: colors.settingsText.withValues(alpha: 0.5)),
+                            icon: Icon(Icons.clear, color: colors.onSurface.withValues(alpha: 0.5)),
                             onPressed: () {
                               _searchController.clear();
                               setState(() {
@@ -88,7 +88,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 32),
                   child: Text(
                     'No matching questions found',
-                    style: typo.bodyMedium.copyWith(color: colors.settingsTextSecondary),
+                    style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
                   ),
                 )
               else
@@ -109,15 +109,15 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                           Padding(
                             padding: const EdgeInsets.all(20),
                             child: Row(children: [
-                              Expanded(child: Text(faq.question, style: typo.titleMedium.copyWith(color: colors.settingsText, fontWeight: FontWeight.w800))),
+                              Expanded(child: Text(faq.question, style: typo.titleMedium.copyWith(color: colors.onSurface, fontWeight: FontWeight.w800))),
                               Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                color: isExpanded ? colors.settingsIcon : colors.settingsText.withValues(alpha: 0.5)),
+                                color: isExpanded ? colors.settingsIcon : colors.onSurface.withValues(alpha: 0.5)),
                             ]),
                           ),
                           if (isExpanded)
                             Padding(
                               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                              child: Text(faq.answer, style: typo.bodyMedium.copyWith(color: colors.settingsTextSecondary, height: 1.4)),
+                              child: Text(faq.answer, style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant, height: 1.4)),
                             ),
                         ]),
                       ),

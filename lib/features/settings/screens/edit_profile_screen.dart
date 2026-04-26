@@ -61,12 +61,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 children: [
                   Text('Edit Profile',
                       style: typo.headlineLarge.copyWith(
-                          color: colors.settingsText,
+                          color: colors.onSurface,
                           fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
                   Text('Manage your campus identity.',
                       style: typo.bodyMedium
-                          .copyWith(color: colors.settingsTextSecondary)),
+                          .copyWith(color: colors.onSurfaceVariant)),
                   const SizedBox(height: 32),
 
                   // Top Card: Avatar & Verification
@@ -127,14 +127,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       // Verification status
                       Text('Student Verification',
                           style: typo.titleMedium.copyWith(
-                              color: colors.settingsText,
+                              color: colors.onSurface,
                               fontWeight: FontWeight.w800)),
                       const SizedBox(height: 8),
                       Text(
                         'Verify your .edu email to access exclusive\ncampus features.',
                         textAlign: TextAlign.center,
                         style: typo.bodySmall.copyWith(
-                            color: colors.settingsTextSecondary, height: 1.3),
+                            color: colors.onSurfaceVariant, height: 1.3),
                       ),
                       const SizedBox(height: 16),
 
@@ -182,7 +182,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               child: Text(
                                 profile.email,
                                 style: typo.bodySmall.copyWith(
-                                    color: colors.settingsText
+                                    color: colors.onSurface
                                         .withValues(alpha: 0.8)),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -214,7 +214,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           TextFormField(
                             controller: _displayNameController,
                             style: typo.bodyLarge
-                                .copyWith(color: colors.settingsText),
+                                .copyWith(color: colors.onSurface),
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: colors.settingsIconBg,
@@ -231,7 +231,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           Text(
                             'This is how you will appear to other students.',
                             style: typo.bodySmall.copyWith(
-                                color: colors.settingsTextSecondary,
+                                color: colors.onSurfaceVariant,
                                 height: 1.3),
                           ),
                           const SizedBox(height: 32),
@@ -305,7 +305,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(label,
           style: typo.bodyMedium.copyWith(
-              color: colors.settingsText, fontWeight: FontWeight.w700)),
+              color: colors.onSurface, fontWeight: FontWeight.w700)),
     );
   }
 
