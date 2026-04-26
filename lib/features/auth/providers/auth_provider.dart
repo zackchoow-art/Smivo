@@ -153,6 +153,20 @@ class Auth extends _$Auth {
     }
   }
 
+  /// Permanently deletes the current user's account.
+  ///
+  /// Calls the server-side RPC to remove all user data,
+  /// then signs out locally.
+  Future<void> deleteAccount() async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(authRepositoryProvider).deleteAccount();
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(_mapError(e, st), st);
+    }
+  }
+
   /// Resends the verification email for a specific [email].
   Future<void> resendVerification(String email) async {
     state = const AsyncValue.loading();

@@ -85,6 +85,45 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 );
               })),
+              const SizedBox(height: 16),
+              // Delete Account — destructive action with confirmation dialog
+              Center(child: Consumer(builder: (context, ref, child) {
+                return TextButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) => AlertDialog(
+                        title: const Text('Delete Account'),
+                        content: const Text(
+                          'This action is permanent and cannot be undone. '
+                          'All your listings, orders, messages, and profile data will be deleted.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(dialogContext);
+                              await ref.read(authProvider.notifier).deleteAccount();
+                              if (context.mounted) {
+                                context.goNamed(AppRoutes.home);
+                              }
+                            },
+                            style: TextButton.styleFrom(foregroundColor: colors.error),
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: Text('Delete Account', style: typo.labelLarge.copyWith(
+                    color: colors.error.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w500,
+                  )),
+                );
+              })),
               const SizedBox(height: 48),
             ],
           ),

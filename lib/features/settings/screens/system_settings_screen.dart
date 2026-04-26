@@ -3,9 +3,8 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/core/providers/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smivo/features/settings/providers/settings_provider.dart';
+
 import 'package:smivo/features/settings/widgets/setting_card_container.dart';
-import 'package:smivo/features/settings/widgets/setting_toggle_row.dart';
 import 'package:smivo/shared/widgets/custom_app_bar.dart';
 
 class SystemSettingsScreen extends ConsumerWidget {
@@ -13,9 +12,6 @@ class SystemSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(darkModeStateProvider);
-    final isDataUsageEnabled = ref.watch(dataUsageStateProvider);
-    final isPrivacyEnabled = ref.watch(privacySettingsStateProvider);
     final currentTheme = ref.watch(themeNotifierProvider);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -32,10 +28,6 @@ class SystemSettingsScreen extends ConsumerWidget {
               Text('System Settings', style: typo.headlineLarge.copyWith(color: colors.settingsText, fontWeight: FontWeight.w900)),
               const SizedBox(height: 32),
               Text('Display', style: typo.titleMedium.copyWith(color: colors.settingsText, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 16),
-              SettingToggleRow(icon: Icons.dark_mode_outlined, title: 'Dark Mode',
-                subtitle: 'Adjust interface\nappearance', value: isDarkMode,
-                onChanged: (_) => ref.read(darkModeStateProvider.notifier).toggle()),
               const SizedBox(height: 16),
               // Theme variant picker
               SettingCardContainer(
@@ -87,18 +79,6 @@ class SystemSettingsScreen extends ConsumerWidget {
                   Icon(Icons.chevron_right, color: colors.settingsText),
                 ]),
               ),
-              const SizedBox(height: 32),
-              Divider(color: colors.dividerColor),
-              const SizedBox(height: 32),
-              Text('Network & Privacy', style: typo.titleMedium.copyWith(color: colors.settingsText, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 16),
-              SettingToggleRow(icon: Icons.data_usage, title: 'Data Usage',
-                subtitle: 'Optimize imagery for\ncellular', value: isDataUsageEnabled,
-                onChanged: (_) => ref.read(dataUsageStateProvider.notifier).toggle()),
-              const SizedBox(height: 16),
-              SettingToggleRow(icon: Icons.shield_outlined, title: 'Privacy Settings',
-                subtitle: 'Limit profile visibility', value: isPrivacyEnabled,
-                onChanged: (_) => ref.read(privacySettingsStateProvider.notifier).toggle()),
               const SizedBox(height: 48),
             ],
           ),

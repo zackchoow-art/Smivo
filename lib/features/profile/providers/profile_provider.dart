@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/user_profile.dart';
 import 'package:smivo/data/repositories/profile_repository.dart';
@@ -41,6 +42,25 @@ class Profile extends _$Profile {
           .read(profileRepositoryProvider)
           .uploadAvatar(currentProfile.id, file);
       
+      final updated = currentProfile.copyWith(avatarUrl: avatarUrl);
+      return ref.read(profileRepositoryProvider).updateProfile(updated);
+    });
+  }
+
+  /// Upload and update the user's avatar from raw bytes (Web-compatible).
+  ///
+  /// Uses [uploadAvatarBytes] from the repository which accepts [Uint8List]
+  /// instead of [File], making this method safe to call on all platforms.
+  Future<void> updateAvatarFromBytes(Uint8List bytes, String fileName) async {
+    final currentProfile = state.valueOrNull;
+    if (currentProfile == null) return;
+
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final avatarUrl = await ref
+          .read(profileRepositoryProvider)
+          .uploadAvatarBytes(currentProfile.id, bytes, fileName);
+
       final updated = currentProfile.copyWith(avatarUrl: avatarUrl);
       return ref.read(profileRepositoryProvider).updateProfile(updated);
     });

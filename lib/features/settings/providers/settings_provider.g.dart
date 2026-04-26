@@ -6,58 +6,6 @@ part of 'settings_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$darkModeStateHash() => r'815d9d9a32b30fa1e45a9822ae6ca00eaba28844';
-
-/// See also [DarkModeState].
-@ProviderFor(DarkModeState)
-final darkModeStateProvider =
-    AutoDisposeNotifierProvider<DarkModeState, bool>.internal(
-      DarkModeState.new,
-      name: r'darkModeStateProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$darkModeStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$DarkModeState = AutoDisposeNotifier<bool>;
-String _$dataUsageStateHash() => r'919a3d45784d1eba801ecb58108b275e0059d86f';
-
-/// See also [DataUsageState].
-@ProviderFor(DataUsageState)
-final dataUsageStateProvider =
-    AutoDisposeNotifierProvider<DataUsageState, bool>.internal(
-      DataUsageState.new,
-      name: r'dataUsageStateProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$dataUsageStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$DataUsageState = AutoDisposeNotifier<bool>;
-String _$privacySettingsStateHash() =>
-    r'a8ad785eafb43670563e730181bbaf48528afaea';
-
-/// See also [PrivacySettingsState].
-@ProviderFor(PrivacySettingsState)
-final privacySettingsStateProvider =
-    AutoDisposeNotifierProvider<PrivacySettingsState, bool>.internal(
-      PrivacySettingsState.new,
-      name: r'privacySettingsStateProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$privacySettingsStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$PrivacySettingsState = AutoDisposeNotifier<bool>;
 String _$newMessagesNotifStateHash() =>
     r'd2e241c3b2b10cc7693373c36845f998d289bb38';
 

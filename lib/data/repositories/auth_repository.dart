@@ -66,6 +66,20 @@ class AuthRepository {
     }
   }
 
+  /// Delete the current user's account via RPC.
+  ///
+  /// Calls the `delete_own_account` Postgres function which removes
+  /// the user_profiles row and the auth.users row in a single transaction.
+  /// Signs out locally after the server-side deletion succeeds.
+  Future<void> deleteAccount() async {
+    try {
+      await _client.rpc('delete_own_account');
+      await _client.auth.signOut();
+    } on PostgrestException catch (e) {
+      throw DatabaseException('Failed to delete account: ${e.message}', e);
+    }
+  }
+
   /// Returns the current user's profile, or null if not found.
   Future<UserProfile?> getProfile(String userId) async {
     try {

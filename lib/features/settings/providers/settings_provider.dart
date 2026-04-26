@@ -3,31 +3,6 @@ import 'package:smivo/data/repositories/profile_repository.dart';
 
 part 'settings_provider.g.dart';
 
-// System Settings
-@riverpod
-class DarkModeState extends _$DarkModeState {
-  @override
-  bool build() => false;
-
-  void toggle() => state = !state;
-}
-
-@riverpod
-class DataUsageState extends _$DataUsageState {
-  @override
-  bool build() => true;
-
-  void toggle() => state = !state;
-}
-
-@riverpod
-class PrivacySettingsState extends _$PrivacySettingsState {
-  @override
-  bool build() => false;
-
-  void toggle() => state = !state;
-}
-
 // Notification Settings
 @riverpod
 class NewMessagesNotifState extends _$NewMessagesNotifState {
