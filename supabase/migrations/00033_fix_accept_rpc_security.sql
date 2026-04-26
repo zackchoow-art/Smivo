@@ -21,8 +21,8 @@ BEGIN
     AND status = 'pending';
 
   -- Create notifications for missed orders
-  INSERT INTO notifications (user_id, title, body, action_type, related_order_id)
-  SELECT buyer_id, 'Offer Missed', 'Another buyer was selected for this item.', 'order', id
+  INSERT INTO notifications (user_id, type, title, body, action_type, related_order_id)
+  SELECT buyer_id, 'order_cancelled', 'Offer Missed', 'Another buyer was selected for this item.', 'order', id
   FROM orders
   WHERE listing_id = p_listing_id
     AND id != p_order_id
