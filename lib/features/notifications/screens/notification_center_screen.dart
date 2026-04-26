@@ -8,13 +8,23 @@ import 'package:smivo/features/notifications/providers/notification_provider.dar
 import 'package:smivo/features/notifications/widgets/notification_list_item.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class NotificationCenterScreen extends ConsumerWidget {
+class NotificationCenterScreen extends ConsumerStatefulWidget {
   const NotificationCenterScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationCenterScreen> createState() => _NotificationCenterScreenState();
+}
+
+class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScreen> {
+  bool _unreadExpanded = true;
+  bool _todayExpanded = true;
+  bool _yesterdayExpanded = true;
+  bool _thisWeekExpanded = true;
+  bool _olderExpanded = true;
+
+  @override
+  Widget build(BuildContext context) {
     final notificationsAsync = ref.watch(notificationListProvider);
-    final unreadCount = ref.watch(totalUnreadNotificationsProvider).valueOrNull ?? 0;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
@@ -35,11 +45,13 @@ class NotificationCenterScreen extends ConsumerWidget {
         ),
         title: Text('Notifications', style: typo.headlineSmall),
         actions: [
-          if (unreadCount > 0)
-            TextButton(
-              onPressed: () => ref.read(notificationListProvider.notifier).markAllAsRead(),
-              child: Text('Mark All Read', style: typo.labelSmall.copyWith(color: colors.primary)),
-            ),
+          TextButton(
+            onPressed: () async {
+              // 一键清空：让所有信息变成已读然后删除
+              await ref.read(notificationListProvider.notifier).clearAll();
+            },
+            child: Text('Clear All', style: typo.labelSmall.copyWith(color: colors.error)),
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -60,17 +72,151 @@ class NotificationCenterScreen extends ConsumerWidget {
           ),
           data: (notifications) {
             if (notifications.isEmpty) return _buildEmptyState(context);
-            return ListView.builder(
+
+            final unread = <AppNotification>[];
+            final today = <AppNotification>[];
+            final yesterday = <AppNotification>[];
+            final thisWeek = <AppNotification>[];
+            final older = <AppNotification>[];
+
+            final now = DateTime.now();
+            final todayStart = DateTime(now.year, now.month, now.day);
+            final yesterdayStart = todayStart.subtract(const Duration(days: 1));
+            final weekStart = todayStart.subtract(const Duration(days: 7));
+
+            for (final n in notifications) {
+              if (!n.isRead) {
+                unread.add(n);
+              } else {
+                final date = n.createdAt.toLocal();
+                if (date.isAfter(todayStart) || date.isAtSameMomentAs(todayStart)) {
+                  today.add(n);
+                } else if (date.isAfter(yesterdayStart) || date.isAtSameMomentAs(yesterdayStart)) {
+                  yesterday.add(n);
+                } else if (date.isAfter(weekStart) || date.isAtSameMomentAs(weekStart)) {
+                  thisWeek.add(n);
+                } else {
+                  older.add(n);
+                }
+              }
+            }
+
+            return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: notifications.length,
-              itemBuilder: (context, index) {
-                final notification = notifications[index];
-                return NotificationListItem(notification: notification, onTap: () => _handleTap(context, ref, notification));
-              },
+              children: [
+                if (unread.isNotEmpty)
+                  _buildSection(
+                    title: 'Unread',
+                    items: unread,
+                    isExpanded: _unreadExpanded,
+                    onToggle: () => setState(() => _unreadExpanded = !_unreadExpanded),
+                  ),
+                if (today.isNotEmpty)
+                  _buildSection(
+                    title: 'Today',
+                    items: today,
+                    isExpanded: _todayExpanded,
+                    onToggle: () => setState(() => _todayExpanded = !_todayExpanded),
+                  ),
+                if (yesterday.isNotEmpty)
+                  _buildSection(
+                    title: 'Yesterday',
+                    items: yesterday,
+                    isExpanded: _yesterdayExpanded,
+                    onToggle: () => setState(() => _yesterdayExpanded = !_yesterdayExpanded),
+                  ),
+                if (thisWeek.isNotEmpty)
+                  _buildSection(
+                    title: 'This Week',
+                    items: thisWeek,
+                    isExpanded: _thisWeekExpanded,
+                    onToggle: () => setState(() => _thisWeekExpanded = !_thisWeekExpanded),
+                  ),
+                if (older.isNotEmpty)
+                  _buildSection(
+                    title: 'Older',
+                    items: older,
+                    isExpanded: _olderExpanded,
+                    onToggle: () => setState(() => _olderExpanded = !_olderExpanded),
+                  ),
+                const SizedBox(height: 24),
+              ],
             );
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required List<AppNotification> items,
+    required bool isExpanded,
+    required VoidCallback onToggle,
+  }) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InkWell(
+          onTap: onToggle,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Icon(
+                  isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                  color: colors.onSurfaceVariant,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: typo.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colors.onSurface,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    items.length.toString(),
+                    style: typo.labelSmall.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () {
+                    final ids = items.map((e) => e.id).toList();
+                    ref.read(notificationListProvider.notifier).deleteNotifications(ids);
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text('Clear', style: typo.labelSmall.copyWith(color: colors.error)),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (isExpanded)
+          ...items.map((notification) => NotificationListItem(
+                notification: notification,
+                onTap: () => _handleTap(context, ref, notification),
+              )),
+      ],
     );
   }
 

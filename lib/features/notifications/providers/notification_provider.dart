@@ -87,6 +87,29 @@ class NotificationList extends _$NotificationList {
       current.map((n) => n.copyWith(isRead: true)).toList(),
     );
   }
+
+  /// Deletes specific notifications.
+  Future<void> deleteNotifications(List<String> notificationIds) async {
+    final repository = ref.read(notificationRepositoryProvider);
+    await repository.deleteNotifications(notificationIds);
+
+    // Update local state optimistically
+    final current = state.valueOrNull ?? [];
+    state = AsyncValue.data(
+      current.where((n) => !notificationIds.contains(n.id)).toList(),
+    );
+  }
+
+  /// Marks all as read and deletes all notifications.
+  Future<void> clearAll() async {
+    final user = ref.read(authStateProvider).valueOrNull;
+    if (user == null) return;
+
+    final repository = ref.read(notificationRepositoryProvider);
+    await repository.clearAllNotifications(user.id);
+
+    state = const AsyncValue.data([]);
+  }
 }
 
 /// Total unread notification count for the current user.

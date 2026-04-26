@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
@@ -77,6 +78,36 @@ class ProfileRepository {
       );
     }
   }
+
+  /// Upload an avatar from raw bytes (cross-platform, works on Web).
+  ///
+  /// Unlike [uploadAvatar] which requires a [File] object (dart:io),
+  /// this method accepts [Uint8List] bytes directly, making it usable
+  /// on Web where dart:io is unavailable.
+  Future<String> uploadAvatarBytes(
+    String userId,
+    Uint8List bytes,
+    String fileName,
+  ) async {
+    try {
+      final filePath =
+          '$userId-${DateTime.now().millisecondsSinceEpoch}-$fileName';
+      await _client.storage.from('avatars').uploadBinary(
+            filePath,
+            bytes,
+            fileOptions: const supabase.FileOptions(upsert: true),
+          );
+      return _client.storage.from('avatars').getPublicUrl(filePath);
+    } on supabase.StorageException catch (e) {
+      throw AppException.storage('Failed to upload avatar: ${e.message}', e);
+    } catch (e) {
+      throw AppException.unknown(
+        'An unexpected error occurred while uploading avatar bytes',
+        e,
+      );
+    }
+  }
+
   /// Updates the user's email notification preference.
   ///
   /// Isolated update — only touches the email_notifications_enabled column

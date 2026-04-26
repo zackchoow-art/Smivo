@@ -55,6 +55,32 @@ class NotificationRepository {
     }
   }
 
+  /// Deletes a list of notifications by their IDs.
+  Future<void> deleteNotifications(List<String> notificationIds) async {
+    if (notificationIds.isEmpty) return;
+    try {
+      await _client
+          .from('notifications')
+          .delete()
+          .inFilter('id', notificationIds);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Marks all unread notifications as read and deletes all notifications for [userId].
+  Future<void> clearAllNotifications(String userId) async {
+    try {
+      await markAllAsRead(userId);
+      await _client
+          .from('notifications')
+          .delete()
+          .eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Subscribes to new notifications for [userId] via Realtime.
   RealtimeChannel subscribeToNotifications({
     required String userId,
