@@ -27,7 +27,7 @@ final authStateProvider = AutoDisposeStreamProvider<supabase.User?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthStateRef = AutoDisposeStreamProviderRef<supabase.User?>;
-String _$authHash() => r'f799085d423e5ce22584b80ca7b7e5816d402437';
+String _$authHash() => r'0fce0b128e6c6f8d163517de8bca3fb5cacc8108';
 
 /// See also [Auth].
 @ProviderFor(Auth)

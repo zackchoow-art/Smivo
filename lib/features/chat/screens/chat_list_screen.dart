@@ -3,19 +3,75 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/data/models/chat_room.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_list_item.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/router/app_routes.dart';
 
-class ChatListScreen extends ConsumerWidget {
+class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatListScreen> createState() => _ChatListScreenState();
+}
+
+class _ChatListScreenState extends ConsumerState<ChatListScreen> {
+  String _searchQuery = '';
+  // false = active conversations, true = archived conversations
+  bool _showArchived = false;
+
+  /// Transforms a [ChatRoom] into a [ChatConversation] display model.
+  ///
+  /// Centralised here so both the list builder and search filter
+  /// use the same transformation logic.
+  ChatConversation _buildConversation(ChatRoom room, String? currentUserId) {
+    final isBuyer = room.buyerId == currentUserId;
+    final otherUser = isBuyer ? room.seller : room.buyer;
+
+    final rawUnread =
+        isBuyer ? room.unreadCountBuyer : room.unreadCountSeller;
+    // Manual unread override takes priority over the database count
+    final effectiveUnread =
+        room.isUnreadOverride ? (rawUnread > 0 ? rawUnread : 1) : rawUnread;
+
+    final lastMessagePreview = room.lastMessage.isNotEmpty
+        ? room.lastMessage.first.content
+        : 'No messages yet';
+    final timeText = room.lastMessageAt != null
+        ? timeago.format(room.lastMessageAt!, locale: 'en_short')
+        : '';
+
+    return ChatConversation(
+      id: room.id,
+      listingTitle: room.listing?.title ?? 'Unknown Listing',
+      // NOTE: name field shows listing title as per existing UI convention
+      name: room.listing?.title ?? 'Unknown Listing',
+      latestMessage:
+          '${otherUser?.displayName ?? 'User'} · $lastMessagePreview',
+      time: timeText,
+      unreadCount: effectiveUnread,
+      avatarUrl: otherUser?.avatarUrl,
+      initials: otherUser?.displayName?.isNotEmpty == true
+          ? otherUser!.displayName!.substring(0, 1).toUpperCase()
+          : null,
+      // Search fields
+      partnerName: otherUser?.displayName ?? '',
+      partnerEmail: otherUser?.email ?? '',
+      listingDescription: room.listing?.description ?? '',
+      listingPrice: room.listing?.price ?? 0.0,
+      // Feature flags
+      isPinned: room.isPinned,
+      isArchived: room.isArchived,
+      isUnreadOverride: room.isUnreadOverride,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final chatRoomsAsync = ref.watch(chatRoomListProvider);
-    final authUser = ref.watch(authStateProvider).valueOrNull;
-    final currentUserId = authUser?.id;
+    final currentUserId =
+        ref.watch(authStateProvider).valueOrNull?.id;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -30,21 +86,40 @@ class ChatListScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              // Title
-              Text(
-                'Chat',
-                style: typo.displayLarge.copyWith(
-                  color: colors.onSurface,
-                  letterSpacing: -1.5,
-                ),
+              // Title row with archive/active toggle
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _showArchived ? 'Archived' : 'Chat',
+                      style: typo.displayLarge.copyWith(
+                        color: colors.onSurface,
+                        letterSpacing: -1.5,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: _showArchived
+                        ? 'Show active chats'
+                        : 'Show archived chats',
+                    icon: Icon(
+                      _showArchived
+                          ? Icons.chat_bubble_outline
+                          : Icons.archive_outlined,
+                      color: colors.onSurfaceVariant,
+                    ),
+                    onPressed: () =>
+                        setState(() => _showArchived = !_showArchived),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
-              
-              // Search Bar
+
+              // Search bar
               TextField(
-                style: typo.bodyLarge.copyWith(
-                  color: colors.onSurface,
-                ),
+                onChanged: (value) =>
+                    setState(() => _searchQuery = value),
+                style: typo.bodyLarge.copyWith(color: colors.onSurface),
                 decoration: InputDecoration(
                   hintText: 'Search conversations...',
                   hintStyle: typo.bodyLarge.copyWith(
@@ -54,12 +129,17 @@ class ChatListScreen extends ConsumerWidget {
                     Icons.search,
                     color: colors.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.close,
+                              color: colors.onSurfaceVariant, size: 18),
+                          onPressed: () => setState(() => _searchQuery = ''),
+                        )
+                      : null,
                   filled: true,
                   fillColor: colors.surfaceContainerLow,
                   contentPadding: const EdgeInsets.symmetric(
-                    vertical: 8,
-                    horizontal: 12,
-                  ),
+                      vertical: 8, horizontal: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(radius.input),
                     borderSide: BorderSide.none,
@@ -67,8 +147,8 @@ class ChatListScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              
-              // Chat List
+
+              // Chat list
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
@@ -76,17 +156,20 @@ class ChatListScreen extends ConsumerWidget {
                     await ref.read(chatRoomListProvider.future);
                   },
                   child: chatRoomsAsync.when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (err, stack) => SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            const SizedBox(height: 80),
                             const Text('Error loading conversations'),
                             const SizedBox(height: 12),
                             ElevatedButton(
-                              onPressed: () => ref.invalidate(chatRoomListProvider),
+                              onPressed: () =>
+                                  ref.invalidate(chatRoomListProvider),
                               child: const Text('Retry'),
                             ),
                           ],
@@ -94,69 +177,98 @@ class ChatListScreen extends ConsumerWidget {
                       ),
                     ),
                     data: (rooms) {
-                      if (rooms.isEmpty) {
+                      // Step 1: Filter by active / archived view
+                      final viewFiltered = rooms
+                          .where((r) => r.isArchived == _showArchived)
+                          .toList();
+
+                      // Step 2: Apply search query
+                      final searchFiltered = _searchQuery.isEmpty
+                          ? viewFiltered
+                          : viewFiltered.where((room) {
+                              final q = _searchQuery.toLowerCase();
+                              final conv = _buildConversation(
+                                  room, currentUserId);
+                              return conv.listingTitle
+                                      .toLowerCase()
+                                      .contains(q) ||
+                                  conv.partnerName
+                                      .toLowerCase()
+                                      .contains(q) ||
+                                  conv.partnerEmail
+                                      .toLowerCase()
+                                      .contains(q) ||
+                                  conv.listingDescription
+                                      .toLowerCase()
+                                      .contains(q) ||
+                                  conv.listingPrice
+                                      .toStringAsFixed(2)
+                                      .contains(q) ||
+                                  conv.latestMessage
+                                      .toLowerCase()
+                                      .contains(q);
+                            }).toList();
+
+                      // Step 3: Sort — pinned rooms always at top
+                      searchFiltered.sort((a, b) {
+                        if (a.isPinned && !b.isPinned) return -1;
+                        if (!a.isPinned && b.isPinned) return 1;
+                        return 0;
+                      });
+
+                      if (searchFiltered.isEmpty) {
                         return SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          child: const Center(
+                          child: Center(
                             child: Padding(
-                              padding: EdgeInsets.only(top: 100),
+                              padding: const EdgeInsets.only(top: 100),
                               child: Text(
-                                'No conversations yet. Start chatting from a listing.',
+                                _searchQuery.isNotEmpty
+                                    ? 'No matching conversations.'
+                                    : _showArchived
+                                        ? 'No archived conversations.'
+                                        : 'No conversations yet.\nStart chatting from a listing.',
                                 textAlign: TextAlign.center,
+                                style: typo.bodyMedium.copyWith(
+                                    color: colors.outlineVariant),
                               ),
                             ),
                           ),
                         );
                       }
+
                       return ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      itemCount: rooms.length,
-                      itemBuilder: (context, index) {
-                        final room = rooms[index];
-                        
-                        // Data Transformation
-                        final otherUser = (room.buyerId == currentUserId) 
-                            ? room.seller 
-                            : room.buyer;
-                        
-                        final unreadCount = (room.buyerId == currentUserId)
-                            ? room.unreadCountBuyer
-                            : room.unreadCountSeller;
-                        
-                        final lastMessagePreview = room.lastMessage.isNotEmpty
-                            ? room.lastMessage.first.content
-                            : 'No messages yet';
-                            
-                        final timeText = room.lastMessageAt != null
-                            ? timeago.format(room.lastMessageAt!, locale: 'en_short')
-                            : '';
+                        padding: EdgeInsets.zero,
+                        itemCount: searchFiltered.length,
+                        itemBuilder: (context, index) {
+                          final room = searchFiltered[index];
+                          final conversation =
+                              _buildConversation(room, currentUserId);
 
-                        // Construct display model
-                        // NOTE: Packing listing title into the name field to fit existing UI
-                        // as requested in the formatting example.
-                        final conversation = ChatConversation(
-                          id: room.id,
-                          listingTitle: room.listing?.title ?? 'Unknown Listing',
-                          name: room.listing?.title ?? 'Unknown Listing',
-                          latestMessage: '${otherUser?.displayName ?? 'User'} · $lastMessagePreview',
-                          time: timeText,
-                          unreadCount: unreadCount,
-                          avatarUrl: otherUser?.avatarUrl,
-                          initials: otherUser?.displayName?.substring(0, 1).toUpperCase(),
-                        );
-
-                        return ChatListItem(
-                          conversation: conversation,
-                          onTap: () {
-                            context.pushNamed(
-                              AppRoutes.chatRoom,
-                              pathParameters: {'id': room.id},
-                            );
-                          },
-                        );
-                      },
-                    );
+                          return ChatListItem(
+                            conversation: conversation,
+                            isArchiveView: _showArchived,
+                            onTap: () {
+                              context.pushNamed(
+                                AppRoutes.chatRoom,
+                                pathParameters: {'id': room.id},
+                              );
+                            },
+                            onTogglePin: () => ref
+                                .read(chatRoomListProvider.notifier)
+                                .togglePin(room.id, !room.isPinned),
+                            onToggleUnread: () => ref
+                                .read(chatRoomListProvider.notifier)
+                                .toggleUnreadOverride(
+                                    room.id, !room.isUnreadOverride),
+                            onArchive: () => ref
+                                .read(chatRoomListProvider.notifier)
+                                .toggleArchive(
+                                    room.id, !room.isArchived),
+                          );
+                        },
+                      );
                     },
                   ),
                 ),

@@ -164,7 +164,7 @@ class _OrderExtensionsProviderElement
 }
 
 String _$rentalExtensionActionsHash() =>
-    r'9cdb8d956b03a8b80d71bed4243303be1c74808c';
+    r'580f65727b315cef1013fc21aa2c6046213b9c4b';
 
 /// Handles extension request actions (create, approve, reject).
 ///

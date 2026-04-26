@@ -36,9 +36,19 @@ class ProfileRepository {
   /// Update an existing profile
   Future<UserProfile> updateProfile(UserProfile profile) async {
     try {
+      // NOTE: Only send mutable columns — exclude virtual joins (schoolData),
+      // readonly fields (id, email, createdAt), and server-managed timestamps.
+      final updateData = {
+        'display_name': profile.displayName,
+        'avatar_url': profile.avatarUrl,
+        'school': profile.school,
+        'school_id': profile.schoolId,
+        'is_verified': profile.isVerified,
+        'email_notifications_enabled': profile.emailNotificationsEnabled,
+      };
       final data = await _client
           .from('user_profiles')
-          .update(profile.toJson())
+          .update(updateData)
           .eq('id', profile.id)
           .select()
           .single();

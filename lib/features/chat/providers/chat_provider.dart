@@ -23,6 +23,14 @@ class ChatConversation {
   final String? avatarUrl;
   final String? initials;
   final String listingTitle;
+  // Fields for search and feature flags
+  final String partnerName;
+  final String partnerEmail;
+  final String listingDescription;
+  final double listingPrice;
+  final bool isPinned;
+  final bool isArchived;
+  final bool isUnreadOverride;
 
   ChatConversation({
     required this.id,
@@ -33,6 +41,13 @@ class ChatConversation {
     this.avatarUrl,
     this.initials,
     required this.listingTitle,
+    this.partnerName = '',
+    this.partnerEmail = '',
+    this.listingDescription = '',
+    this.listingPrice = 0.0,
+    this.isPinned = false,
+    this.isArchived = false,
+    this.isUnreadOverride = false,
   });
 }
 
@@ -80,6 +95,26 @@ class ChatRoomList extends _$ChatRoomList {
           },
         )
         .subscribe();
+  }
+
+  /// Toggle pin state and refresh list.
+  Future<void> togglePin(String roomId, bool isPinned) async {
+    await ref.read(chatRepositoryProvider).togglePin(roomId, isPinned);
+    ref.invalidateSelf();
+  }
+
+  /// Toggle archive state and refresh list.
+  Future<void> toggleArchive(String roomId, bool isArchived) async {
+    await ref.read(chatRepositoryProvider).toggleArchive(roomId, isArchived);
+    ref.invalidateSelf();
+  }
+
+  /// Toggle manual unread override and refresh list.
+  Future<void> toggleUnreadOverride(String roomId, bool isUnread) async {
+    await ref
+        .read(chatRepositoryProvider)
+        .toggleUnreadOverride(roomId, isUnread);
+    ref.invalidateSelf();
   }
 }
 

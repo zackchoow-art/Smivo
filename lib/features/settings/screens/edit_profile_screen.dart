@@ -33,7 +33,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: const CustomAppBar(),
+      appBar: const CustomAppBar(showActions: false),
       body: SafeArea(
         child: profileAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -229,7 +229,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'This is how you will appear to other\nstudents.',
+                            'This is how you will appear to other students.',
                             style: typo.bodySmall.copyWith(
                                 color: colors.settingsTextSecondary,
                                 height: 1.3),
@@ -378,7 +378,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        context.pop();
+
       }
     } catch (e) {
       if (mounted) {

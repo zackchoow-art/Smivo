@@ -13,6 +13,9 @@ abstract class ChatListingPreview with _$ChatListingPreview {
   const factory ChatListingPreview({
     required String id,
     required String title,
+    // NOTE: Added for chat list search — populated by fetchChatRooms query.
+    String? description,
+    @Default(0.0) double price,
     @Default([]) List<ChatListingImage> images,
   }) = _ChatListingPreview;
 

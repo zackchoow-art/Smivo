@@ -10,6 +10,8 @@ _ChatListingPreview _$ChatListingPreviewFromJson(Map<String, dynamic> json) =>
     _ChatListingPreview(
       id: json['id'] as String,
       title: json['title'] as String,
+      description: json['description'] as String?,
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
       images:
           (json['images'] as List<dynamic>?)
               ?.map((e) => ChatListingImage.fromJson(e as Map<String, dynamic>))
@@ -21,6 +23,8 @@ Map<String, dynamic> _$ChatListingPreviewToJson(_ChatListingPreview instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
+      'description': instance.description,
+      'price': instance.price,
       'images': instance.images,
     };
 

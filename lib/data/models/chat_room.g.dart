@@ -19,6 +19,9 @@ _ChatRoom _$ChatRoomFromJson(Map<String, dynamic> json) => _ChatRoom(
           : DateTime.parse(json['last_message_at'] as String),
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
+  isPinned: json['is_pinned'] as bool? ?? false,
+  isArchived: json['is_archived'] as bool? ?? false,
+  isUnreadOverride: json['is_unread_override'] as bool? ?? false,
   buyer:
       json['buyer'] == null
           ? null
@@ -50,6 +53,9 @@ Map<String, dynamic> _$ChatRoomToJson(_ChatRoom instance) => <String, dynamic>{
   'last_message_at': instance.lastMessageAt?.toIso8601String(),
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
+  'is_pinned': instance.isPinned,
+  'is_archived': instance.isArchived,
+  'is_unread_override': instance.isUnreadOverride,
   'buyer': instance.buyer,
   'seller': instance.seller,
   'listing': instance.listing,

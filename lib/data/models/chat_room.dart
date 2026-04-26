@@ -23,6 +23,10 @@ abstract class ChatRoom with _$ChatRoom {
     @JsonKey(name: 'last_message_at') DateTime? lastMessageAt,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    // Per-room feature flags — added via migration 00034
+    @JsonKey(name: 'is_pinned') @Default(false) bool isPinned,
+    @JsonKey(name: 'is_archived') @Default(false) bool isArchived,
+    @JsonKey(name: 'is_unread_override') @Default(false) bool isUnreadOverride,
     // Nested join data — populated only by fetchChatRooms query
     UserProfile? buyer,
     UserProfile? seller,

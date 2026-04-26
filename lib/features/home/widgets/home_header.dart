@@ -112,10 +112,12 @@ class HomeHeader extends ConsumerWidget {
                       child: CircleAvatar(
                         radius: 20,
                         backgroundColor: colors.surfaceContainerHigh,
-                        child: Icon(
-                          Icons.person,
-                          color: colors.onSurface,
-                        ),
+                        backgroundImage: profile?.avatarUrl != null
+                            ? NetworkImage(profile!.avatarUrl!)
+                            : null,
+                        child: profile?.avatarUrl == null
+                            ? Icon(Icons.person, color: colors.onSurface)
+                            : null,
                       ),
                     ),
                   ),

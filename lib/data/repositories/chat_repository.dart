@@ -29,7 +29,7 @@ class ChatRepository {
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
-            listing:listings(id, title, images:listing_images(image_url)),
+            listing:listings(id, title, description, price, images:listing_images(image_url)),
             last_message:messages(*)
           ''')
           .or('buyer_id.eq.$userId,seller_id.eq.$userId')
@@ -184,6 +184,42 @@ class ChatRepository {
       await _client
           .from(AppConstants.tableChatRooms)
           .update({updateField: 0})
+          .eq('id', chatRoomId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Toggle the pinned state of a chat room.
+  Future<void> togglePin(String chatRoomId, bool isPinned) async {
+    try {
+      await _client
+          .from(AppConstants.tableChatRooms)
+          .update({'is_pinned': isPinned})
+          .eq('id', chatRoomId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Toggle the archived state of a chat room.
+  Future<void> toggleArchive(String chatRoomId, bool isArchived) async {
+    try {
+      await _client
+          .from(AppConstants.tableChatRooms)
+          .update({'is_archived': isArchived})
+          .eq('id', chatRoomId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Toggle the manual unread override of a chat room.
+  Future<void> toggleUnreadOverride(String chatRoomId, bool isUnread) async {
+    try {
+      await _client
+          .from(AppConstants.tableChatRooms)
+          .update({'is_unread_override': isUnread})
           .eq('id', chatRoomId);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChatListingPreview {
 
- String get id; String get title; List<ChatListingImage> get images;
+ String get id; String get title;// NOTE: Added for chat list search — populated by fetchChatRooms query.
+ String? get description; double get price; List<ChatListingImage> get images;
 /// Create a copy of ChatListingPreview
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $ChatListingPreviewCopyWith<ChatListingPreview> get copyWith => _$ChatListingPre
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatListingPreview&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.images, images));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatListingPreview&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.price, price) || other.price == price)&&const DeepCollectionEquality().equals(other.images, images));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(images));
+int get hashCode => Object.hash(runtimeType,id,title,description,price,const DeepCollectionEquality().hash(images));
 
 @override
 String toString() {
-  return 'ChatListingPreview(id: $id, title: $title, images: $images)';
+  return 'ChatListingPreview(id: $id, title: $title, description: $description, price: $price, images: $images)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $ChatListingPreviewCopyWith<$Res>  {
   factory $ChatListingPreviewCopyWith(ChatListingPreview value, $Res Function(ChatListingPreview) _then) = _$ChatListingPreviewCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, List<ChatListingImage> images
+ String id, String title, String? description, double price, List<ChatListingImage> images
 });
 
 
@@ -65,11 +66,13 @@ class _$ChatListingPreviewCopyWithImpl<$Res>
 
 /// Create a copy of ChatListingPreview
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? images = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = freezed,Object? price = null,Object? images = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,images: null == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as double,images: null == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
 as List<ChatListingImage>,
   ));
 }
@@ -155,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  List<ChatListingImage> images)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String? description,  double price,  List<ChatListingImage> images)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChatListingPreview() when $default != null:
-return $default(_that.id,_that.title,_that.images);case _:
+return $default(_that.id,_that.title,_that.description,_that.price,_that.images);case _:
   return orElse();
 
 }
@@ -176,10 +179,10 @@ return $default(_that.id,_that.title,_that.images);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  List<ChatListingImage> images)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String? description,  double price,  List<ChatListingImage> images)  $default,) {final _that = this;
 switch (_that) {
 case _ChatListingPreview():
-return $default(_that.id,_that.title,_that.images);case _:
+return $default(_that.id,_that.title,_that.description,_that.price,_that.images);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +199,10 @@ return $default(_that.id,_that.title,_that.images);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  List<ChatListingImage> images)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String? description,  double price,  List<ChatListingImage> images)?  $default,) {final _that = this;
 switch (_that) {
 case _ChatListingPreview() when $default != null:
-return $default(_that.id,_that.title,_that.images);case _:
+return $default(_that.id,_that.title,_that.description,_that.price,_that.images);case _:
   return null;
 
 }
@@ -211,11 +214,14 @@ return $default(_that.id,_that.title,_that.images);case _:
 @JsonSerializable()
 
 class _ChatListingPreview implements ChatListingPreview {
-  const _ChatListingPreview({required this.id, required this.title, final  List<ChatListingImage> images = const []}): _images = images;
+  const _ChatListingPreview({required this.id, required this.title, this.description, this.price = 0.0, final  List<ChatListingImage> images = const []}): _images = images;
   factory _ChatListingPreview.fromJson(Map<String, dynamic> json) => _$ChatListingPreviewFromJson(json);
 
 @override final  String id;
 @override final  String title;
+// NOTE: Added for chat list search — populated by fetchChatRooms query.
+@override final  String? description;
+@override@JsonKey() final  double price;
  final  List<ChatListingImage> _images;
 @override@JsonKey() List<ChatListingImage> get images {
   if (_images is EqualUnmodifiableListView) return _images;
@@ -237,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatListingPreview&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._images, _images));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatListingPreview&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.price, price) || other.price == price)&&const DeepCollectionEquality().equals(other._images, _images));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_images));
+int get hashCode => Object.hash(runtimeType,id,title,description,price,const DeepCollectionEquality().hash(_images));
 
 @override
 String toString() {
-  return 'ChatListingPreview(id: $id, title: $title, images: $images)';
+  return 'ChatListingPreview(id: $id, title: $title, description: $description, price: $price, images: $images)';
 }
 
 
@@ -257,7 +263,7 @@ abstract mixin class _$ChatListingPreviewCopyWith<$Res> implements $ChatListingP
   factory _$ChatListingPreviewCopyWith(_ChatListingPreview value, $Res Function(_ChatListingPreview) _then) = __$ChatListingPreviewCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, List<ChatListingImage> images
+ String id, String title, String? description, double price, List<ChatListingImage> images
 });
 
 
@@ -274,11 +280,13 @@ class __$ChatListingPreviewCopyWithImpl<$Res>
 
 /// Create a copy of ChatListingPreview
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? images = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = freezed,Object? price = null,Object? images = null,}) {
   return _then(_ChatListingPreview(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,images: null == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as double,images: null == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
 as List<ChatListingImage>,
   ));
 }

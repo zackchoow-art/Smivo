@@ -6,7 +6,7 @@ part of 'listing_views_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$listingViewsHash() => r'5ca0a4544e11cb02026d3dd9ef6a2aec66c5476b';
+String _$listingViewsHash() => r'ab7f8725e70e5783772087008f9914cb86dbadf8';
 
 /// Copied from Dart SDK
 class _SystemHash {

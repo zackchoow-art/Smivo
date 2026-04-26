@@ -52,7 +52,7 @@ class _NotificationSettingsScreenState
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: const CustomAppBar(),
+      appBar: const CustomAppBar(showActions: false),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
