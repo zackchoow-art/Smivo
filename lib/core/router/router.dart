@@ -26,6 +26,11 @@ import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
 import 'package:smivo/shared/widgets/app_shell.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
+import 'package:smivo/features/admin/screens/admin_shell_screen.dart';
+import 'package:smivo/features/admin/screens/admin_dashboard_screen.dart';
+import 'package:smivo/features/admin/screens/admin_faqs_screen.dart';
+import 'package:smivo/features/admin/screens/admin_categories_screen.dart';
+import 'package:smivo/features/admin/screens/admin_schools_screen.dart';
 import 'app_routes.dart';
 
 part 'router.g.dart';
@@ -296,6 +301,33 @@ GoRouter router(Ref ref) {
             name: AppRoutes.settingsHelp,
             path: AppRoutes.settingsHelpPath,
             builder: (context, state) => const HelpScreen(),
+          ),
+        ],
+      ),
+
+      // ── Admin (auth & role required) ──────────────────────
+      ShellRoute(
+        builder: (context, state, child) => AdminShellScreen(child: child),
+        routes: [
+          GoRoute(
+            name: AppRoutes.adminDashboard,
+            path: AppRoutes.adminDashboardPath,
+            builder: (context, state) => const AdminDashboardScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminSchools,
+            path: AppRoutes.adminSchoolsPath,
+            builder: (context, state) => const AdminSchoolsScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminCategories,
+            path: AppRoutes.adminCategoriesPath,
+            builder: (context, state) => const AdminCategoriesScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminFaqs,
+            path: AppRoutes.adminFaqsPath,
+            builder: (context, state) => const AdminFaqsScreen(),
           ),
         ],
       ),

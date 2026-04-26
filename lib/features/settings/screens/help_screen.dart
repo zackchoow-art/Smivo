@@ -16,6 +16,7 @@ class HelpScreen extends ConsumerStatefulWidget {
 class _HelpScreenState extends ConsumerState<HelpScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  final Set<String> _expandedCategories = {};
 
   @override
   void dispose() {
@@ -118,26 +119,66 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                       final category = entry.key;
                       final categoryFaqs = entry.value;
 
+                      final isCategoryExpanded = _searchQuery.isNotEmpty || _expandedCategories.contains(category);
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16, top: 16),
-                            child: Text(
-                              category,
-                              style: typo.headlineSmall.copyWith(
-                                color: colors.primary,
-                                fontWeight: FontWeight.bold,
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (_expandedCategories.contains(category)) {
+                                  _expandedCategories.remove(category);
+                                } else {
+                                  _expandedCategories.add(category);
+                                }
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isCategoryExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                                    color: colors.primary,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      category,
+                                      style: typo.headlineSmall.copyWith(
+                                        color: colors.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: colors.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      categoryFaqs.length.toString(),
+                                      style: typo.labelSmall.copyWith(
+                                        color: colors.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          ...categoryFaqs.map((faq) {
-                            final isExpanded = faq.question == expandedQuestion;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: GestureDetector(
-                                onTap: () => ref.read(expandedFaqStateProvider.notifier).toggle(faq.question),
-                                child: Container(
+                          if (isCategoryExpanded)
+                            ...categoryFaqs.map((faq) {
+                              final isExpanded = faq.question == expandedQuestion;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: GestureDetector(
+                                  onTap: () => ref.read(expandedFaqStateProvider.notifier).toggle(faq.question),
+                                  child: Container(
                                   decoration: BoxDecoration(
                                     color: colors.surfaceContainerLowest,
                                     borderRadius: BorderRadius.circular(radius.sm),

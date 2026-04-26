@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:smivo/data/models/chat_room.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
@@ -119,7 +120,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     final roomAsync = ref.watch(chatRoomProvider(widget.chatRoomId));
     final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -172,79 +172,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       ),
       body: Column(
         children: [
-          roomAsync.when(
-            data: (room) {
-              final listingAsync = ref.watch(listingDetailProvider(room.listingId));
-              return listingAsync.when(
-                data: (listing) {
-                  final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceContainerLowest,
-                        borderRadius: BorderRadius.circular(radius.md),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colors.shadow,
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: colors.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(radius.xs),
-                              image: imageUrl != null
-                                  ? DecorationImage(
-                                      image: NetworkImage(imageUrl),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                            ),
-                            child: imageUrl == null
-                                ? const Icon(Icons.image, size: 16)
-                                : null,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              listing.title,
-                              style: typo.labelLarge.copyWith(
-                                color: colors.onSurface,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Text(
-                            '\$${listing.price.toStringAsFixed(0)}',
-                            style: typo.labelLarge.copyWith(
-                              color: colors.primary,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-              );
-            },
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
+          // NOTE: Extract listingId from room data to watch listing
+          // independently. This avoids nested async and prevents
+          // the listing preview from flickering when room refreshes.
+          _buildListingPreview(context, roomAsync),
           Expanded(
             child: messagesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -275,6 +206,85 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
           _buildInputBar(),
         ],
+      ),
+    );
+  }
+
+  /// Builds the listing preview bar independently from the room
+  /// async state to avoid nested loading flicker.
+  Widget _buildListingPreview(
+    BuildContext context,
+    AsyncValue<ChatRoom> roomAsync,
+  ) {
+    final room = roomAsync.valueOrNull;
+    if (room == null) return const SizedBox.shrink();
+
+    final listingAsync = ref.watch(listingDetailProvider(room.listingId));
+    final listing = listingAsync.valueOrNull;
+    if (listing == null) return const SizedBox.shrink();
+
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(radius.md),
+          boxShadow: [
+            BoxShadow(
+              color: colors.shadow,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(radius.xs),
+                image: imageUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(imageUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: imageUrl == null
+                  ? const Icon(Icons.image, size: 16)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                listing.title,
+                style: typo.labelLarge.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              '\$${listing.price.toStringAsFixed(0)}',
+              style: typo.labelLarge.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

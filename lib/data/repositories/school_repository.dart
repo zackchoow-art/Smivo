@@ -46,6 +46,69 @@ class SchoolRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  // ─── ADMIN METHODS ──────────────────────────────────────────
+
+  Future<List<School>> fetchAllSchools() async {
+    try {
+      final data = await _client
+          .from('schools')
+          .select()
+          .order('name');
+      return data.map((json) => School.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  Future<School> createSchool(School school) async {
+    try {
+      final response = await _client
+          .from('schools')
+          .insert(school.toJson()..remove('id')) // DB auto-generates uuid
+          .select()
+          .single();
+      return School.fromJson(response);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    } catch (e) {
+      throw NetworkException(e.toString());
+    }
+  }
+
+  Future<School> updateSchool(School school) async {
+    try {
+      final response = await _client
+          .from('schools')
+          .update({
+            'slug': school.slug,
+            'name': school.name,
+            'email_domain': school.emailDomain,
+            'primary_color': school.primaryColor,
+            'logo_url': school.logoUrl,
+            'is_active': school.isActive,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', school.id)
+          .select()
+          .single();
+      return School.fromJson(response);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    } catch (e) {
+      throw NetworkException(e.toString());
+    }
+  }
+
+  Future<void> deleteSchool(String id) async {
+    try {
+      await _client.from('schools').delete().eq('id', id);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    } catch (e) {
+      throw NetworkException(e.toString());
+    }
+  }
 }
 
 @riverpod

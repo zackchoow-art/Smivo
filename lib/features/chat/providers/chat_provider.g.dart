@@ -26,7 +26,7 @@ final chatTotalUnreadProvider = AutoDisposeFutureProvider<int>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ChatTotalUnreadRef = AutoDisposeFutureProviderRef<int>;
-String _$chatRoomHash() => r'7347a75114d390e9e5e5d2e8ecf18a66986785c1';
+String _$chatRoomHash() => r'4ebced0ba7644bbea6f60e69d12169995fcbeffa';
 
 /// Copied from Dart SDK
 class _SystemHash {

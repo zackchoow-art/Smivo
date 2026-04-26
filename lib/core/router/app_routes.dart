@@ -56,4 +56,15 @@ class AppRoutes {
   static const String buyerCenterPath = '/buyer-center';
   static const String transactionManagementPath = '/listing/:id/transactions';
   static const String notificationCenterPath = '/notifications';
+
+  // ── Admin Routes ───────────────────────────────────────────
+  static const String adminDashboard = 'adminDashboard';
+  static const String adminSchools = 'adminSchools';
+  static const String adminCategories = 'adminCategories';
+  static const String adminFaqs = 'adminFaqs';
+
+  static const String adminDashboardPath = '/admin/dashboard';
+  static const String adminSchoolsPath = '/admin/schools';
+  static const String adminCategoriesPath = '/admin/categories';
+  static const String adminFaqsPath = '/admin/faqs';
 }

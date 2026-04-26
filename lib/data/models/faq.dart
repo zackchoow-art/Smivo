@@ -1,10 +1,11 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'faq.freezed.dart';
 part 'faq.g.dart';
 
 @freezed
-class Faq with _$Faq {
+abstract class Faq with _$Faq {
   const factory Faq({
     required String id,
     required String category,

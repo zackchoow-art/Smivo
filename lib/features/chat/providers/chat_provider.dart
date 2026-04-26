@@ -224,11 +224,13 @@ Future<int> chatTotalUnread(Ref ref) async {
 /// Fetches details for a single chat room.
 @riverpod
 Future<ChatRoom> chatRoom(Ref ref, String chatRoomId) async {
-  // Check cache first
-  final list = ref.watch(chatRoomListProvider).valueOrNull;
+  // NOTE: Use ref.read (not ref.watch) for cache lookup to avoid
+  // re-triggering this provider every time the chat list refreshes.
+  // This prevents the AppBar contact info from flickering.
+  final list = ref.read(chatRoomListProvider).valueOrNull;
   final cached = list?.firstWhere((r) => r.id == chatRoomId);
   if (cached != null) return cached;
 
-  final repository = ref.watch(chatRepositoryProvider);
+  final repository = ref.read(chatRepositoryProvider);
   return repository.fetchChatRoom(chatRoomId);
 }

@@ -1,19 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/faq.dart';
+import 'package:smivo/data/repositories/faq_repository.dart';
 
 part 'help_provider.g.dart';
 
 @riverpod
 Future<List<Faq>> helpFaqs(Ref ref) async {
-  final client = ref.watch(supabaseClientProvider);
-  final data = await client
-      .from('faqs')
-      .select()
-      .order('display_order', ascending: true);
-      
-  return data.map((json) => Faq.fromJson(json)).toList();
+  return ref.watch(faqRepositoryProvider).fetchFaqs();
 }
 
 @riverpod
