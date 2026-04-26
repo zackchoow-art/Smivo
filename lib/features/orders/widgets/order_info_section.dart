@@ -20,19 +20,21 @@ class OrderInfoSection extends ConsumerStatefulWidget {
     required this.counterpartyName,
     this.buyer,
     this.seller,
+    this.currentUserId,
   });
 
   final Order order;
   final String? counterpartyName;
   final UserProfile? buyer;
   final UserProfile? seller;
+  final String? currentUserId;
 
   @override
   ConsumerState<OrderInfoSection> createState() => _OrderInfoSectionState();
 }
 
 class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
-  bool _isExpanded = false;
+  bool _isExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +66,10 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
         ),
         if (_isExpanded) ...[
           const SizedBox(height: 12),
-          // Buyer profile row
-          if (widget.buyer != null)
+          // NOTE: Show only counterparty info, not the current user's own row
+          if (widget.buyer != null && widget.buyer!.id != widget.currentUserId)
             _buildUserRow(context, 'Buyer', widget.buyer!),
-          // Seller profile row
-          if (widget.seller != null)
+          if (widget.seller != null && widget.seller!.id != widget.currentUserId)
             _buildUserRow(context, 'Seller', widget.seller!),
           if (widget.buyer != null || widget.seller != null)
             const Divider(height: 16),

@@ -26,20 +26,9 @@ class OrderTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'ORDER TIMELINE',
-          style: typo.labelSmall.copyWith(
-            color: colors.onSurface.withValues(alpha: 0.5),
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 12),
         ...steps.asMap().entries.map(
               (entry) => _buildTimelineRow(
                 context,

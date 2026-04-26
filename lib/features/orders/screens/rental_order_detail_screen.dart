@@ -4,6 +4,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/providers/order_chat_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/features/orders/providers/rental_extension_provider.dart';
 import 'package:smivo/features/orders/widgets/chat_history_section.dart';
 import 'package:smivo/features/orders/widgets/evidence_photo_section.dart';
 import 'package:smivo/features/orders/widgets/order_financial_summary.dart';
@@ -13,6 +14,7 @@ import 'package:smivo/features/orders/widgets/order_timeline.dart';
 import 'package:smivo/features/orders/widgets/rental_date_section.dart';
 import 'package:smivo/features/orders/widgets/rental_extension_card.dart';
 import 'package:smivo/features/orders/widgets/rental_reminder_settings.dart';
+import 'package:smivo/shared/widgets/collapsible_section.dart';
 
 class RentalOrderDetailScreen extends ConsumerWidget {
   const RentalOrderDetailScreen({
@@ -36,6 +38,8 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(orderDetailProvider(order.id));
+        // NOTE: Also refresh extension data so status badges are up-to-date
+        ref.invalidate(orderExtensionsProvider(order.id));
         await ref.read(orderDetailProvider(order.id).future);
       },
       child: SingleChildScrollView(
@@ -46,61 +50,100 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         children: [
           OrderHeaderCard(order: order),
           const SizedBox(height: 16),
-          OrderTimeline(steps: _buildRentalSteps(order)),
+
+          // Section 1: Order Timeline — collapsible, default open
+          CollapsibleSection(
+            title: 'Order Timeline',
+            initiallyExpanded: true,
+            child: OrderTimeline(steps: _buildRentalSteps(order)),
+          ),
           const SizedBox(height: 16),
-          OrderFinancialSummary(order: order),
+
+          // Section 2: Item Pricing — collapsible, default closed
+          CollapsibleSection(
+            title: 'Item Pricing',
+            initiallyExpanded: false,
+            child: OrderFinancialSummary(order: order),
+          ),
           const SizedBox(height: 16),
+
+          // Section 3: Order Info — collapsible, default open, counterparty only
           OrderInfoSection(
             order: order,
             counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
             buyer: order.buyer,
             seller: order.seller,
+            currentUserId: currentUserId,
           ),
           const SizedBox(height: 16),
+
+          // Section 4: Rental Period — collapsible, default open
           if (order.rentalStartDate != null) ...[
-            RentalDateSection(order: order),
-            const SizedBox(height: 16),
-          ],
-          if (order.status == 'confirmed' || order.status == 'completed') ...[
-            _buildDeliveryStatus(context, order),
-            const SizedBox(height: 16),
-            EvidencePhotoSection(
-              label: 'DELIVERY EVIDENCE',
-              orderId: order.id,
-              canUpload: _canUploadDeliveryEvidence(order, isBuyer, isSeller),
-              evidenceType: 'delivery',
+            CollapsibleSection(
+              title: 'Rental Period',
+              initiallyExpanded: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  RentalDateSection(order: order),
+                  // Rental reminder settings — only for active rentals, buyer only
+                  if (order.rentalStatus == 'active' && isBuyer) ...[
+                    const SizedBox(height: 16),
+                    RentalReminderSettings(
+                      order: order,
+                      isBuyer: isBuyer,
+                    ),
+                  ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
           ],
-          if (order.rentalStatus == 'active' || 
-              order.rentalStatus == 'return_requested' || 
-              order.rentalStatus == 'returned' || 
-              order.rentalStatus == 'deposit_refunded') ...[
-            EvidencePhotoSection(
-              label: 'RETURN EVIDENCE',
-              orderId: order.id,
-              canUpload: _canUploadReturnEvidence(order, isBuyer, isSeller),
-              evidenceType: 'return',
+
+          // Section 5: Delivery & Return — collapsible, default open
+          // Includes delivery confirmation, evidence photos, return evidence, rental period changes
+          if (order.status == 'confirmed' || order.status == 'completed')
+            CollapsibleSection(
+              title: 'Delivery & Return',
+              initiallyExpanded: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildDeliveryStatus(context, order),
+                  const SizedBox(height: 16),
+                  EvidencePhotoSection(
+                    label: 'DELIVERY EVIDENCE',
+                    orderId: order.id,
+                    canUpload: _canUploadDeliveryEvidence(order, isBuyer, isSeller),
+                    evidenceType: 'delivery',
+                  ),
+                  if (order.rentalStatus == 'active' ||
+                      order.rentalStatus == 'return_requested' ||
+                      order.rentalStatus == 'returned' ||
+                      order.rentalStatus == 'deposit_refunded') ...[
+                    const SizedBox(height: 16),
+                    EvidencePhotoSection(
+                      label: 'RETURN EVIDENCE',
+                      orderId: order.id,
+                      canUpload: _canUploadReturnEvidence(order, isBuyer, isSeller),
+                      evidenceType: 'return',
+                    ),
+                  ],
+                  if (order.rentalStatus != null) ...[
+                    const SizedBox(height: 16),
+                    RentalExtensionCard(
+                      order: order,
+                      isBuyer: isBuyer,
+                      isSeller: isSeller,
+                    ),
+                  ],
+                ],
+              ),
             ),
+          if (order.status == 'confirmed' || order.status == 'completed')
             const SizedBox(height: 16),
-          ],
-          if (order.rentalStatus != null) ...[
-            // Rental extension section — show when rental is active or later to show history
-            RentalExtensionCard(
-              order: order,
-              isBuyer: isBuyer,
-              isSeller: isSeller,
-            ),
-            const SizedBox(height: 16),
-          ],
-          // Rental reminder settings — only for active rentals, buyer only
-          if (order.rentalStatus == 'active' && isBuyer) ...[
-            RentalReminderSettings(
-              order: order,
-              isBuyer: isBuyer,
-            ),
-            const SizedBox(height: 16),
-          ],
+
+          // Section 6: Chat History — collapsible, default closed
           _buildChatSection(ref, order),
           _buildActions(context, ref, order, isBuyer, isSeller, isActing),
           if (order.rentalStatus != null) ...[
@@ -324,22 +367,41 @@ class RentalOrderDetailScreen extends ConsumerWidget {
           ],
         );
       case 'completed':
+        // NOTE: Green checkmark style matching deposit refunded banner
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
+            color: colors.success.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(radius.md),
           ),
-          child: const Text('✓ Order completed successfully'),
+          child: Row(
+            children: [
+              Icon(Icons.check_circle, color: colors.success),
+              const SizedBox(width: 8),
+              Text(
+                'Order completed successfully',
+                style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
         );
       case 'cancelled':
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
+            color: colors.error.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(radius.md),
           ),
-          child: const Text('✕ Order was cancelled'),
+          child: Row(
+            children: [
+              Icon(Icons.cancel, color: colors.error),
+              const SizedBox(width: 8),
+              Text(
+                'Order was cancelled',
+                style: typo.bodyMedium.copyWith(color: colors.error),
+              ),
+            ],
+          ),
         );
       default:
         return const SizedBox.shrink();

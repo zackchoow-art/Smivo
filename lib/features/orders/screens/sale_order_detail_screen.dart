@@ -10,6 +10,7 @@ import 'package:smivo/features/orders/widgets/order_financial_summary.dart';
 import 'package:smivo/features/orders/widgets/order_header_card.dart';
 import 'package:smivo/features/orders/widgets/order_info_section.dart';
 import 'package:smivo/features/orders/widgets/order_timeline.dart';
+import 'package:smivo/shared/widgets/collapsible_section.dart';
 
 class SaleOrderDetailScreen extends ConsumerWidget {
   const SaleOrderDetailScreen({
@@ -43,26 +44,49 @@ class SaleOrderDetailScreen extends ConsumerWidget {
         children: [
           OrderHeaderCard(order: order),
           const SizedBox(height: 16),
-          OrderTimeline(steps: _buildSaleSteps(order)),
+          // Section 1: Order Timeline — collapsible, default open
+          CollapsibleSection(
+            title: 'Order Timeline',
+            initiallyExpanded: true,
+            child: OrderTimeline(steps: _buildSaleSteps(order)),
+          ),
           const SizedBox(height: 16),
-          OrderFinancialSummary(order: order),
+          // Section 2: Item Pricing — collapsible, default closed
+          CollapsibleSection(
+            title: 'Item Pricing',
+            initiallyExpanded: false,
+            child: OrderFinancialSummary(order: order),
+          ),
           const SizedBox(height: 16),
+          // Section 3: Order Info — collapsible, default open
           OrderInfoSection(
             order: order,
             counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
             buyer: order.buyer,
             seller: order.seller,
+            currentUserId: currentUserId,
           ),
           const SizedBox(height: 16),
+          // Section 5: Delivery & Return — collapsible, default open
           if (order.status == 'confirmed' || order.status == 'completed') ...[
-            _buildDeliveryStatus(context, order),
-            const SizedBox(height: 16),
-            EvidencePhotoSection(
-              orderId: order.id,
-              canUpload: _canUploadEvidence(order, isBuyer, isSeller),
+            CollapsibleSection(
+              title: 'Delivery & Return',
+              initiallyExpanded: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildDeliveryStatus(context, order),
+                  const SizedBox(height: 16),
+                  EvidencePhotoSection(
+                    orderId: order.id,
+                    canUpload: _canUploadEvidence(order, isBuyer, isSeller),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
           ],
+          // Section 6: Chat History — collapsible, default closed
           _buildChatSection(ref, order),
           _buildActions(context, ref, order, isBuyer, isSeller, isActing),
         ],
@@ -249,22 +273,41 @@ class SaleOrderDetailScreen extends ConsumerWidget {
           );
         }
       case 'completed':
+        // NOTE: Green checkmark style matching deposit refunded banner
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
+            color: colors.success.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(radius.md),
           ),
-          child: const Text('✓ Order completed successfully'),
+          child: Row(
+            children: [
+              Icon(Icons.check_circle, color: colors.success),
+              const SizedBox(width: 8),
+              Text(
+                'Order completed successfully',
+                style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
         );
       case 'cancelled':
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
+            color: colors.error.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(radius.md),
           ),
-          child: const Text('✕ Order was cancelled'),
+          child: Row(
+            children: [
+              Icon(Icons.cancel, color: colors.error),
+              const SizedBox(width: 8),
+              Text(
+                'Order was cancelled',
+                style: typo.bodyMedium.copyWith(color: colors.error),
+              ),
+            ],
+          ),
         );
       default:
         return const SizedBox.shrink();

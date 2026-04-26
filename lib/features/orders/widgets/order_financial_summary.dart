@@ -9,7 +9,6 @@ class OrderFinancialSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
-    final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
     return Container(
@@ -21,14 +20,6 @@ class OrderFinancialSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'FINANCIAL SUMMARY',
-            style: typo.labelSmall.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.5),
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 12),
           _summaryRow(context, 'Type', order.orderType.toUpperCase()),
           if (order.orderType == 'rental' && order.listing != null) ...[
             if ((order.listing!.rentalDailyPrice ?? 0) > 0)
