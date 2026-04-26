@@ -34,7 +34,7 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('Chat History', style: typo.titleMedium),
+                  child: Text('Chat History', style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
                 ),
                 AnimatedRotation(
                   turns: _isExpanded ? 0.5 : 0,

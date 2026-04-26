@@ -241,10 +241,15 @@ class RentalOrderDetailScreen extends ConsumerWidget {
 
   Widget _buildDeliveryStatus(BuildContext context, Order order) {
     final typo = context.smivoTypo;
+    final colors = context.smivoColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Delivery Confirmation', style: typo.titleMedium),
+        Text('DELIVERY CONFIRMATION',
+          style: typo.labelSmall.copyWith(
+            color: colors.onSurface.withValues(alpha: 0.5),
+            letterSpacing: 0.5,
+          )),
         const SizedBox(height: 8),
         _infoRow(context, 'Buyer', order.deliveryConfirmedByBuyer ? '✓ Confirmed' : 'Waiting'),
         _infoRow(context, 'Seller', order.deliveryConfirmedBySeller ? '✓ Confirmed' : 'Waiting'),

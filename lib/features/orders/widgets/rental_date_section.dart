@@ -9,13 +9,9 @@ class RentalDateSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typo = context.smivoTypo;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Rental Period', style: typo.titleMedium),
-        const SizedBox(height: 8),
         // Duration row: computed from date range (daily / weekly / monthly)
         _infoRow(context, 'Duration', _computeRentalDuration(order)),
         _infoRow(

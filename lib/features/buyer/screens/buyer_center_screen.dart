@@ -130,37 +130,35 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
             return _buildListViewItem(order, listing, imageUrl, sellerName, dateStr, icon, color, hasUnread);
           }
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(radius.card),
-              border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-            ),
-            child: InkWell(
-              onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
-              borderRadius: BorderRadius.circular(radius.card),
-              child: Column(children: [
-                Row(children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(radius.image),
-                    child: imageUrl != null
-                      ? Image.network(imageUrl, width: 60, height: 60, fit: BoxFit.cover)
-                      : Container(width: 60, height: 60, color: colors.surfaceContainerHigh, child: const Icon(Icons.image)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(listing?.title ?? 'Order', style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 4),
-                    Text('\$${order.totalPrice.toStringAsFixed(0)} · $sellerName',
-                      style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
-                    Text(dateStr, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
-                  ])),
-                  const SizedBox(width: 8),
-                  _StatusChip(order: order, hasUnread: hasUnread),
-                ]),
+          return InkWell(
+            onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
+            borderRadius: BorderRadius.circular(radius.card),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(radius.card),
+                border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+              ),
+              child: Row(children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(radius.image),
+                  child: imageUrl != null
+                    ? Image.network(imageUrl, width: 60, height: 60, fit: BoxFit.cover)
+                    : Container(width: 60, height: 60, color: colors.surfaceContainerHigh, child: const Icon(Icons.image)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(listing?.title ?? 'Order', style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  Text('\$${order.totalPrice.toStringAsFixed(0)} · $sellerName',
+                    style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
+                  Text(dateStr, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
+                ])),
+                const SizedBox(width: 8),
+                _StatusChip(order: order, hasUnread: hasUnread),
               ]),
             ),
           );

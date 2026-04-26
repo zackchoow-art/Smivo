@@ -81,7 +81,7 @@ class _CollapsibleSectionState extends State<CollapsibleSection>
                 Expanded(
                   child: Text(
                     widget.title,
-                    style: typo.titleMedium,
+                    style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
                 RotationTransition(
@@ -99,7 +99,15 @@ class _CollapsibleSectionState extends State<CollapsibleSection>
         SizeTransition(
           sizeFactor: _expandAnimation,
           axisAlignment: -1,
-          child: widget.child,
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: widget.child,
+          ),
         ),
       ],
     );

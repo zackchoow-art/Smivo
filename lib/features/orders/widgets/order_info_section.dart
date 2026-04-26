@@ -53,7 +53,7 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('Order Info', style: typo.titleMedium),
+                  child: Text('Order Info', style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
                 ),
                 AnimatedRotation(
                   turns: _isExpanded ? 0.5 : 0,
@@ -68,46 +68,57 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
             ),
           ),
         ),
-        if (_isExpanded) ...[
-          const SizedBox(height: 12),
-          // NOTE: Show only counterparty info, not the current user's own row
-          if (widget.buyer != null && widget.buyer!.id != widget.currentUserId)
-            _buildUserRow(context, 'Buyer', widget.buyer!),
-          if (widget.seller != null && widget.seller!.id != widget.currentUserId)
-            _buildUserRow(context, 'Seller', widget.seller!),
-          if (widget.buyer != null || widget.seller != null)
-            const Divider(height: 16),
-          // 1. Listed date
-          _infoRow(context, 'Listed', _formatDate(widget.order.createdAt)),
-          // 2. Transaction type
-          _infoRow(context, 'Type', isRental ? 'Rent' : 'Sale'),
-          // 3. Status
-          _infoRow(context, 'Status', _statusText(widget.order.status)),
-          // 4. Pickup location
-          if (widget.order.pickupLocation != null)
-            _infoRow(context, 'Pickup', widget.order.pickupLocation!.name),
-          // 5. Price / Rental Total
-          _infoRow(
-            context,
-            isRental ? 'Rental Total' : 'Price',
-            '\$${widget.order.totalPrice.toStringAsFixed(2)}',
+        if (_isExpanded)
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // NOTE: Show only counterparty info, not the current user's own row
+                if (widget.buyer != null && widget.buyer!.id != widget.currentUserId)
+                  _buildUserRow(context, 'Buyer', widget.buyer!),
+                if (widget.seller != null && widget.seller!.id != widget.currentUserId)
+                  _buildUserRow(context, 'Seller', widget.seller!),
+                if (widget.buyer != null || widget.seller != null)
+                  const Divider(height: 16),
+                // 1. Listed date
+                _infoRow(context, 'Listed', _formatDate(widget.order.createdAt)),
+                // 2. Transaction type
+                _infoRow(context, 'Type', isRental ? 'Rent' : 'Sale'),
+                // 3. Status
+                _infoRow(context, 'Status', _statusText(widget.order.status)),
+                // 4. Pickup location
+                if (widget.order.pickupLocation != null)
+                  _infoRow(context, 'Pickup', widget.order.pickupLocation!.name),
+                // 5. Price / Rental Total
+                _infoRow(
+                  context,
+                  isRental ? 'Rental Total' : 'Price',
+                  '\$${widget.order.totalPrice.toStringAsFixed(2)}',
+                ),
+                // NOTE: For rentals with deposit, show deposit and a Grand Total row
+                if (isRental && widget.order.depositAmount > 0) ...[
+                  _infoRow(
+                    context,
+                    'Deposit',
+                    '\$${widget.order.depositAmount.toStringAsFixed(2)}',
+                  ),
+                  const Divider(),
+                  _infoRow(
+                    context,
+                    'Grand Total',
+                    '\$${(widget.order.totalPrice + widget.order.depositAmount).toStringAsFixed(2)}',
+                    isBold: true,
+                  ),
+                ],
+              ],
+            ),
           ),
-          // NOTE: For rentals with deposit, show deposit and a Grand Total row
-          if (isRental && widget.order.depositAmount > 0) ...[
-            _infoRow(
-              context,
-              'Deposit',
-              '\$${widget.order.depositAmount.toStringAsFixed(2)}',
-            ),
-            const Divider(),
-            _infoRow(
-              context,
-              'Grand Total',
-              '\$${(widget.order.totalPrice + widget.order.depositAmount).toStringAsFixed(2)}',
-              isBold: true,
-            ),
-          ],
-        ],
       ],
     );
   }
