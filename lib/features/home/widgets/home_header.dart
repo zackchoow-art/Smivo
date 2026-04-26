@@ -45,24 +45,54 @@ class HomeHeader extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if (profile != null) ...[
-                        Text(
-                          '${profile.displayName ?? 'User'} • ${profile.email} • Verified ',
-                          style: typo.labelSmall.copyWith(color: colors.success),
+                  if (profile != null)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              profile.displayName ?? 'User',
+                              style: typo.labelLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: colors.success.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.verified, size: 12, color: colors.success),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Verified',
+                                    style: typo.labelSmall.copyWith(color: colors.success, fontSize: 10, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        Icon(Icons.verified, size: 14, color: colors.success),
-                      ] else ...[
-                        Icon(Icons.account_circle, size: 14, color: colors.onSurfaceVariant),
-                        const SizedBox(width: 4),
+                        const SizedBox(height: 2),
                         Text(
-                          '未登录',
+                          profile.email,
                           style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
                         ),
                       ],
-                    ],
-                  ),
+                    )
+                  else
+                    Row(
+                      children: [
+                        Icon(Icons.account_circle, size: 14, color: colors.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Not logged in',
+                          style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
                 ],
               ),
               Row(
@@ -92,13 +122,6 @@ class HomeHeader extends ConsumerWidget {
                 ],
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'The digital pulse of your university. Buy, sell, and connect.',
-            style: typo.bodyMedium.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.7),
-            ),
           ),
         ],
       ),

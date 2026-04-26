@@ -81,21 +81,35 @@ class ListingRepository {
     }
   }
 
-  /// Searches active listings by keyword in title and description.
+  /// Searches active listings by keyword in title, description, seller name, and prices.
   Future<List<Listing>> searchListings(String query, {String? category}) async {
     try {
       var dbQuery = _client
           .from(AppConstants.tableListings)
-          .select('*, images:listing_images(*)')
-          .eq('status', AppConstants.listingActive)
-          .or('title.ilike.%$query%,description.ilike.%$query%');
+          .select('*, images:listing_images(*), seller:user_profiles!seller_id(*)')
+          .eq('status', AppConstants.listingActive);
 
       if (category != null) {
         dbQuery = dbQuery.eq('category', category.toLowerCase());
       }
 
       final data = await dbQuery.order('created_at', ascending: false);
-      return data.map((json) => Listing.fromJson(json)).toList();
+      final allListings = data.map((json) => Listing.fromJson(json)).toList();
+      
+      if (query.trim().isEmpty) return allListings;
+
+      final q = query.trim().toLowerCase();
+      return allListings.where((l) {
+        final titleMatch = l.title.toLowerCase().contains(q);
+        final descMatch = (l.description?.toLowerCase().contains(q) ?? false);
+        final sellerMatch = (l.seller?.displayName?.toLowerCase().contains(q) ?? false);
+        final priceMatch = l.price.toString().contains(q);
+        final dailyMatch = l.rentalDailyPrice?.toString().contains(q) ?? false;
+        final weeklyMatch = l.rentalWeeklyPrice?.toString().contains(q) ?? false;
+        final monthlyMatch = l.rentalMonthlyPrice?.toString().contains(q) ?? false;
+        
+        return titleMatch || descMatch || sellerMatch || priceMatch || dailyMatch || weeklyMatch || monthlyMatch;
+      }).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

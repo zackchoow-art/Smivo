@@ -44,14 +44,14 @@ class BottomNavBar extends ConsumerWidget {
               _NavBarItem(
                 icon: Icons.home,
                 outlinedIcon: Icons.home_outlined,
-                label: 'HOME',
+                label: 'Home',
                 isSelected: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
                _NavBarItem(
                 icon: Icons.chat_bubble,
                 outlinedIcon: Icons.chat_bubble_outline,
-                label: 'CHAT',
+                label: 'Chat',
                 isSelected: currentIndex == 1,
                 onTap: () => onTap(1),
                 unreadCount: totalUnread,
@@ -59,7 +59,7 @@ class BottomNavBar extends ConsumerWidget {
               _NavBarItem(
                 icon: Icons.add_circle_outline,
                 outlinedIcon: Icons.add_circle_outline,
-                label: 'POST',
+                label: 'Post',
                 isSelected: false,
                 onTap: () {
                   context.pushNamed(AppRoutes.createListing);
@@ -68,7 +68,7 @@ class BottomNavBar extends ConsumerWidget {
               _NavBarItem(
                 icon: Icons.receipt_long,
                 outlinedIcon: Icons.receipt_long_outlined,
-                label: 'ORDERS',
+                label: 'Orders',
                 isSelected: currentIndex == 2,
                 onTap: () => onTap(2),
                 unreadCount: unreadOrderUpdates,
