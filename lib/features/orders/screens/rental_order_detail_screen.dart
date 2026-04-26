@@ -44,7 +44,14 @@ class RentalOrderDetailScreen extends ConsumerWidget {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.fromLTRB(
+          12,
+          MediaQuery.of(context).padding.top + 60,
+          12,
+          // NOTE: Extra bottom clearance so the last widget (Chat History)
+          // is never obscured by bottom nav or system UI.
+          MediaQuery.of(context).padding.bottom + 80,
+        ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -101,59 +108,230 @@ class RentalOrderDetailScreen extends ConsumerWidget {
           ],
 
           // Section 5: Delivery & Return — collapsible, default open
-          // Includes delivery confirmation, evidence photos, return evidence, rental period changes
-          if (order.status == 'confirmed' || order.status == 'completed')
+          if (order.status == 'pending' || order.status == 'confirmed' || order.status == 'completed') ...[
             CollapsibleSection(
               title: 'Delivery & Return',
               initiallyExpanded: true,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildDeliveryStatus(context, order),
-                  const SizedBox(height: 16),
-                  EvidencePhotoSection(
-                    label: 'DELIVERY EVIDENCE',
-                    orderId: order.id,
-                    canUpload: _canUploadDeliveryEvidence(order, isBuyer, isSeller),
-                    evidenceType: 'delivery',
-                  ),
-                  if (order.rentalStatus == 'active' ||
-                      order.rentalStatus == 'return_requested' ||
-                      order.rentalStatus == 'returned' ||
-                      order.rentalStatus == 'deposit_refunded') ...[
+                  if (order.status != 'pending') ...[
+                    _buildDeliveryStatus(context, order),
                     const SizedBox(height: 16),
                     EvidencePhotoSection(
-                      label: 'RETURN EVIDENCE',
+                      label: 'DELIVERY EVIDENCE',
                       orderId: order.id,
-                      canUpload: _canUploadReturnEvidence(order, isBuyer, isSeller),
-                      evidenceType: 'return',
+                      canUpload: _canUploadDeliveryEvidence(order, isBuyer, isSeller),
+                      evidenceType: 'delivery',
                     ),
-                  ],
-                  if (order.rentalStatus != null) ...[
                     const SizedBox(height: 16),
-                    RentalExtensionCard(
-                      order: order,
-                      isBuyer: isBuyer,
-                      isSeller: isSeller,
-                    ),
                   ],
+                  _buildPrimaryActions(context, ref, order, isBuyer, isSeller, isActing),
                 ],
               ),
             ),
-          if (order.status == 'confirmed' || order.status == 'completed')
             const SizedBox(height: 16),
-
-          // Section 6: Chat History — collapsible, default closed
-          _buildChatSection(ref, order),
-          _buildActions(context, ref, order, isBuyer, isSeller, isActing),
-          if (order.rentalStatus != null) ...[
-            const SizedBox(height: 12),
-            _buildRentalLifecycleActions(context, ref, order, isBuyer, isSeller, isActing),
           ],
+
+          // Section 6: Rental Period Changes — collapsible, default open
+          if (order.rentalStatus != null) ...[
+            CollapsibleSection(
+              title: 'Rental Period Changes',
+              initiallyExpanded: true,
+              child: RentalExtensionCard(
+                order: order,
+                isBuyer: isBuyer,
+                isSeller: isSeller,
+                showTitle: false,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Section 7: Return Evidence — collapsible, default open
+          if (order.rentalStatus == 'active' ||
+              order.rentalStatus == 'return_requested' ||
+              order.rentalStatus == 'returned' ||
+              order.rentalStatus == 'deposit_refunded') ...[
+            CollapsibleSection(
+              title: 'Return Evidence',
+              initiallyExpanded: true,
+              // NOTE: Lifecycle action button and status banner both live here
+              // so they share the same container width, keeping them aligned.
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  EvidencePhotoSection(
+                    label: 'RETURN EVIDENCE',
+                    orderId: order.id,
+                    canUpload: _canUploadReturnEvidence(order, isBuyer, isSeller),
+                    evidenceType: 'return',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildRentalLifecycleActions(
+                    context, ref, order, isBuyer, isSeller, isActing,
+                  ),
+                  // NOTE: Status banner placed here so it shares the same
+                  // parent width as the lifecycle action above it.
+                  _buildStatusBanner(context, order),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          // NOTE: Show status banner in the main column only for orders where
+          // the Return Evidence section is not visible (e.g. cancelled/missed
+          // before any delivery was confirmed).
+          if (order.rentalStatus != 'active' &&
+              order.rentalStatus != 'return_requested' &&
+              order.rentalStatus != 'returned' &&
+              order.rentalStatus != 'deposit_refunded')
+            _buildStatusBanner(context, order),
+          // Section 8: Chat History — collapsible, default closed
+          _buildChatSection(ref, order),
         ],
       ),
       ),
     );
+  }
+
+  Widget _buildStatusBanner(BuildContext context, Order order) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    if (order.status == 'completed') {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.success.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(radius.md),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, color: colors.success),
+            const SizedBox(width: 8),
+            Text(
+              'Order completed successfully',
+              style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (order.status == 'cancelled') {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.error.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(radius.md),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.cancel, color: colors.error),
+            const SizedBox(width: 8),
+            Text(
+              'Order was cancelled',
+              style: typo.bodyMedium.copyWith(color: colors.error),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (order.status == 'missed') {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.outlineVariant.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(radius.md),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, color: colors.outlineVariant),
+            const SizedBox(width: 8),
+            Text(
+              'Offer missed — Another buyer was chosen',
+              style: typo.bodyMedium,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildPrimaryActions(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isBuyer,
+    bool isSeller,
+    bool isActing,
+  ) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    if (order.status == 'pending') {
+      return _buildCancelButton(context, ref, order, isActing);
+    }
+
+    if (order.status == 'confirmed') {
+      final myConfirmed = isBuyer ? order.deliveryConfirmedByBuyer : order.deliveryConfirmedBySeller;
+      if (myConfirmed) {
+        return Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(radius.md),
+              ),
+              child: Text(
+                'You have confirmed delivery. Waiting for the other party.',
+                style: typo.bodyMedium,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildCancelButton(context, ref, order, isActing),
+          ],
+        );
+      }
+      return Column(
+        children: [
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isActing
+                      ? null
+                      : () async => await ref
+                          .read(orderActionsProvider.notifier)
+                          .confirmDelivery(order),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    isActing ? 'Processing...' : 'Confirm Delivery',
+                    style: typo.titleMedium.copyWith(color: colors.onPrimary),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildCancelButton(context, ref, order, isActing),
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   List<TimelineStep> _buildRentalSteps(Order order) {
@@ -302,117 +480,6 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActions(
-    BuildContext context,
-    WidgetRef ref,
-    Order order,
-    bool isBuyer,
-    bool isSeller,
-    bool isActing,
-  ) {
-    final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
-
-    switch (order.status) {
-      case 'pending':
-        return Column(
-          children: [
-            _buildCancelButton(context, ref, order, isActing),
-          ],
-        );
-      case 'confirmed':
-        final myConfirmed = isBuyer ? order.deliveryConfirmedByBuyer : order.deliveryConfirmedBySeller;
-        if (myConfirmed) {
-          return Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(radius.md),
-                ),
-                child: Text(
-                  'You have confirmed delivery. Waiting for the other party.',
-                  style: typo.bodyMedium,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildCancelButton(context, ref, order, isActing),
-            ],
-          );
-        }
-        return Column(
-          children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 360),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: isActing
-                        ? null
-                        : () async => await ref
-                            .read(orderActionsProvider.notifier)
-                            .confirmDelivery(order),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: Text(
-                      isActing ? 'Processing...' : 'Confirm Delivery',
-                      style: typo.titleMedium.copyWith(color: colors.onPrimary),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildCancelButton(context, ref, order, isActing),
-          ],
-        );
-      case 'completed':
-        // NOTE: Green checkmark style matching deposit refunded banner
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colors.success.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(radius.md),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.check_circle, color: colors.success),
-              const SizedBox(width: 8),
-              Text(
-                'Order completed successfully',
-                style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-        );
-      case 'cancelled':
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colors.error.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(radius.md),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.cancel, color: colors.error),
-              const SizedBox(width: 8),
-              Text(
-                'Order was cancelled',
-                style: typo.bodyMedium.copyWith(color: colors.error),
-              ),
-            ],
-          ),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-
   Widget _buildRentalLifecycleActions(
     BuildContext context,
     WidgetRef ref,
@@ -428,23 +495,18 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     switch (order.rentalStatus) {
       case 'active':
         if (isBuyer) {
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: isActing
-                      ? null
-                      : () => ref.read(orderActionsProvider.notifier).requestReturn(order.id),
-                  icon: const Icon(Icons.assignment_return),
-                  label: Text(isActing ? 'Processing...' : 'Request Return'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.warning,
-                    foregroundColor: colors.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
+          return SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isActing
+                  ? null
+                  : () => ref.read(orderActionsProvider.notifier).requestReturn(order.id),
+              icon: const Icon(Icons.assignment_return),
+              label: Text(isActing ? 'Processing...' : 'Request Return'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.warning,
+                foregroundColor: colors.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
           );

@@ -81,8 +81,16 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
       backgroundColor: colors.surfaceContainerLowest,
       appBar: AppBar(
         backgroundColor: Colors.transparent, elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () { if (Navigator.of(context).canPop()) Navigator.of(context).pop(); }),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed(AppRoutes.home);
+            }
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16),

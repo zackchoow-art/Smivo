@@ -13,11 +13,13 @@ class RentalExtensionCard extends ConsumerStatefulWidget {
     required this.order,
     required this.isBuyer,
     required this.isSeller,
+    this.showTitle = true,
   });
 
   final Order order;
   final bool isBuyer;
   final bool isSeller;
+  final bool showTitle;
 
   @override
   ConsumerState<RentalExtensionCard> createState() => _RentalExtensionCardState();
@@ -70,14 +72,18 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'RENTAL PERIOD CHANGES',
-            style: typo.labelSmall.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.5),
-              letterSpacing: 0.5,
+          if (widget.showTitle) ...[
+            Text(
+              'RENTAL PERIOD CHANGES',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: typo.labelSmall.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.5),
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
+          ],
           extensionsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, _) => Text('Error: $err', style: typo.bodySmall.copyWith(color: colors.error)),
@@ -89,11 +95,13 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
                 );
               }
 
+              final hasPending = extensions.any((ext) => ext.status == 'pending');
+
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ...extensions.map((ext) => _buildExtensionItem(context, ref, ext)),
-                  if (widget.isBuyer && widget.order.rentalStatus == 'active') ...[
+                  if (widget.isBuyer && widget.order.rentalStatus == 'active' && !hasPending) ...[
                     if (!_isAdjusting)
                       OutlinedButton(
                         onPressed: () => setState(() => _isAdjusting = true),
@@ -300,6 +308,21 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
         );
         _resetAdjustment();
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Error: ${e.toString()}')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -331,20 +354,27 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    ext.requestType == 'extend' ? Icons.event_available : Icons.event_busy,
-                    size: 16,
-                    color: colors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    ext.requestType == 'extend' ? 'Extension Request' : 'Early Return Request',
-                    style: typo.titleMedium,
-                  ),
-                ],
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(
+                      ext.requestType == 'extend' ? Icons.event_available : Icons.event_busy,
+                      size: 16,
+                      color: colors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        ext.requestType == 'extend' ? 'Extension Request' : 'Early Return Request',
+                        style: typo.titleMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               _buildStatusBadge(context, ext.status),
             ],
           ),
@@ -357,6 +387,8 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
           Text(
             '${DateFormat.yMMMd().format(originalEndDate)} → ${DateFormat.yMMMd().format(ext.newEndDate)}',
             style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
@@ -384,24 +416,29 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
           ],
           if (widget.isSeller && isPending) ...[
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => _handleReject(ref, ext),
-                  child: Text('Reject', style: TextStyle(color: colors.error)),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () => _handleApprove(ref, ext),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    foregroundColor: colors.onPrimary,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: () => _handleReject(ref, ext),
+                    child: Text('Reject', style: TextStyle(color: colors.error)),
                   ),
-                  child: const Text('Approve'),
-                ),
-              ],
+                  ElevatedButton(
+                    onPressed: () => _handleApprove(ref, ext),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: colors.onPrimary,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                    child: const Text('Approve'),
+                  ),
+                ],
+              ),
             ),
           ],
         ],

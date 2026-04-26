@@ -265,7 +265,7 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
   }
 
   String _formatDate(DateTime dt) =>
-      DateFormat('MMM d, yyyy').format(dt.toLocal());
+      DateFormat('MMM d, yyyy · h:mm a').format(dt.toLocal());
 
   String _statusText(String status) {
     switch (status) {

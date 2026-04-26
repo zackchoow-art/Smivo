@@ -39,8 +39,8 @@ class RentalExtensionActions extends _$RentalExtensionActions {
         priceDiff: priceDiff,
         newTotal: newTotal,
       );
-      ref.invalidate(orderExtensionsProvider(orderId));
       state = const AsyncValue.data(null);
+      ref.invalidate(orderExtensionsProvider(orderId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -50,11 +50,11 @@ class RentalExtensionActions extends _$RentalExtensionActions {
     state = const AsyncValue.loading();
     try {
       await ref.read(rentalExtensionRepositoryProvider).approveExtension(extensionId);
+      state = const AsyncValue.data(null);
       // Refresh both extensions list and order detail (dates/price updated)
       ref.invalidate(orderExtensionsProvider(orderId));
       ref.invalidate(orderDetailProvider(orderId));
       ref.invalidate(allOrdersProvider);
-      state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -64,8 +64,8 @@ class RentalExtensionActions extends _$RentalExtensionActions {
     state = const AsyncValue.loading();
     try {
       await ref.read(rentalExtensionRepositoryProvider).rejectExtension(extensionId, note: note);
-      ref.invalidate(orderExtensionsProvider(orderId));
       state = const AsyncValue.data(null);
+      ref.invalidate(orderExtensionsProvider(orderId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

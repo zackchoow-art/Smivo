@@ -68,19 +68,23 @@ class SaleOrderDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           // Section 5: Delivery & Return — collapsible, default open
-          if (order.status == 'confirmed' || order.status == 'completed') ...[
+          if (order.status == 'pending' || order.status == 'confirmed' || order.status == 'completed') ...[
             CollapsibleSection(
               title: 'Delivery & Return',
               initiallyExpanded: true,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildDeliveryStatus(context, order),
-                  const SizedBox(height: 16),
-                  EvidencePhotoSection(
-                    orderId: order.id,
-                    canUpload: _canUploadEvidence(order, isBuyer, isSeller),
-                  ),
+                  if (order.status != 'pending') ...[
+                    _buildDeliveryStatus(context, order),
+                    const SizedBox(height: 16),
+                    EvidencePhotoSection(
+                      orderId: order.id,
+                      canUpload: _canUploadEvidence(order, isBuyer, isSeller),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  _buildPrimaryActions(context, ref, order, isBuyer, isSeller, isActing),
                 ],
               ),
             ),
@@ -88,11 +92,150 @@ class SaleOrderDetailScreen extends ConsumerWidget {
           ],
           // Section 6: Chat History — collapsible, default closed
           _buildChatSection(ref, order),
-          _buildActions(context, ref, order, isBuyer, isSeller, isActing),
+          _buildStatusBanner(context, order),
         ],
       ),
       ),
     );
+  }
+
+  Widget _buildStatusBanner(BuildContext context, Order order) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    if (order.status == 'completed') {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.success.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(radius.md),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, color: colors.success),
+            const SizedBox(width: 8),
+            Text(
+              'Order completed successfully',
+              style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (order.status == 'cancelled') {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.error.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(radius.md),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.cancel, color: colors.error),
+            const SizedBox(width: 8),
+            Text(
+              'Order was cancelled',
+              style: typo.bodyMedium.copyWith(color: colors.error),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (order.status == 'missed') {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.outlineVariant.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(radius.md),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, color: colors.outlineVariant),
+            const SizedBox(width: 8),
+            Text(
+              'Offer missed — Another buyer was chosen',
+              style: typo.bodyMedium,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildPrimaryActions(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isBuyer,
+    bool isSeller,
+    bool isActing,
+  ) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    if (order.status == 'pending') {
+      return _buildCancelButton(context, ref, order, isActing);
+    }
+
+    if (order.status == 'confirmed') {
+      if (isBuyer) {
+        return Column(
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isActing
+                        ? null
+                        : () async => await ref
+                            .read(orderActionsProvider.notifier)
+                            .confirmDelivery(order),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text(
+                      isActing ? 'Processing...' : 'Confirm Pickup',
+                      style: typo.titleMedium.copyWith(color: colors.onPrimary),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildCancelButton(context, ref, order, isActing),
+          ],
+        );
+      } else {
+        return Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(radius.md),
+              ),
+              child: Text(
+                'Waiting for buyer to confirm pickup',
+                style: typo.bodyMedium,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildCancelButton(context, ref, order, isActing),
+          ],
+        );
+      }
+    }
+
+    return const SizedBox.shrink();
   }
 
   List<TimelineStep> _buildSaleSteps(Order order) {
@@ -206,117 +349,6 @@ class SaleOrderDetailScreen extends ConsumerWidget {
         );
       },
     );
-  }
-
-  Widget _buildActions(
-    BuildContext context,
-    WidgetRef ref,
-    Order order,
-    bool isBuyer,
-    bool isSeller,
-    bool isActing,
-  ) {
-    final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
-
-    switch (order.status) {
-      case 'pending':
-        return Column(
-          children: [
-            _buildCancelButton(context, ref, order, isActing),
-          ],
-        );
-      case 'confirmed':
-        if (isBuyer) {
-          return Column(
-            children: [
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 360),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isActing
-                          ? null
-                          : () async => await ref
-                              .read(orderActionsProvider.notifier)
-                              .confirmDelivery(order),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text(
-                        isActing ? 'Processing...' : 'Confirm Pickup',
-                        style: typo.titleMedium.copyWith(color: colors.onPrimary),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildCancelButton(context, ref, order, isActing),
-            ],
-          );
-        } else {
-          return Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(radius.md),
-                ),
-                child: Text(
-                  'Waiting for buyer to confirm pickup',
-                  style: typo.bodyMedium,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildCancelButton(context, ref, order, isActing),
-            ],
-          );
-        }
-      case 'completed':
-        // NOTE: Green checkmark style matching deposit refunded banner
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colors.success.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(radius.md),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.check_circle, color: colors.success),
-              const SizedBox(width: 8),
-              Text(
-                'Order completed successfully',
-                style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-        );
-      case 'cancelled':
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colors.error.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(radius.md),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.cancel, color: colors.error),
-              const SizedBox(width: 8),
-              Text(
-                'Order was cancelled',
-                style: typo.bodyMedium.copyWith(color: colors.error),
-              ),
-            ],
-          ),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
   }
 
   Widget _buildCancelButton(

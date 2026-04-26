@@ -129,6 +129,35 @@ class ListingRepository {
     }
   }
 
+  /// Fetches individual view events for a listing.
+  Future<List<Map<String, dynamic>>> fetchListingViews(String listingId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableListingViews)
+          .select('*, viewer:user_profiles!viewer_id(display_name, avatar_url, email)')
+          .eq('listing_id', listingId)
+          .order('viewed_at', ascending: false)
+          .limit(100);
+      return List<Map<String, dynamic>>.from(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches individual save events for a listing.
+  Future<List<Map<String, dynamic>>> fetchListingSaves(String listingId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableSavedListings)
+          .select('*, user:user_profiles!user_id(display_name, avatar_url, email)')
+          .eq('listing_id', listingId)
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   // ──────────────────────────────────────────────────────────────
   // WRITE OPERATIONS
   // ──────────────────────────────────────────────────────────────
@@ -303,6 +332,8 @@ class ListingRepository {
   }
 
   /// Records a view event for a listing.
+  /// 
+  /// [viewerId] is optional to support guest view tracking.
   /// Silently fails if the insert errors (non-critical).
   Future<void> recordView({
     required String listingId,
@@ -312,9 +343,10 @@ class ListingRepository {
       final data = <String, dynamic>{
         'listing_id': listingId,
       };
-      if (viewerId != null) {
+      if (viewerId != null && viewerId.isNotEmpty) {
         data['viewer_id'] = viewerId;
       }
+      
       await _client
           .from(AppConstants.tableListingViews)
           .insert(data);

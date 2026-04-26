@@ -25,7 +25,13 @@ class NotificationCenterScreen extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed(AppRoutes.home);
+            }
+          },
         ),
         title: Text('Notifications', style: typo.headlineSmall),
         actions: [

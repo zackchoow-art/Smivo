@@ -492,7 +492,16 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
               child: Container(
                 decoration: BoxDecoration(color: colors.surfaceContainerLowest.withValues(alpha: 0.9), shape: BoxShape.circle,
                   boxShadow: [BoxShadow(color: colors.shadow, blurRadius: 8, offset: const Offset(0, 2))]),
-                child: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.of(context).pop()),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.goNamed(AppRoutes.home);
+                    }
+                  },
+                ),
               ),
             ),
             // Floating save button — hidden for own listings
@@ -585,7 +594,6 @@ class _StatCard extends StatelessWidget {
           Icon(icon, color: colors.primary, size: 24),
           const SizedBox(height: 4),
           Text(count.toString(), style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
-          Text(label, style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
         ]),
       ),
     ));

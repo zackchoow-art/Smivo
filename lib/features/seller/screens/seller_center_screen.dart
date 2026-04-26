@@ -48,9 +48,25 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
             padding: const EdgeInsets.all(24),
             sliver: SliverToBoxAdapter(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 20), onPressed: () => Navigator.of(context).pop()),
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.goNamed(AppRoutes.orders);
+                    }
+                  },
+                ),
                 const SizedBox(width: 8),
-                Text('Seller Center', style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900)),
+                Expanded(
+                  child: Text(
+                    'Seller Center',
+                    style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ]),
               const SizedBox(height: 8),
               Text('Manage your listings and sales.', style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
@@ -385,13 +401,13 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
         ),
         Divider(height: 1, color: colors.outlineVariant.withValues(alpha: 0.1)),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-            _buildEnhancedStatItem(Icons.visibility_outlined, '${listing.viewCount}', 'Views', () =>
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            _buildEnhancedStatItem(Icons.visibility_outlined, '${listing.viewCount}', () =>
               context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '0'})),
-            _buildEnhancedStatItem(Icons.bookmark_outline, '${listing.saveCount}', 'Saves', () =>
+            _buildEnhancedStatItem(Icons.bookmark_outline, '${listing.saveCount}', () =>
               context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '1'})),
-            _buildEnhancedStatItem(Icons.local_offer_outlined, '${listing.inquiryCount}', 'Offers', () =>
+            _buildEnhancedStatItem(Icons.local_offer_outlined, '${listing.inquiryCount}', () =>
               context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '2'})),
           ]),
         ),
@@ -549,9 +565,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildSimpleStat(Icons.visibility_outlined, '${listing?.viewCount ?? 0}', 'Views'),
-                _buildSimpleStat(Icons.bookmark_outline, '${listing?.saveCount ?? 0}', 'Saves'),
-                _buildSimpleStat(Icons.local_offer_outlined, '${orders.length}', 'Offers'),
+                _buildSimpleStat(Icons.visibility_outlined, '${listing?.viewCount ?? 0}'),
+                _buildSimpleStat(Icons.bookmark_outline, '${listing?.saveCount ?? 0}'),
+                _buildSimpleStat(Icons.local_offer_outlined, '${orders.length}'),
               ],
             ),
             const SizedBox(height: 24),
@@ -571,17 +587,15 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     );
   }
 
-  Widget _buildSimpleStat(IconData icon, String value, String label) {
+  Widget _buildSimpleStat(IconData icon, String value) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     return Column(children: [
       Icon(icon, size: 16, color: colors.primary),
       const SizedBox(height: 2),
       Text(value, style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
-      Text(label, style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
     ]);
   }
-
 
   Widget _buildListViewItem(listing, imageUrl) {
     final colors = context.smivoColors;
@@ -622,10 +636,10 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
         Row(mainAxisSize: MainAxisSize.min, children: [
           _buildMiniStat(Icons.visibility_outlined, listing.viewCount, () =>
             context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '0'})),
-          const SizedBox(width: 16),
+          const SizedBox(width: 32),
           _buildMiniStat(Icons.bookmark_outline, listing.saveCount, () =>
             context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '1'})),
-          const SizedBox(width: 16),
+          const SizedBox(width: 32),
           _buildMiniStat(Icons.local_offer_outlined, listing.inquiryCount, () =>
             context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '2'})),
         ]),
@@ -650,7 +664,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     );
   }
 
-  Widget _buildEnhancedStatItem(IconData icon, String count, String label, VoidCallback onTap) {
+  Widget _buildEnhancedStatItem(IconData icon, String count, VoidCallback onTap) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     return GestureDetector(

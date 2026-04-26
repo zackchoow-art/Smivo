@@ -30,30 +30,49 @@ class OrderDetailScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Order Details'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: orderAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
-        data: (order) {
-          if (order.orderType == 'rental') {
-            return RentalOrderDetailScreen(
-              order: order,
-              orderId: orderId,
-              currentUserId: currentUserId,
-            );
-          }
-          return SaleOrderDetailScreen(
-            order: order,
-            orderId: orderId,
-            currentUserId: currentUserId,
-          );
-        },
+      body: Stack(
+        children: [
+          orderAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Center(child: Text('Error: $err')),
+            data: (order) {
+              if (order.orderType == 'rental') {
+                return RentalOrderDetailScreen(
+                  order: order,
+                  orderId: orderId,
+                  currentUserId: currentUserId,
+                );
+              }
+              return SaleOrderDetailScreen(
+                order: order,
+                orderId: orderId,
+                currentUserId: currentUserId,
+              );
+            },
+          ),
+          // Floating back button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 12,
+            child: Container(
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLowest.withValues(alpha: 0.9),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.shadow,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                onPressed: () => context.pop(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
