@@ -28,13 +28,25 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
       children: [
         InkWell(
           onTap: () => setState(() => _isExpanded = !_isExpanded),
-          child: Row(
-            children: [
-              Text('CHAT HISTORY',
-                style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
-              const Spacer(),
-              Icon(_isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: colors.outlineVariant),
-            ],
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text('Chat History', style: typo.titleMedium),
+                ),
+                AnimatedRotation(
+                  turns: _isExpanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 250),
+                  child: Icon(
+                    Icons.expand_more,
+                    size: 20,
+                    color: colors.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         if (_isExpanded) ...[

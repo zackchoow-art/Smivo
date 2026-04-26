@@ -80,12 +80,8 @@ class _CollapsibleSectionState extends State<CollapsibleSection>
               children: [
                 Expanded(
                   child: Text(
-                    widget.title.toUpperCase(),
-                    style: typo.labelSmall.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.5),
-                      letterSpacing: 0.5,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    widget.title,
+                    style: typo.titleMedium,
                   ),
                 ),
                 RotationTransition(

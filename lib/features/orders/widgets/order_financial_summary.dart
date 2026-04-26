@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 
+/// Displays the listing's pricing information at the time of order.
+///
+/// NOTE: This is an archival record of the item's price structure,
+/// not the order's calculated total.
 class OrderFinancialSummary extends StatelessWidget {
   const OrderFinancialSummary({super.key, required this.order});
   final Order order;
@@ -10,6 +14,8 @@ class OrderFinancialSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
     final radius = context.smivoRadius;
+    final listing = order.listing;
+    final isRental = order.orderType == 'rental';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -20,54 +26,35 @@ class OrderFinancialSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _summaryRow(context, 'Type', order.orderType.toUpperCase()),
-          if (order.orderType == 'rental' && order.listing != null) ...[
-            if ((order.listing!.rentalDailyPrice ?? 0) > 0)
-              _summaryRow(
-                context,
-                'Daily Rate',
-                '\$${order.listing!.rentalDailyPrice!.toStringAsFixed(2)}',
-              ),
-            if ((order.listing!.rentalWeeklyPrice ?? 0) > 0)
-              _summaryRow(
-                context,
-                'Weekly Rate',
-                '\$${order.listing!.rentalWeeklyPrice!.toStringAsFixed(2)}',
-              ),
-            if ((order.listing!.rentalMonthlyPrice ?? 0) > 0)
-              _summaryRow(
-                context,
-                'Monthly Rate',
-                '\$${order.listing!.rentalMonthlyPrice!.toStringAsFixed(2)}',
-              ),
+          // Sale order: show listing price
+          if (!isRental) ...[
+            _pricingRow(context, 'Sale Price',
+                '\$${order.totalPrice.toStringAsFixed(2)}'),
           ],
-          if (order.depositAmount > 0)
-            _summaryRow(
-              context,
-              'Deposit',
-              '\$${order.depositAmount.toStringAsFixed(2)}',
-            ),
-          // NOTE: Rental orders display Grand Total in OrderInfoSection instead
-          if (order.orderType != 'rental') ...[ 
-            const Divider(),
-            _summaryRow(
-              context,
-              'Total',
-              '\$${order.totalPrice.toStringAsFixed(2)}',
-              isBold: true,
-            ),
+
+          // Rental order: show available rental rates + deposit
+          if (isRental && listing != null) ...[
+            if ((listing.rentalDailyPrice ?? 0) > 0)
+              _pricingRow(context, 'Daily Rate',
+                  '\$${listing.rentalDailyPrice!.toStringAsFixed(2)} / day'),
+            if ((listing.rentalWeeklyPrice ?? 0) > 0)
+              _pricingRow(context, 'Weekly Rate',
+                  '\$${listing.rentalWeeklyPrice!.toStringAsFixed(2)} / week'),
+            if ((listing.rentalMonthlyPrice ?? 0) > 0)
+              _pricingRow(context, 'Monthly Rate',
+                  '\$${listing.rentalMonthlyPrice!.toStringAsFixed(2)} / month'),
+            if (order.depositAmount > 0) ...[
+              const Divider(height: 16),
+              _pricingRow(context, 'Deposit',
+                  '\$${order.depositAmount.toStringAsFixed(2)}'),
+            ],
           ],
         ],
       ),
     );
   }
 
-  Widget _summaryRow(
-    BuildContext context,
-    String label,
-    String value, {
-    bool isBold = false,
-  }) {
+  Widget _pricingRow(BuildContext context, String label, String value) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
@@ -76,13 +63,13 @@ class OrderFinancialSummary extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: typo.bodyMedium),
+          Text(
+            label,
+            style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+          ),
           Text(
             value,
-            style: typo.bodyMedium.copyWith(
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              color: isBold ? colors.primary : null,
-            ),
+            style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
