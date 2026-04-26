@@ -26,6 +26,17 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
   };
   String _searchQuery = '';
 
+  void _handleOrderTap(String orderId, bool hasUnread) {
+    if (hasUnread) {
+      final notifications = ref.read(notificationListProvider).valueOrNull ?? [];
+      final unreadNotifs = notifications.where((n) => !n.isRead && n.relatedOrderId == orderId);
+      for (final n in unreadNotifs) {
+        ref.read(notificationListProvider.notifier).markAsRead(n.id);
+      }
+    }
+    context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': orderId});
+  }
+
   @override
   Widget build(BuildContext context) {
     final listingsAsync = ref.watch(myListingsProvider);
@@ -301,7 +312,10 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       createdAt: fullListing?.createdAt ?? o.createdAt,
                       updatedAt: o.updatedAt,
                       imageUrl: o.listing?.images.firstOrNull?.imageUrl ?? fullListing?.images.firstOrNull?.imageUrl,
-                      onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': o.id}),
+                      onTap: () {
+                        final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == o.id);
+                        _handleOrderTap(o.id, hasUnread);
+                      },
                     ));
                   }
 
@@ -532,7 +546,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final imageUrl = listing?.images.isNotEmpty == true ? listing!.images.first.imageUrl : null;
 
     return InkWell(
-      onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
+      onTap: () => _handleOrderTap(order.id, hasUnread),
       borderRadius: BorderRadius.circular(radius.card),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -585,12 +599,15 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     ),
                   Container(
                     width: 72,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                     decoration: BoxDecoration(color: colors.primary, borderRadius: BorderRadius.circular(radius.full)),
-                    child: Text(
-                      'Awaiting Delivery', 
-                      textAlign: TextAlign.center,
-                      style: typo.labelSmall.copyWith(color: colors.surfaceContainerLowest, fontWeight: FontWeight.w700),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Awaiting\nDelivery', 
+                        textAlign: TextAlign.center,
+                        style: typo.labelSmall.copyWith(color: colors.surfaceContainerLowest, fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ],
@@ -697,10 +714,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
           const SizedBox(width: 12),
           // Right side: timestamps → Order Detail
           GestureDetector(
-            onTap: () => context.pushNamed(
-              AppRoutes.orderDetail,
-              pathParameters: {'id': order.id},
-            ),
+            onTap: () => _handleOrderTap(order.id, hasUnread),
             behavior: HitTestBehavior.opaque,
             child: Container(
               constraints: const BoxConstraints(minWidth: 64, minHeight: 44),
