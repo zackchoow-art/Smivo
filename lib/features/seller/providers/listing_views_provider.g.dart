@@ -6,7 +6,7 @@ part of 'listing_views_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$listingViewsHash() => r'ab7f8725e70e5783772087008f9914cb86dbadf8';
+String _$listingViewsHash() => r'7ff7db1ee6d5b95c505186bf74ca722e0146107b';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,16 +29,23 @@ class _SystemHash {
   }
 }
 
-/// See also [listingViews].
-@ProviderFor(listingViews)
+abstract class _$ListingViews
+    extends BuildlessAutoDisposeAsyncNotifier<List<ListingView>> {
+  late final String listingId;
+
+  FutureOr<List<ListingView>> build(String listingId);
+}
+
+/// See also [ListingViews].
+@ProviderFor(ListingViews)
 const listingViewsProvider = ListingViewsFamily();
 
-/// See also [listingViews].
+/// See also [ListingViews].
 class ListingViewsFamily extends Family<AsyncValue<List<ListingView>>> {
-  /// See also [listingViews].
+  /// See also [ListingViews].
   const ListingViewsFamily();
 
-  /// See also [listingViews].
+  /// See also [ListingViews].
   ListingViewsProvider call(String listingId) {
     return ListingViewsProvider(listingId);
   }
@@ -65,13 +72,14 @@ class ListingViewsFamily extends Family<AsyncValue<List<ListingView>>> {
   String? get name => r'listingViewsProvider';
 }
 
-/// See also [listingViews].
+/// See also [ListingViews].
 class ListingViewsProvider
-    extends AutoDisposeFutureProvider<List<ListingView>> {
-  /// See also [listingViews].
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<ListingViews, List<ListingView>> {
+  /// See also [ListingViews].
   ListingViewsProvider(String listingId)
     : this._internal(
-        (ref) => listingViews(ref as ListingViewsRef, listingId),
+        () => ListingViews()..listingId = listingId,
         from: listingViewsProvider,
         name: r'listingViewsProvider',
         debugGetCreateSourceHash:
@@ -97,13 +105,18 @@ class ListingViewsProvider
   final String listingId;
 
   @override
-  Override overrideWith(
-    FutureOr<List<ListingView>> Function(ListingViewsRef provider) create,
+  FutureOr<List<ListingView>> runNotifierBuild(
+    covariant ListingViews notifier,
   ) {
+    return notifier.build(listingId);
+  }
+
+  @override
+  Override overrideWith(ListingViews Function() create) {
     return ProviderOverride(
       origin: this,
       override: ListingViewsProvider._internal(
-        (ref) => create(ref as ListingViewsRef),
+        () => create()..listingId = listingId,
         from: from,
         name: null,
         dependencies: null,
@@ -115,7 +128,8 @@ class ListingViewsProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<ListingView>> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<ListingViews, List<ListingView>>
+  createElement() {
     return _ListingViewsProviderElement(this);
   }
 
@@ -135,13 +149,15 @@ class ListingViewsProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ListingViewsRef on AutoDisposeFutureProviderRef<List<ListingView>> {
+mixin ListingViewsRef
+    on AutoDisposeAsyncNotifierProviderRef<List<ListingView>> {
   /// The parameter `listingId` of this provider.
   String get listingId;
 }
 
 class _ListingViewsProviderElement
-    extends AutoDisposeFutureProviderElement<List<ListingView>>
+    extends
+        AutoDisposeAsyncNotifierProviderElement<ListingViews, List<ListingView>>
     with ListingViewsRef {
   _ListingViewsProviderElement(super.provider);
 

@@ -11,6 +11,8 @@ import 'package:smivo/features/listing/widgets/custom_text_field.dart';
 import 'package:smivo/features/listing/widgets/photo_picker_section.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 
+import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
+
 
 class CreateListingFormScreen extends ConsumerStatefulWidget {
   const CreateListingFormScreen({super.key, required this.initialMode});
@@ -79,35 +81,40 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.goNamed(AppRoutes.home);
-            }
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(isSale ? 'List an Item' : 'List a Rental',
-            style: typo.displayLarge.copyWith(fontSize: 36, letterSpacing: -1, color: colors.onSurface)),
-          const SizedBox(height: 4),
-          Text(isSale ? 'Turn your unused gear into cash on campus.' : 'Make money by renting out your stuff.',
-            style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant)),
-          const SizedBox(height: 24),
-          Center(child: SegmentedButton<String>(
-            segments: const [ButtonSegment(value: 'sale', label: Text('Sell')), ButtonSegment(value: 'rental', label: Text('Rent'))],
-            selected: {mode},
-            onSelectionChanged: (s) => ref.read(listingFormModeProvider(initialMode: widget.initialMode).notifier).setMode(s.first),
-          )),
-          const SizedBox(height: 24),
-          const PhotoPickerSection(),
+      body: SafeArea(
+        top: false,
+        bottom: false,
+        child: CustomScrollView(
+          slivers: [
+            CollapsingTitleAppBar(
+              title: isSale ? 'List an Item' : 'List a Rental',
+              subtitle: isSale 
+                  ? 'Turn your unused gear into cash on campus.' 
+                  : 'Make money by renting out your stuff.',
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverToBoxAdapter(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const SizedBox(height: 8),
+                  DefaultTabController(
+                    length: 2,
+                    initialIndex: mode == 'sale' ? 0 : 1,
+                    child: TabBar(
+                      onTap: (index) => ref.read(listingFormModeProvider(initialMode: widget.initialMode).notifier).setMode(index == 0 ? 'sale' : 'rental'),
+                      labelColor: colors.primary,
+                      unselectedLabelColor: colors.onSurfaceVariant,
+                      indicatorColor: colors.primary,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      dividerColor: Colors.transparent,
+                      tabs: const [
+                        Tab(text: 'Sell'),
+                        Tab(text: 'Rent'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  const PhotoPickerSection(),
           const SizedBox(height: 24),
           CustomTextField(label: 'Item Title', hintText: "Name of the item you're selling", controller: _titleController),
           const SizedBox(height: 24),
@@ -115,18 +122,15 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
           const SizedBox(height: 24),
           Text('Category', style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold, color: colors.onSurface)),
           const SizedBox(height: 8),
-          _CategoryPicker(),
-          const SizedBox(height: 24),
+          _CategoryTabBar(),
+          const SizedBox(height: 32),
           Text('Condition', style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold, color: colors.onSurface)),
           const SizedBox(height: 8),
-          Wrap(spacing: 8, runSpacing: 8, children: [
-            _ConditionChip(label: 'New', value: 'new', isSelected: _selectedCondition == 'new', onTap: () => setState(() => _selectedCondition = 'new')),
-            _ConditionChip(label: 'Like New', value: 'like_new', isSelected: _selectedCondition == 'like_new', onTap: () => setState(() => _selectedCondition = 'like_new')),
-            _ConditionChip(label: 'Good', value: 'good', isSelected: _selectedCondition == 'good', onTap: () => setState(() => _selectedCondition = 'good')),
-            _ConditionChip(label: 'Fair', value: 'fair', isSelected: _selectedCondition == 'fair', onTap: () => setState(() => _selectedCondition = 'fair')),
-            _ConditionChip(label: 'Poor', value: 'poor', isSelected: _selectedCondition == 'poor', onTap: () => setState(() => _selectedCondition = 'poor')),
-          ]),
-          const SizedBox(height: 24),
+          _ConditionTabBar(
+            selectedCondition: _selectedCondition,
+            onChanged: (v) => setState(() => _selectedCondition = v),
+          ),
+          const SizedBox(height: 32),
           if (isSale)
             CustomTextField(label: 'Price', hintText: '0.00', prefixText: '\$',
               keyboardType: const TextInputType.numberWithOptions(decimal: true), controller: _priceController)
@@ -206,10 +210,12 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
               : Text(isSale ? 'List Item for Sale' : 'Post Rental', style: typo.titleMedium.copyWith(color: colors.onPrimary)),
           )),
           const SizedBox(height: 80),
-        ]),
+        ])),
       ),
-    );
-  }
+    ]),
+  ),
+);
+}
 
   Widget _buildRentalRateRow(BuildContext context, {required String label, required TextEditingController controller,
     required bool enabled, required bool hasError, required Function(bool?) onChanged}) {
@@ -330,49 +336,61 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
   }
 }
 
-class _CategoryPicker extends ConsumerWidget {
+class _CategoryTabBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = ref.watch(selectedListingCategoryProvider);
     final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
-    return Wrap(spacing: 8, runSpacing: 8,
-      children: AppConstants.categories.map((category) {
-        final isSelected = selectedCategory == category;
-        return GestureDetector(
-          onTap: () => ref.read(selectedListingCategoryProvider.notifier).setCategory(category),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(color: isSelected ? colors.primary : colors.secondaryContainer, borderRadius: BorderRadius.circular(radius.full)),
-            child: Text(category, style: typo.labelLarge.copyWith(
-              color: isSelected ? colors.onPrimary : colors.onSurfaceVariant, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-          ),
-        );
-      }).toList(),
+    final categories = AppConstants.categories;
+    final initialIndex = categories.indexOf(selectedCategory ?? '');
+
+    return DefaultTabController(
+      length: categories.length,
+      initialIndex: initialIndex != -1 ? initialIndex : 0,
+      child: TabBar(
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        onTap: (index) => ref.read(selectedListingCategoryProvider.notifier).setCategory(categories[index]),
+        labelColor: colors.primary,
+        unselectedLabelColor: colors.onSurfaceVariant,
+        indicatorColor: colors.primary,
+        dividerColor: Colors.transparent,
+        tabs: categories.map((c) => Tab(text: c)).toList(),
+      ),
     );
   }
 }
 
-class _ConditionChip extends StatelessWidget {
-  const _ConditionChip({required this.label, required this.value, required this.isSelected, required this.onTap});
-  final String label;
-  final String value;
-  final bool isSelected;
-  final VoidCallback onTap;
+class _ConditionTabBar extends StatelessWidget {
+  final String selectedCondition;
+  final ValueChanged<String> onChanged;
+
+  const _ConditionTabBar({required this.selectedCondition, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(color: isSelected ? colors.primary : colors.secondaryContainer, borderRadius: BorderRadius.circular(radius.full)),
-        child: Text(label, style: typo.labelLarge.copyWith(
-          color: isSelected ? colors.onPrimary : colors.onSurfaceVariant, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+    final conditions = [
+      {'label': 'New', 'value': 'new'},
+      {'label': 'Like New', 'value': 'like_new'},
+      {'label': 'Good', 'value': 'good'},
+      {'label': 'Fair', 'value': 'fair'},
+      {'label': 'Poor', 'value': 'poor'},
+    ];
+    final initialIndex = conditions.indexWhere((c) => c['value'] == selectedCondition);
+
+    return DefaultTabController(
+      length: conditions.length,
+      initialIndex: initialIndex != -1 ? initialIndex : 2, // Default to 'Good'
+      child: TabBar(
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        onTap: (index) => onChanged(conditions[index]['value']!),
+        labelColor: colors.primary,
+        unselectedLabelColor: colors.onSurfaceVariant,
+        indicatorColor: colors.primary,
+        dividerColor: Colors.transparent,
+        tabs: conditions.map((c) => Tab(text: c['label']!)).toList(),
       ),
     );
   }

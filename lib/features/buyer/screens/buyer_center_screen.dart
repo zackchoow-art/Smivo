@@ -6,7 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/buyer/providers/buyer_center_provider.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
-import 'package:smivo/shared/widgets/custom_app_bar.dart';
+
+import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
+import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
 class BuyerCenterScreen extends ConsumerStatefulWidget {
   const BuyerCenterScreen({super.key});
@@ -37,8 +39,8 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: const CustomAppBar(showActions: false),
       body: SafeArea(
+        top: false,
         bottom: false,
         child: RefreshIndicator(
           onRefresh: () async {
@@ -46,41 +48,48 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
             await ref.read(buyerOrdersProvider.future);
           },
           child: CustomScrollView(physics: const AlwaysScrollableScrollPhysics(), slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.all(24),
-            sliver: SliverToBoxAdapter(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Buyer Center', style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900, color: colors.onSurface)),
-              const SizedBox(height: 8),
-              Text('Track your purchase requests and orders.', style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
-              const SizedBox(height: 16),
-              // Search bar — expands all sections when query is active
-              TextField(
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                    // NOTE: Auto-expand all sections during search so results
-                    // in collapsed sections are not hidden from the user.
-                    if (value.isNotEmpty) {
-                      for (final key in _expandedSections.keys) {
-                        _expandedSections[key] = true;
+          const CollapsingTitleAppBar(
+            title: 'Buyer Center',
+            subtitle: 'Track your purchase requests and orders.',
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: StickyHeaderDelegate(
+              backgroundColor: colors.surfaceContainerLowest,
+              minHeight: 64.0,
+              maxHeight: 64.0,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                      // NOTE: Auto-expand all sections during search so results
+                      // in collapsed sections are not hidden from the user.
+                      if (value.isNotEmpty) {
+                        for (final key in _expandedSections.keys) {
+                          _expandedSections[key] = true;
+                        }
                       }
-                    }
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search by item, seller, or price…',
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.close, size: 18),
-                          onPressed: () => setState(() => _searchQuery = ''),
-                        )
-                      : null,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.md)),
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search by item, seller, or price…',
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close, size: 18),
+                            onPressed: () => setState(() => _searchQuery = ''),
+                          )
+                        : null,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.md)),
+                    filled: true,
+                    fillColor: colors.surfaceContainerLow,
+                  ),
                 ),
               ),
-            ])),
+            ),
           ),
           ordersAsync.when(
             loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),

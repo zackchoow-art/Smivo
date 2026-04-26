@@ -58,12 +58,20 @@ class AppRoutes {
   static const String notificationCenterPath = '/notifications';
 
   // ── Admin Routes ───────────────────────────────────────────
+  static const String adminLogin = 'adminLogin';
   static const String adminDashboard = 'adminDashboard';
+  static const String adminUsers = 'adminUsers';
+  static const String adminListings = 'adminListings';
+  static const String adminOrders = 'adminOrders';
   static const String adminSchools = 'adminSchools';
   static const String adminCategories = 'adminCategories';
   static const String adminFaqs = 'adminFaqs';
 
+  static const String adminLoginPath = '/admin';
   static const String adminDashboardPath = '/admin/dashboard';
+  static const String adminUsersPath = '/admin/users';
+  static const String adminListingsPath = '/admin/listings';
+  static const String adminOrdersPath = '/admin/orders';
   static const String adminSchoolsPath = '/admin/schools';
   static const String adminCategoriesPath = '/admin/categories';
   static const String adminFaqsPath = '/admin/faqs';

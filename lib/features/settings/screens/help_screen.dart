@@ -3,7 +3,8 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/data/models/faq.dart';
 import 'package:smivo/features/settings/providers/help_provider.dart';
-import 'package:smivo/shared/widgets/custom_app_bar.dart';
+import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
+import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:collection/collection.dart'; // For groupBy
 
 class HelpScreen extends ConsumerStatefulWidget {
@@ -34,52 +35,57 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: const CustomAppBar(showActions: false),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text('Help', style: typo.headlineLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 16),
-              Text('Find answers to common questions\nabout campus trading.',
-                textAlign: TextAlign.center,
-                style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant, height: 1.4)),
-              const SizedBox(height: 32),
-              Container(
-                decoration: BoxDecoration(color: colors.settingsIconBg, borderRadius: BorderRadius.circular(radius.card)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                  style: typo.bodyLarge.copyWith(color: colors.onSurface),
-                  decoration: InputDecoration(
-                    icon: Icon(Icons.search, color: colors.onSurface.withValues(alpha: 0.5)),
-                    hintText: 'Search for help...',
-                    hintStyle: typo.bodyLarge.copyWith(color: colors.onSurface.withValues(alpha: 0.5)),
-                    border: InputBorder.none,
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(Icons.clear, color: colors.onSurface.withValues(alpha: 0.5)),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                          )
-                        : null,
+      body: CustomScrollView(
+        slivers: [
+          const CollapsingTitleAppBar(
+            title: 'Help',
+            subtitle: 'Find answers to common questions\nabout campus trading.',
+          ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: StickyHeaderDelegate(
+                backgroundColor: colors.surfaceContainerLowest,
+                minHeight: 72.0,
+                maxHeight: 72.0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Container(
+                    decoration: BoxDecoration(color: colors.settingsIconBg, borderRadius: BorderRadius.circular(radius.card)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      style: typo.bodyLarge.copyWith(color: colors.onSurface),
+                      decoration: InputDecoration(
+                        icon: Icon(Icons.search, color: colors.onSurface.withValues(alpha: 0.5)),
+                        hintText: 'Search for help...',
+                        hintStyle: typo.bodyLarge.copyWith(color: colors.onSurface.withValues(alpha: 0.5)),
+                        border: InputBorder.none,
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.clear, color: colors.onSurface.withValues(alpha: 0.5)),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _searchQuery = '';
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-              
-              allFaqsAsync.when(
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverToBoxAdapter(
+                child: allFaqsAsync.when(
                 loading: () => const Padding(
                   padding: EdgeInsets.only(top: 64),
                   child: Center(child: CircularProgressIndicator()),
@@ -210,11 +216,11 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 48),
-            ],
-          ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 48)),
+          ],
         ),
-      ),
     );
   }
 }

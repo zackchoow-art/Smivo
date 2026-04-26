@@ -6,9 +6,9 @@ part of 'buyer_center_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$buyerOrdersHash() => r'da273065a82b03e04da2393fc5fb8a765a0fb29d';
+String _$buyerOrdersHash() => r'ce91ee35b44f4c80bb366887d30c7338ae56d378';
 
-/// Fetches all orders where the current user is the buyer.
+/// Fetches all orders where the current user is the buyer (realtime).
 ///
 /// Copied from [buyerOrders].
 @ProviderFor(buyerOrders)

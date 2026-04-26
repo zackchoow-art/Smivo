@@ -35,9 +35,14 @@ class HomeScreen extends ConsumerWidget {
             slivers: [
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
             const SliverToBoxAdapter(child: HomeHeader()),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            const SliverToBoxAdapter(child: HomeSearchBar()),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _StickySearchBarDelegate(
+                backgroundColor: colors.background,
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
             const SliverToBoxAdapter(child: HomeCategoryChips()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
             
@@ -96,5 +101,32 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
+  _StickySearchBarDelegate({required this.backgroundColor});
+
+  final Color backgroundColor;
+
+  @override
+  double get minExtent => 64.0;
+  
+  @override
+  double get maxExtent => 64.0;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: backgroundColor,
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      alignment: Alignment.center,
+      child: const HomeSearchBar(),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _StickySearchBarDelegate oldDelegate) {
+    return oldDelegate.backgroundColor != backgroundColor;
   }
 }

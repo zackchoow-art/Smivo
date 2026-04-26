@@ -6,7 +6,7 @@ part of 'transaction_stats_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$listingOrdersHash() => r'de7c408505fc611e8bec58cccfa650b347f0f9c8';
+String _$listingOrdersHash() => r'064286f0aa8dc4ca8ba22106d08e0a7763839aa0';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,24 +29,31 @@ class _SystemHash {
   }
 }
 
-/// Fetches all orders for a specific listing.
+abstract class _$ListingOrders
+    extends BuildlessAutoDisposeAsyncNotifier<List<Order>> {
+  late final String listingId;
+
+  FutureOr<List<Order>> build(String listingId);
+}
+
+/// Fetches all orders for a specific listing with realtime updates.
 ///
-/// Copied from [listingOrders].
-@ProviderFor(listingOrders)
+/// Copied from [ListingOrders].
+@ProviderFor(ListingOrders)
 const listingOrdersProvider = ListingOrdersFamily();
 
-/// Fetches all orders for a specific listing.
+/// Fetches all orders for a specific listing with realtime updates.
 ///
-/// Copied from [listingOrders].
+/// Copied from [ListingOrders].
 class ListingOrdersFamily extends Family<AsyncValue<List<Order>>> {
-  /// Fetches all orders for a specific listing.
+  /// Fetches all orders for a specific listing with realtime updates.
   ///
-  /// Copied from [listingOrders].
+  /// Copied from [ListingOrders].
   const ListingOrdersFamily();
 
-  /// Fetches all orders for a specific listing.
+  /// Fetches all orders for a specific listing with realtime updates.
   ///
-  /// Copied from [listingOrders].
+  /// Copied from [ListingOrders].
   ListingOrdersProvider call(String listingId) {
     return ListingOrdersProvider(listingId);
   }
@@ -73,16 +80,17 @@ class ListingOrdersFamily extends Family<AsyncValue<List<Order>>> {
   String? get name => r'listingOrdersProvider';
 }
 
-/// Fetches all orders for a specific listing.
+/// Fetches all orders for a specific listing with realtime updates.
 ///
-/// Copied from [listingOrders].
-class ListingOrdersProvider extends AutoDisposeFutureProvider<List<Order>> {
-  /// Fetches all orders for a specific listing.
+/// Copied from [ListingOrders].
+class ListingOrdersProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<ListingOrders, List<Order>> {
+  /// Fetches all orders for a specific listing with realtime updates.
   ///
-  /// Copied from [listingOrders].
+  /// Copied from [ListingOrders].
   ListingOrdersProvider(String listingId)
     : this._internal(
-        (ref) => listingOrders(ref as ListingOrdersRef, listingId),
+        () => ListingOrders()..listingId = listingId,
         from: listingOrdersProvider,
         name: r'listingOrdersProvider',
         debugGetCreateSourceHash:
@@ -108,13 +116,16 @@ class ListingOrdersProvider extends AutoDisposeFutureProvider<List<Order>> {
   final String listingId;
 
   @override
-  Override overrideWith(
-    FutureOr<List<Order>> Function(ListingOrdersRef provider) create,
-  ) {
+  FutureOr<List<Order>> runNotifierBuild(covariant ListingOrders notifier) {
+    return notifier.build(listingId);
+  }
+
+  @override
+  Override overrideWith(ListingOrders Function() create) {
     return ProviderOverride(
       origin: this,
       override: ListingOrdersProvider._internal(
-        (ref) => create(ref as ListingOrdersRef),
+        () => create()..listingId = listingId,
         from: from,
         name: null,
         dependencies: null,
@@ -126,7 +137,8 @@ class ListingOrdersProvider extends AutoDisposeFutureProvider<List<Order>> {
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<Order>> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<ListingOrders, List<Order>>
+  createElement() {
     return _ListingOrdersProviderElement(this);
   }
 
@@ -146,13 +158,13 @@ class ListingOrdersProvider extends AutoDisposeFutureProvider<List<Order>> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ListingOrdersRef on AutoDisposeFutureProviderRef<List<Order>> {
+mixin ListingOrdersRef on AutoDisposeAsyncNotifierProviderRef<List<Order>> {
   /// The parameter `listingId` of this provider.
   String get listingId;
 }
 
 class _ListingOrdersProviderElement
-    extends AutoDisposeFutureProviderElement<List<Order>>
+    extends AutoDisposeAsyncNotifierProviderElement<ListingOrders, List<Order>>
     with ListingOrdersRef {
   _ListingOrdersProviderElement(super.provider);
 
@@ -160,26 +172,33 @@ class _ListingOrdersProviderElement
   String get listingId => (origin as ListingOrdersProvider).listingId;
 }
 
-String _$listingSavesHash() => r'c6984b4f9bec26f7f54326c79034c8b7082eaa29';
+String _$listingSavesHash() => r'223400792a3d0f6d3bfba5101983fad763d4df89';
 
-/// Fetches all saves for a specific listing.
+abstract class _$ListingSaves
+    extends BuildlessAutoDisposeAsyncNotifier<List<SavedListing>> {
+  late final String listingId;
+
+  FutureOr<List<SavedListing>> build(String listingId);
+}
+
+/// Fetches all saves for a specific listing with realtime updates.
 ///
-/// Copied from [listingSaves].
-@ProviderFor(listingSaves)
+/// Copied from [ListingSaves].
+@ProviderFor(ListingSaves)
 const listingSavesProvider = ListingSavesFamily();
 
-/// Fetches all saves for a specific listing.
+/// Fetches all saves for a specific listing with realtime updates.
 ///
-/// Copied from [listingSaves].
+/// Copied from [ListingSaves].
 class ListingSavesFamily extends Family<AsyncValue<List<SavedListing>>> {
-  /// Fetches all saves for a specific listing.
+  /// Fetches all saves for a specific listing with realtime updates.
   ///
-  /// Copied from [listingSaves].
+  /// Copied from [ListingSaves].
   const ListingSavesFamily();
 
-  /// Fetches all saves for a specific listing.
+  /// Fetches all saves for a specific listing with realtime updates.
   ///
-  /// Copied from [listingSaves].
+  /// Copied from [ListingSaves].
   ListingSavesProvider call(String listingId) {
     return ListingSavesProvider(listingId);
   }
@@ -206,17 +225,18 @@ class ListingSavesFamily extends Family<AsyncValue<List<SavedListing>>> {
   String? get name => r'listingSavesProvider';
 }
 
-/// Fetches all saves for a specific listing.
+/// Fetches all saves for a specific listing with realtime updates.
 ///
-/// Copied from [listingSaves].
+/// Copied from [ListingSaves].
 class ListingSavesProvider
-    extends AutoDisposeFutureProvider<List<SavedListing>> {
-  /// Fetches all saves for a specific listing.
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<ListingSaves, List<SavedListing>> {
+  /// Fetches all saves for a specific listing with realtime updates.
   ///
-  /// Copied from [listingSaves].
+  /// Copied from [ListingSaves].
   ListingSavesProvider(String listingId)
     : this._internal(
-        (ref) => listingSaves(ref as ListingSavesRef, listingId),
+        () => ListingSaves()..listingId = listingId,
         from: listingSavesProvider,
         name: r'listingSavesProvider',
         debugGetCreateSourceHash:
@@ -242,13 +262,18 @@ class ListingSavesProvider
   final String listingId;
 
   @override
-  Override overrideWith(
-    FutureOr<List<SavedListing>> Function(ListingSavesRef provider) create,
+  FutureOr<List<SavedListing>> runNotifierBuild(
+    covariant ListingSaves notifier,
   ) {
+    return notifier.build(listingId);
+  }
+
+  @override
+  Override overrideWith(ListingSaves Function() create) {
     return ProviderOverride(
       origin: this,
       override: ListingSavesProvider._internal(
-        (ref) => create(ref as ListingSavesRef),
+        () => create()..listingId = listingId,
         from: from,
         name: null,
         dependencies: null,
@@ -260,7 +285,8 @@ class ListingSavesProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<SavedListing>> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<ListingSaves, List<SavedListing>>
+  createElement() {
     return _ListingSavesProviderElement(this);
   }
 
@@ -280,13 +306,18 @@ class ListingSavesProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin ListingSavesRef on AutoDisposeFutureProviderRef<List<SavedListing>> {
+mixin ListingSavesRef
+    on AutoDisposeAsyncNotifierProviderRef<List<SavedListing>> {
   /// The parameter `listingId` of this provider.
   String get listingId;
 }
 
 class _ListingSavesProviderElement
-    extends AutoDisposeFutureProviderElement<List<SavedListing>>
+    extends
+        AutoDisposeAsyncNotifierProviderElement<
+          ListingSaves,
+          List<SavedListing>
+        >
     with ListingSavesRef {
   _ListingSavesProviderElement(super.provider);
 

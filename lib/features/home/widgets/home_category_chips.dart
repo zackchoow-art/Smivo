@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
+import 'package:smivo/core/providers/theme_provider.dart';
+import 'package:smivo/core/theme/theme_variant.dart';
+
 
 class HomeCategoryChips extends ConsumerWidget {
   const HomeCategoryChips({super.key});
@@ -10,6 +13,7 @@ class HomeCategoryChips extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = ref.watch(selectedCategoryProvider);
+    final themeVariant = ref.watch(themeNotifierProvider);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -17,6 +21,29 @@ class HomeCategoryChips extends ConsumerWidget {
     // Prepend 'All' to the list of categories
     final categories = ['All', ...AppConstants.categories];
 
+    if (themeVariant == SmivoThemeVariant.teal) {
+      final initialIndex = categories.indexOf(selectedCategory ?? 'All');
+      return DefaultTabController(
+        length: categories.length,
+        initialIndex: initialIndex != -1 ? initialIndex : 0,
+        child: SizedBox(
+          height: 48,
+          child: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            onTap: (index) => ref.read(selectedCategoryProvider.notifier).setCategory(categories[index]),
+            labelColor: colors.primary,
+            unselectedLabelColor: colors.onSurfaceVariant,
+            indicatorColor: colors.primary,
+            dividerColor: Colors.transparent,
+            tabs: categories.map((c) => Tab(text: c[0].toUpperCase() + c.substring(1))).toList(),
+          ),
+        ),
+      );
+    }
+
+    // IKEA Theme: Keep current chips style
     return SizedBox(
       height: 40,
       child: ListView.separated(

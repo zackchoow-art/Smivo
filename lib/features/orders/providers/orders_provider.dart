@@ -83,11 +83,43 @@ Future<List<Order>> filteredOrders(Ref ref) async {
   }
 }
 
-/// Fetches a single order by ID.
+/// Fetches a single order by ID with realtime updates.
 @riverpod
-Future<Order> orderDetail(Ref ref, String orderId) async {
-  final repository = ref.watch(orderRepositoryProvider);
-  return repository.fetchOrder(orderId);
+class OrderDetail extends _$OrderDetail {
+  RealtimeChannel? _channel;
+
+  @override
+  Future<Order> build(String orderId) async {
+    ref.onDispose(() {
+      _channel?.unsubscribe();
+      _channel = null;
+    });
+
+    _subscribe(orderId);
+
+    final repository = ref.watch(orderRepositoryProvider);
+    return repository.fetchOrder(orderId);
+  }
+
+  void _subscribe(String orderId) {
+    final client = ref.read(supabaseClientProvider);
+    _channel = client
+        .channel('order_detail:$orderId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'orders',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id',
+            value: orderId,
+          ),
+          callback: (payload) {
+            ref.invalidateSelf();
+          },
+        )
+        .subscribe();
+  }
 }
 
 /// Mutation actions for a specific order.

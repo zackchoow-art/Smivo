@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
-import 'package:smivo/shared/widgets/custom_app_bar.dart';
+import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -33,41 +33,36 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: const CustomAppBar(showActions: false),
-      body: SafeArea(
-        child: profileAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: Text('Error: $e', style: typo.bodyMedium.copyWith(color: colors.error)),
-          ),
-          data: (profile) {
-            if (profile == null) {
-              return Center(
-                child: Text('No profile found.', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-              );
-            }
+      body: profileAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Text('Error: $e', style: typo.bodyMedium.copyWith(color: colors.error)),
+        ),
+        data: (profile) {
+          if (profile == null) {
+            return Center(
+              child: Text('No profile found.', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+            );
+          }
 
-            // NOTE: Initialize controller only once with real data
-            // to avoid overwriting user edits on every rebuild.
-            if (!_initialized) {
-              _displayNameController = TextEditingController(text: profile.displayName ?? '');
-              _initialized = true;
-            }
+          if (!_initialized) {
+            _displayNameController = TextEditingController(text: profile.displayName ?? '');
+            _initialized = true;
+          }
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Edit Profile',
-                      style: typo.headlineLarge.copyWith(
-                          color: colors.onSurface,
-                          fontWeight: FontWeight.w900)),
-                  const SizedBox(height: 8),
-                  Text('Manage your campus identity.',
-                      style: typo.bodyMedium
-                          .copyWith(color: colors.onSurfaceVariant)),
-                  const SizedBox(height: 32),
+          return CustomScrollView(
+            slivers: [
+              const CollapsingTitleAppBar(
+                title: 'Edit Profile',
+                subtitle: 'Manage your campus identity.',
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
 
                   // Top Card: Avatar & Verification
                   Container(
@@ -291,12 +286,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   const SizedBox(height: 48),
                 ],
               ),
-            );
-          },
-        ),
-      ),
-    );
-  }
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+);
+}
 
   Widget _buildFieldLabel(BuildContext context, String label) {
     final colors = context.smivoColors;

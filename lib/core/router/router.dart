@@ -27,7 +27,11 @@ import 'package:smivo/shared/widgets/app_shell.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
 import 'package:smivo/features/admin/screens/admin_shell_screen.dart';
+import 'package:smivo/features/admin/screens/admin_login_screen.dart';
 import 'package:smivo/features/admin/screens/admin_dashboard_screen.dart';
+import 'package:smivo/features/admin/screens/admin_users_screen.dart';
+import 'package:smivo/features/admin/screens/admin_listings_screen.dart';
+import 'package:smivo/features/admin/screens/admin_orders_screen.dart';
 import 'package:smivo/features/admin/screens/admin_faqs_screen.dart';
 import 'package:smivo/features/admin/screens/admin_categories_screen.dart';
 import 'package:smivo/features/admin/screens/admin_schools_screen.dart';
@@ -55,6 +59,8 @@ bool _isPublicRoute(String path) {
     // Exclude /listing/:id/edit which requires auth
     if (!path.endsWith('/edit')) return true;
   }
+  // NOTE: Admin routes bypass normal auth — admin has its own login.
+  if (path.startsWith('/admin')) return true;
   return false;
 }
 
@@ -305,7 +311,14 @@ GoRouter router(Ref ref) {
         ],
       ),
 
-      // ── Admin (auth & role required) ──────────────────────
+      // ── Admin Login ──────────────────────────────────────────
+      GoRoute(
+        name: AppRoutes.adminLogin,
+        path: AppRoutes.adminLoginPath,
+        builder: (context, state) => const AdminLoginScreen(),
+      ),
+
+      // ── Admin Shell (sidebar + content) ────────────────────
       ShellRoute(
         builder: (context, state, child) => AdminShellScreen(child: child),
         routes: [
@@ -313,6 +326,21 @@ GoRouter router(Ref ref) {
             name: AppRoutes.adminDashboard,
             path: AppRoutes.adminDashboardPath,
             builder: (context, state) => const AdminDashboardScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminUsers,
+            path: AppRoutes.adminUsersPath,
+            builder: (context, state) => const AdminUsersScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminListings,
+            path: AppRoutes.adminListingsPath,
+            builder: (context, state) => const AdminListingsScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminOrders,
+            path: AppRoutes.adminOrdersPath,
+            builder: (context, state) => const AdminOrdersScreen(),
           ),
           GoRoute(
             name: AppRoutes.adminSchools,

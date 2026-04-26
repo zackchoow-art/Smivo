@@ -9,7 +9,9 @@ import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
-import 'package:smivo/shared/widgets/custom_app_bar.dart';
+
+import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
+import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
 class SellerCenterScreen extends ConsumerStatefulWidget {
   const SellerCenterScreen({super.key});
@@ -50,8 +52,8 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: const CustomAppBar(showActions: false),
       body: SafeArea(
+        top: false,
         bottom: false,
         child: RefreshIndicator(
           onRefresh: () async {
@@ -63,40 +65,43 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
             ]);
           },
           child: CustomScrollView(physics: const AlwaysScrollableScrollPhysics(), slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.all(24),
-            sliver: SliverToBoxAdapter(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(
-                'Seller Center',
-                style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900, color: colors.onSurface),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Text('Manage your listings and sales.', style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
-              const SizedBox(height: 16),
-              TextField(
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                    if (value.isNotEmpty) {
-                      for (final key in _expandedSections.keys) {
-                        _expandedSections[key] = true;
+          const CollapsingTitleAppBar(
+            title: 'Seller Center',
+            subtitle: 'Manage your listings and sales.',
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: StickyHeaderDelegate(
+              backgroundColor: colors.surfaceContainerLowest,
+              minHeight: 64.0,
+              maxHeight: 64.0,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                      if (value.isNotEmpty) {
+                        for (final key in _expandedSections.keys) {
+                          _expandedSections[key] = true;
+                        }
                       }
-                    }
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search orders and listings…',
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  suffixIcon: _searchQuery.isNotEmpty 
-                    ? IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => setState(() => _searchQuery = ''))
-                    : null,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.md)),
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search orders and listings…',
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty 
+                      ? IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => setState(() => _searchQuery = ''))
+                      : null,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.md)),
+                    filled: true,
+                    fillColor: colors.surfaceContainerLow,
+                  ),
                 ),
               ),
-            ])),
+            ),
           ),
           // 1. ACTIVE LISTINGS Section
           listingsAsync.when(

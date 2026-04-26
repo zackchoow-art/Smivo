@@ -27,5 +27,25 @@ final adminDashboardMetricsProvider =
 // ignore: unused_element
 typedef AdminDashboardMetricsRef =
     AutoDisposeFutureProviderRef<DashboardMetrics>;
+String _$adminRecentOrdersHash() => r'da718b6e59fc855371045358df0b0bbb27267fb6';
+
+/// See also [adminRecentOrders].
+@ProviderFor(adminRecentOrders)
+final adminRecentOrdersProvider =
+    AutoDisposeFutureProvider<List<Map<String, dynamic>>>.internal(
+      adminRecentOrders,
+      name: r'adminRecentOrdersProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$adminRecentOrdersHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AdminRecentOrdersRef =
+    AutoDisposeFutureProviderRef<List<Map<String, dynamic>>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

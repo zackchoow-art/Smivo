@@ -47,7 +47,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(
           12,
-          MediaQuery.of(context).padding.top + 60,
+          12,
           12,
           // NOTE: Extra bottom clearance so the last widget (Chat History)
           // is never obscured by bottom nav or system UI.

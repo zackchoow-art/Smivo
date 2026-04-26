@@ -30,49 +30,34 @@ class OrderDetailScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      body: Stack(
-        children: [
-          orderAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => Center(child: Text('Error: $err')),
-            data: (order) {
-              if (order.orderType == 'rental') {
-                return RentalOrderDetailScreen(
-                  order: order,
-                  orderId: orderId,
-                  currentUserId: currentUserId,
-                );
-              }
-              return SaleOrderDetailScreen(
-                order: order,
-                orderId: orderId,
-                currentUserId: currentUserId,
-              );
-            },
-          ),
-          // Floating back button
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 12,
-            child: Container(
-              decoration: BoxDecoration(
-                color: colors.surfaceContainerLowest.withValues(alpha: 0.9),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: colors.shadow,
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-                onPressed: () => context.pop(),
-              ),
-            ),
-          ),
-        ],
+      backgroundColor: colors.surfaceContainerLowest,
+      appBar: AppBar(
+        backgroundColor: colors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: colors.onSurface),
+          onPressed: () => context.pop(),
+        ),
+        title: Text('Order Details', style: context.smivoTypo.headlineSmall.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+      ),
+      body: orderAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text('Error: $err')),
+        data: (order) {
+          if (order.orderType == 'rental') {
+            return RentalOrderDetailScreen(
+              order: order,
+              orderId: orderId,
+              currentUserId: currentUserId,
+            );
+          }
+          return SaleOrderDetailScreen(
+            order: order,
+            orderId: orderId,
+            currentUserId: currentUserId,
+          );
+        },
       ),
     );
   }
