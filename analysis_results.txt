@@ -1,0 +1,13 @@
+Analyzing smivo...                                              
+
+  error • Undefined name 'currentUserId' • lib/features/orders/screens/sale_order_detail_screen.dart:346:30 • undefined_identifier
+  error • Expected a method, getter, setter or operator declaration • lib/features/orders/screens/sale_order_detail_screen.dart:431:1 • expected_executable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/widgets/rental_extension_card.dart:81:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/widgets/rental_extension_card.dart:152:57 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/widgets/rental_extension_card.dart:347:57 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/widgets/rental_extension_card.dart:456:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/widgets/rental_extension_card.dart:460:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/widgets/rental_extension_card.dart:464:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/widgets/rental_extension_card.dart:468:44 • deprecated_member_use
+
+9 issues found. (ran in 1.4s)

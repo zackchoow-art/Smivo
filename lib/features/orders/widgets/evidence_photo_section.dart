@@ -9,7 +9,7 @@ class EvidencePhotoSection extends ConsumerWidget {
     super.key,
     required this.orderId,
     required this.canUpload,
-    this.label = 'EVIDENCE PHOTOS',
+    this.label = 'Evidence Photos',
     this.evidenceType = 'delivery',
   });
   final String orderId;
@@ -28,7 +28,7 @@ class EvidencePhotoSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label.toUpperCase(),
+        Text(label,
           style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
         const SizedBox(height: 12),
         evidenceAsync.when(
@@ -59,12 +59,17 @@ class EvidencePhotoSection extends ConsumerWidget {
                 ),
               if (canUpload && filteredPhotos.length < 5) ...[
                 const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: uploadState.isLoading ? null : () => _pickAndUpload(context, ref),
-                    icon: const Icon(Icons.camera_alt_outlined),
-                    label: Text(uploadState.isLoading ? 'Uploading...' : 'Add Photo (${filteredPhotos.length}/5)'),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: uploadState.isLoading ? null : () => _pickAndUpload(context, ref),
+                        icon: const Icon(Icons.camera_alt_outlined),
+                        label: Text(uploadState.isLoading ? 'Uploading...' : 'Add Photo (${filteredPhotos.length}/5)'),
+                      ),
+                    ),
                   ),
                 ),
               ],

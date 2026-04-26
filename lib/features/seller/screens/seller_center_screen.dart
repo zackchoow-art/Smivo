@@ -18,7 +18,13 @@ class SellerCenterScreen extends ConsumerStatefulWidget {
 }
 
 class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
-  bool _isListView = false;
+  final Map<String, bool> _expandedSections = {
+    'Active Listings': true,
+    'Awaiting Delivery': true,
+    'Active Transactions': true,
+    'History': true,
+  };
+  String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -70,136 +76,189 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
               ]),
               const SizedBox(height: 8),
               Text('Manage your listings and sales.', style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
+              const SizedBox(height: 16),
+              TextField(
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                    if (value.isNotEmpty) {
+                      for (final key in _expandedSections.keys) {
+                        _expandedSections[key] = true;
+                      }
+                    }
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Search orders and listings…',
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty 
+                    ? IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => setState(() => _searchQuery = ''))
+                    : null,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.md)),
+                ),
+              ),
             ])),
           ),
           // 1. ACTIVE LISTINGS Section
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverToBoxAdapter(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('ACTIVE LISTINGS',
-                    style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
-                  IconButton(
-                    icon: Icon(_isListView ? Icons.grid_view_outlined : Icons.list_outlined, size: 20, color: colors.primary),
-                    onPressed: () => setState(() => _isListView = !_isListView),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 12)),
           listingsAsync.when(
             loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
             error: (e, _) => SliverToBoxAdapter(child: Center(child: Text('Error: $e'))),
             data: (listings) {
-              final activeListings = listings.where((l) => l.status == 'active').toList();
-              if (activeListings.isEmpty) {
-                return SliverToBoxAdapter(child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                  child: Center(child: Column(children: [
-                    Icon(Icons.storefront_outlined, size: 48, color: colors.onSurface.withValues(alpha: 0.3)),
-                    const SizedBox(height: 12),
-                    Text('No active listings', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-                  ])),
-                ));
-              }
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                  final listing = activeListings[index];
-                  final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
-                  
-                  if (_isListView) {
-                    return _buildListViewItem(listing, imageUrl);
-                  }
+              final allActiveListings = listings.where((l) => l.status == 'active').toList();
+              final activeListings = _searchQuery.isEmpty 
+                ? allActiveListings 
+                : allActiveListings.where((l) {
+                    final q = _searchQuery.toLowerCase();
+                    return l.title.toLowerCase().contains(q) || 
+                           (l.description?.toLowerCase().contains(q) ?? false) || 
+                           l.price.toStringAsFixed(2).contains(q);
+                  }).toList();
+              if (activeListings.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
-                  return _buildActiveListingCard(listing, imageUrl);
-                }, childCount: activeListings.length)),
-              );
+              final isExpanded = _expandedSections['Active Listings'] ?? true;
+              
+              return SliverMainAxisGroup(slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                  sliver: SliverToBoxAdapter(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(radius.sm),
+                      onTap: () => setState(() => _expandedSections['Active Listings'] = !isExpanded),
+                      child: Row(children: [
+                        Icon(Icons.storefront_outlined, size: 16, color: colors.primary),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text('Active Listings (${activeListings.length})', style: typo.titleMedium.copyWith(
+                          color: colors.onSurface, fontWeight: FontWeight.w600))),
+                        Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          size: 20, color: colors.onSurface.withValues(alpha: 0.5)),
+                      ]),
+                    ),
+                  ),
+                ),
+                if (isExpanded)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
+                      final listing = activeListings[index];
+                      final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
+                      return _buildActiveListingCard(listing, imageUrl);
+                    }, childCount: activeListings.length)),
+                  ),
+              ]);
             },
           ),
 
           // 2. AWAITING DELIVERY Section (Accepted but not delivered)
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-            sliver: SliverToBoxAdapter(
-              child: Text('AWAITING DELIVERY',
-                style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
-            ),
-          ),
           ordersAsync.when(
             loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
             error: (e, _) => SliverToBoxAdapter(child: Center(child: Text('Error: $e'))),
             data: (orders) {
-              final awaitingDelivery = orders.where((o) =>
+              final allAwaitingDelivery = orders.where((o) =>
                 o.status == 'confirmed' &&
                 !(o.deliveryConfirmedByBuyer && o.deliveryConfirmedBySeller)
               ).toList();
+              
+              final awaitingDelivery = _searchQuery.isEmpty ? allAwaitingDelivery : allAwaitingDelivery.where((o) {
+                final q = _searchQuery.toLowerCase();
+                final title = o.listing?.title.toLowerCase() ?? '';
+                final buyer = o.buyer?.displayName?.toLowerCase() ?? '';
+                final price = o.totalPrice.toStringAsFixed(2);
+                return title.contains(q) || buyer.contains(q) || price.contains(q);
+              }).toList();
+              
+              if (awaitingDelivery.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
-              if (awaitingDelivery.isEmpty) {
-                return SliverToBoxAdapter(child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                  child: Center(child: Text('Nothing awaiting delivery', style: typo.bodyMedium.copyWith(color: colors.outlineVariant))),
-                ));
-              }
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                  final order = awaitingDelivery[index];
-                  final statusLabel = order.orderType == 'sale' ? 'Awaiting Pickup' : 'Awaiting Delivery';
-                  final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
-                  return _buildOrderCard(order, statusLabel, hasUnread);
-                }, childCount: awaitingDelivery.length)),
-              );
+              final isExpanded = _expandedSections['Awaiting Delivery'] ?? true;
+
+              return SliverMainAxisGroup(slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                  sliver: SliverToBoxAdapter(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(radius.sm),
+                      onTap: () => setState(() => _expandedSections['Awaiting Delivery'] = !isExpanded),
+                      child: Row(children: [
+                        Icon(Icons.local_shipping, size: 16, color: colors.primary),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text('Awaiting Delivery (${awaitingDelivery.length})', style: typo.titleMedium.copyWith(
+                          color: colors.onSurface, fontWeight: FontWeight.w600))),
+                        Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          size: 20, color: colors.onSurface.withValues(alpha: 0.5)),
+                      ]),
+                    ),
+                  ),
+                ),
+                if (isExpanded)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
+                      final order = awaitingDelivery[index];
+                      final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                      return _buildAwaitingDeliveryCard(order, hasUnread);
+                    }, childCount: awaitingDelivery.length)),
+                  ),
+              ]);
             },
           ),
 
           // 3. ACTIVE TRANSACTIONS Section (In-progress rentals)
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-            sliver: SliverToBoxAdapter(
-              child: Text('ACTIVE TRANSACTIONS',
-                style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
-            ),
-          ),
           ordersAsync.when(
             loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
             error: (e, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
             data: (orders) {
-              final activeTransactions = orders.where((o) =>
+              final allActiveTransactions = orders.where((o) =>
                 o.status == 'confirmed' &&
                 (o.rentalStatus == 'active' ||
                  o.rentalStatus == 'return_requested' ||
                  o.rentalStatus == 'returned')
               ).toList();
 
-              if (activeTransactions.isEmpty) {
-                return SliverToBoxAdapter(child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                  child: Center(child: Text('No active transactions', style: typo.bodyMedium.copyWith(color: colors.outlineVariant))),
-                ));
-              }
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                  final order = activeTransactions[index];
-                  final statusLabel = order.rentalStatus?.replaceAll('_', ' ').toUpperCase() ?? order.status.toUpperCase();
-                  final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
-                  return _buildOrderCard(order, statusLabel, hasUnread);
-                }, childCount: activeTransactions.length)),
-              );
+              final activeTransactions = _searchQuery.isEmpty ? allActiveTransactions : allActiveTransactions.where((o) {
+                final q = _searchQuery.toLowerCase();
+                final title = o.listing?.title.toLowerCase() ?? '';
+                final buyer = o.buyer?.displayName?.toLowerCase() ?? '';
+                final price = o.totalPrice.toStringAsFixed(2);
+                return title.contains(q) || buyer.contains(q) || price.contains(q);
+              }).toList();
+              
+              if (activeTransactions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+              final isExpanded = _expandedSections['Active Transactions'] ?? true;
+
+              return SliverMainAxisGroup(slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                  sliver: SliverToBoxAdapter(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(radius.sm),
+                      onTap: () => setState(() => _expandedSections['Active Transactions'] = !isExpanded),
+                      child: Row(children: [
+                        Icon(Icons.sync, size: 16, color: colors.success),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text('Active Transactions (${activeTransactions.length})', style: typo.titleMedium.copyWith(
+                          color: colors.onSurface, fontWeight: FontWeight.w600))),
+                        Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          size: 20, color: colors.onSurface.withValues(alpha: 0.5)),
+                      ]),
+                    ),
+                  ),
+                ),
+                if (isExpanded)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
+                      final order = activeTransactions[index];
+                      final statusLabel = order.rentalStatus?.replaceAll('_', ' ').toUpperCase() ?? order.status.toUpperCase();
+                      final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                      return _buildOrderCard(order, statusLabel, hasUnread);
+                    }, childCount: activeTransactions.length)),
+                  ),
+              ]);
             },
           ),
 
           // 4. HISTORY Section (Smart Merge)
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-            sliver: SliverToBoxAdapter(child: Text('HISTORY',
-              style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5))),
-          ),
           ordersAsync.when(
             loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
             error: (e, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
@@ -235,7 +294,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     final fullListing = listings.where((l) => l.id == o.listingId).firstOrNull;
                     historyItems.add(_HistoryItem(
                       title: o.listing?.title ?? fullListing?.title ?? 'Order',
-                      subtitle: '${formatOrderPrice(o)} · Completed',
+                      subtitle: '${formatOrderPrice(o)} · ${o.buyer?.displayName ?? 'Buyer'}',
                       isCompleted: true,
                       orderId: o.id,
                       listingId: o.listingId,
@@ -288,72 +347,107 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     ));
                   }
 
-                  if (historyItems.isEmpty) {
-                    return SliverToBoxAdapter(child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Center(child: Text('No history items yet', style: typo.bodyMedium.copyWith(color: colors.outlineVariant))),
-                    ));
-                  }
+                  final filteredHistory = _searchQuery.isEmpty ? historyItems : historyItems.where((i) {
+                    final q = _searchQuery.toLowerCase();
+                    return i.title.toLowerCase().contains(q) || i.subtitle.toLowerCase().contains(q);
+                  }).toList();
+                  
+                  if (filteredHistory.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
-                  return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                      final item = historyItems[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(radius.card),
-                        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-                      ),
-                      child: Row(children: [
-                        // Left: Image + Title/Subtitle (Listing Detail)
-                        Expanded(
-                          child: GestureDetector(
-                            // Left side: listing detail navigation
-                            onTap: item.listingId != null
-                              ? () => context.pushNamed(AppRoutes.listingDetail, pathParameters: {'id': item.listingId!})
-                              : item.onTap,
-                            behavior: HitTestBehavior.opaque,
-                            child: Row(children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(radius.sm),
-                                child: item.imageUrl != null
-                                  ? Image.network(item.imageUrl!, width: 40, height: 40, fit: BoxFit.cover)
-                                  : Container(width: 40, height: 40, color: colors.surfaceContainerHigh, 
-                                      child: Icon(Icons.image, size: 20, color: colors.onSurface.withValues(alpha: 0.3))),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(item.title, style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600),
-                                  maxLines: 1, overflow: TextOverflow.ellipsis),
-                                Text(item.subtitle, style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
-                              ])),
-                            ]),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Right: Timestamps (Order Detail or Main Tap)
-                        GestureDetector(
-                          // Right side: order detail or fallback action
-                          onTap: item.orderId != null
-                            ? () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': item.orderId!})
-                            : (item.isMergedCancelled ? item.onTap : null),
-                          behavior: HitTestBehavior.opaque,
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                            if (item.createdAt != null)
-                              Text(DateFormat('MM/dd HH:mm').format(item.createdAt!), 
-                                style: typo.labelSmall.copyWith(fontSize: 10, color: colors.onSurface.withValues(alpha: 0.4))),
-                            if (item.updatedAt != null)
-                              Text(DateFormat('MM/dd HH:mm').format(item.updatedAt!), 
-                                style: typo.labelSmall.copyWith(fontSize: 10, fontWeight: FontWeight.bold, color: colors.primary)),
+                  final isExpanded = _expandedSections['History'] ?? true;
+
+                  return SliverMainAxisGroup(slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                      sliver: SliverToBoxAdapter(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(radius.sm),
+                          onTap: () => setState(() => _expandedSections['History'] = !isExpanded),
+                          child: Row(children: [
+                            Icon(Icons.history, size: 16, color: colors.outlineVariant),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text('History (${filteredHistory.length})', style: typo.titleMedium.copyWith(
+                              color: colors.onSurface, fontWeight: FontWeight.w600))),
+                            Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              size: 20, color: colors.onSurface.withValues(alpha: 0.5)),
                           ]),
                         ),
-                      ]),
-                    );
-                    }, childCount: historyItems.length)),
-                  );
+                      ),
+                    ),
+                    if (isExpanded)
+                      SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
+                            final item = filteredHistory[index];
+                            final dateStr = DateFormat('M/d/yyyy HH:mm').format(item.updatedAt ?? item.createdAt ?? DateTime.now());
+                            
+                            return InkWell(
+                              onTap: item.onTap,
+                              borderRadius: BorderRadius.circular(radius.card),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(radius.card),
+                                  border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+                                ),
+                                child: Row(children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(radius.image),
+                                    child: item.imageUrl != null
+                                      ? Image.network(item.imageUrl!, width: 48, height: 48, fit: BoxFit.cover)
+                                      : Container(width: 48, height: 48, color: colors.surfaceContainerHigh, child: const Icon(Icons.image)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Text(item.title, style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    const SizedBox(height: 4),
+                                    if (item.subtitle.contains(r'$'))
+                                      RichText(
+                                        text: TextSpan(
+                                          style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)),
+                                          children: [
+                                            TextSpan(
+                                              text: item.subtitle.split(' · ').first,
+                                              style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
+                                            ),
+                                            TextSpan(
+                                              text: item.subtitle.contains(' · ') 
+                                                ? ' · ${item.subtitle.split(' · ').sublist(1).join(' · ')}'
+                                                : '',
+                                            ),
+                                          ],
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    else
+                                      Text(item.subtitle,
+                                        style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
+                                  ])),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      _buildHistoryStatusChip(item),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        dateStr,
+                                        style: typo.labelSmall.copyWith(
+                                          color: colors.onSurface.withValues(alpha: 0.4),
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ]),
+                              ),
+                            );
+                          }, childCount: filteredHistory.length)),
+                        ),
+                  ]);
                 },
               );
             },
@@ -371,47 +465,140 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final radius = context.smivoRadius;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(radius.card),
         border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
       ),
-      child: Column(children: [
-        GestureDetector(
-          onTap: () => context.pushNamed(AppRoutes.listingDetail, pathParameters: {'id': listing.id}),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(radius.image),
-                child: imageUrl != null
-                  ? Image.network(imageUrl, width: 64, height: 64, fit: BoxFit.cover)
-                  : Container(width: 64, height: 64, color: colors.surfaceContainerLow, child: const Icon(Icons.image)),
+      child: GestureDetector(
+        onTap: () => context.pushNamed(AppRoutes.listingDetail, pathParameters: {'id': listing.id}),
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(radius.image),
+              child: imageUrl != null
+                ? Image.network(imageUrl, width: 48, height: 48, fit: BoxFit.cover)
+                : Container(width: 48, height: 48, color: colors.surfaceContainerHigh, child: const Icon(Icons.image)),
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(listing.title, style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              RichText(
+                text: TextSpan(
+                  style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)),
+                  children: [
+                    TextSpan(
+                      text: '\$${listing.price.toStringAsFixed(0)}',
+                      style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ' · ${listing.transactionType}'),
+                  ],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(listing.title, style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text('\$${listing.price.toStringAsFixed(0)} · ${listing.transactionType}', 
-                  style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
-              ])),
-            ]),
+            ])),
+            const SizedBox(width: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildEnhancedStatItem(Icons.visibility_outlined, '${listing.viewCount}', () =>
+                  context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '0'})),
+                const SizedBox(width: 32),
+                _buildEnhancedStatItem(Icons.bookmark_outline, '${listing.saveCount}', () =>
+                  context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '1'})),
+                const SizedBox(width: 32),
+                _buildEnhancedStatItem(Icons.local_offer_outlined, '${listing.inquiryCount}', () =>
+                  context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '2'})),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAwaitingDeliveryCard(Order order, bool hasUnread) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    final listing = order.listing;
+    final imageUrl = listing?.images.isNotEmpty == true ? listing!.images.first.imageUrl : null;
+
+    return InkWell(
+      onTap: () => context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id}),
+      borderRadius: BorderRadius.circular(radius.card),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(radius.card),
+          border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        ),
+        child: Row(children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(radius.image),
+            child: imageUrl != null
+              ? Image.network(imageUrl, width: 48, height: 48, fit: BoxFit.cover)
+              : Container(width: 48, height: 48, color: colors.surfaceContainerHigh, child: const Icon(Icons.image)),
           ),
-        ),
-        Divider(height: 1, color: colors.outlineVariant.withValues(alpha: 0.1)),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            _buildEnhancedStatItem(Icons.visibility_outlined, '${listing.viewCount}', () =>
-              context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '0'})),
-            _buildEnhancedStatItem(Icons.bookmark_outline, '${listing.saveCount}', () =>
-              context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '1'})),
-            _buildEnhancedStatItem(Icons.local_offer_outlined, '${listing.inquiryCount}', () =>
-              context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '2'})),
-          ]),
-        ),
-      ]),
+          const SizedBox(width: 8),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(listing?.title ?? 'Order', style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 4),
+            RichText(
+              text: TextSpan(
+                style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)),
+                children: [
+                  TextSpan(
+                    text: '\$${order.totalPrice.toStringAsFixed(0)}',
+                    style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: ' · ${order.pickupLocation?.name ?? 'Unknown location'}'),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ])),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (hasUnread)
+                    Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.only(right: 4),
+                      decoration: BoxDecoration(color: colors.error, shape: BoxShape.circle),
+                    ),
+                  Container(
+                    width: 72,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: colors.primary, borderRadius: BorderRadius.circular(radius.full)),
+                    child: Text(
+                      'Awaiting Delivery', 
+                      textAlign: TextAlign.center,
+                      style: typo.labelSmall.copyWith(color: colors.surfaceContainerLowest, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ]),
+      ),
     );
   }
 
@@ -466,24 +653,36 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 2),
-                        Text(
-                          '${formatOrderPrice(order)} · ${order.buyer?.displayName ?? 'Buyer'}',
-                          style: typo.bodySmall.copyWith(
-                              color: colors.onSurface
-                                  .withValues(alpha: 0.6)),
+                        RichText(
+                          text: TextSpan(
+                            style: typo.bodySmall.copyWith(
+                                color: colors.onSurface
+                                    .withValues(alpha: 0.6)),
+                            children: [
+                              TextSpan(
+                                text: formatOrderPrice(order),
+                                style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(text: ' · ${order.buyer?.displayName ?? 'Buyer'}'),
+                            ],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Container(
+                          constraints: const BoxConstraints(minWidth: 72),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: colors.primary.withValues(alpha: 0.1),
+                            color: colors.primary,
                             borderRadius:
                                 BorderRadius.circular(radius.full),
                           ),
                           child: Text(statusLabel,
+                              textAlign: TextAlign.center,
                               style: typo.labelSmall.copyWith(
-                                color: colors.primary,
+                                color: colors.surfaceContainerLowest,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 10,
                               )),
@@ -597,73 +796,6 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     ]);
   }
 
-  Widget _buildListViewItem(listing, imageUrl) {
-    final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(radius.sm),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.1)),
-      ),
-      child: Row(children: [
-        GestureDetector(
-          onTap: () => context.pushNamed(AppRoutes.listingDetail, pathParameters: {'id': listing.id}),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(radius.image),
-            child: imageUrl != null
-              ? Image.network(imageUrl, width: 40, height: 40, fit: BoxFit.cover)
-              : Container(width: 40, height: 40, color: colors.surfaceContainerLow, child: const Icon(Icons.image, size: 20)),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: GestureDetector(
-            onTap: () => context.pushNamed(AppRoutes.listingDetail, pathParameters: {'id': listing.id}),
-            behavior: HitTestBehavior.opaque,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(listing.title, style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600),
-                maxLines: 1, overflow: TextOverflow.ellipsis),
-              Text('\$${listing.price.toStringAsFixed(0)} · ${listing.transactionType}',
-                style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5))),
-            ]),
-          ),
-        ),
-        Row(mainAxisSize: MainAxisSize.min, children: [
-          _buildMiniStat(Icons.visibility_outlined, listing.viewCount, () =>
-            context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '0'})),
-          const SizedBox(width: 32),
-          _buildMiniStat(Icons.bookmark_outline, listing.saveCount, () =>
-            context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '1'})),
-          const SizedBox(width: 32),
-          _buildMiniStat(Icons.local_offer_outlined, listing.inquiryCount, () =>
-            context.pushNamed(AppRoutes.transactionManagement, pathParameters: {'id': listing.id}, queryParameters: {'tab': '2'})),
-        ]),
-      ]),
-    );
-  }
-
-  Widget _buildMiniStat(IconData icon, int count, VoidCallback onTap) {
-    final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-        alignment: Alignment.center,
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 14, color: colors.primary),
-          Text('$count', style: typo.labelSmall.copyWith(fontWeight: FontWeight.bold, fontSize: 10)),
-        ]),
-      ),
-    );
-  }
-
   Widget _buildEnhancedStatItem(IconData icon, String count, VoidCallback onTap) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -675,6 +807,26 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
         const SizedBox(height: 2),
         Text(count, style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold, color: colors.primary)),
       ]),
+    );
+  }
+
+  Widget _buildHistoryStatusChip(_HistoryItem item) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    final bgColor = item.isCompleted ? colors.success : colors.statusCancelled;
+    final label = item.isCompleted ? 'Done' : 'Cancelled';
+
+    return Container(
+      constraints: const BoxConstraints(minWidth: 72),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(radius.full)),
+      child: Text(
+        label, 
+        textAlign: TextAlign.center,
+        style: typo.labelSmall.copyWith(color: colors.surfaceContainerLowest, fontWeight: FontWeight.w700),
+      ),
     );
   }
 }

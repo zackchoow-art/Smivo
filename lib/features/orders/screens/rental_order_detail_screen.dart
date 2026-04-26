@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/providers/order_chat_provider.dart';
+import 'package:smivo/features/orders/providers/order_evidence_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/orders/providers/rental_extension_provider.dart';
 import 'package:smivo/features/orders/widgets/chat_history_section.dart';
@@ -119,7 +120,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
                     _buildDeliveryStatus(context, order),
                     const SizedBox(height: 16),
                     EvidencePhotoSection(
-                      label: 'DELIVERY EVIDENCE',
+                      label: 'Delivery Evidence',
                       orderId: order.id,
                       canUpload: _canUploadDeliveryEvidence(order, isBuyer, isSeller),
                       evidenceType: 'delivery',
@@ -162,7 +163,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   EvidencePhotoSection(
-                    label: 'RETURN EVIDENCE',
+                    label: 'Return Evidence',
                     orderId: order.id,
                     canUpload: _canUploadReturnEvidence(order, isBuyer, isSeller),
                     evidenceType: 'return',
@@ -276,7 +277,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     final radius = context.smivoRadius;
 
     if (order.status == 'pending') {
-      return _buildCancelButton(context, ref, order, isActing);
+      return _buildCancelButton(context, ref, order, isActing, isBuyer);
     }
 
     if (order.status == 'confirmed') {
@@ -296,19 +297,35 @@ class RentalOrderDetailScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 8),
-            _buildCancelButton(context, ref, order, isActing),
+            // NOTE: Only show cancel button if NEITHER party has confirmed
+            if (!order.deliveryConfirmedByBuyer && !order.deliveryConfirmedBySeller)
+              _buildCancelButton(context, ref, order, isActing, isBuyer),
           ],
         );
       }
+      
+      final evidenceAsync = ref.watch(orderEvidenceProvider(order.id));
+      final deliveryPhotosCount = evidenceAsync.valueOrNull?.where((p) => p.evidenceType == 'delivery').length ?? 0;
+      final canConfirm = deliveryPhotosCount >= 1;
+
       return Column(
         children: [
+          if (!canConfirm)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                'Please upload at least one photo as evidence to continue.',
+                style: typo.bodyMedium.copyWith(color: colors.error, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+            ),
           Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 360),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: isActing
+                  onPressed: (isActing || !canConfirm)
                       ? null
                       : () async => await ref
                           .read(orderActionsProvider.notifier)
@@ -318,7 +335,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(
-                    isActing ? 'Processing...' : 'Confirm Delivery',
+                    isActing ? 'Processing...' : (isBuyer ? 'Confirm Pickup' : 'Confirm Delivery'),
                     style: typo.titleMedium.copyWith(color: colors.onPrimary),
                   ),
                 ),
@@ -326,7 +343,8 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          _buildCancelButton(context, ref, order, isActing),
+          if (!order.deliveryConfirmedByBuyer && !order.deliveryConfirmedBySeller)
+            _buildCancelButton(context, ref, order, isActing, isBuyer),
         ],
       );
     }
@@ -423,7 +441,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('DELIVERY CONFIRMATION',
+        Text('Delivery Confirmation',
           style: typo.labelSmall.copyWith(
             color: colors.onSurface.withValues(alpha: 0.5),
             letterSpacing: 0.5,
@@ -646,6 +664,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     Order order,
     bool isActing,
+    bool isBuyer,
   ) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -664,6 +683,16 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             onPressed: isActing
                 ? null
                 : () async {
+                    final latestOrder = await ref.refresh(orderDetailProvider(order.id).future);
+                    if (latestOrder.deliveryConfirmedByBuyer || latestOrder.deliveryConfirmedBySeller) {
+                      final otherName = isBuyer ? latestOrder.seller?.displayName : latestOrder.buyer?.displayName;
+                      if (context.mounted) {
+                        _showErrorDialog(context, 'Cannot Cancel', '${otherName ?? 'The other party'} has already confirmed. You cannot cancel this order.');
+                      }
+                      return;
+                    }
+                    if (!context.mounted) return;
+                    
                     final confirmed = await _showConfirmDialog(
                       context,
                       'Cancel Order',
@@ -682,6 +711,52 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             ),
             child: Text(isActing ? 'Processing...' : 'Cancel Order', style: typo.titleMedium),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String title, String message) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.lg)),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colors.error.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.close, color: colors.error, size: 48),
+            ),
+            const SizedBox(height: 16),
+            Text(title, style: typo.headlineSmall.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(message, style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)), textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: Text('OK', style: typo.titleMedium),
+              ),
+            ),
+          ],
         ),
       ),
     );
