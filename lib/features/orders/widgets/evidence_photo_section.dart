@@ -77,7 +77,15 @@ class EvidencePhotoSection extends ConsumerWidget {
 
   Future<void> _pickAndUpload(BuildContext context, WidgetRef ref) async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.camera, maxWidth: 1024, maxHeight: 1024, imageQuality: 80);
+
+    // NOTE: On Web, ImageSource.camera is not supported.
+    // Use gallery (file picker) which works on all platforms.
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 80,
+    );
     if (picked == null) return;
     if (!context.mounted) return;
     final bytes = await picked.readAsBytes();
@@ -86,7 +94,7 @@ class EvidencePhotoSection extends ConsumerWidget {
       orderId: orderId,
       imageBytes: bytes,
       fileName: fileName,
-      evidenceType: evidenceType, // I hope the notifier supports this
+      evidenceType: evidenceType,
     );
   }
 }
