@@ -6,11 +6,11 @@ part of 'help_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$helpFaqsHash() => r'2589c78843f6aed68a1607b9fb5fbd638e4cd60e';
+String _$helpFaqsHash() => r'5733a7a2a5997c9188a048dfbf0dd282e7e7904a';
 
 /// See also [helpFaqs].
 @ProviderFor(helpFaqs)
-final helpFaqsProvider = AutoDisposeProvider<List<HelpFaq>>.internal(
+final helpFaqsProvider = AutoDisposeFutureProvider<List<Faq>>.internal(
   helpFaqs,
   name: r'helpFaqsProvider',
   debugGetCreateSourceHash:
@@ -21,8 +21,8 @@ final helpFaqsProvider = AutoDisposeProvider<List<HelpFaq>>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef HelpFaqsRef = AutoDisposeProviderRef<List<HelpFaq>>;
-String _$expandedFaqStateHash() => r'022618fc7a9f05298ce759a2b7cf7ebda4b5502f';
+typedef HelpFaqsRef = AutoDisposeFutureProviderRef<List<Faq>>;
+String _$expandedFaqStateHash() => r'735c6c6fdeb157e27bae8b3d479c1b7540e8b99b';
 
 /// See also [ExpandedFaqState].
 @ProviderFor(ExpandedFaqState)

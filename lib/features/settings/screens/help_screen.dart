@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smivo/data/models/faq.dart';
 import 'package:smivo/features/settings/providers/help_provider.dart';
 import 'package:smivo/shared/widgets/custom_app_bar.dart';
+import 'package:collection/collection.dart'; // For groupBy
 
 class HelpScreen extends ConsumerStatefulWidget {
   const HelpScreen({super.key});
@@ -23,19 +25,11 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allFaqs = ref.watch(helpFaqsProvider);
+    final allFaqsAsync = ref.watch(helpFaqsProvider);
     final expandedQuestion = ref.watch(expandedFaqStateProvider);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-
-    final filteredFaqs = _searchQuery.isEmpty
-        ? allFaqs
-        : allFaqs.where((faq) {
-            final query = _searchQuery.toLowerCase();
-            return faq.question.toLowerCase().contains(query) ||
-                   faq.answer.toLowerCase().contains(query);
-          }).toList();
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -83,47 +77,98 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              if (filteredFaqs.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32),
-                  child: Text(
-                    'No matching questions found',
-                    style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+              
+              allFaqsAsync.when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.only(top: 64),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (e, st) => Padding(
+                  padding: const EdgeInsets.only(top: 64),
+                  child: Center(
+                    child: Text('Failed to load FAQs.', style: typo.bodyMedium.copyWith(color: colors.error)),
                   ),
-                )
-              else
-                ...filteredFaqs.map((faq) {
-                  final isExpanded = faq.question == expandedQuestion;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: GestureDetector(
-                      onTap: () => ref.read(expandedFaqStateProvider.notifier).toggle(faq.question),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colors.surfaceContainerLowest,
-                          borderRadius: BorderRadius.circular(radius.sm),
-                          border: Border.all(color: isExpanded ? colors.settingsIcon : Colors.transparent, width: 1.5),
-                          boxShadow: [BoxShadow(color: colors.shadow, blurRadius: 10, offset: const Offset(0, 4))],
-                        ),
-                        child: Column(children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Row(children: [
-                              Expanded(child: Text(faq.question, style: typo.titleMedium.copyWith(color: colors.onSurface, fontWeight: FontWeight.w800))),
-                              Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                color: isExpanded ? colors.settingsIcon : colors.onSurface.withValues(alpha: 0.5)),
-                            ]),
-                          ),
-                          if (isExpanded)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                              child: Text(faq.answer, style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant, height: 1.4)),
-                            ),
-                        ]),
+                ),
+                data: (faqs) {
+                  final filteredFaqs = _searchQuery.isEmpty
+                      ? faqs
+                      : faqs.where((faq) {
+                          final query = _searchQuery.toLowerCase();
+                          return faq.question.toLowerCase().contains(query) ||
+                                faq.answer.toLowerCase().contains(query) ||
+                                faq.category.toLowerCase().contains(query);
+                        }).toList();
+
+                  if (filteredFaqs.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Text(
+                        'No matching questions found',
+                        style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
                       ),
-                    ),
+                    );
+                  }
+
+                  // Group by category
+                  final groupedFaqs = groupBy<Faq, String>(filteredFaqs, (faq) => faq.category);
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: groupedFaqs.entries.map((entry) {
+                      final category = entry.key;
+                      final categoryFaqs = entry.value;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16, top: 16),
+                            child: Text(
+                              category,
+                              style: typo.headlineSmall.copyWith(
+                                color: colors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ...categoryFaqs.map((faq) {
+                            final isExpanded = faq.question == expandedQuestion;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: GestureDetector(
+                                onTap: () => ref.read(expandedFaqStateProvider.notifier).toggle(faq.question),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: colors.surfaceContainerLowest,
+                                    borderRadius: BorderRadius.circular(radius.sm),
+                                    border: Border.all(color: isExpanded ? colors.settingsIcon : Colors.transparent, width: 1.5),
+                                    boxShadow: [BoxShadow(color: colors.shadow, blurRadius: 10, offset: const Offset(0, 4))],
+                                  ),
+                                  child: Column(children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Row(children: [
+                                        Expanded(child: Text(faq.question, style: typo.titleMedium.copyWith(color: colors.onSurface, fontWeight: FontWeight.w800))),
+                                        Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                          color: isExpanded ? colors.settingsIcon : colors.onSurface.withValues(alpha: 0.5)),
+                                      ]),
+                                    ),
+                                    if (isExpanded)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                                        child: Text(faq.answer, style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant, height: 1.4)),
+                                      ),
+                                  ]),
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      );
+                    }).toList(),
                   );
-                }),
+                },
+              ),
               const SizedBox(height: 48),
             ],
           ),
