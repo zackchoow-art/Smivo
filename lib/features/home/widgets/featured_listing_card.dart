@@ -6,6 +6,11 @@ import 'package:smivo/features/home/widgets/transaction_tag.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 
+/// Teal-theme featured listing card for the first 3 home items.
+///
+/// Full-bleed product image with a gradient overlay at the bottom
+/// showing title, description, and price. The gradient uses the
+/// theme's gradient colors for brand consistency.
 class FeaturedListingCard extends StatelessWidget {
   const FeaturedListingCard({
     super.key,
@@ -72,6 +77,9 @@ class FeaturedListingCard extends StatelessWidget {
             ),
             
             // Bottom Info Gradient & Text
+            // NOTE: Uses the theme's gradient colors (gradientStart/End)
+            // instead of a generic dark overlay, so the card bottom
+            // blends with the brand palette.
             Positioned(
               bottom: 0,
               left: 0,
@@ -83,9 +91,11 @@ class FeaturedListingCard extends StatelessWidget {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      colors.onSurface.withValues(alpha: 0.8),
+                      colors.gradientStart.withValues(alpha: 0.92),
+                      colors.gradientEnd.withValues(alpha: 0.6),
                       Colors.transparent,
                     ],
+                    stops: const [0.0, 0.6, 1.0],
                   ),
                   borderRadius: BorderRadius.vertical(
                     bottom: Radius.circular(radius.xl),
@@ -98,6 +108,8 @@ class FeaturedListingCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // NOTE: Title uses onPrimary for maximum contrast
+                          // against the branded gradient background.
                           Text(
                             listing.title,
                             style: typo.titleMedium.copyWith(
@@ -120,11 +132,13 @@ class FeaturedListingCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
+                    // NOTE: Price uses the primary color to stand out
+                    // against the gradient background.
                     Text(
                       listing.transactionType.toLowerCase() == 'rental' 
                         ? _rentalPriceLabel(listing)
                         : '\$${listing.price.toStringAsFixed(0)}',
-                      style: typo.priceStyle,
+                      style: typo.priceStyle.copyWith(color: Colors.white),
                     ),
                   ],
                 ),

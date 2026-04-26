@@ -6,6 +6,11 @@ import 'package:smivo/features/home/widgets/transaction_tag.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 
+/// Teal-theme compact listing card for items 4+ on the home feed.
+///
+/// Layout: thumbnail image on the left, product name and price
+/// side by side on the right. Uses system theme primary color
+/// for the price.
 class CompactListingCard extends StatelessWidget {
   const CompactListingCard({
     super.key,
@@ -34,6 +39,10 @@ class CompactListingCard extends StatelessWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
+    final priceText = listing.transactionType.toLowerCase() == 'rental'
+        ? _rentalPriceLabel(listing)
+        : '\$${listing.price.toStringAsFixed(0)}';
+
     return GestureDetector(
       onTap: () => context.pushNamed(
         AppRoutes.listingDetail,
@@ -42,7 +51,7 @@ class CompactListingCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Image
             Container(
@@ -69,28 +78,51 @@ class CompactListingCard extends StatelessWidget {
                   : null,
             ),
             const SizedBox(width: 12),
-            // Info
+            // NOTE: Title and price side by side on the right,
+            // using system theme primary color for price.
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // NOTE: Tag placed above title per design requirement —
+                  // outside the image, left-aligned in the info column.
                   TransactionTag(transactionType: listing.transactionType),
                   const SizedBox(height: 4),
-                  Text(
-                    listing.title,
-                    style: typo.titleMedium,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          listing.title,
+                          style: typo.titleMedium.copyWith(
+                            color: colors.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        priceText,
+                        style: typo.titleMedium.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    listing.transactionType.toLowerCase() == 'rental' 
-                      ? _rentalPriceLabel(listing)
-                      : '\$${listing.price.toStringAsFixed(0)}',
-                    style: typo.labelLarge.copyWith(
-                      color: colors.priceAccentContainer,
+                  if (listing.description != null && listing.description!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      listing.description!,
+                      style: typo.bodySmall.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

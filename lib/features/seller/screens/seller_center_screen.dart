@@ -13,6 +13,7 @@ import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
+import 'package:smivo/features/seller/widgets/ikea_seller_order_card.dart';
 
 class SellerCenterScreen extends ConsumerStatefulWidget {
   const SellerCenterScreen({super.key});
@@ -143,11 +144,44 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                 if (isExpanded)
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                      final listing = activeListings[index];
-                      final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
-                      return _buildActiveListingCard(listing, imageUrl);
-                    }, childCount: activeListings.length)),
+                    sliver: colors.primary == const Color(0xFF004181)
+                        ? SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.78,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final listing = activeListings[index];
+                                return IkeaSellerOrderCard(
+                                  cardType: IkeaSellerCardType.activeListing,
+                                  listing: listing,
+                                  hasUnread: false,
+                                  onTap: () => context.pushNamed(
+                                    AppRoutes.listingDetail,
+                                    pathParameters: {'id': listing.id},
+                                  ),
+                                  statTaps: [
+                                    () => context.pushNamed(AppRoutes.transactionManagement,
+                                        pathParameters: {'id': listing.id}, queryParameters: {'tab': '0'}),
+                                    () => context.pushNamed(AppRoutes.transactionManagement,
+                                        pathParameters: {'id': listing.id}, queryParameters: {'tab': '1'}),
+                                    () => context.pushNamed(AppRoutes.transactionManagement,
+                                        pathParameters: {'id': listing.id}, queryParameters: {'tab': '2'}),
+                                  ],
+                                );
+                              },
+                              childCount: activeListings.length,
+                            ),
+                          )
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate((context, index) {
+                            final listing = activeListings[index];
+                            final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
+                            return _buildActiveListingCard(listing, imageUrl);
+                          }, childCount: activeListings.length)),
                   ),
               ]);
             },
@@ -196,11 +230,34 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                 if (isExpanded)
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                      final order = awaitingDelivery[index];
-                      final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
-                      return _buildAwaitingDeliveryCard(order, hasUnread);
-                    }, childCount: awaitingDelivery.length)),
+                    sliver: colors.primary == const Color(0xFF004181)
+                        ? SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.78,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final order = awaitingDelivery[index];
+                                final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                                return IkeaSellerOrderCard(
+                                  cardType: IkeaSellerCardType.awaitingDelivery,
+                                  order: order,
+                                  hasUnread: hasUnread,
+                                  onTap: () => _handleOrderTap(order.id, hasUnread),
+                                );
+                              },
+                              childCount: awaitingDelivery.length,
+                            ),
+                          )
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate((context, index) {
+                            final order = awaitingDelivery[index];
+                            final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                            return _buildAwaitingDeliveryCard(order, hasUnread);
+                          }, childCount: awaitingDelivery.length)),
                   ),
               ]);
             },
@@ -251,16 +308,44 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                 if (isExpanded)
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                      final order = activeTransactions[index];
-                      // NOTE: Use DB-driven labels via StatusResolver
-                      final resolver = ref.watch(statusResolverProvider).valueOrNull;
-                      final statusLabel = order.rentalStatus != null
-                          ? (resolver?.rentalLabel(order.rentalStatus!) ?? order.rentalStatus!.replaceAll('_', ' ').toUpperCase())
-                          : (resolver?.orderLabel(order.status) ?? order.status.toUpperCase());
-                      final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
-                      return _buildOrderCard(order, statusLabel, hasUnread);
-                    }, childCount: activeTransactions.length)),
+                    sliver: colors.primary == const Color(0xFF004181)
+                        ? SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.78,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final order = activeTransactions[index];
+                                // NOTE: Use StatusResolver for DB-driven labels, same as Teal card.
+                                final resolver =
+                                    ref.watch(statusResolverProvider).valueOrNull;
+                                final statusLabel = order.rentalStatus != null
+                                    ? (resolver?.rentalLabel(order.rentalStatus!) ??
+                                        order.rentalStatus!.replaceAll('_', ' ').toUpperCase())
+                                    : (resolver?.orderLabel(order.status) ??
+                                        order.status.toUpperCase());
+                                final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                                return IkeaSellerOrderCard(
+                                  cardType: IkeaSellerCardType.activeTransaction,
+                                  order: order,
+                                  statusLabel: statusLabel,
+                                  hasUnread: hasUnread,
+                                  onTap: () => _handleOrderTap(order.id, hasUnread),
+                                );
+                              },
+                              childCount: activeTransactions.length,
+                            ),
+                          )
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate((context, index) {
+                            final order = activeTransactions[index];
+                            final statusLabel = order.rentalStatus?.replaceAll('_', ' ').toUpperCase() ?? order.status.toUpperCase();
+                            final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                            return _buildOrderCard(order, statusLabel, hasUnread);
+                          }, childCount: activeTransactions.length)),
                   ),
               ]);
             },
@@ -387,77 +472,99 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     ),
                     if (isExpanded)
                       SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                            final item = filteredHistory[index];
-                            final dateStr = DateFormat('M/d/yyyy HH:mm').format(item.updatedAt ?? item.createdAt ?? DateTime.now());
-                            
-                            return InkWell(
-                              onTap: item.onTap,
-                              borderRadius: BorderRadius.circular(radius.card),
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: colors.surfaceContainerLow,
-                                  borderRadius: BorderRadius.circular(radius.card),
-                                  border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-                                ),
-                                child: Row(children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(radius.image),
-                                    child: item.imageUrl != null
-                                      ? Image.network(item.imageUrl!, width: 48, height: 48, fit: BoxFit.cover)
-                                      : Container(width: 48, height: 48, color: colors.surfaceContainerHigh, child: const Icon(Icons.image)),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final item = filteredHistory[index];
+                              if (colors.primary == const Color(0xFF004181)) {
+                                return IkeaSellerOrderCard(
+                                  cardType: IkeaSellerCardType.history,
+                                  historyItem: item,
+                                  hasUnread: false,
+                                  onTap: item.onTap,
+                                );
+                              }
+
+                              final dateStr =
+                                  DateFormat('M/d/yyyy HH:mm').format(item.updatedAt ?? item.createdAt ?? DateTime.now());
+
+                              return InkWell(
+                                onTap: item.onTap,
+                                borderRadius: BorderRadius.circular(radius.card),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: colors.surfaceContainerLow,
+                                    borderRadius: BorderRadius.circular(radius.card),
+                                    border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                    Text(item.title, style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold),
-                                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                                    const SizedBox(height: 4),
-                                    if (item.subtitle.contains(r'$'))
-                                      RichText(
-                                        text: TextSpan(
-                                          style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)),
-                                          children: [
-                                            TextSpan(
-                                              text: item.subtitle.split(' · ').first,
-                                              style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
-                                            ),
-                                            TextSpan(
-                                              text: item.subtitle.contains(' · ') 
-                                                ? ' · ${item.subtitle.split(' · ').sublist(1).join(' · ')}'
-                                                : '',
-                                            ),
-                                          ],
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      )
-                                    else
-                                      Text(item.subtitle,
-                                        style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
-                                  ])),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      _buildHistoryStatusChip(item),
+                                  child: Row(children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(radius.image),
+                                      child: item.imageUrl != null
+                                          ? Image.network(item.imageUrl!, width: 48, height: 48, fit: BoxFit.cover)
+                                          : Container(
+                                              width: 48,
+                                              height: 48,
+                                              color: colors.surfaceContainerHigh,
+                                              child: const Icon(Icons.image)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                      Text(item.title,
+                                          style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis),
                                       const SizedBox(height: 4),
-                                      Text(
-                                        dateStr,
-                                        style: typo.labelSmall.copyWith(
-                                          color: colors.onSurface.withValues(alpha: 0.4),
-                                          fontSize: 10,
+                                      if (item.subtitle.contains(r'$'))
+                                        RichText(
+                                          text: TextSpan(
+                                            style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)),
+                                            children: [
+                                              TextSpan(
+                                                text: item.subtitle.split(' · ').first,
+                                                style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
+                                              ),
+                                              TextSpan(
+                                                text: item.subtitle.contains(' · ')
+                                                    ? ' · ${item.subtitle.split(' · ').sublist(1).join(' · ')}'
+                                                    : '',
+                                              ),
+                                            ],
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        )
+                                      else
+                                        Text(item.subtitle,
+                                            style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
+                                    ])),
+                                    const SizedBox(width: 8),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        _buildHistoryStatusChip(item),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          dateStr,
+                                          style: typo.labelSmall.copyWith(
+                                            color: colors.onSurface.withValues(alpha: 0.4),
+                                            fontSize: 10,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ]),
-                              ),
-                            );
-                          }, childCount: filteredHistory.length)),
+                                      ],
+                                    ),
+                                  ]),
+                                ),
+                              );
+                            },
+                            childCount: filteredHistory.length,
+                          ),
                         ),
+                      ),
                   ]);
                 },
               );
