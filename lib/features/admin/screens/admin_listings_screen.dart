@@ -54,7 +54,7 @@ class _AdminListingsScreenState extends ConsumerState<AdminListingsScreen> {
                       hintText: 'Search by title, seller, or category…',
                       prefixIcon: const Icon(Icons.search, size: 20),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.md)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm)),
                       filled: true,
                       fillColor: colors.surfaceContainerLow,
                     ),

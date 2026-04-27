@@ -37,51 +37,92 @@ class AdminSchoolsScreen extends ConsumerWidget {
             return const Center(child: Text('No schools found.'));
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(24),
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             itemCount: schools.length,
-            separatorBuilder: (context, index) => const Divider(),
             itemBuilder: (context, index) {
               final school = schools[index];
-              return ListTile(
-                title: Row(
-                  children: [
-                    Text(school.name, style: typo.titleMedium),
-                    const SizedBox(width: 8),
-                    if (school.isActive)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: colors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+              final radius = context.smivoRadius;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(radius.sm),
+                  border: Border.all(
+                    color: colors.outlineVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.school,
+                      color: Color(0xFF2563EB),
+                      size: 20,
+                    ),
+                  ),
+                  title: Row(
+                    children: [
+                      Flexible(
                         child: Text(
-                          'Active',
-                          style: typo.labelSmall.copyWith(color: colors.primary),
+                          school.name,
+                          style: typo.titleMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                  ],
-                ),
-                subtitle: Text(
-                  'Domain: @${school.emailDomain} • Slug: ${school.slug}',
-                  style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
-                ),
-                trailing: canWrite
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, size: 20),
-                            color: colors.primary,
-                            onPressed: () => _showSchoolDialog(context, ref, school),
+                      const SizedBox(width: 8),
+                      if (school.isActive)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
                           ),
-                          IconButton(
-                            icon: Icon(Icons.delete, size: 20, color: colors.error),
-                            onPressed: () => _confirmDelete(context, ref, school),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                        ],
-                      )
-                    : null,
+                          child: Text(
+                            'Active',
+                            style: typo.labelSmall.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    '@${school.emailDomain} • ${school.slug}${school.city != null ? ' • ${school.city}' : ''}',
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                  trailing: canWrite
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit,
+                                  size: 20, color: colors.primary),
+                              onPressed: () =>
+                                  _showSchoolDialog(context, ref, school),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete,
+                                  size: 20, color: colors.error),
+                              onPressed: () =>
+                                  _confirmDelete(context, ref, school),
+                            ),
+                          ],
+                        )
+                      : null,
+                ),
               );
             },
           );

@@ -31,6 +31,22 @@ class FaqRepository {
     }
   }
 
+  /// Fetch FAQs for a specific school, including global (school_id IS NULL).
+  Future<List<Faq>> fetchFaqsBySchool(String schoolId) async {
+    try {
+      final response = await _client
+          .from('faqs')
+          .select()
+          .or('school_id.eq.$schoolId,school_id.is.null')
+          .order('display_order', ascending: true);
+      return response.map((json) => Faq.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message);
+    } catch (e) {
+      throw NetworkException(e.toString());
+    }
+  }
+
   Future<Faq> createFaq(Faq faq) async {
     try {
       final response = await _client
