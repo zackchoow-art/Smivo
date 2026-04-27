@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/admin/providers/admin_dashboard_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
@@ -97,6 +99,41 @@ class AdminDashboardScreen extends ConsumerWidget {
             ),
 
             const SizedBox(height: 40),
+
+            // Quick actions
+            Text('Quick Actions', style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _QuickActionChip(
+                  icon: Icons.school,
+                  label: 'Manage Schools',
+                  onTap: () => context.goNamed(AppRoutes.adminSchools),
+                ),
+                _QuickActionChip(
+                  icon: Icons.category,
+                  label: 'Categories',
+                  onTap: () => context.goNamed(AppRoutes.adminCategories),
+                ),
+                _QuickActionChip(
+                  icon: Icons.help,
+                  label: 'FAQs',
+                  onTap: () => context.goNamed(AppRoutes.adminFaqs),
+                ),
+                _QuickActionChip(
+                  icon: Icons.book,
+                  label: 'Dictionary',
+                  onTap: () => context.goNamed(AppRoutes.adminDictionary),
+                ),
+                _QuickActionChip(
+                  icon: Icons.security,
+                  label: 'Roles',
+                  onTap: () => context.goNamed(AppRoutes.adminRoles),
+                ),
+              ],
+            ),
 
             // Recent activity
             Text('Recent Orders', style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700)),
@@ -287,6 +324,58 @@ class _ErrorCard extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(child: Text(message, style: TextStyle(color: colors.error))),
         ],
+      ),
+    );
+  }
+}
+
+/// Tappable chip for quick navigation from the dashboard.
+class _QuickActionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _QuickActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    return Material(
+      color: colors.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(radius.sm),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(radius.sm),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius.sm),
+            border: Border.all(
+              color: colors.outlineVariant.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: colors.primary),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: typo.labelLarge.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

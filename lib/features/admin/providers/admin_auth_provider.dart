@@ -15,6 +15,7 @@ enum AdminModule {
   schools,
   categories,
   conditions,
+  pickupLocations,
   faqs,
   dictionary,
   roles,
@@ -197,6 +198,7 @@ class AdminContext {
           case 'listings':
           case 'orders':
           case 'faqs':
+          case 'pickupLocations':
             return PermissionLevel.read;
           default:
             return PermissionLevel.none;

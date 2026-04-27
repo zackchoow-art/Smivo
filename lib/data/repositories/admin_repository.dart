@@ -49,6 +49,8 @@ class AdminRepository {
       final pendingOrdersRes = await _client.from('orders').select('id').eq('status', 'pending').count(CountOption.exact);
       final schoolsRes = await _client.from('schools').select('id').count(CountOption.exact);
 
+      final categoriesRes = await _client.from('school_categories').select('id').count(CountOption.exact);
+
       return DashboardMetrics(
         totalUsers: usersRes.count,
         activeListings: activeListingsRes.count,
@@ -57,9 +59,7 @@ class AdminRepository {
         totalOrders: ordersRes.count,
         totalListings: listingsRes.count,
         totalSchools: schoolsRes.count,
-        // NOTE: Categories are stored as an enum in Flutter,
-        // not a separate DB table. Hardcoded count.
-        totalCategories: 7,
+        totalCategories: categoriesRes.count,
       );
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message);

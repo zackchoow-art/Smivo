@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/school_category.dart';
 import 'package:smivo/data/repositories/school_data_repository.dart';
+import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_categories_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
 
@@ -23,6 +24,8 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final schoolsState = ref.watch(adminSchoolControllerProvider);
+    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final canWrite = adminCtx?.canWrite(AdminModule.categories) ?? false;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -33,7 +36,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         actions: [
-          if (_selectedSchoolId != null)
+          if (_selectedSchoolId != null && canWrite)
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Add category',
@@ -76,14 +79,14 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                       style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant),
                     ),
                   )
-                : _buildCategoryList(context),
+                : _buildCategoryList(context, canWrite),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryList(BuildContext context) {
+  Widget _buildCategoryList(BuildContext context, bool canWrite) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -136,19 +139,21 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   'slug: ${cat.slug} • order: ${cat.displayOrder} • ${cat.isActive ? "Active" : "Inactive"}',
                   style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, size: 20, color: colors.primary),
-                      onPressed: () => _showCategoryDialog(context, cat),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, size: 20, color: colors.error),
-                      onPressed: () => _confirmDelete(context, cat),
-                    ),
-                  ],
-                ),
+                trailing: canWrite
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, size: 20, color: colors.primary),
+                            onPressed: () => _showCategoryDialog(context, cat),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, size: 20, color: colors.error),
+                            onPressed: () => _confirmDelete(context, cat),
+                          ),
+                        ],
+                      )
+                    : null,
               ),
             );
           },

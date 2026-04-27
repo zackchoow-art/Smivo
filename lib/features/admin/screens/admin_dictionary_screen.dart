@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/system_dictionary.dart';
 import 'package:smivo/data/repositories/school_data_repository.dart';
+import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_dictionary_provider.dart';
 
 /// Admin screen for managing system data dictionaries.
@@ -23,6 +24,8 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
     final radius = context.smivoRadius;
     final dictState = ref.watch(adminDictionariesProvider());
     final typesState = ref.watch(adminDictTypesProvider);
+    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final canWrite = adminCtx?.canWrite(AdminModule.dictionary) ?? false;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -33,11 +36,12 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Add entry',
-            onPressed: () => _showDialog(context, null),
-          ),
+          if (canWrite)
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Add entry',
+              onPressed: () => _showDialog(context, null),
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
@@ -160,19 +164,21 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
                             subtitle: dict.description != null
                                 ? Text(dict.description!, style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant))
                                 : null,
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.edit, size: 18, color: colors.primary),
-                                  onPressed: () => _showDialog(context, dict),
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.delete, size: 18, color: colors.error),
-                                  onPressed: () => _confirmDelete(context, dict),
-                                ),
-                              ],
-                            ),
+                            trailing: canWrite
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.edit, size: 18, color: colors.primary),
+                                      onPressed: () => _showDialog(context, dict),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete, size: 18, color: colors.error),
+                                      onPressed: () => _confirmDelete(context, dict),
+                                    ),
+                                  ],
+                                )
+                              : null,
                           ),
                         )),
                       ],

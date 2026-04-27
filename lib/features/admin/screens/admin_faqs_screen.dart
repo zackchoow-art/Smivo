@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/faq.dart';
+import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_faq_provider.dart';
 
 class AdminFaqsScreen extends ConsumerWidget {
@@ -12,6 +13,8 @@ class AdminFaqsScreen extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final faqsState = ref.watch(adminFaqControllerProvider);
+    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final canWrite = adminCtx?.canWrite(AdminModule.faqs) ?? false;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -19,11 +22,12 @@ class AdminFaqsScreen extends ConsumerWidget {
         title: const Text('Manage FAQs'),
         backgroundColor: colors.surfaceContainerLowest,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Add new FAQ',
-            onPressed: () => _showFaqDialog(context, ref, null),
-          ),
+          if (canWrite)
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Add new FAQ',
+              onPressed: () => _showFaqDialog(context, ref, null),
+            ),
           const SizedBox(width: 16),
         ],
       ),
@@ -45,20 +49,22 @@ class AdminFaqsScreen extends ConsumerWidget {
                   '${faq.category} • Order: ${faq.displayOrder}',
                   style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20),
-                      color: colors.primary,
-                      onPressed: () => _showFaqDialog(context, ref, faq),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, size: 20, color: colors.error),
-                      onPressed: () => _confirmDelete(context, ref, faq),
-                    ),
-                  ],
-                ),
+                trailing: canWrite
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20),
+                            color: colors.primary,
+                            onPressed: () => _showFaqDialog(context, ref, faq),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, size: 20, color: colors.error),
+                            onPressed: () => _confirmDelete(context, ref, faq),
+                          ),
+                        ],
+                      )
+                    : null,
               );
             },
           );
@@ -68,11 +74,13 @@ class AdminFaqsScreen extends ConsumerWidget {
           child: Text('Error loading FAQs: $err', style: TextStyle(color: colors.error)),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showFaqDialog(context, ref, null),
-        backgroundColor: colors.primary,
-        child: Icon(Icons.add, color: colors.onPrimary),
-      ),
+      floatingActionButton: canWrite
+          ? FloatingActionButton(
+              onPressed: () => _showFaqDialog(context, ref, null),
+              backgroundColor: colors.primary,
+              child: Icon(Icons.add, color: colors.onPrimary),
+            )
+          : null,
     );
   }
 

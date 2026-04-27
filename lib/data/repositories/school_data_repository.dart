@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/data/models/pickup_location.dart';
 import 'package:smivo/data/models/school_category.dart';
 import 'package:smivo/data/models/school_condition.dart';
 import 'package:smivo/data/models/system_dictionary.dart';
 
 part 'school_data_repository.g.dart';
-
 @riverpod
 SchoolDataRepository schoolDataRepository(Ref ref) {
   return SchoolDataRepository(ref.watch(supabaseClientProvider));
@@ -219,6 +219,57 @@ class SchoolDataRepository {
   Future<void> deleteDictionary(String id) async {
     try {
       await _client.from('system_dictionaries').delete().eq('id', id);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message);
+    }
+  }
+
+  // ── Pickup Locations ─────────────────────────────────────────
+
+  Future<List<PickupLocation>> fetchPickupLocations(String schoolId) async {
+    try {
+      final data = await _client
+          .from('pickup_locations')
+          .select()
+          .eq('school_id', schoolId)
+          .order('display_order');
+      return data.map((e) => PickupLocation.fromJson(e)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message);
+    }
+  }
+
+  Future<PickupLocation> upsertPickupLocation(PickupLocation location) async {
+    try {
+      final json = location.toJson()
+        ..remove('id')
+        ..remove('created_at')
+        ..remove('updated_at');
+
+      if (location.id.isEmpty) {
+        final data = await _client
+            .from('pickup_locations')
+            .insert(json)
+            .select()
+            .single();
+        return PickupLocation.fromJson(data);
+      } else {
+        final data = await _client
+            .from('pickup_locations')
+            .update(json)
+            .eq('id', location.id)
+            .select()
+            .single();
+        return PickupLocation.fromJson(data);
+      }
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message);
+    }
+  }
+
+  Future<void> deletePickupLocation(String id) async {
+    try {
+      await _client.from('pickup_locations').delete().eq('id', id);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message);
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/school.dart';
+import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
 
 class AdminSchoolsScreen extends ConsumerWidget {
@@ -12,6 +13,8 @@ class AdminSchoolsScreen extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final schoolsState = ref.watch(adminSchoolControllerProvider);
+    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final canWrite = adminCtx?.canWrite(AdminModule.schools) ?? false;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -19,11 +22,12 @@ class AdminSchoolsScreen extends ConsumerWidget {
         title: const Text('Manage Schools'),
         backgroundColor: colors.surfaceContainerLowest,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Add new school',
-            onPressed: () => _showSchoolDialog(context, ref, null),
-          ),
+          if (canWrite)
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Add new school',
+              onPressed: () => _showSchoolDialog(context, ref, null),
+            ),
           const SizedBox(width: 16),
         ],
       ),
@@ -62,20 +66,22 @@ class AdminSchoolsScreen extends ConsumerWidget {
                   'Domain: @${school.emailDomain} • Slug: ${school.slug}',
                   style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20),
-                      color: colors.primary,
-                      onPressed: () => _showSchoolDialog(context, ref, school),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, size: 20, color: colors.error),
-                      onPressed: () => _confirmDelete(context, ref, school),
-                    ),
-                  ],
-                ),
+                trailing: canWrite
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20),
+                            color: colors.primary,
+                            onPressed: () => _showSchoolDialog(context, ref, school),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, size: 20, color: colors.error),
+                            onPressed: () => _confirmDelete(context, ref, school),
+                          ),
+                        ],
+                      )
+                    : null,
               );
             },
           );
@@ -85,11 +91,13 @@ class AdminSchoolsScreen extends ConsumerWidget {
           child: Text('Error loading schools: $err', style: TextStyle(color: colors.error)),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showSchoolDialog(context, ref, null),
-        backgroundColor: colors.primary,
-        child: Icon(Icons.add, color: colors.onPrimary),
-      ),
+      floatingActionButton: canWrite
+          ? FloatingActionButton(
+              onPressed: () => _showSchoolDialog(context, ref, null),
+              backgroundColor: colors.primary,
+              child: Icon(Icons.add, color: colors.onPrimary),
+            )
+          : null,
     );
   }
 

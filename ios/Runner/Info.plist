@@ -45,5 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Privacy permission descriptions required by App Store -->
+	<key>NSCameraUsageDescription</key>
+	<string>Smivo needs camera access to take photos of items you want to sell or rent.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Smivo needs photo library access to select images for your listings.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Smivo needs to save photos to your photo library.</string>
 </dict>
 </plist>

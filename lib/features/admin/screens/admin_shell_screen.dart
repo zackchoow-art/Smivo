@@ -88,6 +88,7 @@ class AdminShellScreen extends ConsumerWidget {
       _NavItem('Schools', Icons.school_outlined, Icons.school, AppRoutes.adminSchoolsPath, AppRoutes.adminSchools, AdminModule.schools),
       _NavItem('Categories', Icons.category_outlined, Icons.category, AppRoutes.adminCategoriesPath, AppRoutes.adminCategories, AdminModule.categories),
       _NavItem('Conditions', Icons.star_half_outlined, Icons.star_half, AppRoutes.adminConditionsPath, AppRoutes.adminConditions, AdminModule.conditions),
+      _NavItem('Pickup Locations', Icons.location_on_outlined, Icons.location_on, AppRoutes.adminPickupLocationsPath, AppRoutes.adminPickupLocations, AdminModule.pickupLocations),
       _NavItem('FAQs', Icons.help_outline, Icons.help, AppRoutes.adminFaqsPath, AppRoutes.adminFaqs, AdminModule.faqs),
       _NavItem('Dictionary', Icons.book_outlined, Icons.book, AppRoutes.adminDictionaryPath, AppRoutes.adminDictionary, AdminModule.dictionary),
       _NavItem('Roles', Icons.security_outlined, Icons.security, AppRoutes.adminRolesPath, AppRoutes.adminRoles, AdminModule.roles),

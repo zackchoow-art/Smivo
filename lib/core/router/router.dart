@@ -35,6 +35,7 @@ import 'package:smivo/features/admin/screens/admin_orders_screen.dart';
 import 'package:smivo/features/admin/screens/admin_faqs_screen.dart';
 import 'package:smivo/features/admin/screens/admin_categories_screen.dart';
 import 'package:smivo/features/admin/screens/admin_conditions_screen.dart';
+import 'package:smivo/features/admin/screens/admin_pickup_locations_screen.dart';
 import 'package:smivo/features/admin/screens/admin_dictionary_screen.dart';
 import 'package:smivo/features/admin/screens/admin_schools_screen.dart';
 import 'package:smivo/features/admin/screens/admin_roles_screen.dart';
@@ -359,6 +360,11 @@ GoRouter router(Ref ref) {
             name: AppRoutes.adminConditions,
             path: AppRoutes.adminConditionsPath,
             builder: (context, state) => const AdminConditionsScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminPickupLocations,
+            path: AppRoutes.adminPickupLocationsPath,
+            builder: (context, state) => const AdminPickupLocationsScreen(),
           ),
           GoRoute(
             name: AppRoutes.adminFaqs,
