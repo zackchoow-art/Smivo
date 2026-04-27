@@ -13,21 +13,84 @@ class ProfileRepository {
 
   ProfileRepository(this._client);
 
-  /// Fetch a user profile by ID
-  Future<UserProfile> getProfile(String userId) async {
+  /// Fetch a user profile by ID.
+  ///
+  /// Returns null if no profile row exists (e.g. user was
+  /// created outside the normal signup trigger flow).
+  Future<UserProfile?> getProfile(String userId) async {
     try {
       final data = await _client
           .from('user_profiles')
           .select()
           .eq('id', userId)
-          .single();
-      
+          .maybeSingle();
+
+      if (data == null) return null;
       return UserProfile.fromJson(data);
     } on supabase.PostgrestException catch (e) {
       throw AppException.database('Failed to fetch profile: ${e.message}', e);
     } catch (e) {
       throw AppException.unknown(
         'An unexpected error occurred while fetching profile',
+        e,
+      );
+    }
+  }
+
+  /// Create a new profile for a user that bypassed the DB trigger.
+  ///
+  /// Looks up the school_id from the user's email domain.
+  /// Falls back to the first active school if no domain match.
+  Future<UserProfile> createProfileForUser({
+    required String userId,
+    required String email,
+  }) async {
+    try {
+      final domain = email.split('@').last;
+
+      // Look up school by email domain
+      final schoolRow = await _client
+          .from('schools')
+          .select('id')
+          .eq('email_domain', domain)
+          .eq('is_active', true)
+          .maybeSingle();
+
+      String? schoolId = schoolRow?['id'] as String?;
+
+      // Fallback: use first active school
+      if (schoolId == null) {
+        final fallback = await _client
+            .from('schools')
+            .select('id')
+            .eq('is_active', true)
+            .limit(1)
+            .maybeSingle();
+        schoolId = fallback?['id'] as String?;
+      }
+
+      if (schoolId == null) {
+        throw AppException.database(
+          'No active school found for domain: $domain',
+        );
+      }
+
+      final data = await _client
+          .from('user_profiles')
+          .insert({
+            'id': userId,
+            'email': email,
+            'school_id': schoolId,
+          })
+          .select()
+          .single();
+
+      return UserProfile.fromJson(data);
+    } on supabase.PostgrestException catch (e) {
+      throw AppException.database('Failed to create profile: ${e.message}', e);
+    } catch (e) {
+      throw AppException.unknown(
+        'An unexpected error occurred while creating profile',
         e,
       );
     }

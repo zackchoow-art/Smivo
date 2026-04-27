@@ -188,7 +188,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 Text(listing.description ?? 'No description provided.', style: typo.bodyLarge),
                 const SizedBox(height: 24),
                 if (!isSale) ...[
-                  if (!isOwnListing) RentalOptionsSection(listing: listing),
+                  if (!isOwnListing && listing.status == 'active') RentalOptionsSection(listing: listing),
                   if (isOwnListing) ...[
                     const SizedBox(height: 16),
                     // Read-only rental rates display
@@ -456,6 +456,27 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                         ]),
                       );
                     }
+                    
+                    if (listing.status != 'active') {
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(radius.card),
+                        ),
+                        child: Column(children: [
+                          Icon(Icons.remove_shopping_cart_outlined, color: colors.outlineVariant, size: 28),
+                          const SizedBox(height: 8),
+                          Text('Item Unavailable',
+                            style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text('This listing is no longer active on the market.',
+                            style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
+                        ]),
+                      );
+                    }
+
                     return SizedBox(width: double.infinity, child: ElevatedButton(
                       onPressed: () async {
                         final user = ref.read(authStateProvider).valueOrNull;

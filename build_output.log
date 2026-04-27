@@ -1,0 +1,8 @@
+Building com.smivo.app for simulator (ios)...
+Upgrading AppFrameworkInfo.plist
+Upgrading Podfile
+Finished migration to UIScene lifecycle. See https://flutter.dev/to/uiscene-migration for details.
+Running pod install...                                             744ms
+Running Xcode build...                                          
+Xcode build done.                                           14.4s
+✓ Built build/ios/iphonesimulator/Runner.app

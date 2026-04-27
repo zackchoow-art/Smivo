@@ -16,7 +16,22 @@ class Profile extends _$Profile {
 
     if (user == null) return null;
 
-    return ref.read(profileRepositoryProvider).getProfile(user.id);
+    final repo = ref.read(profileRepositoryProvider);
+    final existing = await repo.getProfile(user.id);
+
+    if (existing != null) return existing;
+
+    // NOTE: Profile row missing — user was likely created outside
+    // the normal signup flow (e.g. via Supabase Dashboard).
+    // Auto-create with school derived from email domain.
+    if (user.email != null) {
+      return repo.createProfileForUser(
+        userId: user.id,
+        email: user.email!,
+      );
+    }
+
+    return null;
   }
 
   /// Update the current user's display name

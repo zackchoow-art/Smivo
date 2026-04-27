@@ -35,6 +35,7 @@ class _NotificationSettingsScreenState
     try {
       final profile =
           await ref.read(profileRepositoryProvider).getProfile(user.id);
+      if (profile == null) return;
       ref
           .read(emailNotificationsStateProvider.notifier)
           .setInitial(profile.emailNotificationsEnabled);
