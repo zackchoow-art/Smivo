@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smivo/shared/widgets/bottom_nav_bar.dart';
+import 'package:smivo/shared/widgets/responsive_scaffold.dart';
 
+/// Root shell widget used by GoRouter's [StatefulShellRoute].
+///
+/// Delegates entirely to [ResponsiveScaffold] which handles
+/// adaptive navigation (BottomNav / Rail / Sidebar) based on
+/// screen width breakpoints.
 class AppShell extends StatelessWidget {
   const AppShell({
     super.key,
@@ -12,18 +17,6 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-      extendBody: true, // Allows content to scroll underneath if needed (with padding)
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) {
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
-        },
-      ),
-    );
+    return ResponsiveScaffold(navigationShell: navigationShell);
   }
 }
