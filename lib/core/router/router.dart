@@ -37,6 +37,7 @@ import 'package:smivo/features/admin/screens/admin_categories_screen.dart';
 import 'package:smivo/features/admin/screens/admin_conditions_screen.dart';
 import 'package:smivo/features/admin/screens/admin_dictionary_screen.dart';
 import 'package:smivo/features/admin/screens/admin_schools_screen.dart';
+import 'package:smivo/features/admin/screens/admin_roles_screen.dart';
 import 'app_routes.dart';
 
 part 'router.g.dart';
@@ -368,6 +369,11 @@ GoRouter router(Ref ref) {
             name: AppRoutes.adminDictionary,
             path: AppRoutes.adminDictionaryPath,
             builder: (context, state) => const AdminDictionaryScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminRoles,
+            path: AppRoutes.adminRolesPath,
+            builder: (context, state) => const AdminRolesScreen(),
           ),
         ],
       ),

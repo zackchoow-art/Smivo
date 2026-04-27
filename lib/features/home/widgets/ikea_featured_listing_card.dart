@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
@@ -49,103 +50,120 @@ class IkeaFeaturedListingCard extends StatelessWidget {
     final radius = context.smivoRadius;
     final shadows = context.smivoShadows;
 
-    return GestureDetector(
-      onTap: () => context.pushNamed(
-        AppRoutes.listingDetail,
-        pathParameters: {'id': listing.id},
-      ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: colors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(radius.card),
-          boxShadow: shadows.card,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Image section with transaction type tag ─────────
-            AspectRatio(
-              aspectRatio: 4 / 3,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Product image
-                  if (imageUrl != null)
-                    Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildImageFallback(
-                        colors,
-                      ),
-                    )
-                  else
-                    _buildImageFallback(colors),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isDesktop = Breakpoints.isDesktop(constraints.maxWidth);
 
-                  // RENT / SALE tag — top-right corner
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: TransactionTag(transactionType: listing.transactionType),
-                  ),
-                ],
-              ),
+        Widget content = GestureDetector(
+          onTap: () => context.pushNamed(
+            AppRoutes.listingDetail,
+            pathParameters: {'id': listing.id},
+          ),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(radius.card),
+              boxShadow: shadows.card,
             ),
-
-            // ── Info section ───────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    listing.title,
-                    style: typo.titleMedium.copyWith(
-                      color: colors.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  if (listing.pickupLocation != null)
-                    Text(
-                      listing.pickupLocation!.name,
-                      style: typo.bodySmall.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const SizedBox(height: 8),
-                  // Price row with arrow
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Image section with transaction type tag ─────────
+                AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: Stack(
+                    fit: StackFit.expand,
                     children: [
-                      Text(
-                        _priceLabel(listing),
-                        style: typo.priceStyle.copyWith(
-                          color: colors.onSurface,
-                          fontSize: 18,
-                        ),
-                      ),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 20,
-                        color: colors.onSurfaceVariant,
-                        semanticLabel: 'View listing details',
+                      // Product image
+                      if (imageUrl != null)
+                        Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildImageFallback(
+                            colors,
+                          ),
+                        )
+                      else
+                        _buildImageFallback(colors),
+
+                      // RENT / SALE tag — top-right corner
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: TransactionTag(transactionType: listing.transactionType),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+
+                // ── Info section ───────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        listing.title,
+                        style: typo.titleMedium.copyWith(
+                          color: colors.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      if (listing.pickupLocation != null)
+                        Text(
+                          listing.pickupLocation!.name,
+                          style: typo.bodySmall.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      const SizedBox(height: 8),
+                      // Price row with arrow
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _priceLabel(listing),
+                            style: typo.priceStyle.copyWith(
+                              color: colors.onSurface,
+                              fontSize: 18,
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward,
+                            size: 20,
+                            color: colors.onSurfaceVariant,
+                            semanticLabel: 'View listing details',
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+
+        if (isDesktop) {
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: content,
+            ),
+          );
+        }
+
+        return content;
+      },
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -30,33 +31,73 @@ class RentalOptionsSection extends ConsumerWidget {
     }
     final depositText = listing.depositAmount > 0 ? '\$${listing.depositAmount.toStringAsFixed(0)} Deposit' : 'No deposit required';
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        for (int i = 0; i < pricingCards.length; i++) ...[
-          if (i > 0) const SizedBox(width: 12),
-          pricingCards[i],
-        ],
-      ]),
-      const SizedBox(height: 24),
-      Text('Rental Period', style: typo.headlineSmall),
-      const SizedBox(height: 16),
-      if (selectedRate == 'DAY') _DateRangePicker(listing: listing)
-      else _StepperConfigurator(label: selectedRate == 'WEEK' ? 'NUMBER OF WEEKS' : 'NUMBER OF MONTHS', unit: selectedRate, listing: listing),
-      const SizedBox(height: 16),
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.md)),
-        child: Row(children: [
-          Icon(Icons.shield_outlined, color: colors.primary),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('SECURITY DEPOSIT', style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
-            Text(depositText, style: typo.titleMedium),
-          ])),
-          Icon(Icons.info_outline, color: colors.onSurface.withValues(alpha: 0.5), size: 20),
-        ]),
-      ),
-    ]);
+    // NOTE: LayoutBuilder drives responsive layout — desktop puts pricing cards
+    // and date picker side-by-side in a Row; mobile/tablet keeps Column layout.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isDesktop = Breakpoints.isDesktop(constraints.maxWidth);
+
+        final Widget pricingRow = Row(children: [
+          for (int i = 0; i < pricingCards.length; i++) ...[
+            if (i > 0) const SizedBox(width: 12),
+            pricingCards[i],
+          ],
+        ]);
+
+        final Widget datePicker = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Rental Period', style: typo.headlineSmall),
+            const SizedBox(height: 16),
+            if (selectedRate == 'DAY') _DateRangePicker(listing: listing)
+            else _StepperConfigurator(
+              label: selectedRate == 'WEEK' ? 'NUMBER OF WEEKS' : 'NUMBER OF MONTHS',
+              unit: selectedRate,
+              listing: listing,
+            ),
+          ],
+        );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (isDesktop) ...
+              // Desktop: pricing cards and date picker side-by-side
+              [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: pricingRow),
+                    const SizedBox(width: 24),
+                    Expanded(child: datePicker),
+                  ],
+                ),
+              ]
+            else ...
+              // Mobile/tablet: vertical stack
+              [
+                pricingRow,
+                const SizedBox(height: 24),
+                datePicker,
+              ],
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.md)),
+              child: Row(children: [
+                Icon(Icons.shield_outlined, color: colors.primary),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('SECURITY DEPOSIT', style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5)),
+                  Text(depositText, style: typo.titleMedium),
+                ])),
+                Icon(Icons.info_outline, color: colors.onSurface.withValues(alpha: 0.5), size: 20),
+              ]),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

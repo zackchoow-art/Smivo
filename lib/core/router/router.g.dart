@@ -6,7 +6,7 @@ part of 'router.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$routerHash() => r'9c68d92bb26f1f8d27dd2deb86eac8d35ff698c4';
+String _$routerHash() => r'e3d434df25db04998225e700daa8f81b0cc7a689';
 
 /// GoRouter configuration with reactive auth redirect guard.
 ///

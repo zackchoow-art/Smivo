@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 
 /// Admin shell with sidebar navigation (desktop) and drawer (mobile).
 ///
 /// Wraps all admin sub-routes with a persistent layout.
-class AdminShellScreen extends StatelessWidget {
+/// Sidebar items are filtered by the current user's permissions.
+class AdminShellScreen extends ConsumerWidget {
   const AdminShellScreen({super.key, required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final isDesktop = MediaQuery.sizeOf(context).width >= 900;
     final currentPath = GoRouterState.of(context).uri.path;
+    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
 
-    final navItems = _buildNavItems(currentPath);
+    final navItems = _buildNavItems(currentPath).where((item) {
+      if (item.module == null) return true;
+      return adminCtx?.hasPermission(item.module!) ?? true;
+    }).toList();
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -74,15 +81,16 @@ class AdminShellScreen extends StatelessWidget {
 
   List<_NavItem> _buildNavItems(String currentPath) {
     return [
-      _NavItem('Dashboard', Icons.dashboard_outlined, Icons.dashboard, AppRoutes.adminDashboardPath, AppRoutes.adminDashboard),
-      _NavItem('Users', Icons.people_outline, Icons.people, AppRoutes.adminUsersPath, AppRoutes.adminUsers),
-      _NavItem('Listings', Icons.storefront_outlined, Icons.storefront, AppRoutes.adminListingsPath, AppRoutes.adminListings),
-      _NavItem('Orders', Icons.receipt_long_outlined, Icons.receipt_long, AppRoutes.adminOrdersPath, AppRoutes.adminOrders),
-      _NavItem('Schools', Icons.school_outlined, Icons.school, AppRoutes.adminSchoolsPath, AppRoutes.adminSchools),
-      _NavItem('Categories', Icons.category_outlined, Icons.category, AppRoutes.adminCategoriesPath, AppRoutes.adminCategories),
-      _NavItem('Conditions', Icons.star_half_outlined, Icons.star_half, AppRoutes.adminConditionsPath, AppRoutes.adminConditions),
-      _NavItem('FAQs', Icons.help_outline, Icons.help, AppRoutes.adminFaqsPath, AppRoutes.adminFaqs),
-      _NavItem('Dictionary', Icons.book_outlined, Icons.book, AppRoutes.adminDictionaryPath, AppRoutes.adminDictionary),
+      _NavItem('Dashboard', Icons.dashboard_outlined, Icons.dashboard, AppRoutes.adminDashboardPath, AppRoutes.adminDashboard, AdminModule.dashboard),
+      _NavItem('Users', Icons.people_outline, Icons.people, AppRoutes.adminUsersPath, AppRoutes.adminUsers, AdminModule.users),
+      _NavItem('Listings', Icons.storefront_outlined, Icons.storefront, AppRoutes.adminListingsPath, AppRoutes.adminListings, AdminModule.listings),
+      _NavItem('Orders', Icons.receipt_long_outlined, Icons.receipt_long, AppRoutes.adminOrdersPath, AppRoutes.adminOrders, AdminModule.orders),
+      _NavItem('Schools', Icons.school_outlined, Icons.school, AppRoutes.adminSchoolsPath, AppRoutes.adminSchools, AdminModule.schools),
+      _NavItem('Categories', Icons.category_outlined, Icons.category, AppRoutes.adminCategoriesPath, AppRoutes.adminCategories, AdminModule.categories),
+      _NavItem('Conditions', Icons.star_half_outlined, Icons.star_half, AppRoutes.adminConditionsPath, AppRoutes.adminConditions, AdminModule.conditions),
+      _NavItem('FAQs', Icons.help_outline, Icons.help, AppRoutes.adminFaqsPath, AppRoutes.adminFaqs, AdminModule.faqs),
+      _NavItem('Dictionary', Icons.book_outlined, Icons.book, AppRoutes.adminDictionaryPath, AppRoutes.adminDictionary, AdminModule.dictionary),
+      _NavItem('Roles', Icons.security_outlined, Icons.security, AppRoutes.adminRolesPath, AppRoutes.adminRoles, AdminModule.roles),
     ];
   }
 
@@ -248,8 +256,9 @@ class _NavItem {
   final IconData selectedIcon;
   final String path;
   final String routeName;
+  final AdminModule? module;
 
-  _NavItem(this.title, this.icon, this.selectedIcon, this.path, this.routeName);
+  _NavItem(this.title, this.icon, this.selectedIcon, this.path, this.routeName, [this.module]);
 }
 
 class _SidebarNavItem extends StatelessWidget {

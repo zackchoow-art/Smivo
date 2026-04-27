@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import 'package:smivo/features/listing/providers/create_listing_provider.dart';
 import 'package:smivo/features/listing/widgets/custom_text_field.dart';
 import 'package:smivo/features/listing/widgets/photo_picker_section.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
@@ -78,6 +80,8 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = Breakpoints.isDesktop(screenWidth);
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -95,7 +99,11 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: SliverToBoxAdapter(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                // NOTE: ContentWidthConstraint centers the form on desktop.
+                // maxWidth 640 keeps the form readable without stretching.
+                child: ContentWidthConstraint(
+                  maxWidth: 640,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   const SizedBox(height: 8),
                   DefaultTabController(
                     length: 2,
@@ -114,7 +122,15 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
                     ),
                   ),
                   const SizedBox(height: 32),
-                  const PhotoPickerSection(),
+                  // NOTE: ConstrainedBox limits photo area height on desktop
+                  // to avoid the picker dominating the wide-screen layout.
+                  if (isDesktop)
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 300),
+                      child: const PhotoPickerSection(),
+                    )
+                  else
+                    const PhotoPickerSection(),
           const SizedBox(height: 24),
           CustomTextField(label: 'Item Title', hintText: "Name of the item", controller: _titleController),
           const SizedBox(height: 24),
@@ -209,13 +225,15 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
               ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
               : Text(isSale ? 'List Item for Sale' : 'Post Rental', style: typo.titleMedium.copyWith(color: colors.onPrimary)),
           )),
-          const SizedBox(height: 80),
-        ])),
+                  const SizedBox(height: 80),
+                ])),
+              ),
+            ),
+          ],
+        ),
       ),
-    ]),
-  ),
-);
-}
+    );
+  }
 
   Widget _buildRentalRateRow(BuildContext context, {required String label, required TextEditingController controller,
     required bool enabled, required bool hasError, required Function(bool?) onChanged}) {

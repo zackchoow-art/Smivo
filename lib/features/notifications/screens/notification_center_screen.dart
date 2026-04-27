@@ -6,6 +6,7 @@ import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/data/models/notification.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 import 'package:smivo/features/notifications/widgets/notification_list_item.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NotificationCenterScreen extends ConsumerStatefulWidget {
@@ -55,95 +56,100 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(notificationListProvider);
-          await ref.read(notificationListProvider.future);
-        },
-        child: notificationsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 100),
-                child: Text('Error loading notifications', style: typo.bodyMedium.copyWith(color: colors.error)),
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 768,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(notificationListProvider);
+              await ref.read(notificationListProvider.future);
+            },
+            child: notificationsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 100),
+                    child: Text('Error loading notifications', style: typo.bodyMedium.copyWith(color: colors.error)),
+                  ),
+                ),
               ),
+              data: (notifications) {
+                if (notifications.isEmpty) return _buildEmptyState(context);
+
+                final unread = <AppNotification>[];
+                final today = <AppNotification>[];
+                final yesterday = <AppNotification>[];
+                final thisWeek = <AppNotification>[];
+                final older = <AppNotification>[];
+
+                final now = DateTime.now();
+                final todayStart = DateTime(now.year, now.month, now.day);
+                final yesterdayStart = todayStart.subtract(const Duration(days: 1));
+                final weekStart = todayStart.subtract(const Duration(days: 7));
+
+                for (final n in notifications) {
+                  if (!n.isRead) {
+                    unread.add(n);
+                  } else {
+                    final date = n.createdAt.toLocal();
+                    if (date.isAfter(todayStart) || date.isAtSameMomentAs(todayStart)) {
+                      today.add(n);
+                    } else if (date.isAfter(yesterdayStart) || date.isAtSameMomentAs(yesterdayStart)) {
+                      yesterday.add(n);
+                    } else if (date.isAfter(weekStart) || date.isAtSameMomentAs(weekStart)) {
+                      thisWeek.add(n);
+                    } else {
+                      older.add(n);
+                    }
+                  }
+                }
+
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    if (unread.isNotEmpty)
+                      _buildSection(
+                        title: 'Unread',
+                        items: unread,
+                        isExpanded: _unreadExpanded,
+                        onToggle: () => setState(() => _unreadExpanded = !_unreadExpanded),
+                      ),
+                    if (today.isNotEmpty)
+                      _buildSection(
+                        title: 'Today',
+                        items: today,
+                        isExpanded: _todayExpanded,
+                        onToggle: () => setState(() => _todayExpanded = !_todayExpanded),
+                      ),
+                    if (yesterday.isNotEmpty)
+                      _buildSection(
+                        title: 'Yesterday',
+                        items: yesterday,
+                        isExpanded: _yesterdayExpanded,
+                        onToggle: () => setState(() => _yesterdayExpanded = !_yesterdayExpanded),
+                      ),
+                    if (thisWeek.isNotEmpty)
+                      _buildSection(
+                        title: 'This Week',
+                        items: thisWeek,
+                        isExpanded: _thisWeekExpanded,
+                        onToggle: () => setState(() => _thisWeekExpanded = !_thisWeekExpanded),
+                      ),
+                    if (older.isNotEmpty)
+                      _buildSection(
+                        title: 'Older',
+                        items: older,
+                        isExpanded: _olderExpanded,
+                        onToggle: () => setState(() => _olderExpanded = !_olderExpanded),
+                      ),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              },
             ),
           ),
-          data: (notifications) {
-            if (notifications.isEmpty) return _buildEmptyState(context);
-
-            final unread = <AppNotification>[];
-            final today = <AppNotification>[];
-            final yesterday = <AppNotification>[];
-            final thisWeek = <AppNotification>[];
-            final older = <AppNotification>[];
-
-            final now = DateTime.now();
-            final todayStart = DateTime(now.year, now.month, now.day);
-            final yesterdayStart = todayStart.subtract(const Duration(days: 1));
-            final weekStart = todayStart.subtract(const Duration(days: 7));
-
-            for (final n in notifications) {
-              if (!n.isRead) {
-                unread.add(n);
-              } else {
-                final date = n.createdAt.toLocal();
-                if (date.isAfter(todayStart) || date.isAtSameMomentAs(todayStart)) {
-                  today.add(n);
-                } else if (date.isAfter(yesterdayStart) || date.isAtSameMomentAs(yesterdayStart)) {
-                  yesterday.add(n);
-                } else if (date.isAfter(weekStart) || date.isAtSameMomentAs(weekStart)) {
-                  thisWeek.add(n);
-                } else {
-                  older.add(n);
-                }
-              }
-            }
-
-            return ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                if (unread.isNotEmpty)
-                  _buildSection(
-                    title: 'Unread',
-                    items: unread,
-                    isExpanded: _unreadExpanded,
-                    onToggle: () => setState(() => _unreadExpanded = !_unreadExpanded),
-                  ),
-                if (today.isNotEmpty)
-                  _buildSection(
-                    title: 'Today',
-                    items: today,
-                    isExpanded: _todayExpanded,
-                    onToggle: () => setState(() => _todayExpanded = !_todayExpanded),
-                  ),
-                if (yesterday.isNotEmpty)
-                  _buildSection(
-                    title: 'Yesterday',
-                    items: yesterday,
-                    isExpanded: _yesterdayExpanded,
-                    onToggle: () => setState(() => _yesterdayExpanded = !_yesterdayExpanded),
-                  ),
-                if (thisWeek.isNotEmpty)
-                  _buildSection(
-                    title: 'This Week',
-                    items: thisWeek,
-                    isExpanded: _thisWeekExpanded,
-                    onToggle: () => setState(() => _thisWeekExpanded = !_thisWeekExpanded),
-                  ),
-                if (older.isNotEmpty)
-                  _buildSection(
-                    title: 'Older',
-                    items: older,
-                    isExpanded: _olderExpanded,
-                    onToggle: () => setState(() => _olderExpanded = !_olderExpanded),
-                  ),
-                const SizedBox(height: 24),
-              ],
-            );
-          },
         ),
       ),
     );

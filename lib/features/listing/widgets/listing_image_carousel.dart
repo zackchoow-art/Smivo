@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 
 class ListingImageCarousel extends StatefulWidget {
@@ -27,127 +28,150 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    return SizedBox(
-      height: 350,
-      width: double.infinity,
-      child: Stack(
-        children: [
-          if (hasImages)
-            PageView.builder(
-              itemCount: widget.imageUrls.length,
-              onPageChanged: (index) {
-                setState(() => _currentIndex = index);
-              },
-              itemBuilder: (context, index) {
-                return Image.network(
-                  widget.imageUrls[index],
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                );
-              },
-            )
-          else
-            Container(
-              color: colors.surfaceContainerLow,
-              child: Center(
-                child: Icon(
-                  Icons.image_not_supported_outlined,
-                  size: 64,
-                  color: colors.outlineVariant,
-                ),
-              ),
-            ),
-          
-          // Gradient for bottom text readability
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 80,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    colors.onSurface.withValues(alpha: 0.5),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
+    // NOTE: LayoutBuilder drives responsive height — phone 4:3, tablet 16:9,
+    // desktop 2:1 with a hard 500px ceiling via ConstrainedBox per task 2-2.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final double aspectHeight;
+        if (Breakpoints.isDesktop(width)) {
+          // Desktop: 2:1 ratio, capped at 500px
+          aspectHeight = (width / 2).clamp(0.0, 500.0);
+        } else if (Breakpoints.isTablet(width)) {
+          // Tablet: 16:9 ratio
+          aspectHeight = width * 9 / 16;
+        } else {
+          // Mobile: 4:3 ratio
+          aspectHeight = width * 3 / 4;
+        }
 
-          // Status Tag
-          if (widget.tagText != null)
-            Positioned(
-              left: 16,
-              bottom: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: widget.isSale 
-                    ? colors.onPrimary.withValues(alpha: 0.3)
-                    : colors.onSurface.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(radius.chip),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (widget.isSale) ...[
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: colors.priceAccent,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Text(
-                      widget.tagText!,
-                      style: typo.labelSmall.copyWith(
-                        color: colors.onPrimary,
-                        letterSpacing: 0.5,
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: Breakpoints.isDesktop(width) ? 500 : double.infinity,
+          ),
+          child: SizedBox(
+            height: aspectHeight,
+            width: double.infinity,
+            child: Stack(
+              children: [
+                if (hasImages)
+                  PageView.builder(
+                    itemCount: widget.imageUrls.length,
+                    onPageChanged: (index) {
+                      setState(() => _currentIndex = index);
+                    },
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        widget.imageUrls[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      );
+                    },
+                  )
+                else
+                  Container(
+                    color: colors.surfaceContainerLow,
+                    child: Center(
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 64,
+                        color: colors.outlineVariant,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
 
-          // Pagination Dots (only if multiple images)
-          if (widget.imageUrls.length > 1)
-            Positioned(
-              bottom: 16,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  widget.imageUrls.length,
-                  (index) => Container(
-                    width: 6,
-                    height: 6,
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                // Gradient for bottom text readability
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 80,
+                  child: Container(
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _currentIndex == index
-                          ? colors.primary
-                          : colors.onPrimary.withValues(alpha: 0.5),
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          colors.onSurface.withValues(alpha: 0.5),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
+
+                // Status Tag
+                if (widget.tagText != null)
+                  Positioned(
+                    left: 16,
+                    bottom: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: widget.isSale
+                            ? colors.onPrimary.withValues(alpha: 0.3)
+                            : colors.onSurface.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(radius.chip),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.isSale) ...[
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: colors.priceAccent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          Text(
+                            widget.tagText!,
+                            style: typo.labelSmall.copyWith(
+                              color: colors.onPrimary,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // Pagination Dots (only if multiple images)
+                if (widget.imageUrls.length > 1)
+                  Positioned(
+                    bottom: 16,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        widget.imageUrls.length,
+                        (index) => Container(
+                          width: 6,
+                          height: 6,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _currentIndex == index
+                                ? colors.primary
+                                : colors.onPrimary.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 }

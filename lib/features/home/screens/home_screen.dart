@@ -12,6 +12,7 @@ import 'package:smivo/features/home/widgets/home_header.dart';
 import 'package:smivo/features/home/widgets/home_search_bar.dart';
 import 'package:smivo/features/home/widgets/ikea_featured_listing_card.dart';
 import 'package:smivo/features/home/widgets/ikea_grid_listing_card.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -26,73 +27,82 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: colors.background,
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            try {
-              ref.invalidate(homeListingsProvider);
-              await ref.read(homeListingsProvider.future);
-            } catch (e) {
-              // Silently handle error here, the AsyncValue.error will
-              // be caught by ref.watch(homeListingsProvider) and show in UI.
-            }
-          },
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            const SliverToBoxAdapter(child: HomeHeader()),
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _StickySearchBarDelegate(
-                backgroundColor: colors.background,
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
-            const SliverToBoxAdapter(child: HomeCategoryChips()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = Breakpoints.isDesktop(constraints.maxWidth);
             
-            listingsAsync.when(
-              loading: () => const SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (error, stack) => SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Text(
-                    'Error loading listings',
-                    style: typo.bodyMedium.copyWith(color: colors.error),
+            final content = RefreshIndicator(
+              onRefresh: () async {
+                try {
+                  ref.invalidate(homeListingsProvider);
+                  await ref.read(homeListingsProvider.future);
+                } catch (e) {
+                  // Silently handle error here, the AsyncValue.error will
+                  // be caught by ref.watch(homeListingsProvider) and show in UI.
+                }
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  const SliverToBoxAdapter(child: HomeHeader()),
+                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _StickySearchBarDelegate(
+                      backgroundColor: colors.background,
+                    ),
                   ),
-                ),
-              ),
-              data: (listings) {
-                if (listings.isEmpty) {
-                  return SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Text(
-                        'No listings found.',
-                        style: typo.bodyLarge,
+                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                  const SliverToBoxAdapter(child: HomeCategoryChips()),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  listingsAsync.when(
+                    loading: () => const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (error, stack) => SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Text(
+                          'Error loading listings',
+                          style: typo.bodyMedium.copyWith(color: colors.error),
+                        ),
                       ),
                     ),
-                  );
-                }
+                    data: (listings) {
+                      if (listings.isEmpty) {
+                        return SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Text(
+                              'No listings found.',
+                              style: typo.bodyLarge,
+                            ),
+                          ),
+                        );
+                      }
 
-                // NOTE: IKEA theme uses a different layout structure:
-                // first 3 items as full-width featured cards, then a
-                // responsive grid for the rest. Teal theme keeps the
-                // original single-column list.
-                if (themeVariant == SmivoThemeVariant.ikea) {
-                  return _buildIkeaLayout(context, listings);
-                }
+                      if (themeVariant == SmivoThemeVariant.ikea) {
+                        return _buildIkeaLayout(context, listings);
+                      }
 
-                return _buildTealLayout(listings);
-              },
-            ),
-            
-          ],
-          ),
+                      return _buildTealLayout(listings);
+                    },
+                  ),
+                ],
+              ),
+            );
+
+            if (isDesktop) {
+              return ContentWidthConstraint(
+                maxWidth: 1280,
+                child: content,
+              );
+            }
+
+            return content;
+          },
         ),
       ),
     );

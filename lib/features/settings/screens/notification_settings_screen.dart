@@ -6,6 +6,7 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/settings/providers/settings_provider.dart';
 import 'package:smivo/features/settings/widgets/setting_toggle_row.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -49,98 +50,103 @@ class _NotificationSettingsScreenState
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      body: CustomScrollView(
-        slivers: [
-          const CollapsingTitleAppBar(
-            title: 'Notification Settings',
-            subtitle: 'Control how and when you receive\nupdates from the campus network.',
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  SettingToggleRow(
-                    icon: Icons.email_outlined,
-                    title: 'Email\nNotifications',
-                    subtitle:
-                        'Receive email alerts\nfor all order updates,\nmessages, and\nimportant events.',
-                    value: ref.watch(emailNotificationsStateProvider),
-                    onChanged: (_) {
-                      if (user != null) {
-                        ref
-                            .read(emailNotificationsStateProvider.notifier)
-                            .toggle(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                            );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Divider(color: colors.dividerColor),
-                  const SizedBox(height: 16),
-                  SettingToggleRow(
-                    icon: Icons.chat_bubble_outline,
-                    title: 'New Messages',
-                    subtitle:
-                        'Get notified when\nsomeone sends you a\ndirect message or\nreplies to your thread.',
-                    value: ref.watch(newMessagesNotifStateProvider),
-                    onChanged: (_) =>
-                        ref.read(newMessagesNotifStateProvider.notifier).toggle(),
-                  ),
-                  const SizedBox(height: 16),
-                  SettingToggleRow(
-                    icon: Icons.payments_outlined,
-                    title: 'Price Alerts',
-                    subtitle:
-                        'Receive immediate\nalerts when items on\nyour watchlist drop in\nprice.',
-                    value: ref.watch(priceAlertsNotifStateProvider),
-                    onChanged: (_) =>
-                        ref.read(priceAlertsNotifStateProvider.notifier).toggle(),
-                  ),
-                  const SizedBox(height: 16),
-                  SettingToggleRow(
-                    icon: Icons.local_shipping_outlined,
-                    title: 'Order Updates',
-                    subtitle:
-                        'Status changes,\nshipping tracking, and\ndelivery confirmations\nfor your purchases.',
-                    value: ref.watch(orderUpdatesNotifStateProvider),
-                    onChanged: (_) =>
-                        ref.read(orderUpdatesNotifStateProvider.notifier).toggle(),
-                  ),
-                  const SizedBox(height: 16),
-                  SettingToggleRow(
-                    icon: Icons.campaign_outlined,
-                    title: 'Campus\nAnnouncements',
-                    subtitle:
-                        'Official updates, event\nreminders, and\nimportant news from\nthe university.',
-                    value: ref.watch(campusAnnouncementsNotifStateProvider),
-                    onChanged: (_) => ref
-                        .read(campusAnnouncementsNotifStateProvider.notifier)
-                        .toggle(),
-                  ),
-                  const SizedBox(height: 32),
-                  Divider(color: colors.dividerColor),
-                  const SizedBox(height: 32),
-                  SettingToggleRow(
-                    icon: Icons.summarize_outlined,
-                    title: 'Weekly Email\nDigest',
-                    subtitle:
-                        'A summary of the\nweek\'s top activity\nsent to your student\nemail.',
-                    value: ref.watch(weeklyEmailDigestNotifStateProvider),
-                    onChanged: (_) => ref
-                        .read(weeklyEmailDigestNotifStateProvider.notifier)
-                        .toggle(),
-                  ),
-                  const SizedBox(height: 48),
-                ],
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 640,
+          child: CustomScrollView(
+            slivers: [
+              const CollapsingTitleAppBar(
+                title: 'Notification Settings',
+                subtitle: 'Control how and when you receive\nupdates from the campus network.',
               ),
-            ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      SettingToggleRow(
+                        icon: Icons.email_outlined,
+                        title: 'Email\nNotifications',
+                        subtitle:
+                            'Receive email alerts\nfor all order updates,\nmessages, and\nimportant events.',
+                        value: ref.watch(emailNotificationsStateProvider),
+                        onChanged: (_) {
+                          if (user != null) {
+                            ref
+                                .read(emailNotificationsStateProvider.notifier)
+                                .toggle(
+                                  userId: user.id,
+                                  profileRepo: ref.read(profileRepositoryProvider),
+                                );
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Divider(color: colors.dividerColor),
+                      const SizedBox(height: 16),
+                      SettingToggleRow(
+                        icon: Icons.chat_bubble_outline,
+                        title: 'New Messages',
+                        subtitle:
+                            'Get notified when\nsomeone sends you a\ndirect message or\nreplies to your thread.',
+                        value: ref.watch(newMessagesNotifStateProvider),
+                        onChanged: (_) =>
+                            ref.read(newMessagesNotifStateProvider.notifier).toggle(),
+                      ),
+                      const SizedBox(height: 16),
+                      SettingToggleRow(
+                        icon: Icons.payments_outlined,
+                        title: 'Price Alerts',
+                        subtitle:
+                            'Receive immediate\nalerts when items on\nyour watchlist drop in\nprice.',
+                        value: ref.watch(priceAlertsNotifStateProvider),
+                        onChanged: (_) =>
+                            ref.read(priceAlertsNotifStateProvider.notifier).toggle(),
+                      ),
+                      const SizedBox(height: 16),
+                      SettingToggleRow(
+                        icon: Icons.local_shipping_outlined,
+                        title: 'Order Updates',
+                        subtitle:
+                            'Status changes,\nshipping tracking, and\ndelivery confirmations\nfor your purchases.',
+                        value: ref.watch(orderUpdatesNotifStateProvider),
+                        onChanged: (_) =>
+                            ref.read(orderUpdatesNotifStateProvider.notifier).toggle(),
+                      ),
+                      const SizedBox(height: 16),
+                      SettingToggleRow(
+                        icon: Icons.campaign_outlined,
+                        title: 'Campus\nAnnouncements',
+                        subtitle:
+                            'Official updates, event\nreminders, and\nimportant news from\nthe university.',
+                        value: ref.watch(campusAnnouncementsNotifStateProvider),
+                        onChanged: (_) => ref
+                            .read(campusAnnouncementsNotifStateProvider.notifier)
+                            .toggle(),
+                      ),
+                      const SizedBox(height: 32),
+                      Divider(color: colors.dividerColor),
+                      const SizedBox(height: 32),
+                      SettingToggleRow(
+                        icon: Icons.summarize_outlined,
+                        title: 'Weekly Email\nDigest',
+                        subtitle:
+                            'A summary of the\nweek\'s top activity\nsent to your student\nemail.',
+                        value: ref.watch(weeklyEmailDigestNotifStateProvider),
+                        onChanged: (_) => ref
+                            .read(weeklyEmailDigestNotifStateProvider.notifier)
+                            .toggle(),
+                      ),
+                      const SizedBox(height: 48),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

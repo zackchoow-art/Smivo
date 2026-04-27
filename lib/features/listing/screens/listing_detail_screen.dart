@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
@@ -19,6 +20,7 @@ import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/data/repositories/order_repository.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/shared/providers/school_data_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 /// Resolves a condition slug to a display label.
 /// Accepts an optional conditions list from DB for dynamic lookup.
@@ -115,6 +117,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
+    // NOTE: LayoutBuilder at screen level drives responsive layout decisions
+    // for the information section below the image carousel.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = Breakpoints.isDesktop(screenWidth);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -143,7 +149,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
               },
               child: SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               ListingImageCarousel(imageUrls: imageUrls, tagText: null, isSale: isSale),
-              Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // NOTE: ContentWidthConstraint centers the info section on tablet/desktop.
+              // On mobile it has no effect (screen < maxWidth).
+              ContentWidthConstraint(
+                maxWidth: isDesktop ? 768 : double.infinity,
+                child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(listing.title, style: typo.displayLarge.copyWith(fontSize: 32, letterSpacing: -1, height: 1.1)),
                 const SizedBox(height: 4),
                 // NOTE: Condition label with themed background chip.
@@ -508,6 +518,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 ),
                 const SizedBox(height: 100),
               ])),
+              ),
             ])),
             ),
             // Fixed floating back button
