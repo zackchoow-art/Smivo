@@ -54,11 +54,13 @@ class NavigationRailBar extends ConsumerWidget {
       indicatorColor: colors.navActiveBackground,
       selectedIconTheme: IconThemeData(color: colors.navActiveIcon),
       unselectedIconTheme: IconThemeData(color: colors.onSurfaceVariant),
-      // NOTE: Show labels on both states so the user always knows
-      // what each icon means, especially on first visit.
+      // NOTE: On tablet (compact rail) only show the selected label
+      // to reduce visual clutter in the narrow 72px strip.
+      // On desktop (extended) labels are shown inline via the
+      // extended property, so labelType is set to none.
       labelType: extended
           ? NavigationRailLabelType.none
-          : NavigationRailLabelType.all,
+          : NavigationRailLabelType.selected,
       leading: Padding(
         padding: const EdgeInsets.only(top: 8, bottom: 16),
         child: Text(
@@ -67,6 +69,40 @@ class NavigationRailBar extends ConsumerWidget {
             color: colors.primary,
             fontWeight: FontWeight.w900,
             letterSpacing: -0.5,
+          ),
+        ),
+      ),
+      // NOTE: Trailing area provides Settings access since desktop/tablet
+      // users don't have the mobile BottomNav's profile/settings entry.
+      trailing: Expanded(
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.settings_outlined,
+                    color: colors.onSurfaceVariant,
+                  ),
+                  tooltip: 'Settings',
+                  onPressed: () =>
+                      context.pushNamed(AppRoutes.settings),
+                ),
+                if (extended)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      'Settings',
+                      style: typo.labelSmall.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

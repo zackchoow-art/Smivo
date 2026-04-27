@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 
 /// A Master-Detail split layout for desktop Chat screens.
 ///
@@ -21,6 +22,9 @@ class ChatSplitView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
     return Row(
       children: [
         // Left master panel: fixed 320px width
@@ -29,17 +33,38 @@ class ChatSplitView extends StatelessWidget {
           child: chatList,
         ),
         // Vertical divider between panels
-        const VerticalDivider(width: 1, thickness: 1),
+        VerticalDivider(
+          width: 1,
+          thickness: 1,
+          color: colors.outline.withValues(alpha: 0.12),
+        ),
         // Right detail panel: fills remaining width
         Expanded(
           child: chatRoom ??
-              const Center(
-                child: Text(
-                  'Select a conversation',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
-                  ),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.chat_bubble_outline,
+                      size: 64,
+                      color: colors.outlineVariant,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Select a conversation',
+                      style: typo.titleMedium.copyWith(
+                        color: colors.outlineVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Pick a chat from the left to start messaging',
+                      style: typo.bodySmall.copyWith(
+                        color: colors.outlineVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
         ),

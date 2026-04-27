@@ -6,7 +6,9 @@ import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/chat_room.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
+import 'package:smivo/features/chat/screens/chat_room_screen.dart';
 import 'package:smivo/features/chat/widgets/chat_list_item.dart';
+import 'package:smivo/features/chat/widgets/chat_split_view.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
@@ -23,6 +25,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   String _searchQuery = '';
   // false = active conversations, true = archived conversations
   bool _showArchived = false;
+  // NOTE: On desktop, tracks which chat room is shown in the right panel
+  // of the ChatSplitView. Null means no conversation selected yet.
+  String? _selectedChatRoomId;
 
   /// Transforms a [ChatRoom] into a [ChatConversation] display model.
   ///
@@ -82,8 +87,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     // ContentWidthConstraint on tablet/desktop (>= 600px).
     final screenWidth = MediaQuery.of(context).size.width;
     final useWidthConstraint = !Breakpoints.isMobile(screenWidth);
+    // NOTE: On desktop (>1024px) use ChatSplitView master-detail layout.
+    // The chat list becomes the left panel and the selected conversation
+    // renders inline on the right, avoiding full-screen navigation.
+    final isDesktop = Breakpoints.isDesktop(screenWidth);
 
-    return Scaffold(
+    final listScaffold = Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
       body: SafeArea(
         bottom: false,
@@ -215,10 +224,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             conversation: conversation,
                             isArchiveView: _showArchived,
                             onTap: () {
-                              context.pushNamed(
-                                AppRoutes.chatRoom,
-                                pathParameters: {'id': room.id},
-                              );
+                              if (isDesktop) {
+                                // NOTE: On desktop, select the room inline
+                                // instead of navigating to a new page.
+                                setState(() =>
+                                    _selectedChatRoomId = room.id);
+                              } else {
+                                context.pushNamed(
+                                  AppRoutes.chatRoom,
+                                  pathParameters: {'id': room.id},
+                                );
+                              }
                             },
                             onTogglePin: () => ref
                                 .read(chatRoomListProvider.notifier)
@@ -248,6 +264,22 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         ),
       ),
     );
+
+    // NOTE: On desktop, wrap the list in ChatSplitView with the selected
+    // conversation rendered inline on the right panel.
+    if (isDesktop) {
+      return ChatSplitView(
+        chatList: listScaffold,
+        chatRoom: _selectedChatRoomId != null
+            ? ChatRoomScreen(
+                key: ValueKey(_selectedChatRoomId),
+                chatRoomId: _selectedChatRoomId!,
+              )
+            : null,
+      );
+    }
+
+    return listScaffold;
   }
 
   /// Builds the header row containing the screen title and archive toggle.
