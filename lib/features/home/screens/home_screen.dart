@@ -177,7 +177,9 @@ class HomeScreen extends ConsumerWidget {
                 return SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 12,
+                    // NOTE: 18px horizontal gap (1.5× default) gives
+                    // IKEA grid cards more breathing room.
+                    crossAxisSpacing: 18,
                     mainAxisSpacing: 12,
                     // NOTE: childAspectRatio controls the card's
                     // height relative to width. Lower values = taller
