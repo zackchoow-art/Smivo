@@ -195,63 +195,16 @@ class AdminRepository {
 
   /// Clears all user-generated test data while preserving system config.
   ///
-  /// Deletion order respects FK constraints:
-  /// order_evidence → rental_extensions → messages → chat_rooms →
-  /// notifications → saved_listings → orders → listing_images → listings
-  ///
-  /// Preserved tables: schools, school_categories, school_conditions,
-  /// pickup_locations, faqs, system_dictionaries, admin_roles,
-  /// admin_permissions, user_profiles (auth users)
+  /// Calls a SECURITY DEFINER RPC function on the server that
+  /// bypasses RLS to delete across all users' data.
+  /// Only platform sysadmins can execute this.
   Future<Map<String, int>> clearTestData() async {
     try {
-      final counts = <String, int>{};
+      final result = await _client.rpc('admin_clear_test_data');
 
-      // 1. Order evidence (references orders)
-      final ev = await _client.from('order_evidence').select('id');
-      await _client.from('order_evidence').delete().gte('created_at', '2000-01-01');
-      counts['order_evidence'] = (ev as List).length;
-
-      // 2. Rental extensions (references orders)
-      final re = await _client.from('rental_extensions').select('id');
-      await _client.from('rental_extensions').delete().gte('created_at', '2000-01-01');
-      counts['rental_extensions'] = (re as List).length;
-
-      // 3. Messages (references chat_rooms)
-      final msg = await _client.from('messages').select('id');
-      await _client.from('messages').delete().gte('created_at', '2000-01-01');
-      counts['messages'] = (msg as List).length;
-
-      // 4. Chat rooms (references listings)
-      final cr = await _client.from('chat_rooms').select('id');
-      await _client.from('chat_rooms').delete().gte('created_at', '2000-01-01');
-      counts['chat_rooms'] = (cr as List).length;
-
-      // 5. Notifications
-      final notif = await _client.from('notifications').select('id');
-      await _client.from('notifications').delete().gte('created_at', '2000-01-01');
-      counts['notifications'] = (notif as List).length;
-
-      // 6. Saved listings (references listings)
-      final sl = await _client.from('saved_listings').select('id');
-      await _client.from('saved_listings').delete().gte('created_at', '2000-01-01');
-      counts['saved_listings'] = (sl as List).length;
-
-      // 7. Orders (references listings)
-      final ord = await _client.from('orders').select('id');
-      await _client.from('orders').delete().gte('created_at', '2000-01-01');
-      counts['orders'] = (ord as List).length;
-
-      // 8. Listing images (references listings)
-      final li = await _client.from('listing_images').select('id');
-      await _client.from('listing_images').delete().gte('created_at', '2000-01-01');
-      counts['listing_images'] = (li as List).length;
-
-      // 9. Listings
-      final lst = await _client.from('listings').select('id');
-      await _client.from('listings').delete().gte('created_at', '2000-01-01');
-      counts['listings'] = (lst as List).length;
-
-      return counts;
+      // RPC returns a jsonb object: {"table_name": count, ...}
+      final data = result as Map<String, dynamic>;
+      return data.map((k, v) => MapEntry(k, (v as num).toInt()));
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message);
     } catch (e) {
