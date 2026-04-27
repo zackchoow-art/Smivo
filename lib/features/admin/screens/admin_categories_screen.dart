@@ -49,7 +49,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: schoolsState.when(
               data: (schools) => DropdownButtonFormField<String>(
-                value: _selectedSchoolId,
+                initialValue: _selectedSchoolId,
                 decoration: InputDecoration(
                   labelText: 'Select School',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm)),

@@ -47,43 +47,53 @@ class IkeaBuyerOrderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Image Area
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 1,
-                  child: imageUrl != null
-                      ? Image.network(imageUrl, fit: BoxFit.cover)
-                      : Container(
-                          color: colors.surfaceContainerHigh,
-                          child: Icon(Icons.image, color: colors.onSurfaceVariant),
-                        ),
-                ),
-                // Status Chip
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: _buildStatusChip(context),
-                ),
-                // Unread Dot
-                if (hasUnread)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: colors.error,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            // Info Area
+            // Top Image Area — 12px gap from top/left/right card edges.
             Padding(
+              padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(radius.image),
+                child: Stack(
+                  children: [
+                    AspectRatio(
+                      // NOTE: 1.3 ratio keeps image compact, leaving more room
+                      // for the text section below without overflow.
+                      aspectRatio: 1.3,
+                      child: imageUrl != null
+                          ? Image.network(imageUrl, fit: BoxFit.cover)
+                          : Container(
+                              color: colors.surfaceContainerHigh,
+                              child: Icon(Icons.image, color: colors.onSurfaceVariant),
+                            ),
+                    ),
+                    // Status Chip
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: _buildStatusChip(context),
+                    ),
+                    // Unread Dot
+                    if (hasUnread)
+                      Positioned(
+                        top: 6,
+                        left: 6,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: colors.error,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            // INFO: minHeight ensures text area never gets squeezed,
+            // adding 48px headroom vs the previous unconstrained layout.
+            Container(
+              constraints: const BoxConstraints(minHeight: 60),
               padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

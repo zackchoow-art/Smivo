@@ -148,9 +148,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         ? SliverGrid(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              crossAxisSpacing: 12,
+                              crossAxisSpacing: 24,
                               mainAxisSpacing: 12,
-                              childAspectRatio: 0.78,
+                              childAspectRatio: 0.72,
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
@@ -234,9 +234,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         ? SliverGrid(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              crossAxisSpacing: 12,
+                              crossAxisSpacing: 24,
                               mainAxisSpacing: 12,
-                              childAspectRatio: 0.78,
+                              childAspectRatio: 0.72,
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
@@ -312,9 +312,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         ? SliverGrid(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              crossAxisSpacing: 12,
+                              crossAxisSpacing: 24,
                               mainAxisSpacing: 12,
-                              childAspectRatio: 0.78,
+                              childAspectRatio: 0.72,
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
@@ -473,19 +473,32 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                     if (isExpanded)
                       SliverPadding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final item = filteredHistory[index];
-                              if (colors.primary == const Color(0xFF004181)) {
+                        sliver: colors.primary == const Color(0xFF004181)
+                        ? SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 24,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.72,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final item = filteredHistory[index];
                                 return IkeaSellerOrderCard(
                                   cardType: IkeaSellerCardType.history,
                                   historyItem: item,
                                   hasUnread: false,
                                   onTap: item.onTap,
                                 );
-                              }
-
+                              },
+                              childCount: filteredHistory.length,
+                            ),
+                          )
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final item = filteredHistory[index];
                               final dateStr =
                                   DateFormat('M/d/yyyy HH:mm').format(item.updatedAt ?? item.createdAt ?? DateTime.now());
 

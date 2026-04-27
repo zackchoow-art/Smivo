@@ -131,8 +131,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           final isOwnListing = currentUserId != null && currentUserId == listing.sellerId;
           final existingOrder = ref.watch(existingBuyerOrderProvider(listing.id));
           final imageUrls = listing.images.map((img) => img.imageUrl).toList();
-          // NOTE: Show real condition for sale items, availability for rentals
-          final statusTag = isSale ? null : 'AVAILABLE NOW';
+          // NOTE: Tag removed per design — no overlay text on images.
           // Load DB conditions for dynamic label resolution
           final conditionsList = ref.watch(mySchoolConditionsProvider).valueOrNull;
 
@@ -143,15 +142,30 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 await ref.read(listingDetailProvider(widget.id).future);
               },
               child: SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics(), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              ListingImageCarousel(imageUrls: imageUrls, tagText: statusTag, isSale: isSale),
+              ListingImageCarousel(imageUrls: imageUrls, tagText: null, isSale: isSale),
               Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(listing.title, style: typo.displayLarge.copyWith(fontSize: 32, letterSpacing: -1, height: 1.1)),
                 const SizedBox(height: 4),
-                Text(_conditionLabel(listing.condition, conditionsList).toUpperCase(),
-                  style: typo.bodyMedium.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.55),
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.5,
+                // NOTE: Condition label with themed background chip.
+                // Uses secondaryContainer (IKEA yellow / Teal accent)
+                // for visual prominence below the title.
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.secondaryContainer,
+                    borderRadius: BorderRadius.circular(radius.sm),
+                  ),
+                  child: Text(
+                    _conditionLabel(listing.condition, conditionsList)
+                        .toUpperCase(),
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSecondaryContainer,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
                 if (isSale) ...[

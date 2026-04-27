@@ -213,9 +213,9 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
               ? SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 12,
+                    crossAxisSpacing: 24,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.78,
+                    childAspectRatio: 0.72,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {

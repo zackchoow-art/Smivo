@@ -75,22 +75,31 @@ class IkeaSellerOrderCard extends StatelessWidget {
   Widget _buildActiveListingContent(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
     final imageUrl =
         listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AspectRatio(
-          aspectRatio: 1,
-          child: imageUrl != null
-              ? Image.network(imageUrl, fit: BoxFit.cover)
-              : Container(
-                  color: colors.surfaceContainerHigh,
-                  child: const Icon(Icons.image),
-                ),
-        ),
+        // Image with 12px gap from top/left/right card edges.
         Padding(
+          padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(radius.image),
+            child: AspectRatio(
+              aspectRatio: 1.3,
+              child: imageUrl != null
+                  ? Image.network(imageUrl, fit: BoxFit.cover)
+                  : Container(
+                      color: colors.surfaceContainerHigh,
+                      child: const Icon(Icons.image),
+                    ),
+            ),
+          ),
+        ),
+        Container(
+          constraints: const BoxConstraints(minHeight: 60),
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,26 +182,54 @@ class IkeaSellerOrderCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Stack(
-          children: [
-            AspectRatio(
-              aspectRatio: 1,
-              child: imageUrl != null
-                  ? Image.network(imageUrl, fit: BoxFit.cover)
-                  : Container(
-                      color: colors.surfaceContainerHigh,
-                      child: const Icon(Icons.image),
-                    ),
-            ),
-            if (hasUnread)
-              Positioned(
-                top: 8,
-                left: 8,
-                child: _buildUnreadDot(context),
-              ),
-          ],
-        ),
+        // Image with 12px gap from top/left/right card edges.
         Padding(
+          padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(radius.image),
+            child: Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 1.3,
+                  child: imageUrl != null
+                      ? Image.network(imageUrl, fit: BoxFit.cover)
+                      : Container(
+                          color: colors.surfaceContainerHigh,
+                          child: const Icon(Icons.image),
+                        ),
+                ),
+                // NOTE: Status chip moved to image top-right per design request.
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      borderRadius: BorderRadius.circular(radius.full),
+                    ),
+                    child: Text(
+                      'Awaiting',
+                      style: typo.labelSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 9,
+                      ),
+                    ),
+                  ),
+                ),
+                if (hasUnread)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: _buildUnreadDot(context),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        Container(
+          constraints: const BoxConstraints(minHeight: 60),
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,23 +264,6 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colors.primary,
-                  borderRadius: BorderRadius.circular(radius.full),
-                ),
-                child: Text(
-                  'Awaiting Delivery',
-                  style: typo.labelSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 9,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -265,31 +285,59 @@ class IkeaSellerOrderCard extends StatelessWidget {
       children: [
         // NOTE: Shows buyer avatar instead of product image to identify
         // the counterparty at a glance in the active transactions grid.
-        Stack(
-          children: [
-            AspectRatio(
-              aspectRatio: 1,
-              child: buyer?.avatarUrl != null &&
-                      buyer!.avatarUrl!.isNotEmpty
-                  ? Image.network(buyer!.avatarUrl!, fit: BoxFit.cover)
-                  : Container(
-                      color: colors.surfaceContainerHigh,
-                      child: Icon(
-                        Icons.person,
-                        color: colors.onSurface.withValues(alpha: 0.3),
-                        size: 48,
+        // Image with 12px gap from top/left/right card edges.
+        Padding(
+          padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(radius.image),
+            child: Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 1.3,
+                  child: buyer?.avatarUrl != null &&
+                          buyer!.avatarUrl!.isNotEmpty
+                      ? Image.network(buyer!.avatarUrl!, fit: BoxFit.cover)
+                      : Container(
+                          color: colors.surfaceContainerHigh,
+                          child: Icon(
+                            Icons.person,
+                            color: colors.onSurface.withValues(alpha: 0.3),
+                            size: 48,
+                          ),
+                        ),
+                ),
+                // NOTE: Status chip moved to image top-right per design request.
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      borderRadius: BorderRadius.circular(radius.full),
+                    ),
+                    child: Text(
+                      statusLabel ?? '',
+                      style: typo.labelSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 9,
                       ),
                     ),
+                  ),
+                ),
+                if (hasUnread)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: _buildUnreadDot(context),
+                  ),
+              ],
             ),
-            if (hasUnread)
-              Positioned(
-                top: 8,
-                left: 8,
-                child: _buildUnreadDot(context),
-              ),
-          ],
+          ),
         ),
-        Padding(
+        Container(
+          constraints: const BoxConstraints(minHeight: 60),
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,36 +358,13 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.primary,
-                      borderRadius: BorderRadius.circular(radius.full),
-                    ),
-                    child: Text(
-                      statusLabel ?? '',
-                      style: typo.labelSmall.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 9,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    dateStr,
-                    style: typo.labelSmall.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
-                      fontSize: 9,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                dateStr,
+                style: typo.labelSmall.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.4),
+                  fontSize: 9,
+                ),
               ),
             ],
           ),
@@ -359,17 +384,51 @@ class IkeaSellerOrderCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // NOTE: Use a wider aspect ratio for history to fit more text below.
-        AspectRatio(
-          aspectRatio: 1.5,
-          child: historyItem.imageUrl != null
-              ? Image.network(historyItem.imageUrl!, fit: BoxFit.cover)
-              : Container(
-                  color: colors.surfaceContainerHigh,
-                  child: const Icon(Icons.image),
-                ),
-        ),
+        // Image with 12px gap from top/left/right card edges.
         Padding(
+          padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(radius.image),
+            child: Stack(
+              children: [
+                AspectRatio(
+                  // NOTE: Unified aspect ratio across all card types for visual consistency.
+                  aspectRatio: 1.3,
+                  child: historyItem.imageUrl != null
+                      ? Image.network(historyItem.imageUrl!, fit: BoxFit.cover)
+                      : Container(
+                          color: colors.surfaceContainerHigh,
+                          child: const Icon(Icons.image),
+                        ),
+                ),
+                // NOTE: Status chip moved to image top-right per design request.
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: historyItem.isCompleted
+                          ? colors.success
+                          : colors.statusCancelled,
+                      borderRadius: BorderRadius.circular(radius.full),
+                    ),
+                    child: Text(
+                      historyItem.isCompleted ? 'Done' : 'Cancelled',
+                      style: typo.labelSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 9,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Container(
+          constraints: const BoxConstraints(minHeight: 60),
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,38 +448,13 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: historyItem.isCompleted
-                          ? colors.success
-                          : colors.statusCancelled,
-                      borderRadius: BorderRadius.circular(radius.full),
-                    ),
-                    child: Text(
-                      historyItem.isCompleted ? 'Done' : 'Cancelled',
-                      style: typo.labelSmall.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 9,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    dateStr,
-                    style: typo.labelSmall.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
-                      fontSize: 9,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                dateStr,
+                style: typo.labelSmall.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.4),
+                  fontSize: 9,
+                ),
               ),
             ],
           ),

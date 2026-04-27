@@ -320,7 +320,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await ref
           .read(profileProvider.notifier)
           .updateAvatarFromBytes(bytes, fileName);
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(children: [
@@ -333,7 +333,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(children: [
@@ -364,7 +364,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     setState(() => _isSaving = true);
     try {
       await ref.read(profileProvider.notifier).updateDisplayName(newName);
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(children: [
@@ -378,7 +378,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(children: [
