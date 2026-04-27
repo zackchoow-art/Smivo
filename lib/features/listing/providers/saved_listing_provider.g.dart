@@ -160,8 +160,29 @@ class _IsListingSavedProviderElement
   String get listingId => (origin as IsListingSavedProvider).listingId;
 }
 
+String _$mySavedListingsHash() => r'0e1bbdf9599a8863079eb63e6f6a13ad65b06e2c';
+
+/// Fetches the current user's saved listings including listing details.
+///
+/// Copied from [mySavedListings].
+@ProviderFor(mySavedListings)
+final mySavedListingsProvider =
+    AutoDisposeFutureProvider<List<SavedListing>>.internal(
+      mySavedListings,
+      name: r'mySavedListingsProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$mySavedListingsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MySavedListingsRef = AutoDisposeFutureProviderRef<List<SavedListing>>;
 String _$savedListingActionsHash() =>
-    r'60ec310642d5b9c45e8d3b15d6a58abc87bf96ab';
+    r'05564341bbec3522b7a4601a53f01fb74767c7c5';
 
 /// Mutation provider for save/unsave actions.
 ///

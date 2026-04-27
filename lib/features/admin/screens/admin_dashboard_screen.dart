@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/data/repositories/admin_repository.dart';
+import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_dashboard_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
@@ -135,6 +137,79 @@ class AdminDashboardScreen extends ConsumerWidget {
               ],
             ),
 
+            const SizedBox(height: 40),
+
+            // Danger Zone — only for admin/sysadmin
+            Builder(
+              builder: (context) {
+                final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+                final canWrite = adminCtx?.canWrite(AdminModule.dashboard) ?? false;
+                if (!canWrite) return const SizedBox.shrink();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Danger Zone',
+                      style: typo.headlineMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.error,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: colors.error.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(radius.sm),
+                        border: Border.all(
+                          color: colors.error.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded,
+                              color: colors.error, size: 28),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Clear All Test Data',
+                                  style: typo.titleMedium.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Delete all orders, listings, messages, chat rooms, notifications, and saved listings. System config (schools, categories, etc.) will be preserved.',
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          FilledButton.icon(
+                            onPressed: () => _showClearDataDialog(context, ref),
+                            icon: const Icon(Icons.delete_forever, size: 18),
+                            label: const Text('Clear Data'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: colors.error,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                );
+              },
+            ),
+
             // Recent activity
             Text('Recent Orders', style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 20),
@@ -234,6 +309,203 @@ class AdminDashboardScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Two-step confirmation dialog for clearing all test data.
+  void _showClearDataDialog(BuildContext context, WidgetRef ref) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final confirmCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded,
+                    color: colors.error, size: 24),
+                const SizedBox(width: 12),
+                const Text('Clear Test Data'),
+              ],
+            ),
+            content: SizedBox(
+              width: 420,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'This will permanently delete:',
+                    style: typo.bodyMedium
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  ...[
+                    '• All orders & order evidence',
+                    '• All rental extensions',
+                    '• All messages & chat rooms',
+                    '• All notifications',
+                    '• All saved listings',
+                    '• All listing images',
+                    '• All listings',
+                  ].map((t) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(t,
+                            style: typo.bodySmall.copyWith(
+                                color: colors.onSurfaceVariant)),
+                      )),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF059669)
+                          .withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '✓ Schools, categories, conditions, pickup locations, FAQs, dictionary, admin roles, and user accounts will NOT be deleted.',
+                      style: typo.bodySmall.copyWith(
+                        color: const Color(0xFF059669),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Type DELETE to confirm:',
+                    style: typo.bodyMedium
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: confirmCtrl,
+                    onChanged: (_) => setDialogState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'DELETE',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  confirmCtrl.dispose();
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: confirmCtrl.text.trim() == 'DELETE'
+                    ? () async {
+                        confirmCtrl.dispose();
+                        Navigator.of(ctx).pop();
+                        _executeClearData(context, ref);
+                      }
+                    : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor: colors.error,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      colors.error.withValues(alpha: 0.3),
+                ),
+                child: const Text('Confirm Delete'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Executes the clear data operation with a loading overlay.
+  void _executeClearData(BuildContext context, WidgetRef ref) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 24),
+            Text('Clearing data…'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final repo = ref.read(adminRepositoryProvider);
+      final counts = await repo.clearTestData();
+
+      if (context.mounted) Navigator.of(context).pop();
+
+      // Refresh dashboard metrics
+      ref.invalidate(adminDashboardMetricsProvider);
+      ref.invalidate(adminRecentOrdersProvider);
+
+      if (context.mounted) {
+        final total = counts.values.fold(0, (a, b) => a + b);
+        final details = counts.entries
+            .where((e) => e.value > 0)
+            .map((e) => '${e.key}: ${e.value}')
+            .join('\n');
+
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Color(0xFF059669), size: 24),
+                SizedBox(width: 12),
+                Text('Data Cleared'),
+              ],
+            ),
+            content: SizedBox(
+              width: 380,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$total records deleted.',
+                      style: context.smivoTypo.bodyMedium
+                          .copyWith(fontWeight: FontWeight.w700)),
+                  if (details.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(details,
+                        style: context.smivoTypo.bodySmall.copyWith(
+                            color:
+                                context.smivoColors.onSurfaceVariant)),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.of(context).pop();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error clearing data: $e'),
+            backgroundColor: context.smivoColors.error,
+          ),
+        );
+      }
+    }
   }
 }
 

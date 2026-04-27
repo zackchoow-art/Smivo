@@ -33,6 +33,22 @@ class SavedRepository {
     }
   }
 
+  /// Fetches all saved listings for a user, including full listing and image details.
+  Future<List<SavedListing>> fetchMySavedListingsWithDetails(
+    String userId,
+  ) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableSavedListings)
+          .select('*, listing:listings(*, images:listing_images(*))')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      return data.map((json) => SavedListing.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Saves a listing for the user.
   Future<SavedListing> saveListing({
     required String userId,

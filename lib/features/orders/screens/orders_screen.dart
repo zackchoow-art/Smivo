@@ -73,6 +73,17 @@ class OrdersScreen extends ConsumerWidget {
                                 badgeCount: pendingSellerCount,
                               ),
                             ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _HubCard(
+                                icon: Icons.bookmark_outline,
+                                title: 'Saved Items',
+                                subtitle: 'Listings you have saved\nfor later viewing.',
+                                gradient: [colors.tertiary, colors.onSecondaryContainer],
+                                onTap: () => context.pushNamed(AppRoutes.savedListings),
+                                badgeCount: 0,
+                              ),
+                            ),
                           ],
                         )
                       : Column(
@@ -93,6 +104,15 @@ class OrdersScreen extends ConsumerWidget {
                               gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
                               onTap: () => context.pushNamed(AppRoutes.sellerCenter),
                               badgeCount: pendingSellerCount,
+                            ),
+                            const SizedBox(height: 16),
+                            _HubCard(
+                              icon: Icons.bookmark_outline,
+                              title: 'Saved Items',
+                              subtitle: 'Listings you have saved\nfor later viewing.',
+                              gradient: [colors.tertiary, colors.onSecondaryContainer],
+                              onTap: () => context.pushNamed(AppRoutes.savedListings),
+                              badgeCount: 0,
                             ),
                           ],
                         ),

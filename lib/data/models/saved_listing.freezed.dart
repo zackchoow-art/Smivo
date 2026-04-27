@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SavedListing {
 
- String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt; UserProfile? get user;
+ String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt; UserProfile? get user;@JsonKey(name: 'listing') Listing? get listing;
 /// Create a copy of SavedListing
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SavedListingCopyWith<SavedListing> get copyWith => _$SavedListingCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavedListing&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.user, user) || other.user == user));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavedListing&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.user, user) || other.user == user)&&(identical(other.listing, listing) || other.listing == listing));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,listingId,createdAt,updatedAt,user);
+int get hashCode => Object.hash(runtimeType,id,userId,listingId,createdAt,updatedAt,user,listing);
 
 @override
 String toString() {
-  return 'SavedListing(id: $id, userId: $userId, listingId: $listingId, createdAt: $createdAt, updatedAt: $updatedAt, user: $user)';
+  return 'SavedListing(id: $id, userId: $userId, listingId: $listingId, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listing: $listing)';
 }
 
 
@@ -48,11 +48,11 @@ abstract mixin class $SavedListingCopyWith<$Res>  {
   factory $SavedListingCopyWith(SavedListing value, $Res Function(SavedListing) _then) = _$SavedListingCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? user
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? user,@JsonKey(name: 'listing') Listing? listing
 });
 
 
-$UserProfileCopyWith<$Res>? get user;
+$UserProfileCopyWith<$Res>? get user;$ListingCopyWith<$Res>? get listing;
 
 }
 /// @nodoc
@@ -65,7 +65,7 @@ class _$SavedListingCopyWithImpl<$Res>
 
 /// Create a copy of SavedListing
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? listingId = null,Object? createdAt = null,Object? updatedAt = null,Object? user = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? listingId = null,Object? createdAt = null,Object? updatedAt = null,Object? user = freezed,Object? listing = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -73,7 +73,8 @@ as String,listingId: null == listingId ? _self.listingId : listingId // ignore: 
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
-as UserProfile?,
+as UserProfile?,listing: freezed == listing ? _self.listing : listing // ignore: cast_nullable_to_non_nullable
+as Listing?,
   ));
 }
 /// Create a copy of SavedListing
@@ -87,6 +88,18 @@ $UserProfileCopyWith<$Res>? get user {
 
   return $UserProfileCopyWith<$Res>(_self.user!, (value) {
     return _then(_self.copyWith(user: value));
+  });
+}/// Create a copy of SavedListing
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ListingCopyWith<$Res>? get listing {
+    if (_self.listing == null) {
+    return null;
+  }
+
+  return $ListingCopyWith<$Res>(_self.listing!, (value) {
+    return _then(_self.copyWith(listing: value));
   });
 }
 }
@@ -170,10 +183,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? user)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? user, @JsonKey(name: 'listing')  Listing? listing)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SavedListing() when $default != null:
-return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt,_that.user);case _:
+return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt,_that.user,_that.listing);case _:
   return orElse();
 
 }
@@ -191,10 +204,10 @@ return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.upda
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? user)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? user, @JsonKey(name: 'listing')  Listing? listing)  $default,) {final _that = this;
 switch (_that) {
 case _SavedListing():
-return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt,_that.user);case _:
+return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt,_that.user,_that.listing);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -211,10 +224,10 @@ return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.upda
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? user)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt,  UserProfile? user, @JsonKey(name: 'listing')  Listing? listing)?  $default,) {final _that = this;
 switch (_that) {
 case _SavedListing() when $default != null:
-return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt,_that.user);case _:
+return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.updatedAt,_that.user,_that.listing);case _:
   return null;
 
 }
@@ -226,7 +239,7 @@ return $default(_that.id,_that.userId,_that.listingId,_that.createdAt,_that.upda
 @JsonSerializable()
 
 class _SavedListing implements SavedListing {
-  const _SavedListing({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, this.user});
+  const _SavedListing({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, this.user, @JsonKey(name: 'listing') this.listing});
   factory _SavedListing.fromJson(Map<String, dynamic> json) => _$SavedListingFromJson(json);
 
 @override final  String id;
@@ -235,6 +248,7 @@ class _SavedListing implements SavedListing {
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 @override final  UserProfile? user;
+@override@JsonKey(name: 'listing') final  Listing? listing;
 
 /// Create a copy of SavedListing
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavedListing&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.user, user) || other.user == user));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavedListing&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.user, user) || other.user == user)&&(identical(other.listing, listing) || other.listing == listing));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,listingId,createdAt,updatedAt,user);
+int get hashCode => Object.hash(runtimeType,id,userId,listingId,createdAt,updatedAt,user,listing);
 
 @override
 String toString() {
-  return 'SavedListing(id: $id, userId: $userId, listingId: $listingId, createdAt: $createdAt, updatedAt: $updatedAt, user: $user)';
+  return 'SavedListing(id: $id, userId: $userId, listingId: $listingId, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listing: $listing)';
 }
 
 
@@ -269,11 +283,11 @@ abstract mixin class _$SavedListingCopyWith<$Res> implements $SavedListingCopyWi
   factory _$SavedListingCopyWith(_SavedListing value, $Res Function(_SavedListing) _then) = __$SavedListingCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? user
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt, UserProfile? user,@JsonKey(name: 'listing') Listing? listing
 });
 
 
-@override $UserProfileCopyWith<$Res>? get user;
+@override $UserProfileCopyWith<$Res>? get user;@override $ListingCopyWith<$Res>? get listing;
 
 }
 /// @nodoc
@@ -286,7 +300,7 @@ class __$SavedListingCopyWithImpl<$Res>
 
 /// Create a copy of SavedListing
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? listingId = null,Object? createdAt = null,Object? updatedAt = null,Object? user = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? listingId = null,Object? createdAt = null,Object? updatedAt = null,Object? user = freezed,Object? listing = freezed,}) {
   return _then(_SavedListing(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -294,7 +308,8 @@ as String,listingId: null == listingId ? _self.listingId : listingId // ignore: 
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
-as UserProfile?,
+as UserProfile?,listing: freezed == listing ? _self.listing : listing // ignore: cast_nullable_to_non_nullable
+as Listing?,
   ));
 }
 
@@ -309,6 +324,18 @@ $UserProfileCopyWith<$Res>? get user {
 
   return $UserProfileCopyWith<$Res>(_self.user!, (value) {
     return _then(_self.copyWith(user: value));
+  });
+}/// Create a copy of SavedListing
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ListingCopyWith<$Res>? get listing {
+    if (_self.listing == null) {
+    return null;
+  }
+
+  return $ListingCopyWith<$Res>(_self.listing!, (value) {
+    return _then(_self.copyWith(listing: value));
   });
 }
 }

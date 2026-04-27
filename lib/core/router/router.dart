@@ -11,6 +11,7 @@ import 'package:smivo/features/auth/screens/email_verification_screen.dart';
 import 'package:smivo/features/home/screens/home_screen.dart';
 import 'package:smivo/features/listing/screens/listing_detail_screen.dart';
 import 'package:smivo/features/listing/screens/create_listing_form_screen.dart';
+import 'package:smivo/features/listing/screens/saved_listings_screen.dart';
 import 'package:smivo/features/chat/screens/chat_list_screen.dart';
 import 'package:smivo/features/orders/screens/orders_screen.dart';
 import 'package:smivo/features/orders/screens/order_detail_screen.dart';
@@ -277,6 +278,13 @@ GoRouter router(Ref ref) {
         name: AppRoutes.notificationCenter,
         path: AppRoutes.notificationCenterPath,
         builder: (context, state) => const NotificationCenterScreen(),
+      ),
+
+      // ── Saved Listings ───────────────────────────────────
+      GoRoute(
+        name: AppRoutes.savedListings,
+        path: AppRoutes.savedListingsPath,
+        builder: (context, state) => const SavedListingsScreen(),
       ),
 
       // ── Profile & Settings (auth required) ────────────────

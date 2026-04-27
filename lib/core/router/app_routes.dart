@@ -30,6 +30,7 @@ class AppRoutes {
   static const String buyerCenter = 'buyerCenter';
   static const String transactionManagement = 'transactionManagement';
   static const String notificationCenter = 'notificationCenter';
+  static const String savedListings = 'savedListings';
 
   // ── Route Paths ────────────────────────────────────────────
   static const String splashPath = '/';
@@ -56,6 +57,7 @@ class AppRoutes {
   static const String buyerCenterPath = '/buyer-center';
   static const String transactionManagementPath = '/listing/:id/transactions';
   static const String notificationCenterPath = '/notifications';
+  static const String savedListingsPath = '/saved-listings';
 
   // ── Admin Routes ───────────────────────────────────────────
   static const String adminLogin = 'adminLogin';

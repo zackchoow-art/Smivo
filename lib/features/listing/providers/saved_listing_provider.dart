@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:smivo/data/models/saved_listing.dart';
 import 'package:smivo/data/repositories/saved_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 
@@ -13,6 +14,16 @@ Future<bool> isListingSaved(Ref ref, String listingId) async {
   
   final repo = ref.watch(savedRepositoryProvider);
   return repo.isListingSaved(userId: user.id, listingId: listingId);
+}
+
+/// Fetches the current user's saved listings including listing details.
+@riverpod
+Future<List<SavedListing>> mySavedListings(Ref ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return [];
+  
+  final repo = ref.watch(savedRepositoryProvider);
+  return repo.fetchMySavedListingsWithDetails(user.id);
 }
 
 /// Mutation provider for save/unsave actions.
@@ -42,6 +53,7 @@ class SavedListingActions extends _$SavedListingActions {
 
       // Invalidate the check provider so UI updates
       ref.invalidate(isListingSavedProvider(listingId));
+      ref.invalidate(mySavedListingsProvider);
       
       state = const AsyncValue.data(null);
     } catch (e, st) {
