@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +15,7 @@ import 'package:smivo/features/seller/providers/listing_views_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class TransactionManagementScreen extends ConsumerWidget {
   const TransactionManagementScreen({
@@ -29,7 +31,10 @@ class TransactionManagementScreen extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    
+    // NOTE: On desktop, constrain the tab content to 960px for readability.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = Breakpoints.isDesktop(screenWidth);
+
     final listingAsync = ref.watch(listingDetailProvider(listingId));
 
     return DefaultTabController(
@@ -109,12 +114,22 @@ class TransactionManagementScreen extends ConsumerWidget {
                 );
               },
             ),
+            // NOTE: ContentWidthConstraint centers tab content on desktop.
             Expanded(
-              child: TabBarView(children: [
-                _ViewsTab(listingId: listingId),
-                _SavesTab(listingId: listingId),
-                _OffersTab(listingId: listingId),
-              ]),
+              child: isDesktop
+                  ? ContentWidthConstraint(
+                      maxWidth: 960,
+                      child: TabBarView(children: [
+                        _ViewsTab(listingId: listingId),
+                        _SavesTab(listingId: listingId),
+                        _OffersTab(listingId: listingId),
+                      ]),
+                    )
+                  : TabBarView(children: [
+                      _ViewsTab(listingId: listingId),
+                      _SavesTab(listingId: listingId),
+                      _OffersTab(listingId: listingId),
+                    ]),
             ),
           ],
         ),

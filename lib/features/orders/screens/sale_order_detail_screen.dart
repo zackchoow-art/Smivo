@@ -11,6 +11,7 @@ import 'package:smivo/features/orders/widgets/order_header_card.dart';
 import 'package:smivo/features/orders/widgets/order_info_section.dart';
 import 'package:smivo/features/orders/widgets/order_timeline.dart';
 import 'package:smivo/shared/widgets/collapsible_section.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class SaleOrderDetailScreen extends ConsumerWidget {
   const SaleOrderDetailScreen({
@@ -39,62 +40,65 @@ class SaleOrderDetailScreen extends ConsumerWidget {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          OrderHeaderCard(order: order),
-          const SizedBox(height: 16),
-          // Section 1: Order Timeline — collapsible, default open
-          CollapsibleSection(
-            title: 'Order Timeline',
-            initiallyExpanded: true,
-            child: OrderTimeline(steps: _buildSaleSteps(order)),
-          ),
-          const SizedBox(height: 16),
-          // Section 2: Item Pricing — collapsible, default closed
-          CollapsibleSection(
-            title: 'Item Pricing',
-            initiallyExpanded: false,
-            child: OrderFinancialSummary(order: order),
-          ),
-          const SizedBox(height: 16),
-          // Section 3: Order Info — collapsible, default open
-          OrderInfoSection(
-            order: order,
-            counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
-            buyer: order.buyer,
-            seller: order.seller,
-            currentUserId: currentUserId,
-          ),
-          const SizedBox(height: 16),
-          // Section 5: Delivery & Return — collapsible, default open
-          if (order.status == 'pending' || order.status == 'confirmed' || order.status == 'completed') ...[
-            CollapsibleSection(
-              title: 'Delivery & Return',
-              initiallyExpanded: true,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (order.status != 'pending') ...[
-                    _buildDeliveryStatus(context, order),
-                    const SizedBox(height: 16),
-                    EvidencePhotoSection(
-                      orderId: order.id,
-                      canUpload: _canUploadEvidence(order, isBuyer, isSeller),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  _buildPrimaryActions(context, ref, order, isBuyer, isSeller, isActing),
-                ],
+        child: ContentWidthConstraint(
+          maxWidth: 768,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              OrderHeaderCard(order: order),
+              const SizedBox(height: 16),
+              // Section 1: Order Timeline — collapsible, default open
+              CollapsibleSection(
+                title: 'Order Timeline',
+                initiallyExpanded: true,
+                child: OrderTimeline(steps: _buildSaleSteps(order)),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          // Section 6: Chat History — collapsible, default closed
-          _buildChatSection(ref, order),
-          _buildStatusBanner(context, order),
-        ],
-      ),
+              const SizedBox(height: 16),
+              // Section 2: Item Pricing — collapsible, default closed
+              CollapsibleSection(
+                title: 'Item Pricing',
+                initiallyExpanded: false,
+                child: OrderFinancialSummary(order: order),
+              ),
+              const SizedBox(height: 16),
+              // Section 3: Order Info — collapsible, default open
+              OrderInfoSection(
+                order: order,
+                counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
+                buyer: order.buyer,
+                seller: order.seller,
+                currentUserId: currentUserId,
+              ),
+              const SizedBox(height: 16),
+              // Section 5: Delivery & Return — collapsible, default open
+              if (order.status == 'pending' || order.status == 'confirmed' || order.status == 'completed') ...[
+                CollapsibleSection(
+                  title: 'Delivery & Return',
+                  initiallyExpanded: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (order.status != 'pending') ...[
+                        _buildDeliveryStatus(context, order),
+                        const SizedBox(height: 16),
+                        EvidencePhotoSection(
+                          orderId: order.id,
+                          canUpload: _canUploadEvidence(order, isBuyer, isSeller),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      _buildPrimaryActions(context, ref, order, isBuyer, isSeller, isActing),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              // Section 6: Chat History — collapsible, default closed
+              _buildChatSection(ref, order),
+              _buildStatusBanner(context, order),
+            ],
+          ),
+        ),
       ),
     );
   }

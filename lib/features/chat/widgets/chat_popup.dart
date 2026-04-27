@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -134,6 +135,11 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
+    // NOTE: On desktop the popup is constrained to 480px via ConstrainedBox
+    // to prevent it from stretching across large monitors.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = Breakpoints.isDesktop(screenWidth);
+    final popupWidth = isDesktop ? 480.0 : screenWidth * 0.85;
 
     // Re-mark as read whenever new messages arrive while viewing this chat.
     ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
@@ -144,9 +150,11 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
       }
     });
 
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.85,
-      height: MediaQuery.of(context).size.height * 0.75,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 480),
+      child: Container(
+        width: popupWidth,
+        height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: colors.background.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(radius.xl),
@@ -378,6 +386,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

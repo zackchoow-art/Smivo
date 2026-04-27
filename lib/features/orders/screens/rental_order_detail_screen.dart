@@ -16,6 +16,7 @@ import 'package:smivo/features/orders/widgets/rental_date_section.dart';
 import 'package:smivo/features/orders/widgets/rental_extension_card.dart';
 import 'package:smivo/features/orders/widgets/rental_reminder_settings.dart';
 import 'package:smivo/shared/widgets/collapsible_section.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class RentalOrderDetailScreen extends ConsumerWidget {
   const RentalOrderDetailScreen({
@@ -53,145 +54,148 @@ class RentalOrderDetailScreen extends ConsumerWidget {
           // is never obscured by bottom nav or system UI.
           MediaQuery.of(context).padding.bottom + 80,
         ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          OrderHeaderCard(order: order),
-          const SizedBox(height: 16),
+        child: ContentWidthConstraint(
+          maxWidth: 768,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              OrderHeaderCard(order: order),
+              const SizedBox(height: 16),
 
-          // Section 1: Order Timeline — collapsible, default open
-          CollapsibleSection(
-            title: 'Order Timeline',
-            initiallyExpanded: true,
-            child: OrderTimeline(steps: _buildRentalSteps(order)),
-          ),
-          const SizedBox(height: 16),
-
-          // Section 2: Item Pricing — collapsible, default closed
-          CollapsibleSection(
-            title: 'Item Pricing',
-            initiallyExpanded: false,
-            child: OrderFinancialSummary(order: order),
-          ),
-          const SizedBox(height: 16),
-
-          // Section 3: Order Info — collapsible, default open, counterparty only
-          OrderInfoSection(
-            order: order,
-            counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
-            buyer: order.buyer,
-            seller: order.seller,
-            currentUserId: currentUserId,
-          ),
-          const SizedBox(height: 16),
-
-          // Section 4: Rental Period — collapsible, default open
-          if (order.rentalStartDate != null) ...[
-            CollapsibleSection(
-              title: 'Rental Period',
-              initiallyExpanded: true,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  RentalDateSection(order: order),
-                  // Rental reminder settings — only for active rentals, buyer only
-                  if (order.rentalStatus == 'active' && isBuyer) ...[
-                    const SizedBox(height: 16),
-                    RentalReminderSettings(
-                      order: order,
-                      isBuyer: isBuyer,
-                    ),
-                  ],
-                ],
+              // Section 1: Order Timeline — collapsible, default open
+              CollapsibleSection(
+                title: 'Order Timeline',
+                initiallyExpanded: true,
+                child: OrderTimeline(steps: _buildRentalSteps(order)),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
 
-          // Section 5: Delivery & Return — collapsible, default open
-          if (order.status == 'pending' || order.status == 'confirmed' || order.status == 'completed') ...[
-            CollapsibleSection(
-              title: 'Delivery & Return',
-              initiallyExpanded: true,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (order.status != 'pending') ...[
-                    _buildDeliveryStatus(context, order),
-                    const SizedBox(height: 16),
-                    EvidencePhotoSection(
-                      label: 'Delivery Evidence',
-                      orderId: order.id,
-                      canUpload: _canUploadDeliveryEvidence(order, isBuyer, isSeller),
-                      evidenceType: 'delivery',
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  _buildPrimaryActions(context, ref, order, isBuyer, isSeller, isActing),
-                ],
+              // Section 2: Item Pricing — collapsible, default closed
+              CollapsibleSection(
+                title: 'Item Pricing',
+                initiallyExpanded: false,
+                child: OrderFinancialSummary(order: order),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
 
-          // Section 6: Rental Period Changes — collapsible, default open
-          if (order.rentalStatus != null) ...[
-            CollapsibleSection(
-              title: 'Rental Period Changes',
-              initiallyExpanded: true,
-              child: RentalExtensionCard(
+              // Section 3: Order Info — collapsible, default open, counterparty only
+              OrderInfoSection(
                 order: order,
-                isBuyer: isBuyer,
-                isSeller: isSeller,
-                showTitle: false,
+                counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
+                buyer: order.buyer,
+                seller: order.seller,
+                currentUserId: currentUserId,
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
 
-          // Section 7: Return Evidence — collapsible, default open
-          if (order.rentalStatus == 'active' ||
-              order.rentalStatus == 'return_requested' ||
-              order.rentalStatus == 'returned' ||
-              order.rentalStatus == 'deposit_refunded') ...[
-            CollapsibleSection(
-              title: 'Return Evidence',
-              initiallyExpanded: true,
-              // NOTE: Lifecycle action button and status banner both live here
-              // so they share the same container width, keeping them aligned.
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  EvidencePhotoSection(
-                    label: 'Return Evidence',
-                    orderId: order.id,
-                    canUpload: _canUploadReturnEvidence(order, isBuyer, isSeller),
-                    evidenceType: 'return',
+              // Section 4: Rental Period — collapsible, default open
+              if (order.rentalStartDate != null) ...[
+                CollapsibleSection(
+                  title: 'Rental Period',
+                  initiallyExpanded: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      RentalDateSection(order: order),
+                      // Rental reminder settings — only for active rentals, buyer only
+                      if (order.rentalStatus == 'active' && isBuyer) ...[
+                        const SizedBox(height: 16),
+                        RentalReminderSettings(
+                          order: order,
+                          isBuyer: isBuyer,
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  _buildRentalLifecycleActions(
-                    context, ref, order, isBuyer, isSeller, isActing,
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Section 5: Delivery & Return — collapsible, default open
+              if (order.status == 'pending' || order.status == 'confirmed' || order.status == 'completed') ...[
+                CollapsibleSection(
+                  title: 'Delivery & Return',
+                  initiallyExpanded: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (order.status != 'pending') ...[
+                        _buildDeliveryStatus(context, order),
+                        const SizedBox(height: 16),
+                        EvidencePhotoSection(
+                          label: 'Delivery Evidence',
+                          orderId: order.id,
+                          canUpload: _canUploadDeliveryEvidence(order, isBuyer, isSeller),
+                          evidenceType: 'delivery',
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      _buildPrimaryActions(context, ref, order, isBuyer, isSeller, isActing),
+                    ],
                   ),
-                  // NOTE: Status banner placed here so it shares the same
-                  // parent width as the lifecycle action above it.
-                  _buildStatusBanner(context, order),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          // NOTE: Show status banner in the main column only for orders where
-          // the Return Evidence section is not visible (e.g. cancelled/missed
-          // before any delivery was confirmed).
-          if (order.rentalStatus != 'active' &&
-              order.rentalStatus != 'return_requested' &&
-              order.rentalStatus != 'returned' &&
-              order.rentalStatus != 'deposit_refunded')
-            _buildStatusBanner(context, order),
-          // Section 8: Chat History — collapsible, default closed
-          _buildChatSection(ref, order),
-        ],
-      ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Section 6: Rental Period Changes — collapsible, default open
+              if (order.rentalStatus != null) ...[
+                CollapsibleSection(
+                  title: 'Rental Period Changes',
+                  initiallyExpanded: true,
+                  child: RentalExtensionCard(
+                    order: order,
+                    isBuyer: isBuyer,
+                    isSeller: isSeller,
+                    showTitle: false,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Section 7: Return Evidence — collapsible, default open
+              if (order.rentalStatus == 'active' ||
+                  order.rentalStatus == 'return_requested' ||
+                  order.rentalStatus == 'returned' ||
+                  order.rentalStatus == 'deposit_refunded') ...[
+                CollapsibleSection(
+                  title: 'Return Evidence',
+                  initiallyExpanded: true,
+                  // NOTE: Lifecycle action button and status banner both live here
+                  // so they share the same container width, keeping them aligned.
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      EvidencePhotoSection(
+                        label: 'Return Evidence',
+                        orderId: order.id,
+                        canUpload: _canUploadReturnEvidence(order, isBuyer, isSeller),
+                        evidenceType: 'return',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildRentalLifecycleActions(
+                        context, ref, order, isBuyer, isSeller, isActing,
+                      ),
+                      // NOTE: Status banner placed here so it shares the same
+                      // parent width as the lifecycle action above it.
+                      _buildStatusBanner(context, order),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              // NOTE: Show status banner in the main column only for orders where
+              // the Return Evidence section is not visible (e.g. cancelled/missed
+              // before any delivery was confirmed).
+              if (order.rentalStatus != 'active' &&
+                  order.rentalStatus != 'return_requested' &&
+                  order.rentalStatus != 'returned' &&
+                  order.rentalStatus != 'deposit_refunded')
+                _buildStatusBanner(context, order),
+              // Section 8: Chat History — collapsible, default closed
+              _buildChatSection(ref, order),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +9,7 @@ import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/data/models/message.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   const ChatRoomScreen({
@@ -120,6 +122,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     final roomAsync = ref.watch(chatRoomProvider(widget.chatRoomId));
     final typo = context.smivoTypo;
+    // NOTE: ContentWidthConstraint is applied on desktop to center the
+    // message area and input bar, keeping them readable at wide widths.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = Breakpoints.isDesktop(screenWidth);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -186,25 +192,34 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     child: Text('No messages yet. Say hello!'),
                   );
                 }
-                return ListView.builder(
+                // NOTE: On desktop the message list is constrained to 720px
+                // for readability. ContentWidthConstraint centers it.
+                final listView = ListView.builder(
                   controller: _scrollController,
-                  reverse: true, 
+                  reverse: true,
                   padding: const EdgeInsets.all(12),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[messages.length - 1 - index];
                     final isMine = msg.senderId == currentUserId;
-                    
                     return _MessageBubble(
                       message: msg,
                       isMine: isMine,
                     );
                   },
                 );
+                return isDesktop
+                    ? ContentWidthConstraint(
+                        maxWidth: 720, child: listView)
+                    : listView;
               },
             ),
           ),
-          _buildInputBar(),
+          // NOTE: Input bar also constrained on desktop for visual consistency.
+          isDesktop
+              ? ContentWidthConstraint(
+                  maxWidth: 720, child: _buildInputBar())
+              : _buildInputBar(),
         ],
       ),
     );

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/chat_room.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_list_item.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 
 class ChatListScreen extends ConsumerStatefulWidget {
@@ -76,6 +78,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
+    // NOTE: Use MediaQuery at build time to decide whether to apply
+    // ContentWidthConstraint on tablet/desktop (>= 600px).
+    final screenWidth = MediaQuery.of(context).size.width;
+    final useWidthConstraint = !Breakpoints.isMobile(screenWidth);
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -92,32 +98,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               SliverPadding(
                 padding: const EdgeInsets.only(left: 24, right: 24, top: 12),
                 sliver: SliverToBoxAdapter(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _showArchived ? 'Archived' : 'Chat',
-                          style: typo.headlineLarge.copyWith(
-                            fontWeight: FontWeight.w900,
-                            color: colors.onSurface,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: _showArchived
-                            ? 'Show active chats'
-                            : 'Show archived chats',
-                        icon: Icon(
-                          _showArchived
-                              ? Icons.chat_bubble_outline
-                              : Icons.archive_outlined,
-                          color: colors.onSurfaceVariant,
-                        ),
-                        onPressed: () =>
-                            setState(() => _showArchived = !_showArchived),
-                      ),
-                    ],
-                  ),
+                  // NOTE: ContentWidthConstraint centers content on tablet/desktop.
+                  child: useWidthConstraint
+                      ? ContentWidthConstraint(
+                          maxWidth: 768,
+                          child: _buildHeaderRow(context, typo, colors),
+                        )
+                      : _buildHeaderRow(context, typo, colors),
                 ),
               ),
               SliverPersistentHeader(
@@ -128,36 +115,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   maxHeight: 68.0,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                    child: TextField(
-                      onChanged: (value) =>
-                          setState(() => _searchQuery = value),
-                      style: typo.bodyLarge.copyWith(color: colors.onSurface),
-                      decoration: InputDecoration(
-                        hintText: 'Search conversations...',
-                        hintStyle: typo.bodyLarge.copyWith(
-                          color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-                        ),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(Icons.close,
-                                    color: colors.onSurfaceVariant, size: 18),
-                                onPressed: () => setState(() => _searchQuery = ''),
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: colors.surfaceContainerLow,
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(radius.input),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
+                    child: useWidthConstraint
+                        ? ContentWidthConstraint(
+                            maxWidth: 768,
+                            child: _buildSearchField(context, typo, colors, radius),
+                          )
+                        : _buildSearchField(context, typo, colors, radius),
                   ),
                 ),
               ),
@@ -246,7 +209,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           final conversation =
                               _buildConversation(room, currentUserId);
 
-                          return ChatListItem(
+                          // NOTE: Wrap each list item in ContentWidthConstraint
+                          // on tablet/desktop to keep the card width bounded.
+                          Widget item = ChatListItem(
                             conversation: conversation,
                             isArchiveView: _showArchived,
                             onTap: () {
@@ -267,6 +232,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                 .toggleArchive(
                                     room.id, !room.isArchived),
                           );
+                          return useWidthConstraint
+                              ? ContentWidthConstraint(
+                                  maxWidth: 768, child: item)
+                              : item;
                         },
                         childCount: searchFiltered.length,
                       ),
@@ -276,6 +245,78 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds the header row containing the screen title and archive toggle.
+  Widget _buildHeaderRow(
+    BuildContext context,
+    dynamic typo,
+    dynamic colors,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            _showArchived ? 'Archived' : 'Chat',
+            style: typo.headlineLarge.copyWith(
+              fontWeight: FontWeight.w900,
+              color: colors.onSurface,
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: _showArchived
+              ? 'Show active chats'
+              : 'Show archived chats',
+          icon: Icon(
+            _showArchived
+                ? Icons.chat_bubble_outline
+                : Icons.archive_outlined,
+            color: colors.onSurfaceVariant,
+          ),
+          onPressed: () =>
+              setState(() => _showArchived = !_showArchived),
+        ),
+      ],
+    );
+  }
+
+  /// Builds the search text field.
+  Widget _buildSearchField(
+    BuildContext context,
+    dynamic typo,
+    dynamic colors,
+    dynamic radius,
+  ) {
+    return TextField(
+      onChanged: (value) => setState(() => _searchQuery = value),
+      style: typo.bodyLarge.copyWith(color: colors.onSurface),
+      decoration: InputDecoration(
+        hintText: 'Search conversations...',
+        hintStyle: typo.bodyLarge.copyWith(
+          color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+        ),
+        prefixIcon: Icon(
+          Icons.search,
+          color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+        ),
+        suffixIcon: _searchQuery.isNotEmpty
+            ? IconButton(
+                icon: Icon(Icons.close,
+                    color: colors.onSurfaceVariant, size: 18),
+                onPressed: () => setState(() => _searchQuery = ''),
+              )
+            : null,
+        filled: true,
+        fillColor: colors.surfaceContainerLow,
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 8, horizontal: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius.input),
+          borderSide: BorderSide.none,
         ),
       ),
     );

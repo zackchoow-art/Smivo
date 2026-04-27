@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/responsive_grid.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/features/seller/widgets/ikea_seller_order_card.dart';
@@ -142,18 +145,25 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                   ),
                 ),
                 if (isExpanded)
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: colors.primary == const Color(0xFF004181)
-                        ? SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
+                  // NOTE: Desktop: ContentWidthConstraint(maxWidth: 1280) for IKEA grid,
+                  // maxWidth: 960 for Teal list. Resolves via Builder.
+                  Builder(builder: (context) {
+                    final isIkea = colors.primary == const Color(0xFF004181);
+                    final sw = MediaQuery.of(context).size.width;
+                    final useConstraint = Breakpoints.isDesktop(sw);
+                    final maxW = isIkea ? 1280.0 : 960.0;
+                    final sliver = SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: isIkea
+                          ? SliverResponsiveGrid(
+                              itemCount: activeListings.length,
+                              mobileColumns: 2,
+                              tabletColumns: 3,
+                              desktopColumns: 4,
                               crossAxisSpacing: 24,
                               mainAxisSpacing: 12,
                               childAspectRatio: 0.72,
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
+                              itemBuilder: (context, index) {
                                 final listing = activeListings[index];
                                 return IkeaSellerOrderCard(
                                   cardType: IkeaSellerCardType.activeListing,
@@ -173,16 +183,27 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                   ],
                                 );
                               },
-                              childCount: activeListings.length,
+                            )
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate((context, index) {
+                                final listing = activeListings[index];
+                                final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
+                                return _buildActiveListingCard(listing, imageUrl);
+                              }, childCount: activeListings.length)),
+                    );
+                    return useConstraint
+                        ? SliverToBoxAdapter(
+                            child: ContentWidthConstraint(
+                              maxWidth: maxW,
+                              child: CustomScrollView(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                slivers: [sliver],
+                              ),
                             ),
                           )
-                        : SliverList(
-                            delegate: SliverChildBuilderDelegate((context, index) {
-                            final listing = activeListings[index];
-                            final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
-                            return _buildActiveListingCard(listing, imageUrl);
-                          }, childCount: activeListings.length)),
-                  ),
+                        : sliver;
+                  }),
               ]);
             },
           ),
@@ -228,18 +249,23 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                   ),
                 ),
                 if (isExpanded)
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: colors.primary == const Color(0xFF004181)
-                        ? SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
+                  Builder(builder: (context) {
+                    final isIkea = colors.primary == const Color(0xFF004181);
+                    final sw = MediaQuery.of(context).size.width;
+                    final useConstraint = Breakpoints.isDesktop(sw);
+                    final maxW = isIkea ? 1280.0 : 960.0;
+                    final sliver = SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: isIkea
+                          ? SliverResponsiveGrid(
+                              itemCount: awaitingDelivery.length,
+                              mobileColumns: 2,
+                              tabletColumns: 3,
+                              desktopColumns: 4,
                               crossAxisSpacing: 24,
                               mainAxisSpacing: 12,
                               childAspectRatio: 0.72,
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
+                              itemBuilder: (context, index) {
                                 final order = awaitingDelivery[index];
                                 final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
                                 return IkeaSellerOrderCard(
@@ -249,16 +275,27 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                   onTap: () => _handleOrderTap(order.id, hasUnread),
                                 );
                               },
-                              childCount: awaitingDelivery.length,
+                            )
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate((context, index) {
+                                final order = awaitingDelivery[index];
+                                final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                                return _buildAwaitingDeliveryCard(order, hasUnread);
+                              }, childCount: awaitingDelivery.length)),
+                    );
+                    return useConstraint
+                        ? SliverToBoxAdapter(
+                            child: ContentWidthConstraint(
+                              maxWidth: maxW,
+                              child: CustomScrollView(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                slivers: [sliver],
+                              ),
                             ),
                           )
-                        : SliverList(
-                            delegate: SliverChildBuilderDelegate((context, index) {
-                            final order = awaitingDelivery[index];
-                            final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
-                            return _buildAwaitingDeliveryCard(order, hasUnread);
-                          }, childCount: awaitingDelivery.length)),
-                  ),
+                        : sliver;
+                  }),
               ]);
             },
           ),
@@ -306,22 +343,26 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                   ),
                 ),
                 if (isExpanded)
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: colors.primary == const Color(0xFF004181)
-                        ? SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
+                  Builder(builder: (context) {
+                    final isIkea = colors.primary == const Color(0xFF004181);
+                    final sw = MediaQuery.of(context).size.width;
+                    final useConstraint = Breakpoints.isDesktop(sw);
+                    final maxW = isIkea ? 1280.0 : 960.0;
+                    final resolver = ref.watch(statusResolverProvider).valueOrNull;
+                    final sliver = SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: isIkea
+                          ? SliverResponsiveGrid(
+                              itemCount: activeTransactions.length,
+                              mobileColumns: 2,
+                              tabletColumns: 3,
+                              desktopColumns: 4,
                               crossAxisSpacing: 24,
                               mainAxisSpacing: 12,
                               childAspectRatio: 0.72,
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
+                              itemBuilder: (context, index) {
                                 final order = activeTransactions[index];
-                                // NOTE: Use StatusResolver for DB-driven labels, same as Teal card.
-                                final resolver =
-                                    ref.watch(statusResolverProvider).valueOrNull;
+                                // NOTE: Use StatusResolver for DB-driven labels.
                                 final statusLabel = order.rentalStatus != null
                                     ? (resolver?.rentalLabel(order.rentalStatus!) ??
                                         order.rentalStatus!.replaceAll('_', ' ').toUpperCase())
@@ -336,17 +377,28 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                   onTap: () => _handleOrderTap(order.id, hasUnread),
                                 );
                               },
-                              childCount: activeTransactions.length,
+                            )
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate((context, index) {
+                                final order = activeTransactions[index];
+                                final statusLabel = order.rentalStatus?.replaceAll('_', ' ').toUpperCase() ?? order.status.toUpperCase();
+                                final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
+                                return _buildOrderCard(order, statusLabel, hasUnread);
+                              }, childCount: activeTransactions.length)),
+                    );
+                    return useConstraint
+                        ? SliverToBoxAdapter(
+                            child: ContentWidthConstraint(
+                              maxWidth: maxW,
+                              child: CustomScrollView(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                slivers: [sliver],
+                              ),
                             ),
                           )
-                        : SliverList(
-                            delegate: SliverChildBuilderDelegate((context, index) {
-                            final order = activeTransactions[index];
-                            final statusLabel = order.rentalStatus?.replaceAll('_', ' ').toUpperCase() ?? order.status.toUpperCase();
-                            final hasUnread = notifications.any((n) => !n.isRead && n.relatedOrderId == order.id);
-                            return _buildOrderCard(order, statusLabel, hasUnread);
-                          }, childCount: activeTransactions.length)),
-                  ),
+                        : sliver;
+                  }),
               ]);
             },
           ),
@@ -471,113 +523,121 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       ),
                     ),
                     if (isExpanded)
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        sliver: colors.primary == const Color(0xFF004181)
-                        ? SliverGrid(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 24,
-                              mainAxisSpacing: 12,
-                              childAspectRatio: 0.72,
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final item = filteredHistory[index];
-                                return IkeaSellerOrderCard(
-                                  cardType: IkeaSellerCardType.history,
-                                  historyItem: item,
-                                  hasUnread: false,
-                                  onTap: item.onTap,
-                                );
-                              },
-                              childCount: filteredHistory.length,
-                            ),
-                          )
-                        : SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final item = filteredHistory[index];
-                              final dateStr =
-                                  DateFormat('M/d/yyyy HH:mm').format(item.updatedAt ?? item.createdAt ?? DateTime.now());
-
-                              return InkWell(
-                                onTap: item.onTap,
-                                borderRadius: BorderRadius.circular(radius.card),
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: colors.surfaceContainerLow,
-                                    borderRadius: BorderRadius.circular(radius.card),
-                                    border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-                                  ),
-                                  child: Row(children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(radius.image),
-                                      child: item.imageUrl != null
-                                          ? Image.network(item.imageUrl!, width: 48, height: 48, fit: BoxFit.cover)
-                                          : Container(
-                                              width: 48,
-                                              height: 48,
-                                              color: colors.surfaceContainerHigh,
-                                              child: const Icon(Icons.image)),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                      Text(item.title,
-                                          style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
-                                      const SizedBox(height: 4),
-                                      if (item.subtitle.contains(r'$'))
-                                        RichText(
-                                          text: TextSpan(
-                                            style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)),
-                                            children: [
-                                              TextSpan(
-                                                text: item.subtitle.split(' · ').first,
-                                                style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
-                                              ),
-                                              TextSpan(
-                                                text: item.subtitle.contains(' · ')
-                                                    ? ' · ${item.subtitle.split(' · ').sublist(1).join(' · ')}'
-                                                    : '',
-                                              ),
-                                            ],
+                      Builder(builder: (context) {
+                        final isIkea = colors.primary == const Color(0xFF004181);
+                        final sw = MediaQuery.of(context).size.width;
+                        final useConstraint = Breakpoints.isDesktop(sw);
+                        final maxW = isIkea ? 1280.0 : 960.0;
+                        final sliver = SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          sliver: isIkea
+                              ? SliverResponsiveGrid(
+                                  itemCount: filteredHistory.length,
+                                  mobileColumns: 2,
+                                  tabletColumns: 3,
+                                  desktopColumns: 4,
+                                  crossAxisSpacing: 24,
+                                  mainAxisSpacing: 12,
+                                  childAspectRatio: 0.72,
+                                  itemBuilder: (context, index) {
+                                    final item = filteredHistory[index];
+                                    return IkeaSellerOrderCard(
+                                      cardType: IkeaSellerCardType.history,
+                                      historyItem: item,
+                                      hasUnread: false,
+                                      onTap: item.onTap,
+                                    );
+                                  },
+                                )
+                              : SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final item = filteredHistory[index];
+                                      final dateStr = DateFormat('M/d/yyyy HH:mm')
+                                          .format(item.updatedAt ?? item.createdAt ?? DateTime.now());
+                                      return InkWell(
+                                        onTap: item.onTap,
+                                        borderRadius: BorderRadius.circular(radius.card),
+                                        child: Container(
+                                          margin: const EdgeInsets.only(bottom: 8),
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: colors.surfaceContainerLow,
+                                            borderRadius: BorderRadius.circular(radius.card),
+                                            border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        )
-                                      else
-                                        Text(item.subtitle,
-                                            style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
-                                    ])),
-                                    const SizedBox(width: 8),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        _buildHistoryStatusChip(item),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          dateStr,
-                                          style: typo.labelSmall.copyWith(
-                                            color: colors.onSurface.withValues(alpha: 0.4),
-                                            fontSize: 10,
-                                          ),
+                                          child: Row(children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(radius.image),
+                                              child: item.imageUrl != null
+                                                  ? Image.network(item.imageUrl!, width: 48, height: 48, fit: BoxFit.cover)
+                                                  : Container(width: 48, height: 48,
+                                                      color: colors.surfaceContainerHigh,
+                                                      child: const Icon(Icons.image)),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                                Text(item.title,
+                                                    style: typo.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                                                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                const SizedBox(height: 4),
+                                                if (item.subtitle.contains(r'$'))
+                                                  RichText(
+                                                    text: TextSpan(
+                                                      style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)),
+                                                      children: [
+                                                        TextSpan(
+                                                          text: item.subtitle.split(' · ').first,
+                                                          style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text: item.subtitle.contains(' · ')
+                                                              ? ' · ${item.subtitle.split(' · ').sublist(1).join(' · ')}' : '',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                                                  )
+                                                else
+                                                  Text(item.subtitle,
+                                                      style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7))),
+                                              ]),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: [
+                                                _buildHistoryStatusChip(item),
+                                                const SizedBox(height: 4),
+                                                Text(dateStr,
+                                                    style: typo.labelSmall.copyWith(
+                                                      color: colors.onSurface.withValues(alpha: 0.4),
+                                                      fontSize: 10,
+                                                    )),
+                                              ],
+                                            ),
+                                          ]),
                                         ),
-                                      ],
-                                    ),
-                                  ]),
+                                      );
+                                    },
+                                    childCount: filteredHistory.length,
+                                  ),
                                 ),
-                              );
-                            },
-                            childCount: filteredHistory.length,
-                          ),
-                        ),
-                      ),
+                        );
+                        return useConstraint
+                            ? SliverToBoxAdapter(
+                                child: ContentWidthConstraint(
+                                  maxWidth: maxW,
+                                  child: CustomScrollView(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    slivers: [sliver],
+                                  ),
+                                ),
+                              )
+                            : sliver;
+                      }),
                   ]);
                 },
               );

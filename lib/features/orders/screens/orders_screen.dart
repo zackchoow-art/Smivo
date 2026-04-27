@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
@@ -14,6 +16,10 @@ class OrdersScreen extends ConsumerWidget {
     final typo = context.smivoTypo;
     final pendingBuyerCount = ref.watch(pendingBuyerOrdersCountProvider).valueOrNull ?? 0;
     final pendingSellerCount = ref.watch(pendingSellerOrdersCountProvider).valueOrNull ?? 0;
+    // NOTE: ContentWidthConstraint centers the hub cards on desktop.
+    // On desktop the two cards also switch to a Row for better space use.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = Breakpoints.isDesktop(screenWidth);
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -37,26 +43,60 @@ class OrdersScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Buyer Center Card
-              _HubCard(
-                icon: Icons.shopping_bag_outlined,
-                title: 'Buyer Center',
-                subtitle: 'Your purchase requests,\naccepted orders, and history.',
-                gradient: [colors.gradientStart, colors.gradientEnd],
-                onTap: () => context.pushNamed(AppRoutes.buyerCenter),
-                badgeCount: pendingBuyerCount,
-              ),
-              const SizedBox(height: 16),
-
-              // Seller Center Card
-              _HubCard(
-                icon: Icons.storefront_outlined,
-                title: 'Seller Center',
-                subtitle: 'Active listings, incoming\norders, and sales history.',
-                gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
-                onTap: () => context.pushNamed(AppRoutes.sellerCenter),
-                badgeCount: pendingSellerCount,
+              // NOTE: ContentWidthConstraint keeps hub cards readable at wide widths.
+              // On desktop the two cards are arranged in a Row for equal visual weight.
+              Expanded(
+                child: ContentWidthConstraint(
+                  maxWidth: 960,
+                  child: isDesktop
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _HubCard(
+                                icon: Icons.shopping_bag_outlined,
+                                title: 'Buyer Center',
+                                subtitle: 'Your purchase requests,\naccepted orders, and history.',
+                                gradient: [colors.gradientStart, colors.gradientEnd],
+                                onTap: () => context.pushNamed(AppRoutes.buyerCenter),
+                                badgeCount: pendingBuyerCount,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _HubCard(
+                                icon: Icons.storefront_outlined,
+                                title: 'Seller Center',
+                                subtitle: 'Active listings, incoming\norders, and sales history.',
+                                gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
+                                onTap: () => context.pushNamed(AppRoutes.sellerCenter),
+                                badgeCount: pendingSellerCount,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            _HubCard(
+                              icon: Icons.shopping_bag_outlined,
+                              title: 'Buyer Center',
+                              subtitle: 'Your purchase requests,\naccepted orders, and history.',
+                              gradient: [colors.gradientStart, colors.gradientEnd],
+                              onTap: () => context.pushNamed(AppRoutes.buyerCenter),
+                              badgeCount: pendingBuyerCount,
+                            ),
+                            const SizedBox(height: 16),
+                            _HubCard(
+                              icon: Icons.storefront_outlined,
+                              title: 'Seller Center',
+                              subtitle: 'Active listings, incoming\norders, and sales history.',
+                              gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
+                              onTap: () => context.pushNamed(AppRoutes.sellerCenter),
+                              badgeCount: pendingSellerCount,
+                            ),
+                          ],
+                        ),
+                ),
               ),
             ],
           ),

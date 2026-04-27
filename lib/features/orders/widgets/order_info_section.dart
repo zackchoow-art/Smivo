@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/utils/price_format.dart';
 import 'package:smivo/data/models/order.dart';
@@ -87,36 +88,72 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
                   _buildUserRow(context, 'Seller', widget.seller!),
                 if (widget.buyer != null || widget.seller != null)
                   const Divider(height: 16),
-                // 1. Listed date
-                _infoRow(context, 'Listed', _formatDate(widget.order.createdAt)),
-                // 2. Transaction type
-                _infoRow(context, 'Type', isRental ? 'Rent' : 'Sale'),
-                // 3. Status — use DB-driven label via StatusResolver
-                _infoRow(context, 'Status', _resolveStatusLabel(widget.order.status)),
-                // 4. Pickup location
-                if (widget.order.pickupLocation != null)
-                  _infoRow(context, 'Pickup', widget.order.pickupLocation!.name),
-                // 5. Price / Rental Total
-                _infoRow(
-                  context,
-                  isRental ? 'Rental Total' : 'Price',
-                  '\$${widget.order.totalPrice.toStringAsFixed(2)}',
+                // Info items Grid/List via LayoutBuilder
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isDesktop = Breakpoints.isDesktop(MediaQuery.sizeOf(context).width);
+                    final itemWidth = isDesktop ? constraints.maxWidth / 2 : constraints.maxWidth;
+                    
+                    return Wrap(
+                      children: [
+                        // 1. Listed date
+                        SizedBox(
+                          width: itemWidth,
+                          child: _infoRow(context, 'Listed', _formatDate(widget.order.createdAt)),
+                        ),
+                        // 2. Transaction type
+                        SizedBox(
+                          width: itemWidth,
+                          child: _infoRow(context, 'Type', isRental ? 'Rent' : 'Sale'),
+                        ),
+                        // 3. Status — use DB-driven label via StatusResolver
+                        SizedBox(
+                          width: itemWidth,
+                          child: _infoRow(context, 'Status', _resolveStatusLabel(widget.order.status)),
+                        ),
+                        // 4. Pickup location
+                        if (widget.order.pickupLocation != null)
+                          SizedBox(
+                            width: itemWidth,
+                            child: _infoRow(context, 'Pickup', widget.order.pickupLocation!.name),
+                          ),
+                        // 5. Price / Rental Total
+                        SizedBox(
+                          width: itemWidth,
+                          child: _infoRow(
+                            context,
+                            isRental ? 'Rental Total' : 'Price',
+                            '\$${widget.order.totalPrice.toStringAsFixed(2)}',
+                          ),
+                        ),
+                        // NOTE: For rentals with deposit, show deposit and a Grand Total row
+                        if (isRental && widget.order.depositAmount > 0) ...[
+                          SizedBox(
+                            width: itemWidth,
+                            child: _infoRow(
+                              context,
+                              'Deposit',
+                              '\$${widget.order.depositAmount.toStringAsFixed(2)}',
+                            ),
+                          ),
+                          SizedBox(
+                            width: constraints.maxWidth,
+                            child: const Divider(height: 16),
+                          ),
+                          SizedBox(
+                            width: constraints.maxWidth,
+                            child: _infoRow(
+                              context,
+                              'Grand Total',
+                              '\$${(widget.order.totalPrice + widget.order.depositAmount).toStringAsFixed(2)}',
+                              isBold: true,
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
-                // NOTE: For rentals with deposit, show deposit and a Grand Total row
-                if (isRental && widget.order.depositAmount > 0) ...[
-                  _infoRow(
-                    context,
-                    'Deposit',
-                    '\$${widget.order.depositAmount.toStringAsFixed(2)}',
-                  ),
-                  const Divider(),
-                  _infoRow(
-                    context,
-                    'Grand Total',
-                    '\$${(widget.order.totalPrice + widget.order.depositAmount).toStringAsFixed(2)}',
-                    isBold: true,
-                  ),
-                ],
               ],
             ),
           ),
