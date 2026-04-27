@@ -98,9 +98,10 @@ class IkeaSellerOrderCard extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          constraints: const BoxConstraints(minHeight: 60),
-          padding: const EdgeInsets.all(10),
+        // NOTE: Compact text area — padding and spacing reduced to ~60%
+        // of original to prevent oversized cards in the grid.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -126,13 +127,13 @@ class IkeaSellerOrderCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 listing.transactionType,
                 style:
                     typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               // NOTE: Each stat icon navigates to its own TransactionManagement tab.
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -228,9 +229,9 @@ class IkeaSellerOrderCard extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          constraints: const BoxConstraints(minHeight: 60),
-          padding: const EdgeInsets.all(10),
+        // NOTE: Compact text area — ~60% of original height.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -256,7 +257,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 order.pickupLocation?.name ?? 'Unknown location',
                 style:
@@ -336,9 +337,9 @@ class IkeaSellerOrderCard extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          constraints: const BoxConstraints(minHeight: 60),
-          padding: const EdgeInsets.all(10),
+        // NOTE: Compact text area — ~60% of original height.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -349,7 +350,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 '\$${order.totalPrice.toStringAsFixed(0)} · '
                 '${buyer?.displayName ?? 'Buyer'}',
@@ -358,7 +359,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 dateStr,
                 style: typo.labelSmall.copyWith(
@@ -427,9 +428,9 @@ class IkeaSellerOrderCard extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          constraints: const BoxConstraints(minHeight: 60),
-          padding: const EdgeInsets.all(10),
+        // NOTE: Compact text area — ~60% of original height.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -440,7 +441,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 historyItem.subtitle,
                 style:
@@ -448,7 +449,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 dateStr,
                 style: typo.labelSmall.copyWith(

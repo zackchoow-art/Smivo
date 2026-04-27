@@ -90,11 +90,10 @@ class IkeaBuyerOrderCard extends StatelessWidget {
                 ),
               ),
             ),
-            // INFO: minHeight ensures text area never gets squeezed,
-            // adding 48px headroom vs the previous unconstrained layout.
-            Container(
-              constraints: const BoxConstraints(minHeight: 60),
-              padding: const EdgeInsets.all(10),
+            // NOTE: Compact text area — padding and spacing reduced to ~60%
+            // of original to prevent oversized cards in the grid.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -119,14 +118,14 @@ class IkeaBuyerOrderCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     infoText,
                     style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
                     dateStr,
                     style: typo.labelSmall.copyWith(
