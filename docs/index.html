@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smivo — Campus Marketplace for College Students</title>
+  <meta name="description" content="Smivo is the trusted marketplace where college students buy, sell, and rent items within their campus community. Verified .edu accounts only.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a3a6b;
+      --primary-light: #2a5298;
+      --accent: #e8b630;
+      --accent-light: #fef3c7;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --border: #e2e8f0;
+      --radius: 16px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, #3b82f6 100%);
+      color: white;
+      padding: 80px 24px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 70%, rgba(232,182,48,0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 30%, rgba(255,255,255,0.08) 0%, transparent 50%);
+      animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-30px, 20px); }
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+    .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
+    .hero .tagline { font-size: 1.2rem; opacity: 0.9; margin-bottom: 32px; line-height: 1.6; }
+
+    .hero-badges {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* Features */
+    .features {
+      padding: 64px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 48px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    /* Trust */
+    .trust {
+      background: var(--surface);
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .trust h2 {
+      font-size: 1.6rem;
+      color: var(--primary);
+      margin-bottom: 32px;
+    }
+
+    .trust-items {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .trust-item {
+      text-align: center;
+    }
+
+    .trust-item .number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .trust-item .label {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+
+    /* CTA */
+    .cta {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: 56px 24px;
+      text-align: center;
+    }
+
+    .cta h2 { font-size: 2rem; margin-bottom: 16px; }
+    .cta p { font-size: 1.05rem; opacity: 0.85; margin-bottom: 28px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .btn-primary { background: var(--accent); color: var(--primary); }
+    .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); }
+    .btn-outline:hover { border-color: white; }
+
+    /* Footer */
+    footer {
+      padding: 32px 24px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--primary); }
+
+    .copyright {
+      font-size: 0.82rem;
+      color: var(--text-light);
+    }
+
+    @media (max-width: 600px) {
+      .hero { padding: 56px 20px 44px; }
+      .hero h1 { font-size: 2.2rem; }
+      .hero .tagline { font-size: 1.05rem; }
+      .features { padding: 48px 16px; }
+      .features h2 { font-size: 1.6rem; }
+      .trust-items { gap: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Smivo</h1>
+    <p class="tagline">The trusted marketplace where college students buy, sell, and rent items within their campus community.</p>
+    <div class="hero-badges">
+      <span class="badge">🎓 .edu Verified</span>
+      <span class="badge">🔒 Campus-Only</span>
+      <span class="badge">📱 iOS &amp; Android</span>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <h2>Everything you need, right on campus</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🛍️</div>
+      <h3>Buy &amp; Sell</h3>
+      <p>List items in seconds with photos, pricing, and condition details. Browse furniture, electronics, books, instruments, and more from verified students.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📅</div>
+      <h3>Rent Items</h3>
+      <p>Need something temporarily? Rent items by the day, week, or month. Flexible rental periods with extension support and deposit protection.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <h3>Real-Time Chat</h3>
+      <p>Message sellers instantly with our built-in chat. Share photos, negotiate details, and coordinate pickup — all within the app.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h3>Verified Community</h3>
+      <p>Every user is verified with a .edu email address. Trade with confidence knowing you're dealing with real students at your university.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3>Order Management</h3>
+      <p>Track your purchases, sales, and rentals with dedicated Buyer and Seller Centers. Real-time status updates and evidence photo uploads.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔔</div>
+      <h3>Stay Updated</h3>
+      <p>Get instant notifications for new offers, messages, order updates, and rental reminders. Never miss an important transaction update.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Trust -->
+<section class="trust">
+  <h2>Built for campus life</h2>
+  <div class="trust-items">
+    <div class="trust-item">
+      <div class="number">7</div>
+      <div class="label">Item Categories</div>
+    </div>
+    <div class="trust-item">
+      <div class="number">3</div>
+      <div class="label">Rental Rate Types</div>
+    </div>
+    <div class="trust-item">
+      <div class="number">100%</div>
+      <div class="label">.edu Verified</div>
+    </div>
+    <div class="trust-item">
+      <div class="number">3</div>
+      <div class="label">Platforms</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Ready to join your campus marketplace?</h2>
+  <p>Download Smivo and start buying, selling, and renting with verified students today.</p>
+  <div class="cta-buttons">
+    <a href="#" class="btn btn-primary">Download on App Store</a>
+    <a href="#" class="btn btn-outline">Open Web App</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-links">
+    <a href="privacy-policy.html">Privacy Policy</a>
+    <a href="support.html">Help Center</a>
+    <a href="mailto:support@smivo.com">Contact Us</a>
+  </div>
+  <p class="copyright">&copy; 2026 Smivo. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

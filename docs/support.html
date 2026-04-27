@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Center — Smivo</title>
+  <meta name="description" content="Smivo Help Center — Frequently asked questions and support for the campus marketplace.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a3a6b;
+      --accent: #e8b630;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+    header p { font-size: 0.95rem; opacity: 0.85; }
+
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 40px 0 20px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .faq-item {
+      margin-bottom: 20px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .faq-question {
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .faq-question:hover { background: #f1f5f9; }
+
+    .faq-question::after {
+      content: '+';
+      font-size: 1.3rem;
+      color: var(--primary);
+      font-weight: 700;
+      transition: transform 0.3s;
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+
+    .faq-item.open .faq-question::after {
+      content: '−';
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 20px;
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 500px;
+      padding: 0 20px 16px;
+    }
+
+    .faq-answer ol {
+      padding-left: 20px;
+      margin-top: 8px;
+    }
+
+    .faq-answer li { margin-bottom: 4px; }
+
+    .contact-box {
+      background: linear-gradient(135deg, var(--primary), #2a5298);
+      color: white;
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      margin-top: 48px;
+    }
+
+    .contact-box h2 {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+    }
+
+    .contact-box p {
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .contact-box a {
+      display: inline-block;
+      background: var(--accent);
+      color: var(--primary);
+      font-weight: 600;
+      padding: 12px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .contact-box a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    .safety-tips {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+
+    .safety-tips h3 {
+      color: #92400e;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .safety-tips ul { padding-left: 20px; }
+    .safety-tips li { font-size: 0.9rem; color: #78350f; margin-bottom: 4px; }
+
+    footer {
+      text-align: center;
+      padding: 24px 20px;
+      font-size: 0.85rem;
+      color: var(--text-light);
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: var(--primary); }
+
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px 60px; }
+      header { padding: 28px 16px; }
+      header h1 { font-size: 1.6rem; }
+      .section-title { font-size: 1.2rem; }
+      .contact-box { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Smivo Help Center</h1>
+  <p>Everything you need to know about buying, selling, and renting on campus</p>
+</header>
+
+<div class="container">
+
+  <p style="font-size: 1rem; margin-bottom: 8px;">Welcome to the Smivo Help Center! Smivo is an exclusive, trusted marketplace designed for college students to buy, sell, and rent items within their campus community.</p>
+
+  <!-- Section 1: Account -->
+  <h2 class="section-title">🔐 Account &amp; Registration</h2>
+
+  <div class="faq-item">
+    <div class="faq-question">Why do I need a .edu email to sign up?</div>
+    <div class="faq-answer">To maintain a trusted and secure campus-only community, Smivo requires all users to verify a valid university .edu email address. This ensures that everyone you trade with is a verified student or faculty member at your school.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">Can I browse listings without logging in?</div>
+    <div class="faq-answer">Yes! You can browse the home feed and view item details as a guest. However, to message a seller, make an offer, or save an item, you must log in with a verified account.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">How do I change my school or email address?</div>
+    <div class="faq-answer">Your account is securely tied to the .edu domain you registered with. Currently, changing your email or transferring your account to a different university is not supported. If you transfer schools, you will need to create a new account using your new .edu email.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">How do I permanently delete my account?</div>
+    <div class="faq-answer">You can delete your account by navigating to <strong>Settings &gt; Delete Account</strong>. Please note that this action is irreversible and will permanently wipe your profile, listings, and chat history from our servers.</div>
+  </div>
+
+  <!-- Section 2: Buying -->
+  <h2 class="section-title">🛒 Buying &amp; Renting</h2>
+
+  <div class="faq-item">
+    <div class="faq-question">How do I buy an item?</div>
+    <div class="faq-answer">Once you find an item you like, tap <strong>Request to Buy</strong>. This sends a pending order to the seller. You can also tap <strong>Message</strong> to ask questions before submitting a request. When the seller accepts your offer, the order moves to "Awaiting Delivery," and you can coordinate a pickup location in the chat.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">How does renting an item work?</div>
+    <div class="faq-answer">
+      For rental listings, you can choose a rental rate (Daily, Weekly, or Monthly) and specify your rental period dates. The seller may require a deposit. Once the seller approves your application:
+      <ol>
+        <li>Coordinate pickup and confirm delivery in the app.</li>
+        <li>The item status becomes "Active" for the duration of the rental.</li>
+        <li>At the end of the rental period, request a return.</li>
+        <li>Once the seller confirms receiving the item, they will refund your deposit.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">What does the "Missed" status mean?</div>
+    <div class="faq-answer">When a seller receives multiple offers for the same item and accepts one from another buyer, all other pending offers are automatically marked as "Missed."</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">Can I extend my rental period?</div>
+    <div class="faq-answer">Yes! If you need the item longer, go to your <strong>Buyer Center &gt; Active Transactions</strong>, open the order details, and request a <strong>Rental Extension</strong>. You can select the number of additional days/weeks/months. The seller will be notified to approve or reject your extension request.</div>
+  </div>
+
+  <!-- Section 3: Selling -->
+  <h2 class="section-title">📦 Selling &amp; Listings</h2>
+
+  <div class="faq-item">
+    <div class="faq-question">How do I post an item for sale or rent?</div>
+    <div class="faq-answer">Tap the <strong>Post</strong> icon in the bottom navigation bar. Add clear photos, an accurate title and description, category, and condition. You can choose to list the item for <strong>Sale</strong>, <strong>Rent</strong>, or both.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">Where do I manage offers from buyers?</div>
+    <div class="faq-answer">Go to your <strong>Seller Center</strong> or tap <strong>Manage Transactions</strong> on your listing. From the <strong>Offers</strong> tab, you can view all pending requests. Once you tap <strong>Accept</strong> on a buyer's offer, all competing offers will automatically be declined.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">Do I have to charge a deposit for rentals?</div>
+    <div class="faq-answer">Deposits are optional but highly recommended for high-value items (like electronics or instruments) to protect against damage or failure to return the item.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">How do I refund a rental deposit?</div>
+    <div class="faq-answer">When a rental period ends and the buyer returns the item, inspect it carefully. If it is in its original condition, tap <strong>Refund Deposit</strong> on the order detail page to complete the transaction lifecycle.</div>
+  </div>
+
+  <!-- Section 4: Safety -->
+  <h2 class="section-title">🛡️ Transaction Safety</h2>
+
+  <div class="safety-tips">
+    <h3>⚠️ Safety Tips for In-Person Exchanges</h3>
+    <ul>
+      <li>Meet during daylight hours in well-lit, public campus areas.</li>
+      <li>Great locations: student union, campus libraries, or designated safe exchange zones.</li>
+      <li><strong>Never send money before physically inspecting and receiving the item.</strong></li>
+      <li>Use the Evidence Photos feature to document item condition at exchange.</li>
+    </ul>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">Does Smivo process payments directly?</div>
+    <div class="faq-answer">No. Smivo does not process in-app payments. Buyers and sellers should arrange payment securely in person using Venmo, Zelle, or cash.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">What are "Evidence Photos"?</div>
+    <div class="faq-answer">Evidence Photos protect both buyers and sellers. When handing over an item (or returning a rental), both parties can upload up to 5 photos of the item's condition before tapping "Confirm Pickup" or "Confirm Return." This acts as a digital receipt of the item's condition at the time of exchange.</div>
+  </div>
+
+  <!-- Section 5: Troubleshooting -->
+  <h2 class="section-title">🔧 Troubleshooting</h2>
+
+  <div class="faq-item">
+    <div class="faq-question">What if a buyer/seller stops responding?</div>
+    <div class="faq-answer">If a transaction is pending and the other party is unresponsive, you can cancel the request from the Order Details page. We recommend communicating clearly via the in-app chat before taking action.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">The item I rented got damaged. What happens?</div>
+    <div class="faq-answer">If a rental item is damaged, the seller has the right to withhold part or all of the rental deposit. We recommend discussing the situation in the chat. Using the Evidence Photos feature during pickup and return helps resolve disputes fairly.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">How do I turn off notifications?</div>
+    <div class="faq-answer">Go to <strong>Settings &gt; Notifications</strong> to toggle system alerts, order updates, and chat notifications on or off. You will still see red dot badges within the app even if push notifications are disabled.</div>
+  </div>
+
+  <!-- Contact -->
+  <div class="contact-box">
+    <h2>Still need help?</h2>
+    <p>Our support team is here to assist you. Reach out and we'll get back to you within 24 hours.</p>
+    <a href="mailto:support@smivo.com">Contact Support</a>
+  </div>
+</div>
+
+<footer>
+  &copy; 2026 Smivo. All rights reserved. | <a href="privacy-policy.html">Privacy Policy</a> | <a href="index.html">Home</a>
+</footer>
+
+<script>
+  // Accordion toggle for FAQ items
+  document.querySelectorAll('.faq-question').forEach(function(q) {
+    q.addEventListener('click', function() {
+      var item = this.parentElement;
+      // Close other open items in the same section
+      var siblings = item.parentElement.querySelectorAll('.faq-item.open');
+      siblings.forEach(function(s) { if (s !== item) s.classList.remove('open'); });
+      item.classList.toggle('open');
+    });
+  });
+</script>
+
+</body>
+</html>

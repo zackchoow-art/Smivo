@@ -63,6 +63,9 @@ dev_dependencies:
   # Asset Generation
   flutter_gen_runner: ^5.13.0+1
 
+  # Splash Screen — native splash screen generation
+  flutter_native_splash: ^2.4.0
+
   # Testing — mocktail for fakes
   mocktail: ^1.0.5
 
@@ -70,3 +73,17 @@ flutter:
   uses-material-design: true
   assets:
     - assets/env
+    - assets/splash.png
+
+# Native splash screen configuration
+# Run: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/splash.png
+  ios: true
+  android: true
+  web: true
+  # Keep the splash screen visible until Flutter is ready
+  android_12:
+    color: "#FFFFFF"
+    image: assets/splash.png
