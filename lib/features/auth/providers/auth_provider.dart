@@ -42,6 +42,15 @@ class Auth extends _$Auth {
         error,
       );
     }
+    if (errorStr.contains('email not confirmed')) {
+      return AuthException('Email not confirmed', error);
+    }
+    if (errorStr.contains('database error')) {
+      return DatabaseException(
+        'Server is temporarily unavailable. Please try again later',
+        error,
+      );
+    }
 
     return AuthException('Something went wrong. Please try again', error);
   }
