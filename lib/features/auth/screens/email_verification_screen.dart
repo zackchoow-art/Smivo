@@ -5,29 +5,12 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:smivo/core/router/app_routes.dart';
 
 class EmailVerificationScreen extends ConsumerWidget {
-  const EmailVerificationScreen({
-    super.key,
-    required this.email,
-  });
+  const EmailVerificationScreen({super.key, required this.email});
 
   final String email;
-
-  /// Opens the device's default mail app using mailto scheme.
-  Future<void> _openEmailApp(BuildContext context) async {
-    final Uri emailLaunchUri = Uri(scheme: 'mailto');
-    try {
-      await launchUrl(emailLaunchUri);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to open email app.')),
-        );
-      }
-    }
-  }
 
   /// Triggers a resend of the verification email via Supabase.
   Future<void> _resendEmail(WidgetRef ref, BuildContext context) async {
@@ -37,7 +20,9 @@ class EmailVerificationScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Verification email resent! Please check your inbox.'),
+            content: const Text(
+              'Verification email resent! Please check your inbox.',
+            ),
             backgroundColor: colors.primary,
           ),
         );
@@ -45,10 +30,7 @@ class EmailVerificationScreen extends ConsumerWidget {
     } on AppException catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message),
-            backgroundColor: colors.error,
-          ),
+          SnackBar(content: Text(e.message), backgroundColor: colors.error),
         );
       }
     } catch (e) {
@@ -89,7 +71,7 @@ class EmailVerificationScreen extends ConsumerWidget {
                     child: Row(
                       children: [
                         GestureDetector(
-                          onTap: () => context.pop(),
+                          onTap: () => context.goNamed(AppRoutes.home),
                           child: Container(
                             width: 48,
                             height: 48,
@@ -143,13 +125,14 @@ class EmailVerificationScreen extends ConsumerWidget {
                           child: Image.asset(
                             'assets/images/email_verification_illustration.png',
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Center(
-                              child: Icon(
-                                Icons.mark_email_read_outlined,
-                                size: 100,
-                                color: colors.primary,
-                              ),
-                            ),
+                            errorBuilder:
+                                (context, error, stackTrace) => Center(
+                                  child: Icon(
+                                    Icons.mark_email_read_outlined,
+                                    size: 100,
+                                    color: colors.primary,
+                                  ),
+                                ),
                           ),
                         ),
                       ),
@@ -214,6 +197,14 @@ class EmailVerificationScreen extends ConsumerWidget {
                           color: colors.onSurface,
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'You can still browse the home page.',
+                        textAlign: TextAlign.center,
+                        style: typo.bodyMedium.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -229,14 +220,14 @@ class EmailVerificationScreen extends ConsumerWidget {
                         width: double.infinity,
                         height: 48,
                         child: TextButton(
-                          onPressed: () => _openEmailApp(context),
+                          onPressed: () => context.goNamed(AppRoutes.home),
                           style: TextButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(radius.md),
                             ),
                           ),
                           child: Text(
-                            'Open email app',
+                            'Continue to Home',
                             style: typo.bodyMedium.copyWith(
                               color: colors.primary,
                               fontWeight: FontWeight.w700,
@@ -247,7 +238,10 @@ class EmailVerificationScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       GestureDetector(
-                        onTap: isResending ? null : () => _resendEmail(ref, context),
+                        onTap:
+                            isResending
+                                ? null
+                                : () => _resendEmail(ref, context),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Text(
@@ -257,9 +251,10 @@ class EmailVerificationScreen extends ConsumerWidget {
                             textAlign: TextAlign.center,
                             style: typo.bodySmall.copyWith(
                               fontSize: 14,
-                              color: isResending
-                                  ? colors.onSurfaceVariant
-                                  : colors.onSurface,
+                              color:
+                                  isResending
+                                      ? colors.onSurfaceVariant
+                                      : colors.onSurface,
                             ),
                           ),
                         ),
