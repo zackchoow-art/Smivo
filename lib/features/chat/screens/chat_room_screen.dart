@@ -12,7 +12,6 @@ import 'package:smivo/data/models/message.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smivo/core/router/app_routes.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   const ChatRoomScreen({
@@ -246,8 +245,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
                         if (context.canPop()) {
                           context.pop();
-                        } else {
-                          context.goNamed(AppRoutes.home);
                         }
                       }
                     }

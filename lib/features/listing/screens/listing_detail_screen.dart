@@ -649,11 +649,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                             await ref.read(moderationActionsProvider.notifier).blockUser(listing.sellerId);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
-                              if (context.canPop()) {
-                                context.pop();
-                              } else {
-                                context.goNamed(AppRoutes.home);
-                              }
+                              context.goNamed(AppRoutes.home);
                             }
                           }
                         }

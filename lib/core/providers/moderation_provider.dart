@@ -3,6 +3,7 @@ import 'package:smivo/data/repositories/moderation_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/data/models/user_profile.dart';
+import 'package:smivo/data/models/content_report.dart';
 
 part 'moderation_provider.g.dart';
 
@@ -88,5 +89,17 @@ class ModerationActions extends _$ModerationActions {
         reason: reason,
       );
     });
+  }
+}
+
+@riverpod
+class UserReports extends _$UserReports {
+  @override
+  Future<List<ContentReport>> build() async {
+    final user = ref.watch(authStateProvider).valueOrNull;
+    if (user == null) return [];
+
+    final repo = ref.watch(moderationRepositoryProvider);
+    return repo.getReportsByReporter(user.id);
   }
 }

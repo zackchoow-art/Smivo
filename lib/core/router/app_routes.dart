@@ -27,6 +27,7 @@ class AppRoutes {
   static const String settingsNotifications = 'settingsNotifications';
   static const String settingsHelp = 'settingsHelp';
   static const String settingsBlocked = 'settingsBlocked';
+  static const String settingsReported = 'settingsReported';
   static const String sellerCenter = 'sellerCenter';
   static const String buyerCenter = 'buyerCenter';
   static const String transactionManagement = 'transactionManagement';
@@ -55,6 +56,7 @@ class AppRoutes {
   static const String settingsNotificationsPath = 'notifications';
   static const String settingsHelpPath = 'help';
   static const String settingsBlockedPath = 'blocked';
+  static const String settingsReportedPath = 'reported';
   static const String sellerCenterPath = '/seller-center';
   static const String buyerCenterPath = '/buyer-center';
   static const String transactionManagementPath = '/listing/:id/transactions';

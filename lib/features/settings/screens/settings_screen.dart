@@ -47,6 +47,8 @@ class SettingsScreen extends StatelessWidget {
                             subtitle: 'Support, FAQs,\nContact Us', onTap: () => context.pushNamed(AppRoutes.settingsHelp)),
                           _buildMenuCard(context, icon: Icons.security_outlined, title: 'Privacy &\nSafety',
                             subtitle: 'Blocked users,\nModeration', onTap: () => context.pushNamed(AppRoutes.settingsBlocked)),
+                          _buildMenuCard(context, icon: Icons.report_problem_outlined, title: 'Reported\nContent',
+                            subtitle: 'View your report\nhistory', onTap: () => context.pushNamed(AppRoutes.settingsReported)),
                         ],
                       ),
                       const SizedBox(height: 32),

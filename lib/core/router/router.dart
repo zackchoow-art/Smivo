@@ -22,6 +22,7 @@ import 'package:smivo/features/settings/screens/notification_settings_screen.dar
 import 'package:smivo/features/settings/screens/settings_screen.dart';
 import 'package:smivo/features/settings/screens/system_settings_screen.dart';
 import 'package:smivo/features/settings/screens/blocked_users_screen.dart';
+import 'package:smivo/features/settings/screens/reported_content_screen.dart';
 import 'package:smivo/features/seller/screens/seller_center_screen.dart';
 import 'package:smivo/features/seller/screens/transaction_management_screen.dart';
 import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
@@ -325,6 +326,11 @@ GoRouter router(Ref ref) {
             name: AppRoutes.settingsBlocked,
             path: AppRoutes.settingsBlockedPath,
             builder: (context, state) => const BlockedUsersScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.settingsReported,
+            path: AppRoutes.settingsReportedPath,
+            builder: (context, state) => const ReportedContentScreen(),
           ),
         ],
       ),

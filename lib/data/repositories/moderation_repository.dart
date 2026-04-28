@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/data/models/content_report.dart';
 import 'package:smivo/data/models/user_profile.dart';
 
 part 'moderation_repository.g.dart';
@@ -82,6 +83,20 @@ class ModerationRepository {
         'chat_room_id': chatRoomId,
         'reason': reason,
       });
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches reports submitted by the given user.
+  Future<List<ContentReport>> getReportsByReporter(String reporterId) async {
+    try {
+      final data = await _client
+          .from('content_reports')
+          .select('*, reported_user:user_profiles!content_reports_reported_user_id_fkey(*), listing:listings(*, images:listing_images(*))')
+          .eq('reporter_id', reporterId)
+          .order('created_at', ascending: false);
+      return data.map((json) => ContentReport.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

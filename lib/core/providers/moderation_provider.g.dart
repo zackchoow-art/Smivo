@@ -59,5 +59,22 @@ final moderationActionsProvider =
     );
 
 typedef _$ModerationActions = AutoDisposeAsyncNotifier<void>;
+String _$userReportsHash() => r'42ca467a3cd5b22b6a5f474097d8e662d6f09928';
+
+/// See also [UserReports].
+@ProviderFor(UserReports)
+final userReportsProvider =
+    AutoDisposeAsyncNotifierProvider<UserReports, List<ContentReport>>.internal(
+      UserReports.new,
+      name: r'userReportsProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$userReportsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$UserReports = AutoDisposeAsyncNotifier<List<ContentReport>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
