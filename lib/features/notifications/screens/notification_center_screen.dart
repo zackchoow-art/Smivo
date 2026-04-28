@@ -49,6 +49,12 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
         actions: [
           TextButton(
             onPressed: () async {
+              await ref.read(notificationListProvider.notifier).markAllAsRead();
+            },
+            child: Text('Mark Read', style: typo.labelSmall.copyWith(color: colors.primary)),
+          ),
+          TextButton(
+            onPressed: () async {
               // 一键清空：让所有信息变成已读然后删除
               await ref.read(notificationListProvider.notifier).clearAll();
             },

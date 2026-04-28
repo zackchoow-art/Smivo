@@ -45,45 +45,45 @@ final unreadOrderUpdatesCountProvider = AutoDisposeFutureProvider<int>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef UnreadOrderUpdatesCountRef = AutoDisposeFutureProviderRef<int>;
-String _$pendingBuyerOrdersCountHash() =>
-    r'94739f85bdd1d17a53aef6da1fcd1bfb7bc67705';
+String _$unreadBuyerUpdatesCountHash() =>
+    r'1c7892d991e071748710ca08cd7e7f2150ab8e34';
 
-/// See also [pendingBuyerOrdersCount].
-@ProviderFor(pendingBuyerOrdersCount)
-final pendingBuyerOrdersCountProvider = AutoDisposeFutureProvider<int>.internal(
-  pendingBuyerOrdersCount,
-  name: r'pendingBuyerOrdersCountProvider',
+/// See also [unreadBuyerUpdatesCount].
+@ProviderFor(unreadBuyerUpdatesCount)
+final unreadBuyerUpdatesCountProvider = AutoDisposeFutureProvider<int>.internal(
+  unreadBuyerUpdatesCount,
+  name: r'unreadBuyerUpdatesCountProvider',
   debugGetCreateSourceHash:
       const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$pendingBuyerOrdersCountHash,
+          : _$unreadBuyerUpdatesCountHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef PendingBuyerOrdersCountRef = AutoDisposeFutureProviderRef<int>;
-String _$pendingSellerOrdersCountHash() =>
-    r'b12da80f95278cf007d66c0f3b679c903f7b5871';
+typedef UnreadBuyerUpdatesCountRef = AutoDisposeFutureProviderRef<int>;
+String _$unreadSellerUpdatesCountHash() =>
+    r'c8e787d7cb7f7b93359613b2f2390a7908a88c38';
 
-/// See also [pendingSellerOrdersCount].
-@ProviderFor(pendingSellerOrdersCount)
-final pendingSellerOrdersCountProvider =
+/// See also [unreadSellerUpdatesCount].
+@ProviderFor(unreadSellerUpdatesCount)
+final unreadSellerUpdatesCountProvider =
     AutoDisposeFutureProvider<int>.internal(
-      pendingSellerOrdersCount,
-      name: r'pendingSellerOrdersCountProvider',
+      unreadSellerUpdatesCount,
+      name: r'unreadSellerUpdatesCountProvider',
       debugGetCreateSourceHash:
           const bool.fromEnvironment('dart.vm.product')
               ? null
-              : _$pendingSellerOrdersCountHash,
+              : _$unreadSellerUpdatesCountHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef PendingSellerOrdersCountRef = AutoDisposeFutureProviderRef<int>;
+typedef UnreadSellerUpdatesCountRef = AutoDisposeFutureProviderRef<int>;
 String _$selectedOrdersTabHash() => r'f83cc35478509dc892152616cfc4b09b6fd4c726';
 
 /// Current tab state for the orders screen.

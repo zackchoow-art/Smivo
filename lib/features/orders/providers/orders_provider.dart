@@ -389,17 +389,39 @@ Future<int> unreadOrderUpdatesCount(Ref ref) async {
 }
 
 @riverpod
-Future<int> pendingBuyerOrdersCount(Ref ref) async {
+Future<int> unreadBuyerUpdatesCount(Ref ref) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return 0;
+  final notifications = await ref.watch(notificationListProvider.future);
   final allOrdersList = await ref.watch(allOrdersProvider.future);
-  return allOrdersList.where((o) => o.buyerId == user.id && o.status == 'pending').length;
+  
+  int count = 0;
+  for (final n in notifications) {
+    if (!n.isRead && n.actionType == 'order' && n.relatedOrderId != null) {
+      final order = allOrdersList.where((o) => o.id == n.relatedOrderId).firstOrNull;
+      if (order != null && order.buyerId == user.id) {
+        count++;
+      }
+    }
+  }
+  return count;
 }
 
 @riverpod
-Future<int> pendingSellerOrdersCount(Ref ref) async {
+Future<int> unreadSellerUpdatesCount(Ref ref) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return 0;
+  final notifications = await ref.watch(notificationListProvider.future);
   final allOrdersList = await ref.watch(allOrdersProvider.future);
-  return allOrdersList.where((o) => o.sellerId == user.id && o.status == 'pending').length;
+  
+  int count = 0;
+  for (final n in notifications) {
+    if (!n.isRead && n.actionType == 'order' && n.relatedOrderId != null) {
+      final order = allOrdersList.where((o) => o.id == n.relatedOrderId).firstOrNull;
+      if (order != null && order.sellerId == user.id) {
+        count++;
+      }
+    }
+  }
+  return count;
 }

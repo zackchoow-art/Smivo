@@ -14,8 +14,8 @@ class OrdersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final pendingBuyerCount = ref.watch(pendingBuyerOrdersCountProvider).valueOrNull ?? 0;
-    final pendingSellerCount = ref.watch(pendingSellerOrdersCountProvider).valueOrNull ?? 0;
+    final unreadBuyerCount = ref.watch(unreadBuyerUpdatesCountProvider).valueOrNull ?? 0;
+    final unreadSellerCount = ref.watch(unreadSellerUpdatesCountProvider).valueOrNull ?? 0;
     // NOTE: ContentWidthConstraint centers the hub cards on desktop.
     // On desktop the two cards also switch to a Row for better space use.
     final screenWidth = MediaQuery.of(context).size.width;
@@ -59,7 +59,7 @@ class OrdersScreen extends ConsumerWidget {
                                 subtitle: 'Your purchase requests,\naccepted orders, and history.',
                                 gradient: [colors.gradientStart, colors.gradientEnd],
                                 onTap: () => context.pushNamed(AppRoutes.buyerCenter),
-                                badgeCount: pendingBuyerCount,
+                                badgeCount: unreadBuyerCount,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -70,7 +70,7 @@ class OrdersScreen extends ConsumerWidget {
                                 subtitle: 'Active listings, incoming\norders, and sales history.',
                                 gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
                                 onTap: () => context.pushNamed(AppRoutes.sellerCenter),
-                                badgeCount: pendingSellerCount,
+                                badgeCount: unreadSellerCount,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -94,7 +94,7 @@ class OrdersScreen extends ConsumerWidget {
                               subtitle: 'Your purchase requests,\naccepted orders, and history.',
                               gradient: [colors.gradientStart, colors.gradientEnd],
                               onTap: () => context.pushNamed(AppRoutes.buyerCenter),
-                              badgeCount: pendingBuyerCount,
+                              badgeCount: unreadBuyerCount,
                             ),
                             const SizedBox(height: 16),
                             _HubCard(
@@ -103,7 +103,7 @@ class OrdersScreen extends ConsumerWidget {
                               subtitle: 'Active listings, incoming\norders, and sales history.',
                               gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
                               onTap: () => context.pushNamed(AppRoutes.sellerCenter),
-                              badgeCount: pendingSellerCount,
+                              badgeCount: unreadSellerCount,
                             ),
                             const SizedBox(height: 16),
                             _HubCard(

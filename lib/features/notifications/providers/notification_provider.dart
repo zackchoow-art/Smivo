@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 
 import 'package:smivo/data/models/notification.dart';
 import 'package:smivo/data/repositories/notification_repository.dart';
@@ -22,6 +23,7 @@ class NotificationList extends _$NotificationList {
     // Cleanup if user logs out or build re-runs
     if (user == null) {
       _unsubscribe();
+      _updateAppBadge([]);
       return [];
     }
 
@@ -37,7 +39,9 @@ class NotificationList extends _$NotificationList {
           
           final current = state.valueOrNull ?? [];
           if (current.any((n) => n.id == newNotification.id)) return;
-          state = AsyncValue.data([newNotification, ...current]);
+          final updated = [newNotification, ...current];
+          state = AsyncValue.data(updated);
+          _updateAppBadge(updated);
         },
       );
 
@@ -48,12 +52,23 @@ class NotificationList extends _$NotificationList {
     }
 
     final repository = ref.read(notificationRepositoryProvider);
-    return repository.fetchNotifications(user.id);
+    final notifications = await repository.fetchNotifications(user.id);
+    _updateAppBadge(notifications);
+    return notifications;
   }
 
   void _unsubscribe() {
     _channel?.unsubscribe();
     _channel = null;
+  }
+
+  void _updateAppBadge(List<AppNotification> notifications) {
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+    if (unreadCount > 0) {
+      FlutterAppBadger.updateBadgeCount(unreadCount);
+    } else {
+      FlutterAppBadger.removeBadge();
+    }
   }
 
   /// Marks a single notification as read.
@@ -63,14 +78,14 @@ class NotificationList extends _$NotificationList {
 
     // Update local state optimistically
     final current = state.valueOrNull ?? [];
-    state = AsyncValue.data(
-      current.map((n) {
-        if (n.id == notificationId) {
-          return n.copyWith(isRead: true);
-        }
-        return n;
-      }).toList(),
-    );
+    final updated = current.map((n) {
+      if (n.id == notificationId) {
+        return n.copyWith(isRead: true);
+      }
+      return n;
+    }).toList();
+    state = AsyncValue.data(updated);
+    _updateAppBadge(updated);
   }
 
   /// Marks all notifications for the current user as read.
@@ -83,9 +98,9 @@ class NotificationList extends _$NotificationList {
 
     // Update local state optimistically
     final current = state.valueOrNull ?? [];
-    state = AsyncValue.data(
-      current.map((n) => n.copyWith(isRead: true)).toList(),
-    );
+    final updated = current.map((n) => n.copyWith(isRead: true)).toList();
+    state = AsyncValue.data(updated);
+    _updateAppBadge(updated);
   }
 
   /// Deletes specific notifications.
@@ -95,9 +110,9 @@ class NotificationList extends _$NotificationList {
 
     // Update local state optimistically
     final current = state.valueOrNull ?? [];
-    state = AsyncValue.data(
-      current.where((n) => !notificationIds.contains(n.id)).toList(),
-    );
+    final updated = current.where((n) => !notificationIds.contains(n.id)).toList();
+    state = AsyncValue.data(updated);
+    _updateAppBadge(updated);
   }
 
   /// Marks all as read and deletes all notifications.
@@ -109,6 +124,7 @@ class NotificationList extends _$NotificationList {
     await repository.clearAllNotifications(user.id);
 
     state = const AsyncValue.data([]);
+    _updateAppBadge([]);
   }
 }
 
