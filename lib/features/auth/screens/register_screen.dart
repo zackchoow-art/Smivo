@@ -61,16 +61,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     
     if (!_formKey.currentState!.validate()) return;
 
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Passwords do not match'),
-          backgroundColor: context.smivoColors.error,
-        ),
-      );
-      return;
-    }
-
     final emailValue = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -216,6 +206,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 hintText: '••••••••',
                                 controller: _passwordController,
                                 obscureText: true,
+                                validator: Validators.password,
                                 prefixIcon: Icon(
                                   Icons.lock_outline_rounded,
                                   size: 16,
@@ -230,6 +221,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 hintText: '••••••••',
                                 controller: _confirmPasswordController,
                                 obscureText: true,
+                                validator: (val) => Validators.confirmPassword(
+                                  _passwordController.text,
+                                  val,
+                                ),
                                 prefixIcon: Icon(
                                   Icons.verified_user_outlined,
                                   size: 16,
