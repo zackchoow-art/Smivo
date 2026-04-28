@@ -25,6 +25,7 @@ serve(async (req) => {
     const title = record.title;
     const body = record.body;
     const relatedOrderId = record.related_order_id; 
+    const actionUrl = record.action_url;
 
     if (!userId || !notificationType || (!title && !body)) {
       return new Response("Missing required fields (user_id, type, or title/body)", { status: 400 });
@@ -82,6 +83,7 @@ serve(async (req) => {
       data: {
         type: notificationType,
         order_id: relatedOrderId || undefined,
+        action_url: actionUrl || undefined,
       }
     };
 

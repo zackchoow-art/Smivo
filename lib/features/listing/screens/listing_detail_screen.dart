@@ -22,6 +22,8 @@ import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/shared/providers/school_data_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
+import 'package:smivo/core/providers/moderation_provider.dart';
+
 /// Resolves a condition slug to a display label.
 /// Accepts an optional conditions list from DB for dynamic lookup.
 String _conditionLabel(String condition, [List? conditions]) {
@@ -560,25 +562,110 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 ),
               ),
             ),
-            // Floating save button — hidden for own listings
+            // Floating save button and more menu — hidden for own listings
             if (!isOwnListing) Positioned(
               top: MediaQuery.of(context).padding.top + 8, right: 12,
-              child: Consumer(builder: (context, ref, _) {
-                final isSavedAsync = ref.watch(isListingSavedProvider(listing.id));
-                final isSaved = isSavedAsync.valueOrNull ?? false;
-                return Container(
-                  decoration: BoxDecoration(color: colors.surfaceContainerLowest.withValues(alpha: 0.9), shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(color: colors.shadow, blurRadius: 8, offset: const Offset(0, 2))]),
-                  child: IconButton(
-                    icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border, color: isSaved ? colors.primary : colors.onSurface),
-                    onPressed: () {
-                      final user = ref.read(authStateProvider).valueOrNull;
-                      if (user == null) { context.pushNamed(AppRoutes.login); return; }
-                      ref.read(savedListingActionsProvider.notifier).toggleSave(listing.id);
-                    },
+              child: Row(
+                children: [
+                  Consumer(builder: (context, ref, _) {
+                    final isSavedAsync = ref.watch(isListingSavedProvider(listing.id));
+                    final isSaved = isSavedAsync.valueOrNull ?? false;
+                    return Container(
+                      decoration: BoxDecoration(color: colors.surfaceContainerLowest.withValues(alpha: 0.9), shape: BoxShape.circle,
+                        boxShadow: [BoxShadow(color: colors.shadow, blurRadius: 8, offset: const Offset(0, 2))]),
+                      child: IconButton(
+                        icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border, color: isSaved ? colors.primary : colors.onSurface),
+                        onPressed: () {
+                          final user = ref.read(authStateProvider).valueOrNull;
+                          if (user == null) { context.pushNamed(AppRoutes.login); return; }
+                          ref.read(savedListingActionsProvider.notifier).toggleSave(listing.id);
+                        },
+                      ),
+                    );
+                  }),
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(color: colors.surfaceContainerLowest.withValues(alpha: 0.9), shape: BoxShape.circle,
+                      boxShadow: [BoxShadow(color: colors.shadow, blurRadius: 8, offset: const Offset(0, 2))]),
+                    child: PopupMenuButton<String>(
+                      icon: Icon(Icons.more_horiz, color: colors.onSurface),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.md)),
+                      onSelected: (value) async {
+                        final user = ref.read(authStateProvider).valueOrNull;
+                        if (user == null) { context.pushNamed(AppRoutes.login); return; }
+                        
+                        if (value == 'report') {
+                          final reasonController = TextEditingController();
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.xl)),
+                              title: const Text('Report Listing'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('Please describe why this listing is objectionable:'),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: reasonController,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input)),
+                                      hintText: 'Reason...',
+                                    ),
+                                    maxLines: 3,
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit', style: TextStyle(color: Colors.red))),
+                              ],
+                            ),
+                          );
+                          if (confirm == true && context.mounted && reasonController.text.isNotEmpty) {
+                            await ref.read(moderationActionsProvider.notifier).reportContent(
+                              reportedUserId: listing.sellerId,
+                              listingId: listing.id,
+                              reason: reasonController.text,
+                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully.')));
+                            }
+                          }
+                        } else if (value == 'block') {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.xl)),
+                              title: const Text('Block User'),
+                              content: const Text('Are you sure you want to block this user? Their listings will be instantly removed from your feed.'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Block', style: TextStyle(color: Colors.red))),
+                              ],
+                            ),
+                          );
+                          if (confirm == true && context.mounted) {
+                            await ref.read(moderationActionsProvider.notifier).blockUser(listing.sellerId);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                context.goNamed(AppRoutes.home);
+                              }
+                            }
+                          }
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(value: 'report', child: Text('Report Listing')),
+                        const PopupMenuItem(value: 'block', child: Text('Block User', style: TextStyle(color: Colors.red))),
+                      ],
+                    ),
                   ),
-                );
-              }),
+                ],
+              ),
             ),
           ]);
         },

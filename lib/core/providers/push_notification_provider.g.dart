@@ -7,7 +7,7 @@ part of 'push_notification_provider.dart';
 // **************************************************************************
 
 String _$pushNotificationManagerHash() =>
-    r'06a09fb94afcc65c06f44df5e2014daaf9b3259f';
+    r'e78ca82069cfab0ead4b53f06a550e04b0ba194d';
 
 /// Manages OneSignal push notification lifecycle:
 /// - Requests permission on first login

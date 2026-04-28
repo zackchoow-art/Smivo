@@ -1,0 +1,614 @@
+-- LLDB integration loaded --
+FlutterView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Dart execution mode: JIT
+fopen failed for data file: errno = 2 (No such file or directory)
+fopen failed for data file: errno = 2 (No such file or directory)
+flutter: The Dart VM service is listening on http://127.0.0.1:57243/rrUT1LYHsmw=/
+flutter: supabase.supabase_flutter: INFO: ***** Supabase init completed *****
+VERBOSE: setAppId called with appId: e6cea15a-5496-48b4-81da-fe7409bb4799!
+DEBUG: provision: {
+    AppIDName = "Smivo App";
+    ApplicationIdentifierPrefix =     (
+        DKWKX97U49
+    );
+    CreationDate = "2026-04-28 02:27:35 +0000";
+    "DER-Encoded-Profile" = {length = 3627, bytes = 0x30820e27 06092a86 4886f70d 010702a0 ... 4d9d5bc5 0f4ff81a };
+    DeveloperCertificates =     (
+        {length = 1492, bytes = 0x308205d0 308204b8 a0030201 0202107e ... 5cb225b8 554e5ec1 }
+    );
+    Entitlements =     {
+        "application-identifier" = "DKWKX97U49.com.smivo.app";
+        "aps-environment" = development;
+        "com.apple.developer.team-identifier" = DKWKX97U49;
+        "get-task-allow" = 1;
+        "keychain-access-groups" =         (
+            "DKWKX97U49.*",
+            "com.apple.token"
+        );
+    };
+    ExpirationDate = "2027-04-28 02:27:35 +0000";
+    IsXcodeManaged = 1;
+    Name = "iOS Team Provisioning Profile: com.smivo.app";
+    PPQCheck = 1;
+    Platform =     (
+        iOS,
+        xrOS,
+        visionOS
+    );
+    ProvisionedDevices =     (
+        "00008140-000530261413001C",
+        "00008120-000E78A12180C01E",
+        "00008101-000C54C21E0B001E",
+        "00008130-001859D6387A8D3A",
+        4e97c188cecf4baeb0553f4d6d1c2850b7c52b49,
+        "00008130-00124C11022B803A",
+        "00008112-001961C42183601E"
+    );
+    TeamIdentifier =     (
+        DKWKX97U49
+    );
+    TeamName = "Bridge Trading Corporation";
+    TimeToLive = 365;
+    UUID = "0a99f290-728a-4a08-a626-e13513e2caaf";
+    Version = 1;
+}
+VERBOSE: OneSignalUserManagerImpl prepareForNewUser called
+VERBOSE: setLaunchOptions() called with launchOptions: (null)!
+VERBOSE: launchOptions is set and appId of e6cea15a-5496-48b4-81da-fe7409bb4799 is set, initializing OneSignal...
+VERBOSE: Firing registerForRemoteNotifications
+DEBUG: Downloading iOS parameters for this application
+Reading from public effective user settings.
+VERBOSE: registering for Scene Lifecycle notifications
+VERBOSE: OneSignalUserManager calling start
+VERBOSE: OSUserExecutor.executePendingRequests called with queue []
+VERBOSE: OSOperationRepo calling start()
+VERBOSE: OSOperationRepo.start() with deltaQueue: []
+VERBOSE: OSCustomEventsExecutor successfully uncached Deltas: []
+VERBOSE: OSCustomEventsExecutor successfully uncached Requests: []
+DEBUG: provision: {
+    AppIDName = "Smivo App";
+    ApplicationIdentifierPrefix =     (
+        DKWKX97U49
+    );
+    CreationDate = "2026-04-28 02:27:35 +0000";
+    "DER-Encoded-Profile" = {length = 3627, bytes = 0x30820e27 06092a86 4886f70d 010702a0 ... 4d9d5bc5 0f4ff81a };
+    DeveloperCertificates =     (
+        {length = 1492, bytes = 0x308205d0 308204b8 a0030201 0202107e ... 5cb225b8 554e5ec1 }
+    );
+    Entitlements =     {
+        "application-identifier" = "DKWKX97U49.com.smivo.app";
+        "aps-environment" = development;
+        "com.apple.developer.team-identifier" = DKWKX97U49;
+        "get-task-allow" = 1;
+        "keychain-access-groups" =         (
+            "DKWKX97U49.*",
+            "com.apple.token"
+        );
+    };
+    ExpirationDate = "2027-04-28 02:27:35 +0000";
+    IsXcodeManaged = 1;
+    Name = "iOS Team Provisioning Profile: com.smivo.app";
+    PPQCheck = 1;
+    Platform =     (
+        iOS,
+        xrOS,
+        visionOS
+    );
+    ProvisionedDevices =     (
+        "00008140-000530261413001C",
+        "00008120-000E78A12180C01E",
+        "00008101-000C54C21E0B001E",
+        "00008130-001859D6387A8D3A",
+        4e97c188cecf4baeb0553f4d6d1c2850b7c52b49,
+        "00008130-00124C11022B803A",
+        "00008112-001961C42183601E"
+    );
+    TeamIdentifier =     (
+        DKWKX97U49
+    );
+    TeamName = "Bridge Trading Corporation";
+    TimeToLive = 365;
+    UUID = "0a99f290-728a-4a08-a626-e13513e2caaf";
+    Version = 1;
+}
+<SKPaymentQueue: 0x106a0e9a0>: Error in remote proxy while checking server queue: Error Domain=SKInternalErrorDomain Code=12 "(null)"
+VERBOSE: getNotificationTypes:mSubscriptionStatus: -1
+VERBOSE: OSUserExecutor.executePendingRequests called with queue [<OSRequestCreateUser with external_id: nil>]
+VERBOSE: HTTP Request (OneSignalUser.OSRequestCreateUser) with URL: https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/users, with parameters: {
+  "properties" : {
+    "language" : "en-US",
+    "timezone_id" : "America\/Los_Angeles"
+  },
+  "refresh_device_metadata" : true,
+  "subscriptions" : [
+    {
+      "app_version" : "1.0.0",
+      "device_model" : "iPhone16,1",
+      "test_type" : 1,
+      "token" : "4b286abfe5f70c993731749fba9fdd5280872b07f89f5e4a74fabc49b14270bc",
+      "type" : "iOSPush",
+      "sdk" : "050500",
+      "enabled" : false,
+      "device_os" : "26.4.2",
+      "notification_types" : -18,
+      "net_type" : 0
+    }
+  ],
+  "identity" : {
+
+  }
+} and headers: (null)
+VERBOSE: OneSignal.LiveActivities initialized token cache OneSignalLiveActivities.UpdateRequestCache: [:]
+VERBOSE: OneSignal.LiveActivities initialized token cache OneSignalLiveActivities.StartRequestCache: [:]
+VERBOSE: OneSignal.LiveActivities initialized token cache OneSignalLiveActivities.ReceiveReceiptsRequestCache: [:]
+VERBOSE: OneSignal.LiveActivities initialized token cache OneSignalLiveActivities.ClickedRequestCache: [:]
+VERBOSE: OneSignal.LiveActivities starting executor
+VERBOSE: OneSignal.LiveActivities pollPendingRequests
+VERBOSE: init redisplayedInAppMessages with: {
+}
+VERBOSE: OneSignal.startNewSession
+nw_connection_copy_protocol_metadata_internal_block_invoke [C4] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C4] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C4] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_connected_local_endpoint_block_invoke [C4] Client called nw_connection_copy_connected_local_endpoint on unconnected nw_connection
+nw_connection_copy_connected_remote_endpoint_block_invoke [C4] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection
+VERBOSE: OneSignal.startNewSessionInternal
+DEBUG: Outcomes cleared for current session
+DEBUG: OneSignal SessionManager restartSessionIfNeeded with entryAction:: 2 channelTrackers: (
+)
+DEBUG: OneSignal SessionManager sendSessionEndingWithInfluences with influences: (
+)
+VERBOSE: getNotificationTypes:mSubscriptionStatus: -1
+VERBOSE: OneSignalUserManagerImpl starting new session
+WARNING: OneSignalUserManagerImpl.startNewSession() is unable to fetch user with External ID nil due to null OneSignal ID
+VERBOSE: oneSignalDidRegisterForRemoteNotifications:deviceToken:
+INFO: Device Registered with Apple: 4b286abfe5f70c993731749fba9fdd5280872b07f89f5e4a74fabc49b14270bc
+nw_protocol_instance_set_output_handler Not calling remove_input_handler on 0x106a612c0:udp
+nw_protocol_instance_set_output_handler Not calling remove_input_handler on 0x106a612c0:udp
+VERBOSE: OSUserExecutor.executePendingRequests called with queue [<OSRequestCreateUser with external_id: nil>]
+VERBOSE: OSOperationRepo enqueueDelta: <OSDelta OS_UPDATE_PROPERTIES_DELTA with property: session_count value: 1>
+VERBOSE: OSOperationRepo flushDeltaQueue in background: false with queue: [<OSDelta OS_UPDATE_PROPERTIES_DELTA with property: session_count value: 1>]
+VERBOSE: OSPropertyOperationExecutor enqueue delta <OSDelta OS_UPDATE_PROPERTIES_DELTA with property: session_count value: 1>
+VERBOSE: OSPropertyOperationExecutor processDeltaQueue with queue: [<OSDelta OS_UPDATE_PROPERTIES_DELTA with property: session_count value: 1>]
+VERBOSE: network request (OSRequestGetIosParams) with URL https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/ios_params.js and headers: (null)
+VERBOSE: network response (OSRequestGetIosParams) with URL https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/ios_params.js: {
+    headers =     {
+        "Access-Control-Allow-Origin" = "*";
+        Age = 1425;
+        "Alt-Svc" = "h3=\":443\"; ma=86400";
+        "Cache-Control" = "public, max-age=3600";
+        "Content-Encoding" = br;
+        "Content-Type" = "application/json; charset=utf-8";
+        Date = "Tue, 28 Apr 2026 06:07:30 GMT";
+        Etag = "W/\"4ca2bb6f06b3b9ed6667b6c7177e694c\"";
+        Expires = "Tue, 28 Apr 2026 07:07:30 GMT";
+        Server = cloudflare;
+        "Set-Cookie" = "__cf_bm=jZ2xA2y16gocZl8VgNuZ36thJ3zU0gld_fKUM4CsVDg-1777356450.9720573-1.0.1.1-iGiV5v1TQd.Eyf1cY3EFMiU7ElyqWaBPQctXzkW8XK.4fyDGwFQeF1t1wu9PTRffjNv8MPM3MBSlA0Vc7TJaSgPoT7mXksaM1Tmpd91nNfSABRKv14m3VnVdJcar5r3Y; HttpOnly; Secure; Path=/; Domain=onesignal.com; Expires=Tue, 28 Apr 2026 06:37:30 GMT";
+        "Strict-Transport-Security" = "max-age=15552000; includeSubDomains";
+        Vary = "Origin, accept-encoding";
+        Via = "1.1 google";
+        "access-control-allow-headers" = "SDK-Version";
+        "cf-cache-status" = HIT;
+        "cf-ray" = "9f33e31a9e821d4d-LAX";
+        "referrer-policy" = "strict-origin-when-cross-origin";
+        "x-content-type-options" = nosniff;
+        "x-download-options" = noopen;
+        "x-frame-options" = SAMEORIGIN;
+        "x-permitted-cross-domain-policies" = none;
+        "x-request-id" = "08b6882f-6753-49e8-8e5f-22b92c210be1";
+        "x-runtime" = "0.010065";
+        "x-xss-protection" = "1; mode=block";
+    };
+    httpStatusCode = 200;
+    "logging_config" =     {
+        "log_level" = WARN;
+    };
+    outcomes =     {
+        direct =         {
+            enabled = 0;
+        };
+        indirect =         {
+            enabled = 0;
+            "notification_attribution" =             {
+                limit = 10;
+                "minutes_since_displayed" = 60;
+            };
+        };
+        unattributed =         {
+            enabled = 0;
+        };
+    };
+    "receive_receipts_enable" = 0;
+    "uses_provisional_auth" = 0;
+}
+nw_connection_copy_protocol_metadata_internal_block_invoke [C6] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C6] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C6] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_connected_local_endpoint_block_invoke [C6] Client called nw_connection_copy_connected_local_endpoint on unconnected nw_connection
+nw_connection_copy_connected_remote_endpoint_block_invoke [C6] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C7] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C7] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_protocol_metadata_internal_block_invoke [C7] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
+nw_connection_copy_connected_local_endpoint_block_invoke [C7] Client called nw_connection_copy_connected_local_endpoint on unconnected nw_connection
+nw_connection_copy_connected_remote_endpoint_block_invoke [C7] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection
+VERBOSE: network request (OneSignalUser.OSRequestCreateUser) with URL https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/users and headers: (null)
+VERBOSE: network response (OneSignalUser.OSRequestCreateUser) with URL https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/users: {
+    headers =     {
+        "Access-Control-Allow-Origin" = "*";
+        "Alt-Svc" = "h3=\":443\"; ma=86400";
+        "Content-Length" = 452;
+        "Content-Type" = "application/json; charset=utf-8";
+        Date = "Tue, 28 Apr 2026 06:07:36 GMT";
+        Server = cloudflare;
+        "Set-Cookie" = "__cf_bm=m3jG6OGA6QX1.kEbVWNFz5NkT0FVGCc3jryinTdMsnU-1777356455.7473798-1.0.1.1-I70NBQS5Y9FUTotQsnA_pbYh42fnEXK1FjuuWCHptajEi0uTisrus6VhF5V4kWe6leBIpu1yBELMIdHnQvEZplVemm3_pMSGxtuI9N5nddiDBAbUSFAxAEpLzkEJw7D1; HttpOnly; Secure; Path=/; Domain=onesignal.com; Expires=Tue, 28 Apr 2026 06:37:36 GMT";
+        "Strict-Transport-Security" = "max-age=15552000; includeSubDomains";
+        Via = "1.1 google";
+        "access-control-allow-headers" = "SDK-Version,Content-Type,Origin,Authorization,OneSignal-Subscription-Id";
+        "cf-cache-status" = DYNAMIC;
+        "cf-ray" = "9f33e3386a16314f-LAX";
+        traceparent = "00-2b32bf06e0fc0f387583df44c8bdbe53-079ad1798e62d62c-00";
+    };
+    httpStatusCode = 201;
+    identity =     {
+        "onesignal_id" = "1f9aaf9c-3fe8-4b1f-862d-bd6c52fa0715";
+    };
+    properties =     {
+        country = US;
+        ip = "2600:8802:1a3c:1000:c4da:3b31:d497:d3df";
+        language = en;
+        "timezone_id" = "America/Los_Angeles";
+    };
+    "ryw_delay" = 500;
+    "ryw_token" = 10000000011998975780;
+    subscriptions =     (
+                {
+            "app_id" = "e6cea15a-5496-48b4-81da-fe7409bb4799";
+            id = "8c8e8bdf-0da3-40cc-aee1-a7ff289477c9";
+            token = 4b286abfe5f70c993731749fba9fdd5280872b07f89f5e4a74fabc49b14270bc;
+            type = iOSPush;
+        }
+    );
+}
+VERBOSE: OSIdentityModel hydrateModel with aliases: ["onesignal_id": "1f9aaf9c-3fe8-4b1f-862d-bd6c52fa0715"]
+VERBOSE: OSSubscriptionModel hydrateModel()
+VERBOSE: firePushSubscriptionChanged from {
+    id = "";
+    optedIn = 0;
+    token = 4b286abfe5f70c993731749fba9fdd5280872b07f89f5e4a74fabc49b14270bc;
+} to {
+    id = "8c8e8bdf-0da3-40cc-aee1-a7ff289477c9";
+    optedIn = 0;
+    token = 4b286abfe5f70c993731749fba9fdd5280872b07f89f5e4a74fabc49b14270bc;
+}
+DEBUG: Unused property on subscription model
+DEBUG: Unused property on subscription model
+DEBUG: Not hydrating properties model for property: (key: "country", value: US)
+DEBUG: Not hydrating properties model for property: (key: "timezone_id", value: America/Los_Angeles)
+DEBUG: Not hydrating properties model for property: (key: "ip", value: 2600:8802:1a3c:1000:c4da:3b31:d497:d3df)
+VERBOSE: OSUserExecutor.executePendingRequests called with queue []
+flutter: GoRouter: INFO: Full paths for routes:
+flutter: ├─/login (LoginScreen)
+flutter: ├─/register (RegisterScreen)
+flutter: ├─/verify-email (EmailVerificationScreen)
+flutter: ├─/profile-setup (ProfileSetupScreen)
+flutter: ├─ (ShellRoute)
+flutter: │ ├─/home (HomeScreen)
+flutter: │ ├─/chats (ChatListScreen)
+flutter: │ └─/orders (OrdersScreen)
+flutter: ├─/listing/create (CreateListingFormScreen)
+flutter: ├─/listing/:id (ListingDetailScreen)
+flutter: ├─/listing/:id/edit (_PlaceholderScreen)
+flutter: ├─/my-listings (_PlaceholderScreen)
+flutter: ├─/chats/:id (ChatRoomScreen)
+flutter: ├─/orders/:id (OrderDetailScreen)
+flutter: ├─/seller-center (SellerCenterScreen)
+flutter: ├─/listing/:id/transactions (TransactionManagementScreen)
+flutter: ├─/buyer-center (BuyerCenterScreen)
+flutter: ├─/notifications (NotificationCenterScreen)
+flutter: ├─/saved-listings (SavedListingsScreen)
+flutter: ├─/profile (_PlaceholderScreen)
+flutter: ├─/settings (SettingsScreen)
+flutter: │ ├─/settings/profile (EditProfileScreen)
+flutter: │ ├─/settings/system (SystemSettingsScreen)
+flutter: │ ├─/settings/notifications (NotificationSettingsScreen)
+flutter: │ └─/settings/help (HelpScreen)
+flutter: ├─/admin (AdminLoginScreen)
+flutter: └─ (ShellRoute)
+flutter:   ├─/admin/dashboard (AdminDashboardScreen)
+flutter:   ├─/admin/users (AdminUsersScreen)
+flutter:   ├─/admin/listings (AdminListingsScreen)
+flutter:   ├─/admin/orders (AdminOrdersScreen)
+flutter:   ├─/admin/schools (AdminSchoolsScreen)
+flutter:   ├─/admin/categories (AdminCategoriesScreen)
+flutter:   ├─/admin/conditions (AdminConditionsScreen)
+flutter:   ├─/admin/pickup-locations (AdminPickupLocationsScreen)
+flutter:   ├─/admin/faqs (AdminFaqsScreen)
+flutter:   ├─/admin/dictionary (AdminDictionaryScreen)
+flutter:   └─/admin/roles (AdminRolesScreen)
+flutter: known full paths for route names:
+flutter:   login => /login
+flutter:   register => /register
+flutter:   email-verification => /verify-email
+flutter:   profileSetup => /profile-setup
+flutter:   home => /home
+flutter:   chatList => /chats
+flutter:   orders => /orders
+flutter:   createListing => /listing/create
+flutter:   listingDetail => /listing/:id
+flutter:   editListing => /listing/:id/edit
+flutter:   myListings => /my-listings
+flutter:   chatRoom => /chats/:id
+flutter:   orderDetail => /orders/:id
+flutter:   sellerCenter => /seller-center
+flutter:   transactionManagement => /listing/:id/transactions
+flutter:   buyerCenter => /buyer-center
+flutter:   notificationCenter => /notifications
+flutter:   savedListings => /saved-listings
+flutter:   profile => /profile
+flutter:   settings => /settings
+flutter:   settingsProfile => /settings/profile
+flutter:   settingsSystem => /settings/system
+flutter:   settingsNotifications => /settings/notifications
+flutter:   settingsHelp => /settings/help
+flutter:   adminLogin => /admin
+flutter:   adminDashboard => /admin/dashboard
+flutter:   adminUsers => /admin/users
+flutter:   adminListings => /admin/listings
+flutter:   adminOrders => /admin/orders
+flutter:   adminSchools => /admin/schools
+flutter:   adminCategories => /admin/categories
+flutter:   adminConditions => /admin/conditions
+flutter:   adminPickupLocations => /admin/pickup-locations
+flutter:   adminFaqs => /admin/faqs
+flutter:   adminDictionary => /admin/dictionary
+flutter:   adminRoles => /admin/roles
+flutter:
+flutter: GoRouter: INFO: setting initial location /home
+flutter: GoRouter: INFO: Using MaterialApp configuration
+flutter: GoRouter: INFO: Full paths for routes:
+flutter: ├─/login (LoginScreen)
+flutter: ├─/register (RegisterScreen)
+flutter: ├─/verify-email (EmailVerificationScreen)
+flutter: ├─/profile-setup (ProfileSetupScreen)
+flutter: ├─ (ShellRoute)
+flutter: │ ├─/home (HomeScreen)
+flutter: │ ├─/chats (ChatListScreen)
+flutter: │ └─/orders (OrdersScreen)
+flutter: ├─/listing/create (CreateListingFormScreen)
+flutter: ├─/listing/:id (ListingDetailScreen)
+flutter: ├─/listing/:id/edit (_PlaceholderScreen)
+flutter: ├─/my-listings (_PlaceholderScreen)
+flutter: ├─/chats/:id (ChatRoomScreen)
+flutter: ├─/orders/:id (OrderDetailScreen)
+flutter: ├─/seller-center (SellerCenterScreen)
+flutter: ├─/listing/:id/transactions (TransactionManagementScreen)
+flutter: ├─/buyer-center (BuyerCenterScreen)
+flutter: ├─/notifications (NotificationCenterScreen)
+flutter: ├─/saved-listings (SavedListingsScreen)
+flutter: ├─/profile (_PlaceholderScreen)
+flutter: ├─/settings (SettingsScreen)
+flutter: │ ├─/settings/profile (EditProfileScreen)
+flutter: │ ├─/settings/system (SystemSettingsScreen)
+flutter: │ ├─/settings/notifications (NotificationSettingsScreen)
+flutter: │ └─/settings/help (HelpScreen)
+flutter: ├─/admin (AdminLoginScreen)
+flutter: └─ (ShellRoute)
+flutter:   ├─/admin/dashboard (AdminDashboardScreen)
+flutter:   ├─/admin/users (AdminUsersScreen)
+flutter:   ├─/admin/listings (AdminListingsScreen)
+flutter:   ├─/admin/orders (AdminOrdersScreen)
+flutter:   ├─/admin/schools (AdminSchoolsScreen)
+flutter:   ├─/admin/categories (AdminCategoriesScreen)
+flutter:   ├─/admin/conditions (AdminConditionsScreen)
+flutter:   ├─/admin/pickup-locations (AdminPickupLocationsScreen)
+flutter:   ├─/admin/faqs (AdminFaqsScreen)
+flutter:   ├─/admin/dictionary (AdminDictionaryScreen)
+flutter:   └─/admin/roles (AdminRolesScreen)
+flutter: known full paths for route names:
+flutter:   login => /login
+flutter:   register => /register
+flutter:   email-verification => /verify-email
+flutter:   profileSetup => /profile-setup
+flutter:   home => /home
+flutter:   chatList => /chats
+flutter:   orders => /orders
+flutter:   createListing => /listing/create
+flutter:   listingDetail => /listing/:id
+flutter:   editListing => /listing/:id/edit
+flutter:   myListings => /my-listings
+flutter:   chatRoom => /chats/:id
+flutter:   orderDetail => /orders/:id
+flutter:   sellerCenter => /seller-center
+flutter:   transactionManagement => /listing/:id/transactions
+flutter:   buyerCenter => /buyer-center
+flutter:   notificationCenter => /notifications
+flutter:   savedListings => /saved-listings
+flutter:   profile => /profile
+flutter:   settings => /settings
+flutter:   settingsProfile => /settings/profile
+flutter:   settingsSystem => /settings/system
+flutter:   settingsNotifications => /settings/notifications
+flutter:   settingsHelp => /settings/help
+flutter:   adminLogin => /admin
+flutter:   adminDashboard => /admin/dashboard
+flutter:   adminUsers => /admin/users
+flutter:   adminListings => /admin/listings
+flutter:   adminOrders => /admin/orders
+flutter:   adminSchools => /admin/schools
+flutter:   adminCategories => /admin/categories
+flutter:   adminConditions => /admin/conditions
+flutter:   adminPickupLocations => /admin/pickup-locations
+flutter:   adminFaqs => /admin/faqs
+flutter:   adminDictionary => /admin/dictionary
+flutter:   adminRoles => /admin/roles
+flutter:
+flutter: GoRouter: INFO: setting initial location /home
+flutter: GoRouter: INFO: Using MaterialApp configuration
+VERBOSE: HTTP Request (OneSignalUser.OSRequestUpdateProperties) with URL: https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/users/by/onesignal_id/1f9aaf9c-3fe8-4b1f-862d-bd6c52fa0715, with parameters: {
+  "refresh_device_metadata" : true,
+  "deltas" : {
+    "session_count" : 1
+  }
+} and headers: {
+    "OneSignal-Subscription-Id" = "8c8e8bdf-0da3-40cc-aee1-a7ff289477c9";
+}
+VERBOSE: network request (OneSignalUser.OSRequestUpdateProperties) with URL https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/users/by/onesignal_id/1f9aaf9c-3fe8-4b1f-862d-bd6c52fa0715 and headers: {
+    "OneSignal-Subscription-Id" = "8c8e8bdf-0da3-40cc-aee1-a7ff289477c9";
+}
+VERBOSE: network response (OneSignalUser.OSRequestUpdateProperties) with URL https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/users/by/onesignal_id/1f9aaf9c-3fe8-4b1f-862d-bd6c52fa0715: {
+    headers =     {
+        "Access-Control-Allow-Origin" = "*";
+        "Alt-Svc" = "h3=\":443\"; ma=86400";
+        "Content-Length" = 154;
+        "Content-Type" = "application/json; charset=utf-8";
+        Date = "Tue, 28 Apr 2026 06:07:45 GMT";
+        Server = cloudflare;
+        "Strict-Transport-Security" = "max-age=15552000; includeSubDomains";
+        Via = "1.1 google";
+        "access-control-allow-headers" = "SDK-Version,Content-Type,Origin,Authorization,OneSignal-Subscription-Id";
+        "cf-cache-status" = DYNAMIC;
+        "cf-ray" = "9f33e37648b7314f-LAX";
+        traceparent = "00-d0c9b54e57a5a53eb29562a74071e638-23524d0775123ed5-00";
+    };
+    httpStatusCode = 202;
+    properties =     {
+        country = US;
+        ip = "2600:8802:1a3c:1000:c4da:3b31:d497:d3df";
+        "last_active" = 1777356465;
+    };
+    "ryw_delay" = 500;
+    "ryw_token" = 10000000011998976134;
+}
+flutter: GoRouter: INFO: Using MaterialApp configuration
+FlutterSemanticsScrollView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+FlutterSemanticsScrollView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+DEBUG: OneSignal.User logout called, but the user is currently anonymous, so not logging out.
+VERBOSE: OSMessagingController onPushSubscriptionDidChange: changed to new valid subscription id
+VERBOSE: getInAppMessagesFromServer
+DEBUG: OneSignal.User logout called, but the user is currently anonymous, so not logging out.
+INFO: Condition met for id: 1f9aaf9c-3fe8-4b1f-862d-bd6c52fa0715
+VERBOSE: In app message click listener removed successfully
+VERBOSE: In app message click listener added successfully
+VERBOSE: In app message lifecycle listener removed successfully
+VERBOSE: In app message lifecycle listener added successfully
+VERBOSE: OneSignal.LiveActivities saving token cache OneSignalLiveActivities.StartRequestCache: [:]
+VERBOSE: OneSignal.LiveActivities saving token cache OneSignalLiveActivities.StartRequestCache: [:]
+VERBOSE: OneSignal.LiveActivities saving token cache OneSignalLiveActivities.StartRequestCache: [:]
+VERBOSE: OneSignal.LiveActivities saving token cache OneSignalLiveActivities.StartRequestCache: [:]
+VERBOSE: OneSignal.LiveActivities pollPendingRequests
+VERBOSE: network request (OSRequestGetInAppMessages) with URL https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/subscriptions/8c8e8bdf-0da3-40cc-aee1-a7ff289477c9/iams and headers: {
+    "OneSignal-RYW-Token" = 10000000011998976134;
+    "OneSignal-Session-Duration" = "-1000";
+}
+VERBOSE: network response (OSRequestGetInAppMessages) with URL https://api.onesignal.com/apps/e6cea15a-5496-48b4-81da-fe7409bb4799/subscriptions/8c8e8bdf-0da3-40cc-aee1-a7ff289477c9/iams: {
+    headers =     {
+        "Access-Control-Allow-Origin" = "*";
+        "Alt-Svc" = "h3=\":443\"; ma=86400";
+        "Content-Length" = 22;
+        "Content-Type" = "application/json; charset=utf-8";
+        Date = "Tue, 28 Apr 2026 06:07:58 GMT";
+        Server = cloudflare;
+        "Strict-Transport-Security" = "max-age=15552000; includeSubDomains";
+        Via = "1.1 google";
+        "access-control-allow-headers" = "SDK-Version,Content-Type,Origin,Authorization,OneSignal-Subscription-Id";
+        "cf-cache-status" = DYNAMIC;
+        "cf-ray" = "9f33e3c3d843314f-LAX";
+        traceparent = "00-bab47c17f35f60df1203d62f99c1503a-dcd22e8fd5b824f7-01";
+    };
+    httpStatusCode = 200;
+    "in_app_messages" =     (
+    );
+
+}
+VERBOSE: OneSignal.LiveActivities executing outstanding requests
+VERBOSE: getInAppMessagesFromServer success
+VERBOSE: updateInAppMessagesFromServer
+VERBOSE: resetRedisplayMessagesBySession with redisplayedInAppMessages: {
+}
+VERBOSE: Evaluating in app messages
+VERBOSE: ForegroundLifecycleListener removed successfully
+VERBOSE: ForegroundLifecycleListener added successfully
+flutter: GoRouter: INFO: Full paths for routes:
+flutter: ├─/login (LoginScreen)
+flutter: ├─/register (RegisterScreen)
+flutter: ├─/verify-email (EmailVerificationScreen)
+flutter: ├─/profile-setup (ProfileSetupScreen)
+flutter: ├─ (ShellRoute)
+flutter: │ ├─/home (HomeScreen)
+flutter: │ ├─/chats (ChatListScreen)
+flutter: │ └─/orders (OrdersScreen)
+flutter: ├─/listing/create (CreateListingFormScreen)
+flutter: ├─/listing/:id (ListingDetailScreen)
+flutter: ├─/listing/:id/edit (_PlaceholderScreen)
+flutter: ├─/my-listings (_PlaceholderScreen)
+flutter: ├─/chats/:id (ChatRoomScreen)
+flutter: ├─/orders/:id (OrderDetailScreen)
+flutter: ├─/seller-center (SellerCenterScreen)
+flutter: ├─/listing/:id/transactions (TransactionManagementScreen)
+flutter: ├─/buyer-center (BuyerCenterScreen)
+flutter: ├─/notifications (NotificationCenterScreen)
+flutter: ├─/saved-listings (SavedListingsScreen)
+flutter: ├─/profile (_PlaceholderScreen)
+flutter: ├─/settings (SettingsScreen)
+flutter: │ ├─/settings/profile (EditProfileScreen)
+flutter: │ ├─/settings/system (SystemSettingsScreen)
+flutter: │ ├─/settings/notifications (NotificationSettingsScreen)
+flutter: │ └─/settings/help (HelpScreen)
+flutter: ├─/admin (AdminLoginScreen)
+flutter: └─ (ShellRoute)
+flutter:   ├─/admin/dashboard (AdminDashboardScreen)
+flutter:   ├─/admin/users (AdminUsersScreen)
+flutter:   ├─/admin/listings (AdminListingsScreen)
+flutter:   ├─/admin/orders (AdminOrdersScreen)
+flutter:   ├─/admin/schools (AdminSchoolsScreen)
+flutter:   ├─/admin/categories (AdminCategoriesScreen)
+flutter:   ├─/admin/conditions (AdminConditionsScreen)
+flutter:   ├─/admin/pickup-locations (AdminPickupLocationsScreen)
+flutter:   ├─/admin/faqs (AdminFaqsScreen)
+flutter:   ├─/admin/dictionary (AdminDictionaryScreen)
+flutter:   └─/admin/roles (AdminRolesScreen)
+flutter: known full paths for route names:
+flutter:   login => /login
+flutter:   register => /register
+flutter:   email-verification => /verify-email
+flutter:   profileSetup => /profile-setup
+flutter:   home => /home
+flutter:   chatList => /chats
+flutter:   orders => /orders
+flutter:   createListing => /listing/create
+flutter:   listingDetail => /listing/:id
+flutter:   editListing => /listing/:id/edit
+flutter:   myListings => /my-listings
+flutter:   chatRoom => /chats/:id
+flutter:   orderDetail => /orders/:id
+flutter:   sellerCenter => /seller-center
+flutter:   transactionManagement => /listing/:id/transactions
+flutter:   buyerCenter => /buyer-center
+flutter:   notificationCenter => /notifications
+flutter:   savedListings => /saved-listings
+flutter:   profile => /profile
+flutter:   settings => /settings
+flutter:   settingsProfile => /settings/profile
+flutter:   settingsSystem => /settings/system
+flutter:   settingsNotifications => /settings/notifications
+flutter:   settingsHelp => /settings/help
+flutter:   adminLogin => /admin
+flutter:   adminDashboard => /admin/dashboard
+flutter:   adminUsers => /admin/users
+flutter:   adminListings => /admin/listings
+flutter:   adminOrders => /admin/orders
+flutter:   adminSchools => /admin/schools
+flutter:   adminCategories => /admin/categories
+flutter:   adminConditions => /admin/conditions
+flutter:   adminPickupLocations => /admin/pickup-locations
+flutter:   adminFaqs => /admin/faqs
+flutter:   adminDictionary => /admin/dictionary
+flutter:   adminRoles => /admin/roles
+flutter:
+flutter: GoRouter: INFO: setting initial location /home
+flutter: GoRouter: INFO: Using MaterialApp configuration
+flutter: GoRouter: INFO: Using MaterialApp configuration
+FlutterSemanticsScrollView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+FlutterSemanticsScrollView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+FlutterSemanticsScrollView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+VERBOSE: OneSignal.LiveActivities executing outstanding requests

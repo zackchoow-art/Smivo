@@ -23,6 +23,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  bool _agreedToEula = false;
+
   // Debug mode toggle - allows using whitelisted test emails for signup
   bool _isDebugMode = false;
 
@@ -35,6 +37,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    if (!_agreedToEula) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('You must agree to the Terms of Use.'),
+          backgroundColor: context.smivoColors.error,
+        ),
+      );
+      return;
+    }
+    
     if (!_formKey.currentState!.validate()) return;
 
     if (_passwordController.text != _confirmPasswordController.text) {
@@ -201,6 +213,35 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   color: colors.onSurfaceVariant,
                                 ),
                               ),
+                              const SizedBox(height: 24),
+
+                              // ── EULA Checkbox ─────────────────────────────
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: Checkbox(
+                                      value: _agreedToEula,
+                                      onChanged: (val) {
+                                        setState(() => _agreedToEula = val ?? false);
+                                      },
+                                      activeColor: colors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'I agree to the Terms of Use and acknowledge that there is zero tolerance for objectionable content or abusive users.',
+                                      style: typo.bodySmall.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                               const SizedBox(height: 32),
 
                               // ── Register Button ───────────────────────────
@@ -226,7 +267,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ],
                                 ),
                                 child: ElevatedButton(
-                                  onPressed: isLoading ? null : _handleRegister,
+                                  onPressed: (isLoading || !_agreedToEula) ? null : _handleRegister,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,

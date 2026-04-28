@@ -21,6 +21,7 @@ import 'package:smivo/features/settings/screens/help_screen.dart';
 import 'package:smivo/features/settings/screens/notification_settings_screen.dart';
 import 'package:smivo/features/settings/screens/settings_screen.dart';
 import 'package:smivo/features/settings/screens/system_settings_screen.dart';
+import 'package:smivo/features/settings/screens/blocked_users_screen.dart';
 import 'package:smivo/features/seller/screens/seller_center_screen.dart';
 import 'package:smivo/features/seller/screens/transaction_management_screen.dart';
 import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
@@ -319,6 +320,11 @@ GoRouter router(Ref ref) {
             name: AppRoutes.settingsHelp,
             path: AppRoutes.settingsHelpPath,
             builder: (context, state) => const HelpScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.settingsBlocked,
+            path: AppRoutes.settingsBlockedPath,
+            builder: (context, state) => const BlockedUsersScreen(),
           ),
         ],
       ),

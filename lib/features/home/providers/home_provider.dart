@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
+import 'package:smivo/core/providers/moderation_provider.dart';
 
 part 'home_provider.g.dart';
 
@@ -54,17 +55,20 @@ class HomeListings extends _$HomeListings {
     final category = ref.watch(selectedCategoryProvider);
     final query = ref.watch(searchQueryProvider);
     final repository = ref.watch(listingRepositoryProvider);
+    final blockedUserIds = ref.watch(blockedUsersProvider).valueOrNull ?? [];
 
     // Fetch from repository based on current filters.
     if (query.trim().isNotEmpty) {
       return repository.searchListings(
         query.trim(),
         category: category == 'All' ? null : category,
+        blockedUserIds: blockedUserIds,
       );
     } else {
       // Normal feed fetch (all or specific category).
       return repository.fetchListings(
         category: category == 'All' ? null : category,
+        blockedUserIds: blockedUserIds,
       );
     }
   }

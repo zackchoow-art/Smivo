@@ -37,7 +37,7 @@ class ListingRepository {
   ///
   /// Includes the first image via a join so card widgets can display
   /// a thumbnail without a second round-trip.
-  Future<List<Listing>> fetchListings({String? category}) async {
+  Future<List<Listing>> fetchListings({String? category, List<String>? blockedUserIds}) async {
     try {
       var query = _client
           .from(AppConstants.tableListings)
@@ -50,6 +50,10 @@ class ListingRepository {
         // NOTE: DB CHECK constraint uses lowercase values; always
         // normalise before sending to avoid silent filter mismatches.
         query = query.eq('category', category.toLowerCase());
+      }
+
+      if (blockedUserIds != null && blockedUserIds.isNotEmpty) {
+        query = query.not('seller_id', 'in', blockedUserIds);
       }
 
       final data = await query.order('created_at', ascending: false);
@@ -82,7 +86,7 @@ class ListingRepository {
   }
 
   /// Searches active listings by keyword in title, description, seller name, and prices.
-  Future<List<Listing>> searchListings(String query, {String? category}) async {
+  Future<List<Listing>> searchListings(String query, {String? category, List<String>? blockedUserIds}) async {
     try {
       var dbQuery = _client
           .from(AppConstants.tableListings)
@@ -91,6 +95,10 @@ class ListingRepository {
 
       if (category != null) {
         dbQuery = dbQuery.eq('category', category.toLowerCase());
+      }
+
+      if (blockedUserIds != null && blockedUserIds.isNotEmpty) {
+        dbQuery = dbQuery.not('seller_id', 'in', blockedUserIds);
       }
 
       final data = await dbQuery.order('created_at', ascending: false);

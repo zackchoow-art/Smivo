@@ -10,6 +10,9 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/data/models/message.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/core/providers/moderation_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smivo/core/router/app_routes.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   const ChatRoomScreen({
@@ -175,6 +178,90 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           },
         ),
         titleSpacing: 0,
+        actions: [
+          roomAsync.when(
+            loading: () => const SizedBox(),
+            error: (_, __) => const SizedBox(),
+            data: (room) {
+              final otherUser = room.buyerId == currentUserId ? room.seller : room.buyer;
+              if (otherUser == null) return const SizedBox();
+              return PopupMenuButton<String>(
+                icon: Icon(Icons.more_horiz, color: colors.onSurface),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.smivoRadius.md)),
+                onSelected: (value) async {
+                  if (value == 'report') {
+                    final reasonController = TextEditingController();
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.smivoRadius.xl)),
+                        title: const Text('Report User'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('Please describe why this user is objectionable:'),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: reasonController,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(context.smivoRadius.input)),
+                                hintText: 'Reason...',
+                              ),
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit', style: TextStyle(color: Colors.red))),
+                        ],
+                      ),
+                    );
+                    if (confirm == true && context.mounted && reasonController.text.isNotEmpty) {
+                      await ref.read(moderationActionsProvider.notifier).reportContent(
+                        reportedUserId: otherUser.id,
+                        chatRoomId: room.id,
+                        reason: reasonController.text,
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully.')));
+                      }
+                    }
+                  } else if (value == 'block') {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.smivoRadius.xl)),
+                        title: const Text('Block User'),
+                        content: const Text('Are you sure you want to block this user? You will no longer see their listings.'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Block', style: TextStyle(color: Colors.red))),
+                        ],
+                      ),
+                    );
+                    if (confirm == true && context.mounted) {
+                      await ref.read(moderationActionsProvider.notifier).blockUser(otherUser.id);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.goNamed(AppRoutes.home);
+                        }
+                      }
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'report', child: Text('Report User')),
+                  const PopupMenuItem(value: 'block', child: Text('Block User', style: TextStyle(color: Colors.red))),
+                ],
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [

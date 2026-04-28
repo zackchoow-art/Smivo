@@ -4,6 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:smivo/data/repositories/profile_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/core/router/router.dart';
+import 'package:smivo/core/router/app_routes.dart';
 
 part 'push_notification_provider.g.dart';
 
@@ -47,6 +49,20 @@ class PushNotificationManager extends _$PushNotificationManager {
 
   void _onNotificationClicked(OSNotificationClickEvent event) {
     debugPrint('Notification clicked: ${event.notification.title}');
+    final data = event.notification.additionalData;
+    if (data == null) return;
+
+    final type = data['type'] as String?;
+    final orderId = data['order_id'] as String?;
+    final actionUrl = data['action_url'] as String?;
+
+    final router = ref.read(routerProvider);
+
+    if (type != null && type.startsWith('order_') && orderId != null) {
+      router.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': orderId});
+    } else if (actionUrl != null) {
+      router.push(actionUrl);
+    }
   }
 
   Future<void> _storePlayerId(String userId) async {
