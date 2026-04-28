@@ -5,6 +5,8 @@ import 'package:smivo/core/constants/debug_constants.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/utils/validators.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -232,11 +234,32 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: Text(
-                                      'I agree to the Terms of Use and acknowledge that there is zero tolerance for objectionable content or abusive users.',
-                                      style: typo.bodySmall.copyWith(
-                                        color: colors.onSurfaceVariant,
-                                        height: 1.4,
+                                    child: RichText(
+                                      text: TextSpan(
+                                        text: 'I agree to the Terms of Use and acknowledge that there is ',
+                                        style: typo.bodySmall.copyWith(
+                                          color: colors.onSurfaceVariant,
+                                          height: 1.4,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: 'zero tolerance for objectionable content or abusive users',
+                                            style: typo.bodySmall.copyWith(
+                                              color: colors.primary,
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.4,
+                                              decoration: TextDecoration.underline,
+                                            ),
+                                            recognizer: TapGestureRecognizer()
+                                              ..onTap = () async {
+                                                final url = Uri.parse('https://zackchoow-art.github.io/Smivo/safety.html');
+                                                if (await canLaunchUrl(url)) {
+                                                  await launchUrl(url);
+                                                }
+                                              },
+                                          ),
+                                          const TextSpan(text: '.'),
+                                        ],
                                       ),
                                     ),
                                   ),
