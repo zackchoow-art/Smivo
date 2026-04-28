@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/features/settings/widgets/flippable_report_card.dart';
 
 class ReportedContentScreen extends ConsumerWidget {
   const ReportedContentScreen({super.key});
@@ -11,7 +12,6 @@ class ReportedContentScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
 
     final reportsAsync = ref.watch(userReportsProvider);
 
@@ -64,78 +64,55 @@ class ReportedContentScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: reports.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final report = reports[index];
-              final isListingReport = report.listingId != null;
-              final targetName = isListingReport
-                  ? (report.listing?.title ?? 'Unknown Listing')
-                  : (report.reportedUser?.displayName ?? 'Unknown User');
-              
-              final displayStatus = report.status.substring(0, 1).toUpperCase() + report.status.substring(1);
+          final userReports = reports.where((r) => r.listingId == null).toList();
+          final listingReports = reports.where((r) => r.listingId != null).toList();
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(radius.lg),
-                  border: Border.all(color: colors.outlineVariant),
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              if (userReports.isNotEmpty)
+                Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    initiallyExpanded: true,
+                    title: Text(
+                      'Reported Users (${userReports.length})',
+                      style: typo.titleMedium.copyWith(color: colors.primary),
+                    ),
+                    iconColor: colors.primary,
+                    collapsedIconColor: colors.onSurfaceVariant,
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 8),
+                    childrenPadding: const EdgeInsets.only(top: 8, bottom: 16),
+                    children: userReports
+                        .map((report) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: FlippableReportCard(report: report),
+                            ))
+                        .toList(),
+                  ),
                 ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          isListingReport ? Icons.storefront : Icons.person,
-                          size: 20,
-                          color: colors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            isListingReport ? 'Reported Listing' : 'Reported User',
-                            style: typo.labelLarge.copyWith(color: colors.primary),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: report.status == 'pending' ? colors.errorContainer : colors.secondaryContainer,
-                            borderRadius: BorderRadius.circular(radius.sm),
-                          ),
-                          child: Text(
-                            displayStatus,
-                            style: typo.labelSmall.copyWith(
-                              color: report.status == 'pending' ? colors.error : colors.onSecondaryContainer,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
+              if (listingReports.isNotEmpty)
+                Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    initiallyExpanded: true,
+                    title: Text(
+                      'Reported Listings (${listingReports.length})',
+                      style: typo.titleMedium.copyWith(color: colors.primary),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      targetName,
-                      style: typo.titleMedium.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Reason: ${report.reason}',
-                      style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Reported on: ${report.createdAt.toLocal().toString().split(' ')[0]}',
-                      style: typo.labelSmall.copyWith(color: colors.outline),
-                    ),
-                  ],
+                    iconColor: colors.primary,
+                    collapsedIconColor: colors.onSurfaceVariant,
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 8),
+                    childrenPadding: const EdgeInsets.only(top: 8, bottom: 16),
+                    children: listingReports
+                        .map((report) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: FlippableReportCard(report: report),
+                            ))
+                        .toList(),
+                  ),
                 ),
-              );
-            },
+            ],
           );
         },
       ),

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ContentReport {
 
- String get id;@JsonKey(name: 'reporter_id') String get reporterId;@JsonKey(name: 'reported_user_id') String get reportedUserId;@JsonKey(name: 'listing_id') String? get listingId;@JsonKey(name: 'chat_room_id') String? get chatRoomId; String get reason; String get status;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;// Joined data for display
+ String get id;@JsonKey(name: 'reporter_id') String get reporterId;@JsonKey(name: 'reported_user_id') String get reportedUserId;@JsonKey(name: 'listing_id') String? get listingId;@JsonKey(name: 'chat_room_id') String? get chatRoomId; String get reason; String get status;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'resolution_note') String? get resolutionNote;// Joined data for display
 @JsonKey(name: 'reported_user') UserProfile? get reportedUser; Listing? get listing;
 /// Create a copy of ContentReport
 /// with the given fields replaced by the non-null parameter values.
@@ -29,16 +29,16 @@ $ContentReportCopyWith<ContentReport> get copyWith => _$ContentReportCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContentReport&&(identical(other.id, id) || other.id == id)&&(identical(other.reporterId, reporterId) || other.reporterId == reporterId)&&(identical(other.reportedUserId, reportedUserId) || other.reportedUserId == reportedUserId)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.chatRoomId, chatRoomId) || other.chatRoomId == chatRoomId)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.reportedUser, reportedUser) || other.reportedUser == reportedUser)&&(identical(other.listing, listing) || other.listing == listing));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContentReport&&(identical(other.id, id) || other.id == id)&&(identical(other.reporterId, reporterId) || other.reporterId == reporterId)&&(identical(other.reportedUserId, reportedUserId) || other.reportedUserId == reportedUserId)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.chatRoomId, chatRoomId) || other.chatRoomId == chatRoomId)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.resolutionNote, resolutionNote) || other.resolutionNote == resolutionNote)&&(identical(other.reportedUser, reportedUser) || other.reportedUser == reportedUser)&&(identical(other.listing, listing) || other.listing == listing));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,reporterId,reportedUserId,listingId,chatRoomId,reason,status,createdAt,updatedAt,reportedUser,listing);
+int get hashCode => Object.hash(runtimeType,id,reporterId,reportedUserId,listingId,chatRoomId,reason,status,createdAt,updatedAt,resolutionNote,reportedUser,listing);
 
 @override
 String toString() {
-  return 'ContentReport(id: $id, reporterId: $reporterId, reportedUserId: $reportedUserId, listingId: $listingId, chatRoomId: $chatRoomId, reason: $reason, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, reportedUser: $reportedUser, listing: $listing)';
+  return 'ContentReport(id: $id, reporterId: $reporterId, reportedUserId: $reportedUserId, listingId: $listingId, chatRoomId: $chatRoomId, reason: $reason, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, resolutionNote: $resolutionNote, reportedUser: $reportedUser, listing: $listing)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $ContentReportCopyWith<$Res>  {
   factory $ContentReportCopyWith(ContentReport value, $Res Function(ContentReport) _then) = _$ContentReportCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'reporter_id') String reporterId,@JsonKey(name: 'reported_user_id') String reportedUserId,@JsonKey(name: 'listing_id') String? listingId,@JsonKey(name: 'chat_room_id') String? chatRoomId, String reason, String status,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'reported_user') UserProfile? reportedUser, Listing? listing
+ String id,@JsonKey(name: 'reporter_id') String reporterId,@JsonKey(name: 'reported_user_id') String reportedUserId,@JsonKey(name: 'listing_id') String? listingId,@JsonKey(name: 'chat_room_id') String? chatRoomId, String reason, String status,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'resolution_note') String? resolutionNote,@JsonKey(name: 'reported_user') UserProfile? reportedUser, Listing? listing
 });
 
 
@@ -66,7 +66,7 @@ class _$ContentReportCopyWithImpl<$Res>
 
 /// Create a copy of ContentReport
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? reporterId = null,Object? reportedUserId = null,Object? listingId = freezed,Object? chatRoomId = freezed,Object? reason = null,Object? status = null,Object? createdAt = null,Object? updatedAt = null,Object? reportedUser = freezed,Object? listing = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? reporterId = null,Object? reportedUserId = null,Object? listingId = freezed,Object? chatRoomId = freezed,Object? reason = null,Object? status = null,Object? createdAt = null,Object? updatedAt = null,Object? resolutionNote = freezed,Object? reportedUser = freezed,Object? listing = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,reporterId: null == reporterId ? _self.reporterId : reporterId // ignore: cast_nullable_to_non_nullable
@@ -77,7 +77,8 @@ as String?,reason: null == reason ? _self.reason : reason // ignore: cast_nullab
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,reportedUser: freezed == reportedUser ? _self.reportedUser : reportedUser // ignore: cast_nullable_to_non_nullable
+as DateTime,resolutionNote: freezed == resolutionNote ? _self.resolutionNote : resolutionNote // ignore: cast_nullable_to_non_nullable
+as String?,reportedUser: freezed == reportedUser ? _self.reportedUser : reportedUser // ignore: cast_nullable_to_non_nullable
 as UserProfile?,listing: freezed == listing ? _self.listing : listing // ignore: cast_nullable_to_non_nullable
 as Listing?,
   ));
@@ -188,10 +189,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'reporter_id')  String reporterId, @JsonKey(name: 'reported_user_id')  String reportedUserId, @JsonKey(name: 'listing_id')  String? listingId, @JsonKey(name: 'chat_room_id')  String? chatRoomId,  String reason,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'reported_user')  UserProfile? reportedUser,  Listing? listing)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'reporter_id')  String reporterId, @JsonKey(name: 'reported_user_id')  String reportedUserId, @JsonKey(name: 'listing_id')  String? listingId, @JsonKey(name: 'chat_room_id')  String? chatRoomId,  String reason,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'resolution_note')  String? resolutionNote, @JsonKey(name: 'reported_user')  UserProfile? reportedUser,  Listing? listing)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ContentReport() when $default != null:
-return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_that.chatRoomId,_that.reason,_that.status,_that.createdAt,_that.updatedAt,_that.reportedUser,_that.listing);case _:
+return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_that.chatRoomId,_that.reason,_that.status,_that.createdAt,_that.updatedAt,_that.resolutionNote,_that.reportedUser,_that.listing);case _:
   return orElse();
 
 }
@@ -209,10 +210,10 @@ return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'reporter_id')  String reporterId, @JsonKey(name: 'reported_user_id')  String reportedUserId, @JsonKey(name: 'listing_id')  String? listingId, @JsonKey(name: 'chat_room_id')  String? chatRoomId,  String reason,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'reported_user')  UserProfile? reportedUser,  Listing? listing)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'reporter_id')  String reporterId, @JsonKey(name: 'reported_user_id')  String reportedUserId, @JsonKey(name: 'listing_id')  String? listingId, @JsonKey(name: 'chat_room_id')  String? chatRoomId,  String reason,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'resolution_note')  String? resolutionNote, @JsonKey(name: 'reported_user')  UserProfile? reportedUser,  Listing? listing)  $default,) {final _that = this;
 switch (_that) {
 case _ContentReport():
-return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_that.chatRoomId,_that.reason,_that.status,_that.createdAt,_that.updatedAt,_that.reportedUser,_that.listing);case _:
+return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_that.chatRoomId,_that.reason,_that.status,_that.createdAt,_that.updatedAt,_that.resolutionNote,_that.reportedUser,_that.listing);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -229,10 +230,10 @@ return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'reporter_id')  String reporterId, @JsonKey(name: 'reported_user_id')  String reportedUserId, @JsonKey(name: 'listing_id')  String? listingId, @JsonKey(name: 'chat_room_id')  String? chatRoomId,  String reason,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'reported_user')  UserProfile? reportedUser,  Listing? listing)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'reporter_id')  String reporterId, @JsonKey(name: 'reported_user_id')  String reportedUserId, @JsonKey(name: 'listing_id')  String? listingId, @JsonKey(name: 'chat_room_id')  String? chatRoomId,  String reason,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'resolution_note')  String? resolutionNote, @JsonKey(name: 'reported_user')  UserProfile? reportedUser,  Listing? listing)?  $default,) {final _that = this;
 switch (_that) {
 case _ContentReport() when $default != null:
-return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_that.chatRoomId,_that.reason,_that.status,_that.createdAt,_that.updatedAt,_that.reportedUser,_that.listing);case _:
+return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_that.chatRoomId,_that.reason,_that.status,_that.createdAt,_that.updatedAt,_that.resolutionNote,_that.reportedUser,_that.listing);case _:
   return null;
 
 }
@@ -244,7 +245,7 @@ return $default(_that.id,_that.reporterId,_that.reportedUserId,_that.listingId,_
 @JsonSerializable()
 
 class _ContentReport implements ContentReport {
-  const _ContentReport({required this.id, @JsonKey(name: 'reporter_id') required this.reporterId, @JsonKey(name: 'reported_user_id') required this.reportedUserId, @JsonKey(name: 'listing_id') this.listingId, @JsonKey(name: 'chat_room_id') this.chatRoomId, required this.reason, required this.status, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'reported_user') this.reportedUser, this.listing});
+  const _ContentReport({required this.id, @JsonKey(name: 'reporter_id') required this.reporterId, @JsonKey(name: 'reported_user_id') required this.reportedUserId, @JsonKey(name: 'listing_id') this.listingId, @JsonKey(name: 'chat_room_id') this.chatRoomId, required this.reason, required this.status, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'resolution_note') this.resolutionNote, @JsonKey(name: 'reported_user') this.reportedUser, this.listing});
   factory _ContentReport.fromJson(Map<String, dynamic> json) => _$ContentReportFromJson(json);
 
 @override final  String id;
@@ -256,6 +257,7 @@ class _ContentReport implements ContentReport {
 @override final  String status;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'resolution_note') final  String? resolutionNote;
 // Joined data for display
 @override@JsonKey(name: 'reported_user') final  UserProfile? reportedUser;
 @override final  Listing? listing;
@@ -273,16 +275,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContentReport&&(identical(other.id, id) || other.id == id)&&(identical(other.reporterId, reporterId) || other.reporterId == reporterId)&&(identical(other.reportedUserId, reportedUserId) || other.reportedUserId == reportedUserId)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.chatRoomId, chatRoomId) || other.chatRoomId == chatRoomId)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.reportedUser, reportedUser) || other.reportedUser == reportedUser)&&(identical(other.listing, listing) || other.listing == listing));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContentReport&&(identical(other.id, id) || other.id == id)&&(identical(other.reporterId, reporterId) || other.reporterId == reporterId)&&(identical(other.reportedUserId, reportedUserId) || other.reportedUserId == reportedUserId)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.chatRoomId, chatRoomId) || other.chatRoomId == chatRoomId)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.resolutionNote, resolutionNote) || other.resolutionNote == resolutionNote)&&(identical(other.reportedUser, reportedUser) || other.reportedUser == reportedUser)&&(identical(other.listing, listing) || other.listing == listing));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,reporterId,reportedUserId,listingId,chatRoomId,reason,status,createdAt,updatedAt,reportedUser,listing);
+int get hashCode => Object.hash(runtimeType,id,reporterId,reportedUserId,listingId,chatRoomId,reason,status,createdAt,updatedAt,resolutionNote,reportedUser,listing);
 
 @override
 String toString() {
-  return 'ContentReport(id: $id, reporterId: $reporterId, reportedUserId: $reportedUserId, listingId: $listingId, chatRoomId: $chatRoomId, reason: $reason, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, reportedUser: $reportedUser, listing: $listing)';
+  return 'ContentReport(id: $id, reporterId: $reporterId, reportedUserId: $reportedUserId, listingId: $listingId, chatRoomId: $chatRoomId, reason: $reason, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, resolutionNote: $resolutionNote, reportedUser: $reportedUser, listing: $listing)';
 }
 
 
@@ -293,7 +295,7 @@ abstract mixin class _$ContentReportCopyWith<$Res> implements $ContentReportCopy
   factory _$ContentReportCopyWith(_ContentReport value, $Res Function(_ContentReport) _then) = __$ContentReportCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'reporter_id') String reporterId,@JsonKey(name: 'reported_user_id') String reportedUserId,@JsonKey(name: 'listing_id') String? listingId,@JsonKey(name: 'chat_room_id') String? chatRoomId, String reason, String status,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'reported_user') UserProfile? reportedUser, Listing? listing
+ String id,@JsonKey(name: 'reporter_id') String reporterId,@JsonKey(name: 'reported_user_id') String reportedUserId,@JsonKey(name: 'listing_id') String? listingId,@JsonKey(name: 'chat_room_id') String? chatRoomId, String reason, String status,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'resolution_note') String? resolutionNote,@JsonKey(name: 'reported_user') UserProfile? reportedUser, Listing? listing
 });
 
 
@@ -310,7 +312,7 @@ class __$ContentReportCopyWithImpl<$Res>
 
 /// Create a copy of ContentReport
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? reporterId = null,Object? reportedUserId = null,Object? listingId = freezed,Object? chatRoomId = freezed,Object? reason = null,Object? status = null,Object? createdAt = null,Object? updatedAt = null,Object? reportedUser = freezed,Object? listing = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? reporterId = null,Object? reportedUserId = null,Object? listingId = freezed,Object? chatRoomId = freezed,Object? reason = null,Object? status = null,Object? createdAt = null,Object? updatedAt = null,Object? resolutionNote = freezed,Object? reportedUser = freezed,Object? listing = freezed,}) {
   return _then(_ContentReport(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,reporterId: null == reporterId ? _self.reporterId : reporterId // ignore: cast_nullable_to_non_nullable
@@ -321,7 +323,8 @@ as String?,reason: null == reason ? _self.reason : reason // ignore: cast_nullab
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,reportedUser: freezed == reportedUser ? _self.reportedUser : reportedUser // ignore: cast_nullable_to_non_nullable
+as DateTime,resolutionNote: freezed == resolutionNote ? _self.resolutionNote : resolutionNote // ignore: cast_nullable_to_non_nullable
+as String?,reportedUser: freezed == reportedUser ? _self.reportedUser : reportedUser // ignore: cast_nullable_to_non_nullable
 as UserProfile?,listing: freezed == listing ? _self.listing : listing // ignore: cast_nullable_to_non_nullable
 as Listing?,
   ));
