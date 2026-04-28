@@ -645,12 +645,13 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                               ],
                             ),
                           );
-                          if (confirm == true && context.mounted) {
+                          if (confirm == true) {
+                            if (!context.mounted) return;
+                            final goRouter = GoRouter.of(context);
+                            final scaffoldMessenger = ScaffoldMessenger.of(context);
                             await ref.read(moderationActionsProvider.notifier).blockUser(listing.sellerId);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
-                              context.goNamed(AppRoutes.home);
-                            }
+                            scaffoldMessenger.showSnackBar(const SnackBar(content: Text('User blocked.')));
+                            goRouter.goNamed(AppRoutes.home);
                           }
                         }
                       },

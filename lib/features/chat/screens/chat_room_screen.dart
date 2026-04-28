@@ -12,7 +12,7 @@ import 'package:smivo/data/models/message.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:smivo/core/router/app_routes.dart';
 class ChatRoomScreen extends ConsumerStatefulWidget {
   const ChatRoomScreen({
     super.key,
@@ -239,13 +239,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         ],
                       ),
                     );
-                    if (confirm == true && context.mounted) {
+                    if (confirm == true) {
+                      if (!context.mounted) return;
+                      final goRouter = GoRouter.of(context);
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
                       await ref.read(moderationActionsProvider.notifier).blockUser(otherUser.id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
-                        if (context.canPop()) {
-                          context.pop();
-                        }
+                      scaffoldMessenger.showSnackBar(const SnackBar(content: Text('User blocked.')));
+                      if (goRouter.canPop()) {
+                        goRouter.pop();
+                      } else {
+                        goRouter.goNamed(AppRoutes.home);
                       }
                     }
                   }

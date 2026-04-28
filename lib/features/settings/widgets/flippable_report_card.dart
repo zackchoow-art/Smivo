@@ -94,7 +94,16 @@ class _FlippableReportCardState extends State<FlippableReportCard>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildImageOrAvatar(),
+          Column(
+            children: [
+              _buildImageOrAvatar(),
+              const SizedBox(height: 8),
+              Text(
+                widget.report.createdAt.toLocal().toString().split(' ')[0],
+                style: typo.labelSmall.copyWith(color: colors.outline),
+              ),
+            ],
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -137,21 +146,23 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Tap to view resolution',
-                        style: typo.bodySmall.copyWith(color: colors.primary),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.flip, size: 14, color: colors.primary),
-                    ],
+                if (widget.report.status != 'pending') ...[
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Tap to view resolution',
+                          style: typo.bodySmall.copyWith(color: colors.primary),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.flip, size: 14, color: colors.primary),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -243,21 +254,6 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                 ),
               ),
             ],
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Tap to view details',
-                    style: typo.bodySmall.copyWith(color: colors.primary),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.flip, size: 14, color: colors.primary),
-                ],
-              ),
-            ),
           ],
         ),
       ),
