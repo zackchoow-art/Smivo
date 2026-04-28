@@ -20,15 +20,27 @@ abstract class UserProfile with _$UserProfile {
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
     // User preference for receiving email notifications
-    @JsonKey(name: 'email_notifications_enabled') @Default(true) bool emailNotificationsEnabled,
+    @JsonKey(name: 'email_notifications_enabled') @Default(false) bool emailNotificationsEnabled,
     // OneSignal device token for push notifications
     @JsonKey(name: 'onesignal_player_id') String? onesignalPlayerId,
     // Master push notification toggle
     @JsonKey(name: 'push_notifications_enabled') @Default(true) bool pushNotificationsEnabled,
-    // Push preference for new chat messages
+    
+    // -- Messages --
     @JsonKey(name: 'push_messages') @Default(true) bool pushMessages,
-    // Push preference for order status updates
+    @JsonKey(name: 'email_messages') @Default(false) bool emailMessages,
+    
+    // -- Order Updates --
     @JsonKey(name: 'push_order_updates') @Default(true) bool pushOrderUpdates,
+    @JsonKey(name: 'email_order_updates') @Default(false) bool emailOrderUpdates,
+    
+    // -- Campus Announcements --
+    @JsonKey(name: 'push_campus_announcements') @Default(true) bool pushCampusAnnouncements,
+    @JsonKey(name: 'email_campus_announcements') @Default(false) bool emailCampusAnnouncements,
+    
+    // -- Platform Announcements --
+    @JsonKey(name: 'push_announcements') @Default(true) bool pushAnnouncements,
+    @JsonKey(name: 'email_announcements') @Default(false) bool emailAnnouncements,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

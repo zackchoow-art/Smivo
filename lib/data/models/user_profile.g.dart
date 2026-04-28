@@ -27,11 +27,18 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
           ? null
           : DateTime.parse(json['updated_at'] as String),
   emailNotificationsEnabled:
-      json['email_notifications_enabled'] as bool? ?? true,
+      json['email_notifications_enabled'] as bool? ?? false,
   onesignalPlayerId: json['onesignal_player_id'] as String?,
   pushNotificationsEnabled: json['push_notifications_enabled'] as bool? ?? true,
   pushMessages: json['push_messages'] as bool? ?? true,
+  emailMessages: json['email_messages'] as bool? ?? false,
   pushOrderUpdates: json['push_order_updates'] as bool? ?? true,
+  emailOrderUpdates: json['email_order_updates'] as bool? ?? false,
+  pushCampusAnnouncements: json['push_campus_announcements'] as bool? ?? true,
+  emailCampusAnnouncements:
+      json['email_campus_announcements'] as bool? ?? false,
+  pushAnnouncements: json['push_announcements'] as bool? ?? true,
+  emailAnnouncements: json['email_announcements'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
@@ -50,5 +57,11 @@ Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
       'onesignal_player_id': instance.onesignalPlayerId,
       'push_notifications_enabled': instance.pushNotificationsEnabled,
       'push_messages': instance.pushMessages,
+      'email_messages': instance.emailMessages,
       'push_order_updates': instance.pushOrderUpdates,
+      'email_order_updates': instance.emailOrderUpdates,
+      'push_campus_announcements': instance.pushCampusAnnouncements,
+      'email_campus_announcements': instance.emailCampusAnnouncements,
+      'push_announcements': instance.pushAnnouncements,
+      'email_announcements': instance.emailAnnouncements,
     };

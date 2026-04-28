@@ -181,24 +181,6 @@ class ProfileRepository {
     }
   }
 
-  /// Updates the user's email notification preference.
-  ///
-  /// Isolated update — only touches the email_notifications_enabled column
-  /// to avoid accidentally overwriting other profile data.
-  Future<void> updateEmailNotificationPref({
-    required String userId,
-    required bool enabled,
-  }) async {
-    try {
-      await _client
-          .from('user_profiles')
-          .update({'email_notifications_enabled': enabled})
-          .eq('id', userId);
-    } on supabase.PostgrestException catch (e) {
-      throw AppException.database('Failed to update email pref: ${e.message}', e);
-    }
-  }
-
   /// Stores the OneSignal player ID for push notification targeting.
   Future<void> updatePushToken({
     required String userId,
@@ -214,18 +196,32 @@ class ProfileRepository {
     }
   }
 
-  /// Updates push notification preferences for the user.
-  Future<void> updatePushPreferences({
+  /// Updates notification preferences for the user.
+  Future<void> updateNotificationPreferences({
     required String userId,
-    required bool pushEnabled,
+    required bool emailNotificationsEnabled,
+    required bool pushNotificationsEnabled,
     required bool pushMessages,
+    required bool emailMessages,
     required bool pushOrderUpdates,
+    required bool emailOrderUpdates,
+    required bool pushCampusAnnouncements,
+    required bool emailCampusAnnouncements,
+    required bool pushAnnouncements,
+    required bool emailAnnouncements,
   }) async {
     try {
       await _client.from('user_profiles').update({
-        'push_notifications_enabled': pushEnabled,
+        'email_notifications_enabled': emailNotificationsEnabled,
+        'push_notifications_enabled': pushNotificationsEnabled,
         'push_messages': pushMessages,
+        'email_messages': emailMessages,
         'push_order_updates': pushOrderUpdates,
+        'email_order_updates': emailOrderUpdates,
+        'push_campus_announcements': pushCampusAnnouncements,
+        'email_campus_announcements': emailCampusAnnouncements,
+        'push_announcements': pushAnnouncements,
+        'email_announcements': emailAnnouncements,
       }).eq('id', userId);
     } on supabase.PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

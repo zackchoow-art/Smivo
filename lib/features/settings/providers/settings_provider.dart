@@ -3,142 +3,116 @@ import 'package:smivo/data/repositories/profile_repository.dart';
 
 part 'settings_provider.g.dart';
 
-// Notification Settings
-@riverpod
-class PushNotificationsState extends _$PushNotificationsState {
-  @override
-  bool build() => true;
+class NotificationPreferences {
+  final bool emailNotificationsEnabled;
+  final bool pushNotificationsEnabled;
+  final bool pushMessages;
+  final bool emailMessages;
+  final bool pushOrderUpdates;
+  final bool emailOrderUpdates;
+  final bool pushCampusAnnouncements;
+  final bool emailCampusAnnouncements;
+  final bool pushAnnouncements;
+  final bool emailAnnouncements;
 
-  void setInitial(bool value) => state = value;
+  const NotificationPreferences({
+    this.emailNotificationsEnabled = false,
+    this.pushNotificationsEnabled = true,
+    this.pushMessages = true,
+    this.emailMessages = false,
+    this.pushOrderUpdates = true,
+    this.emailOrderUpdates = false,
+    this.pushCampusAnnouncements = true,
+    this.emailCampusAnnouncements = false,
+    this.pushAnnouncements = true,
+    this.emailAnnouncements = false,
+  });
 
-  Future<void> toggle({
-    required String userId,
-    required ProfileRepository profileRepo,
-    required bool pushMessages,
-    required bool pushOrderUpdates,
-  }) async {
-    final newValue = !state;
-    state = newValue;
-    try {
-      await profileRepo.updatePushPreferences(
-        userId: userId,
-        pushEnabled: newValue,
-        pushMessages: pushMessages,
-        pushOrderUpdates: pushOrderUpdates,
-      );
-    } catch (_) {
-      state = !newValue;
-    }
+  NotificationPreferences copyWith({
+    bool? emailNotificationsEnabled,
+    bool? pushNotificationsEnabled,
+    bool? pushMessages,
+    bool? emailMessages,
+    bool? pushOrderUpdates,
+    bool? emailOrderUpdates,
+    bool? pushCampusAnnouncements,
+    bool? emailCampusAnnouncements,
+    bool? pushAnnouncements,
+    bool? emailAnnouncements,
+  }) {
+    return NotificationPreferences(
+      emailNotificationsEnabled: emailNotificationsEnabled ?? this.emailNotificationsEnabled,
+      pushNotificationsEnabled: pushNotificationsEnabled ?? this.pushNotificationsEnabled,
+      pushMessages: pushMessages ?? this.pushMessages,
+      emailMessages: emailMessages ?? this.emailMessages,
+      pushOrderUpdates: pushOrderUpdates ?? this.pushOrderUpdates,
+      emailOrderUpdates: emailOrderUpdates ?? this.emailOrderUpdates,
+      pushCampusAnnouncements: pushCampusAnnouncements ?? this.pushCampusAnnouncements,
+      emailCampusAnnouncements: emailCampusAnnouncements ?? this.emailCampusAnnouncements,
+      pushAnnouncements: pushAnnouncements ?? this.pushAnnouncements,
+      emailAnnouncements: emailAnnouncements ?? this.emailAnnouncements,
+    );
   }
 }
 
 @riverpod
-class PushMessagesNotifState extends _$PushMessagesNotifState {
+class NotificationSettingsState extends _$NotificationSettingsState {
   @override
-  bool build() => true;
-
-  void setInitial(bool value) => state = value;
-
-  Future<void> toggle({
-    required String userId,
-    required ProfileRepository profileRepo,
-    required bool pushEnabled,
-    required bool pushOrderUpdates,
-  }) async {
-    final newValue = !state;
-    state = newValue;
-    try {
-      await profileRepo.updatePushPreferences(
-        userId: userId,
-        pushEnabled: pushEnabled,
-        pushMessages: newValue,
-        pushOrderUpdates: pushOrderUpdates,
-      );
-    } catch (_) {
-      state = !newValue;
-    }
-  }
-}
-
-@riverpod
-class PushOrderUpdatesNotifState extends _$PushOrderUpdatesNotifState {
-  @override
-  bool build() => true;
-
-  void setInitial(bool value) => state = value;
-
-  Future<void> toggle({
-    required String userId,
-    required ProfileRepository profileRepo,
-    required bool pushEnabled,
-    required bool pushMessages,
-  }) async {
-    final newValue = !state;
-    state = newValue;
-    try {
-      await profileRepo.updatePushPreferences(
-        userId: userId,
-        pushEnabled: pushEnabled,
-        pushMessages: pushMessages,
-        pushOrderUpdates: newValue,
-      );
-    } catch (_) {
-      state = !newValue;
-    }
-  }
-}
-
-@riverpod
-class PriceAlertsNotifState extends _$PriceAlertsNotifState {
-  @override
-  bool build() => false;
-
-  void toggle() => state = !state;
-}
-
-@riverpod
-class CampusAnnouncementsNotifState extends _$CampusAnnouncementsNotifState {
-  @override
-  bool build() => true;
-
-  void toggle() => state = !state;
-}
-
-@riverpod
-class WeeklyEmailDigestNotifState extends _$WeeklyEmailDigestNotifState {
-  @override
-  bool build() => false;
-
-  void toggle() => state = !state;
-}
-
-/// Persisted email notification preference — reads from user profile,
-/// writes to DB via profile repository.
-@riverpod
-class EmailNotificationsState extends _$EmailNotificationsState {
-  @override
-  bool build() {
-    // NOTE: Initial value is loaded from auth profile in the screen.
-    // Default to true until profile loads.
-    return true;
+  NotificationPreferences build() {
+    return const NotificationPreferences();
   }
 
-  void setInitial(bool value) => state = value;
+  void setInitial(NotificationPreferences prefs) {
+    state = prefs;
+  }
 
-  Future<void> toggle({
+  Future<void> updatePreferences({
     required String userId,
     required ProfileRepository profileRepo,
+    bool? emailNotificationsEnabled,
+    bool? pushNotificationsEnabled,
+    bool? pushMessages,
+    bool? emailMessages,
+    bool? pushOrderUpdates,
+    bool? emailOrderUpdates,
+    bool? pushCampusAnnouncements,
+    bool? emailCampusAnnouncements,
+    bool? pushAnnouncements,
+    bool? emailAnnouncements,
   }) async {
-    final newValue = !state;
-    state = newValue;
+    final previousState = state;
+    final newState = state.copyWith(
+      emailNotificationsEnabled: emailNotificationsEnabled,
+      pushNotificationsEnabled: pushNotificationsEnabled,
+      pushMessages: pushMessages,
+      emailMessages: emailMessages,
+      pushOrderUpdates: pushOrderUpdates,
+      emailOrderUpdates: emailOrderUpdates,
+      pushCampusAnnouncements: pushCampusAnnouncements,
+      emailCampusAnnouncements: emailCampusAnnouncements,
+      pushAnnouncements: pushAnnouncements,
+      emailAnnouncements: emailAnnouncements,
+    );
+    
+    state = newState;
+
     try {
-      await profileRepo.updateEmailNotificationPref(
+      await profileRepo.updateNotificationPreferences(
         userId: userId,
-        enabled: newValue,
+        emailNotificationsEnabled: newState.emailNotificationsEnabled,
+        pushNotificationsEnabled: newState.pushNotificationsEnabled,
+        pushMessages: newState.pushMessages,
+        emailMessages: newState.emailMessages,
+        pushOrderUpdates: newState.pushOrderUpdates,
+        emailOrderUpdates: newState.emailOrderUpdates,
+        pushCampusAnnouncements: newState.pushCampusAnnouncements,
+        emailCampusAnnouncements: newState.emailCampusAnnouncements,
+        pushAnnouncements: newState.pushAnnouncements,
+        emailAnnouncements: newState.emailAnnouncements,
       );
     } catch (_) {
       // Revert on failure
-      state = !newValue;
+      state = previousState;
     }
   }
 }
