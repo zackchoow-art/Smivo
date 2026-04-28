@@ -243,12 +243,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       if (!context.mounted) return;
                       final goRouter = GoRouter.of(context);
                       final scaffoldMessenger = ScaffoldMessenger.of(context);
-                      await ref.read(moderationActionsProvider.notifier).blockUser(otherUser.id);
-                      scaffoldMessenger.showSnackBar(const SnackBar(content: Text('User blocked.')));
-                      if (goRouter.canPop()) {
-                        goRouter.pop();
-                      } else {
-                        goRouter.goNamed(AppRoutes.home);
+                      try {
+                        await ref.read(moderationActionsProvider.notifier).blockUser(otherUser.id);
+                        scaffoldMessenger.showSnackBar(const SnackBar(content: Text('User blocked.')));
+                        if (goRouter.canPop()) {
+                          goRouter.pop();
+                        } else {
+                          goRouter.goNamed(AppRoutes.home);
+                        }
+                      } catch (e) {
+                        debugPrint('Error blocking user: $e');
+                        scaffoldMessenger.showSnackBar(SnackBar(content: Text('Error blocking user: $e')));
                       }
                     }
                   }

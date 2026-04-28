@@ -649,9 +649,14 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                             if (!context.mounted) return;
                             final goRouter = GoRouter.of(context);
                             final scaffoldMessenger = ScaffoldMessenger.of(context);
-                            await ref.read(moderationActionsProvider.notifier).blockUser(listing.sellerId);
-                            scaffoldMessenger.showSnackBar(const SnackBar(content: Text('User blocked.')));
-                            goRouter.goNamed(AppRoutes.home);
+                            try {
+                              await ref.read(moderationActionsProvider.notifier).blockUser(listing.sellerId);
+                              scaffoldMessenger.showSnackBar(const SnackBar(content: Text('User blocked.')));
+                              goRouter.goNamed(AppRoutes.home);
+                            } catch (e) {
+                              debugPrint('Error blocking user: $e');
+                              scaffoldMessenger.showSnackBar(SnackBar(content: Text('Error blocking user: $e')));
+                            }
                           }
                         }
                       },

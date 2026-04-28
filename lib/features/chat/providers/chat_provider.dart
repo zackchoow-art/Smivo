@@ -10,6 +10,7 @@ import 'package:smivo/data/models/message.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/data/repositories/storage_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/core/providers/moderation_provider.dart';
 
 part 'chat_provider.g.dart';
 
@@ -72,11 +73,19 @@ class ChatRoomList extends _$ChatRoomList {
       _channel = null;
     });
 
-    // Subscribe to new messages — filter in Dart (RLS limits which 
-    // rows the server will push, but we still filter defensively)
+    // Subscribe to new messages
     _subscribe(user.id);
 
-    return ref.read(chatRepositoryProvider).fetchChatRooms(user.id);
+    final allRooms = await ref.read(chatRepositoryProvider).fetchChatRooms(user.id);
+    
+    // Filter out chat rooms where the other participant is blocked
+    final blockedUserIds = ref.watch(blockedUsersProvider).valueOrNull ?? <String>[];
+    final blockedSet = blockedUserIds.toSet();
+    
+    return allRooms.where((room) {
+      final otherUserId = room.buyerId == user.id ? room.sellerId : room.buyerId;
+      return !blockedSet.contains(otherUserId);
+    }).toList();
   }
 
   void _subscribe(String userId) {
