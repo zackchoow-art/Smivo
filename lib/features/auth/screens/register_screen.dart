@@ -11,6 +11,7 @@ import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/utils/validators.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
+import 'package:smivo/core/router/app_routes.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -98,7 +99,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    // Listen for auth errors and show SnackBar
+    // Listen for auth errors and show SnackBar, or navigate on success
     ref.listen(authProvider, (previous, next) {
       if (next.hasError && !next.isLoading) {
         final error = next.error;
@@ -111,6 +112,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             content: Text(message),
             backgroundColor: colors.error,
           ),
+        );
+      } else if (!next.isLoading && !next.hasError && previous != null && previous.isLoading) {
+        // Successful registration!
+        // We navigate manually because Supabase doesn't issue a session immediately
+        // for unverified emails, so router.dart won't pick it up automatically yet.
+        final emailPrefix = _emailController.text.trim();
+        final fullEmail = _isDebugMode ? emailPrefix : '$emailPrefix@smith.edu';
+        // GoRouter redirect doesn't trigger, so we manually go to verification screen.
+        context.goNamed(
+          AppRoutes.emailVerification,
+          queryParameters: {'email': fullEmail},
         );
       }
     });
@@ -299,7 +311,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ],
                                 ),
                                 child: ElevatedButton(
-                                  onPressed: (isLoading || !_agreedToEula) ? null : _handleRegister,
+                                  onPressed: isLoading ? null : _handleRegister,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
