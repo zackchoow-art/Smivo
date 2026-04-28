@@ -24,11 +24,11 @@ class _NotificationSettingsScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadEmailPref();
+      _loadPrefs();
     });
   }
 
-  Future<void> _loadEmailPref() async {
+  Future<void> _loadPrefs() async {
     if (_initialized) return;
     final user = ref.read(authStateProvider).valueOrNull;
     if (user == null) return;
@@ -36,9 +36,20 @@ class _NotificationSettingsScreenState
       final profile =
           await ref.read(profileRepositoryProvider).getProfile(user.id);
       if (profile == null) return;
+      
       ref
           .read(emailNotificationsStateProvider.notifier)
           .setInitial(profile.emailNotificationsEnabled);
+      ref
+          .read(pushNotificationsStateProvider.notifier)
+          .setInitial(profile.pushNotificationsEnabled);
+      ref
+          .read(pushMessagesNotifStateProvider.notifier)
+          .setInitial(profile.pushMessages);
+      ref
+          .read(pushOrderUpdatesNotifStateProvider.notifier)
+          .setInitial(profile.pushOrderUpdates);
+          
       _initialized = true;
     } catch (_) {
     }
@@ -68,6 +79,26 @@ class _NotificationSettingsScreenState
                     children: [
                       const SizedBox(height: 16),
                       SettingToggleRow(
+                        icon: Icons.notifications_active_outlined,
+                        title: 'Push\nNotifications',
+                        subtitle:
+                            'Receive push alerts\non your device for\nimportant activity.',
+                        value: ref.watch(pushNotificationsStateProvider),
+                        onChanged: (_) {
+                          if (user != null) {
+                            ref
+                                .read(pushNotificationsStateProvider.notifier)
+                                .toggle(
+                                  userId: user.id,
+                                  profileRepo: ref.read(profileRepositoryProvider),
+                                  pushMessages: ref.read(pushMessagesNotifStateProvider),
+                                  pushOrderUpdates: ref.read(pushOrderUpdatesNotifStateProvider),
+                                );
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      SettingToggleRow(
                         icon: Icons.email_outlined,
                         title: 'Email\nNotifications',
                         subtitle:
@@ -92,9 +123,19 @@ class _NotificationSettingsScreenState
                         title: 'New Messages',
                         subtitle:
                             'Get notified when\nsomeone sends you a\ndirect message or\nreplies to your thread.',
-                        value: ref.watch(newMessagesNotifStateProvider),
-                        onChanged: (_) =>
-                            ref.read(newMessagesNotifStateProvider.notifier).toggle(),
+                        value: ref.watch(pushMessagesNotifStateProvider),
+                        onChanged: (_) {
+                          if (user != null) {
+                            ref
+                                .read(pushMessagesNotifStateProvider.notifier)
+                                .toggle(
+                                  userId: user.id,
+                                  profileRepo: ref.read(profileRepositoryProvider),
+                                  pushEnabled: ref.read(pushNotificationsStateProvider),
+                                  pushOrderUpdates: ref.read(pushOrderUpdatesNotifStateProvider),
+                                );
+                          }
+                        },
                       ),
                       const SizedBox(height: 16),
                       SettingToggleRow(
@@ -112,9 +153,19 @@ class _NotificationSettingsScreenState
                         title: 'Order Updates',
                         subtitle:
                             'Status changes,\nshipping tracking, and\ndelivery confirmations\nfor your purchases.',
-                        value: ref.watch(orderUpdatesNotifStateProvider),
-                        onChanged: (_) =>
-                            ref.read(orderUpdatesNotifStateProvider.notifier).toggle(),
+                        value: ref.watch(pushOrderUpdatesNotifStateProvider),
+                        onChanged: (_) {
+                          if (user != null) {
+                            ref
+                                .read(pushOrderUpdatesNotifStateProvider.notifier)
+                                .toggle(
+                                  userId: user.id,
+                                  profileRepo: ref.read(profileRepositoryProvider),
+                                  pushEnabled: ref.read(pushNotificationsStateProvider),
+                                  pushMessages: ref.read(pushMessagesNotifStateProvider),
+                                );
+                          }
+                        },
                       ),
                       const SizedBox(height: 16),
                       SettingToggleRow(

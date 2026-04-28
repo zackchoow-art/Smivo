@@ -198,6 +198,39 @@ class ProfileRepository {
       throw AppException.database('Failed to update email pref: ${e.message}', e);
     }
   }
+
+  /// Stores the OneSignal player ID for push notification targeting.
+  Future<void> updatePushToken({
+    required String userId,
+    required String playerId,
+  }) async {
+    try {
+      await _client
+          .from('user_profiles')
+          .update({'onesignal_player_id': playerId})
+          .eq('id', userId);
+    } on supabase.PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Updates push notification preferences for the user.
+  Future<void> updatePushPreferences({
+    required String userId,
+    required bool pushEnabled,
+    required bool pushMessages,
+    required bool pushOrderUpdates,
+  }) async {
+    try {
+      await _client.from('user_profiles').update({
+        'push_notifications_enabled': pushEnabled,
+        'push_messages': pushMessages,
+        'push_order_updates': pushOrderUpdates,
+      }).eq('id', userId);
+    } on supabase.PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod

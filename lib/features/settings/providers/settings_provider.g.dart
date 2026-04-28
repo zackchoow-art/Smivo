@@ -6,24 +6,60 @@ part of 'settings_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$newMessagesNotifStateHash() =>
-    r'd2e241c3b2b10cc7693373c36845f998d289bb38';
+String _$pushNotificationsStateHash() =>
+    r'41b6796df8c48f9144c1e7b2b1879aba08a56a9a';
 
-/// See also [NewMessagesNotifState].
-@ProviderFor(NewMessagesNotifState)
-final newMessagesNotifStateProvider =
-    AutoDisposeNotifierProvider<NewMessagesNotifState, bool>.internal(
-      NewMessagesNotifState.new,
-      name: r'newMessagesNotifStateProvider',
+/// See also [PushNotificationsState].
+@ProviderFor(PushNotificationsState)
+final pushNotificationsStateProvider =
+    AutoDisposeNotifierProvider<PushNotificationsState, bool>.internal(
+      PushNotificationsState.new,
+      name: r'pushNotificationsStateProvider',
       debugGetCreateSourceHash:
           const bool.fromEnvironment('dart.vm.product')
               ? null
-              : _$newMessagesNotifStateHash,
+              : _$pushNotificationsStateHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$NewMessagesNotifState = AutoDisposeNotifier<bool>;
+typedef _$PushNotificationsState = AutoDisposeNotifier<bool>;
+String _$pushMessagesNotifStateHash() =>
+    r'43f3b732800aff19ff86969225faceafab3b190f';
+
+/// See also [PushMessagesNotifState].
+@ProviderFor(PushMessagesNotifState)
+final pushMessagesNotifStateProvider =
+    AutoDisposeNotifierProvider<PushMessagesNotifState, bool>.internal(
+      PushMessagesNotifState.new,
+      name: r'pushMessagesNotifStateProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$pushMessagesNotifStateHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$PushMessagesNotifState = AutoDisposeNotifier<bool>;
+String _$pushOrderUpdatesNotifStateHash() =>
+    r'dc94e23039e70c629370d0218124ebf36def14d8';
+
+/// See also [PushOrderUpdatesNotifState].
+@ProviderFor(PushOrderUpdatesNotifState)
+final pushOrderUpdatesNotifStateProvider =
+    AutoDisposeNotifierProvider<PushOrderUpdatesNotifState, bool>.internal(
+      PushOrderUpdatesNotifState.new,
+      name: r'pushOrderUpdatesNotifStateProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$pushOrderUpdatesNotifStateHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$PushOrderUpdatesNotifState = AutoDisposeNotifier<bool>;
 String _$priceAlertsNotifStateHash() =>
     r'536d3ea15fbde00dd353aff62c067bed6a233109';
 
@@ -42,24 +78,6 @@ final priceAlertsNotifStateProvider =
     );
 
 typedef _$PriceAlertsNotifState = AutoDisposeNotifier<bool>;
-String _$orderUpdatesNotifStateHash() =>
-    r'f7c2a191464cf6d54c1ece1139f684e941f8ef3c';
-
-/// See also [OrderUpdatesNotifState].
-@ProviderFor(OrderUpdatesNotifState)
-final orderUpdatesNotifStateProvider =
-    AutoDisposeNotifierProvider<OrderUpdatesNotifState, bool>.internal(
-      OrderUpdatesNotifState.new,
-      name: r'orderUpdatesNotifStateProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$orderUpdatesNotifStateHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$OrderUpdatesNotifState = AutoDisposeNotifier<bool>;
 String _$campusAnnouncementsNotifStateHash() =>
     r'5d070d5ccf58841b5dc15fdde775bc3bc5d825bf';
 

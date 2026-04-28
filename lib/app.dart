@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/providers/push_notification_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/router/router.dart';
 import 'core/theme/app_theme.dart';
@@ -15,6 +16,9 @@ class SmivoApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize push notification lifecycle
+    ref.watch(pushNotificationManagerProvider);
+
     final router = ref.watch(routerProvider);
     final themeVariant = ref.watch(themeNotifierProvider);
 

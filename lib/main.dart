@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+
 import 'app.dart';
 
 /// App entry point.
@@ -21,7 +23,12 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
-  // NOTE: Initialize OneSignal here in Phase 2. See project-brief.md.
+  // Initialize OneSignal for push notifications.
+  final oneSignalAppId = dotenv.env['ONESIGNAL_APP_ID'] ?? '';
+  if (oneSignalAppId.isNotEmpty) {
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose); // TODO: Remove in production
+    OneSignal.initialize(oneSignalAppId);
+  }
 
   runApp(
     const ProviderScope(

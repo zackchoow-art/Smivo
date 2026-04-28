@@ -21,6 +21,14 @@ abstract class UserProfile with _$UserProfile {
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
     // User preference for receiving email notifications
     @JsonKey(name: 'email_notifications_enabled') @Default(true) bool emailNotificationsEnabled,
+    // OneSignal device token for push notifications
+    @JsonKey(name: 'onesignal_player_id') String? onesignalPlayerId,
+    // Master push notification toggle
+    @JsonKey(name: 'push_notifications_enabled') @Default(true) bool pushNotificationsEnabled,
+    // Push preference for new chat messages
+    @JsonKey(name: 'push_messages') @Default(true) bool pushMessages,
+    // Push preference for order status updates
+    @JsonKey(name: 'push_order_updates') @Default(true) bool pushOrderUpdates,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

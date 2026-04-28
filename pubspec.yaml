@@ -78,12 +78,13 @@ flutter:
 # Native splash screen configuration
 # Run: dart run flutter_native_splash:create
 flutter_native_splash:
-  color: "#FFFFFF"
+  color: "#F5F5F5"
   image: assets/splash.png
+  fullscreen: true
   ios: true
   android: true
   web: true
-  # Keep the splash screen visible until Flutter is ready
+  # Android 12+ uses a centered icon; provide the image here too
   android_12:
-    color: "#FFFFFF"
+    color: "#F5F5F5"
     image: assets/splash.png

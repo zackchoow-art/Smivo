@@ -28,6 +28,10 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
           : DateTime.parse(json['updated_at'] as String),
   emailNotificationsEnabled:
       json['email_notifications_enabled'] as bool? ?? true,
+  onesignalPlayerId: json['onesignal_player_id'] as String?,
+  pushNotificationsEnabled: json['push_notifications_enabled'] as bool? ?? true,
+  pushMessages: json['push_messages'] as bool? ?? true,
+  pushOrderUpdates: json['push_order_updates'] as bool? ?? true,
 );
 
 Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
@@ -43,4 +47,8 @@ Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
       'email_notifications_enabled': instance.emailNotificationsEnabled,
+      'onesignal_player_id': instance.onesignalPlayerId,
+      'push_notifications_enabled': instance.pushNotificationsEnabled,
+      'push_messages': instance.pushMessages,
+      'push_order_updates': instance.pushOrderUpdates,
     };

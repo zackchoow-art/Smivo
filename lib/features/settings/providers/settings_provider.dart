@@ -5,25 +5,93 @@ part 'settings_provider.g.dart';
 
 // Notification Settings
 @riverpod
-class NewMessagesNotifState extends _$NewMessagesNotifState {
+class PushNotificationsState extends _$PushNotificationsState {
   @override
   bool build() => true;
 
-  void toggle() => state = !state;
+  void setInitial(bool value) => state = value;
+
+  Future<void> toggle({
+    required String userId,
+    required ProfileRepository profileRepo,
+    required bool pushMessages,
+    required bool pushOrderUpdates,
+  }) async {
+    final newValue = !state;
+    state = newValue;
+    try {
+      await profileRepo.updatePushPreferences(
+        userId: userId,
+        pushEnabled: newValue,
+        pushMessages: pushMessages,
+        pushOrderUpdates: pushOrderUpdates,
+      );
+    } catch (_) {
+      state = !newValue;
+    }
+  }
+}
+
+@riverpod
+class PushMessagesNotifState extends _$PushMessagesNotifState {
+  @override
+  bool build() => true;
+
+  void setInitial(bool value) => state = value;
+
+  Future<void> toggle({
+    required String userId,
+    required ProfileRepository profileRepo,
+    required bool pushEnabled,
+    required bool pushOrderUpdates,
+  }) async {
+    final newValue = !state;
+    state = newValue;
+    try {
+      await profileRepo.updatePushPreferences(
+        userId: userId,
+        pushEnabled: pushEnabled,
+        pushMessages: newValue,
+        pushOrderUpdates: pushOrderUpdates,
+      );
+    } catch (_) {
+      state = !newValue;
+    }
+  }
+}
+
+@riverpod
+class PushOrderUpdatesNotifState extends _$PushOrderUpdatesNotifState {
+  @override
+  bool build() => true;
+
+  void setInitial(bool value) => state = value;
+
+  Future<void> toggle({
+    required String userId,
+    required ProfileRepository profileRepo,
+    required bool pushEnabled,
+    required bool pushMessages,
+  }) async {
+    final newValue = !state;
+    state = newValue;
+    try {
+      await profileRepo.updatePushPreferences(
+        userId: userId,
+        pushEnabled: pushEnabled,
+        pushMessages: pushMessages,
+        pushOrderUpdates: newValue,
+      );
+    } catch (_) {
+      state = !newValue;
+    }
+  }
 }
 
 @riverpod
 class PriceAlertsNotifState extends _$PriceAlertsNotifState {
   @override
   bool build() => false;
-
-  void toggle() => state = !state;
-}
-
-@riverpod
-class OrderUpdatesNotifState extends _$OrderUpdatesNotifState {
-  @override
-  bool build() => true;
 
   void toggle() => state = !state;
 }
