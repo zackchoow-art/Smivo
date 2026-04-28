@@ -40,10 +40,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _handleRegister() async {
     if (!_agreedToEula) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('You must agree to the Terms of Use.'),
-          backgroundColor: context.smivoColors.error,
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Action Required'),
+          content: const Text(
+            'You must read and agree to the zero tolerance policy for objectionable content and abusive users before creating an account.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
       return;
