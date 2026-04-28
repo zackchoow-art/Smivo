@@ -177,7 +177,7 @@ class _ChatRoomProviderElement
   String get chatRoomId => (origin as ChatRoomProvider).chatRoomId;
 }
 
-String _$chatRoomListHash() => r'6ddc4d694558109e72731c990182e8528b5672c4';
+String _$chatRoomListHash() => r'306d6de674e08d125e9906d879e3295d9194e35e';
 
 /// Fetches the user's chat rooms and subscribes to global message
 /// inserts to keep the list fresh.

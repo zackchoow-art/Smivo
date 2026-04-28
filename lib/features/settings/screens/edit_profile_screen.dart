@@ -3,6 +3,8 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/utils/image_upload_service.dart';
+import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
@@ -294,6 +296,45 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   ]),
                                 ]),
                           ),
+                          const SizedBox(height: 32),
+                          // Delete Account — destructive action with confirmation dialog
+                          Center(child: Consumer(builder: (context, ref, child) {
+                            return TextButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    title: const Text('Delete Account'),
+                                    content: const Text(
+                                      'This action is permanent and cannot be undone. '
+                                      'All your listings, orders, messages, and profile data will be deleted.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(dialogContext),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () async {
+                                          Navigator.pop(dialogContext);
+                                          await ref.read(authProvider.notifier).deleteAccount();
+                                          if (context.mounted) {
+                                            context.goNamed(AppRoutes.home);
+                                          }
+                                        },
+                                        style: TextButton.styleFrom(foregroundColor: colors.error),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: Text('Delete Account', style: typo.labelLarge.copyWith(
+                                color: colors.error.withValues(alpha: 0.7),
+                                fontWeight: FontWeight.w500,
+                              )),
+                            );
+                          })),
                           const SizedBox(height: 48),
                         ],
                       ),

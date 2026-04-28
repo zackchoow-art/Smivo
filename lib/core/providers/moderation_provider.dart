@@ -31,7 +31,7 @@ class BlockedUsersList extends _$BlockedUsersList {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ModerationActions extends _$ModerationActions {
   @override
   FutureOr<void> build() {}

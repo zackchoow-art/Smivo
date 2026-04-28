@@ -42,12 +42,12 @@ final blockedUsersListProvider = AutoDisposeAsyncNotifierProvider<
 );
 
 typedef _$BlockedUsersList = AutoDisposeAsyncNotifier<List<UserProfile>>;
-String _$moderationActionsHash() => r'ffb6a7a8380ba8aebffaf5751518aea07d83972f';
+String _$moderationActionsHash() => r'e618d21353bd531e3eed288ed8148a13479d5f01';
 
 /// See also [ModerationActions].
 @ProviderFor(ModerationActions)
 final moderationActionsProvider =
-    AutoDisposeAsyncNotifierProvider<ModerationActions, void>.internal(
+    AsyncNotifierProvider<ModerationActions, void>.internal(
       ModerationActions.new,
       name: r'moderationActionsProvider',
       debugGetCreateSourceHash:
@@ -58,7 +58,7 @@ final moderationActionsProvider =
       allTransitiveDependencies: null,
     );
 
-typedef _$ModerationActions = AutoDisposeAsyncNotifier<void>;
+typedef _$ModerationActions = AsyncNotifier<void>;
 String _$userReportsHash() => r'42ca467a3cd5b22b6a5f474097d8e662d6f09928';
 
 /// See also [UserReports].
