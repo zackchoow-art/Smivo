@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/listing/:id",
+      "destination": "/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/admin/(.*)",
+      "destination": "/admin/index.html"
+    }
+  ]
+}
