@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "DKWKX97U49.com.smivo",
+        "paths": [ "/listing/*" ]
+      }
+    ]
+  }
+}
