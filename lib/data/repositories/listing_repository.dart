@@ -37,7 +37,10 @@ class ListingRepository {
   ///
   /// Includes the first image via a join so card widgets can display
   /// a thumbnail without a second round-trip.
-  Future<List<Listing>> fetchListings({String? category, List<String>? blockedUserIds}) async {
+  Future<List<Listing>> fetchListings({
+    String? category,
+    List<String>? blockedUserIds,
+  }) async {
     try {
       var query = _client
           .from(AppConstants.tableListings)
@@ -69,16 +72,17 @@ class ListingRepository {
   /// so the detail screen has everything in one query.
   Future<Listing> fetchListing(String id) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableListings)
-          .select('''
+      final data =
+          await _client
+              .from(AppConstants.tableListings)
+              .select('''
             *,
             seller:user_profiles!seller_id(*),
             images:listing_images(*),
             pickup_location:pickup_locations!pickup_location_id(*)
           ''')
-          .eq('id', id)
-          .single();
+              .eq('id', id)
+              .single();
       return Listing.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -86,11 +90,17 @@ class ListingRepository {
   }
 
   /// Searches active listings by keyword in title, description, seller name, and prices.
-  Future<List<Listing>> searchListings(String query, {String? category, List<String>? blockedUserIds}) async {
+  Future<List<Listing>> searchListings(
+    String query, {
+    String? category,
+    List<String>? blockedUserIds,
+  }) async {
     try {
       var dbQuery = _client
           .from(AppConstants.tableListings)
-          .select('*, images:listing_images(*), seller:user_profiles!seller_id(*)')
+          .select(
+            '*, images:listing_images(*), seller:user_profiles!seller_id(*)',
+          )
           .eq('status', AppConstants.listingActive);
 
       if (category != null) {
@@ -103,20 +113,29 @@ class ListingRepository {
 
       final data = await dbQuery.order('created_at', ascending: false);
       final allListings = data.map((json) => Listing.fromJson(json)).toList();
-      
+
       if (query.trim().isEmpty) return allListings;
 
       final q = query.trim().toLowerCase();
       return allListings.where((l) {
         final titleMatch = l.title.toLowerCase().contains(q);
         final descMatch = (l.description?.toLowerCase().contains(q) ?? false);
-        final sellerMatch = (l.seller?.displayName?.toLowerCase().contains(q) ?? false);
+        final sellerMatch =
+            (l.seller?.displayName?.toLowerCase().contains(q) ?? false);
         final priceMatch = l.price.toString().contains(q);
         final dailyMatch = l.rentalDailyPrice?.toString().contains(q) ?? false;
-        final weeklyMatch = l.rentalWeeklyPrice?.toString().contains(q) ?? false;
-        final monthlyMatch = l.rentalMonthlyPrice?.toString().contains(q) ?? false;
-        
-        return titleMatch || descMatch || sellerMatch || priceMatch || dailyMatch || weeklyMatch || monthlyMatch;
+        final weeklyMatch =
+            l.rentalWeeklyPrice?.toString().contains(q) ?? false;
+        final monthlyMatch =
+            l.rentalMonthlyPrice?.toString().contains(q) ?? false;
+
+        return titleMatch ||
+            descMatch ||
+            sellerMatch ||
+            priceMatch ||
+            dailyMatch ||
+            weeklyMatch ||
+            monthlyMatch;
       }).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -142,7 +161,9 @@ class ListingRepository {
     try {
       final data = await _client
           .from(AppConstants.tableListings)
-          .select('*, images:listing_images(*), seller:user_profiles!seller_id(*), pickup_location:pickup_locations!pickup_location_id(*)')
+          .select(
+            '*, images:listing_images(*), seller:user_profiles!seller_id(*), pickup_location:pickup_locations!pickup_location_id(*)',
+          )
           .eq('seller_id', userId)
           .order('created_at', ascending: false);
       return data.map((json) => Listing.fromJson(json)).toList();
@@ -156,7 +177,9 @@ class ListingRepository {
     try {
       final data = await _client
           .from(AppConstants.tableListingViews)
-          .select('*, viewer:user_profiles!viewer_id(display_name, avatar_url, email)')
+          .select(
+            '*, viewer:user_profiles!viewer_id(display_name, avatar_url, email)',
+          )
           .eq('listing_id', listingId)
           .order('viewed_at', ascending: false)
           .limit(100);
@@ -171,7 +194,9 @@ class ListingRepository {
     try {
       final data = await _client
           .from(AppConstants.tableSavedListings)
-          .select('*, user:user_profiles!user_id(display_name, avatar_url, email)')
+          .select(
+            '*, user:user_profiles!user_id(display_name, avatar_url, email)',
+          )
           .eq('listing_id', listingId)
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(data);
@@ -210,12 +235,12 @@ class ListingRepository {
         final ext = p.extension(photo.name);
         final fileName = '${_uuid.v4()}$ext';
 
-        // NOTE: We'll use listing.id once the listing is created, 
-        // but for now createListingWithImages needs to create the 
-        // listing FIRST or use a placeholder ID. 
+        // NOTE: We'll use listing.id once the listing is created,
+        // but for now createListingWithImages needs to create the
+        // listing FIRST or use a placeholder ID.
         // Actually, the StorageRepository expects a listingId.
         // Let's generate the listing ID here if it's empty.
-        
+
         final targetListingId = listing.id.isEmpty ? _uuid.v4() : listing.id;
 
         final publicUrl = await _storageRepository.uploadListingImage(
@@ -227,49 +252,54 @@ class ListingRepository {
 
         imageUrls.add(publicUrl);
         // We'll keep track of the full storage path for cleanup if needed.
-        // StorageRepository doesn't return the path, just URL. 
+        // StorageRepository doesn't return the path, just URL.
         // For simplicity in Phase 1, we skip manual rollback of Storage files.
       }
 
       // ── Step 2: Insert listing row ───────────────────────────
-      final listingJson = listing.toJson()
-        // NOTE: Exclude fields that are computed by joins or are
-        // DB-generated to avoid insert errors.
-        ..remove('images')
-        ..remove('seller')
-        ..remove('pickup_location')
-        ..remove('id')
-        ..remove('created_at')
-        ..remove('updated_at')
-        // NOTE: category must always be lowercase to satisfy the
-        // DB CHECK constraint. Normalise at the boundary.
-        ..['category'] = listing.category.toLowerCase();
+      final listingJson =
+          listing.toJson()
+            // NOTE: Exclude fields that are computed by joins or are
+            // DB-generated to avoid insert errors.
+            ..remove('images')
+            ..remove('seller')
+            ..remove('pickup_location')
+            ..remove('id')
+            ..remove('created_at')
+            ..remove('updated_at')
+            // NOTE: category must always be lowercase to satisfy the
+            // DB CHECK constraint. Normalise at the boundary.
+            ..['category'] = listing.category.toLowerCase();
 
       // Remove null values to let DB defaults apply (e.g. status)
       listingJson.removeWhere((key, value) => value == null);
 
-      final insertedData = await _client
-          .from(AppConstants.tableListings)
-          .insert(listingJson)
-          .select()
-          .single();
+      final insertedData =
+          await _client
+              .from(AppConstants.tableListings)
+              .insert(listingJson)
+              .select()
+              .single();
 
       final newListingId = insertedData['id'] as String;
 
       // ── Step 3: Insert listing_images rows ───────────────────
       if (imageUrls.isNotEmpty) {
-        final imagesPayload = imageUrls.asMap().entries.map((entry) {
-          final imageUrl = entry.value;
-          final i = entry.key;
-          
-          debugPrint('Inserting listing_image: { listing_id: $newListingId, image_url: $imageUrl, sort_order: $i }');
-          
-          return {
-            'listing_id': newListingId,
-            'image_url': imageUrl,
-            'sort_order': i,
-          };
-        }).toList();
+        final imagesPayload =
+            imageUrls.asMap().entries.map((entry) {
+              final imageUrl = entry.value;
+              final i = entry.key;
+
+              debugPrint(
+                'Inserting listing_image: { listing_id: $newListingId, image_url: $imageUrl, sort_order: $i }',
+              );
+
+              return {
+                'listing_id': newListingId,
+                'image_url': imageUrl,
+                'sort_order': i,
+              };
+            }).toList();
 
         await _client
             .from(AppConstants.tableListingImages)
@@ -294,17 +324,19 @@ class ListingRepository {
   /// Updates an existing listing (without touching its images).
   Future<Listing> updateListing(Listing listing) async {
     try {
-      final listingJson = listing.toJson()
-        ..remove('images')
-        ..remove('seller')
-        ..['category'] = listing.category.toLowerCase();
+      final listingJson =
+          listing.toJson()
+            ..remove('images')
+            ..remove('seller')
+            ..['category'] = listing.category.toLowerCase();
 
-      final data = await _client
-          .from(AppConstants.tableListings)
-          .update(listingJson)
-          .eq('id', listing.id)
-          .select()
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableListings)
+              .update(listingJson)
+              .eq('id', listing.id)
+              .select()
+              .single();
       return Listing.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -314,10 +346,7 @@ class ListingRepository {
   /// Deletes a listing by [id]. Cascades to listing_images via DB FK.
   Future<void> deleteListing(String id) async {
     try {
-      await _client
-          .from(AppConstants.tableListings)
-          .delete()
-          .eq('id', id);
+      await _client.from(AppConstants.tableListings).delete().eq('id', id);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -354,24 +383,17 @@ class ListingRepository {
   }
 
   /// Records a view event for a listing.
-  /// 
+  ///
   /// [viewerId] is optional to support guest view tracking.
   /// Silently fails if the insert errors (non-critical).
-  Future<void> recordView({
-    required String listingId,
-    String? viewerId,
-  }) async {
+  Future<void> recordView({required String listingId, String? viewerId}) async {
     try {
-      final data = <String, dynamic>{
-        'listing_id': listingId,
-      };
+      final data = <String, dynamic>{'listing_id': listingId};
       if (viewerId != null && viewerId.isNotEmpty) {
         data['viewer_id'] = viewerId;
       }
-      
-      await _client
-          .from(AppConstants.tableListingViews)
-          .insert(data);
+
+      await _client.from(AppConstants.tableListingViews).insert(data);
     } on PostgrestException catch (_) {
       // Non-critical — don't crash the app if view tracking fails
     }
@@ -400,6 +422,6 @@ class ListingRepository {
 
 @riverpod
 ListingRepository listingRepository(Ref ref) => ListingRepository(
-      ref.watch(supabaseClientProvider),
-      ref.watch(storageRepositoryProvider),
-    );
+  ref.watch(supabaseClientProvider),
+  ref.watch(storageRepositoryProvider),
+);

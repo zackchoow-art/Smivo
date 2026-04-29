@@ -8,7 +8,7 @@ import 'package:smivo/core/providers/moderation_provider.dart';
 part 'home_provider.g.dart';
 
 /// State for the selected category chip.
-/// 
+///
 /// Defaults to 'All', which maps to fetching listings from all categories.
 @riverpod
 class SelectedCategory extends _$SelectedCategory {
@@ -32,7 +32,7 @@ class SearchQuery extends _$SearchQuery {
 }
 
 /// Main provider for listings on the Home Screen.
-/// 
+///
 /// Reactive to both [selectedCategoryProvider] and [searchQueryProvider].
 /// Uses [ListingRepository] to fetch data from Supabase.
 @riverpod
@@ -75,25 +75,26 @@ class HomeListings extends _$HomeListings {
 
   void _subscribe() {
     final client = ref.read(supabaseClientProvider);
-    _channel = client
-        .channel('home_listings')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'listings',
-          callback: (payload) {
-            // Safety check: don't invalidate if we're disposed or disposing
-            if (!_isDisposed) {
-              ref.invalidateSelf();
-            }
-          },
-        )
-        .subscribe();
+    _channel =
+        client
+            .channel('home_listings')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'listings',
+              callback: (payload) {
+                // Safety check: don't invalidate if we're disposed or disposing
+                if (!_isDisposed) {
+                  ref.invalidateSelf();
+                }
+              },
+            )
+            .subscribe();
   }
 }
 
 /// Extension to provide easy access to a display image for the UI.
-/// 
+///
 /// Prioritizes the first image from the listing's images list (populated via joins).
 /// Falls back to a generic marketplace placeholder if no images exist.
 extension ListingDisplayImage on Listing {

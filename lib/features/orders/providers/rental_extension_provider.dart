@@ -30,15 +30,17 @@ class RentalExtensionActions extends _$RentalExtensionActions {
   }) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(rentalExtensionRepositoryProvider).createExtension(
-        orderId: orderId,
-        requestedBy: requestedBy,
-        requestType: requestType,
-        originalEndDate: originalEndDate,
-        newEndDate: newEndDate,
-        priceDiff: priceDiff,
-        newTotal: newTotal,
-      );
+      await ref
+          .read(rentalExtensionRepositoryProvider)
+          .createExtension(
+            orderId: orderId,
+            requestedBy: requestedBy,
+            requestType: requestType,
+            originalEndDate: originalEndDate,
+            newEndDate: newEndDate,
+            priceDiff: priceDiff,
+            newTotal: newTotal,
+          );
       state = const AsyncValue.data(null);
       ref.invalidate(orderExtensionsProvider(orderId));
     } catch (e, st) {
@@ -49,7 +51,9 @@ class RentalExtensionActions extends _$RentalExtensionActions {
   Future<void> approveExtension(String extensionId, String orderId) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(rentalExtensionRepositoryProvider).approveExtension(extensionId);
+      await ref
+          .read(rentalExtensionRepositoryProvider)
+          .approveExtension(extensionId);
       state = const AsyncValue.data(null);
       // Refresh both extensions list and order detail (dates/price updated)
       ref.invalidate(orderExtensionsProvider(orderId));
@@ -60,10 +64,16 @@ class RentalExtensionActions extends _$RentalExtensionActions {
     }
   }
 
-  Future<void> rejectExtension(String extensionId, String orderId, {String? note}) async {
+  Future<void> rejectExtension(
+    String extensionId,
+    String orderId, {
+    String? note,
+  }) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(rentalExtensionRepositoryProvider).rejectExtension(extensionId, note: note);
+      await ref
+          .read(rentalExtensionRepositoryProvider)
+          .rejectExtension(extensionId, note: note);
       state = const AsyncValue.data(null);
       ref.invalidate(orderExtensionsProvider(orderId));
     } catch (e, st) {

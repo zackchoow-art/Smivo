@@ -20,7 +20,8 @@ class NotificationSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationSettingsScreenState
-    extends ConsumerState<NotificationSettingsScreen> with WidgetsBindingObserver {
+    extends ConsumerState<NotificationSettingsScreen>
+    with WidgetsBindingObserver {
   bool _initialized = false;
   bool _systemPushEnabled = false;
 
@@ -60,11 +61,13 @@ class _NotificationSettingsScreenState
         if (prefs.pushNotificationsEnabled) {
           final user = ref.read(authStateProvider).valueOrNull;
           if (user != null) {
-            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-              userId: user.id,
-              profileRepo: ref.read(profileRepositoryProvider),
-              pushNotificationsEnabled: false,
-            );
+            ref
+                .read(notificationSettingsStateProvider.notifier)
+                .updatePreferences(
+                  userId: user.id,
+                  profileRepo: ref.read(profileRepositoryProvider),
+                  pushNotificationsEnabled: false,
+                );
           }
         }
       }
@@ -76,10 +79,11 @@ class _NotificationSettingsScreenState
     final user = ref.read(authStateProvider).valueOrNull;
     if (user == null) return;
     try {
-      final profile =
-          await ref.read(profileRepositoryProvider).getProfile(user.id);
+      final profile = await ref
+          .read(profileRepositoryProvider)
+          .getProfile(user.id);
       if (profile == null) return;
-      
+
       final prefs = NotificationPreferences(
         emailNotificationsEnabled: profile.emailNotificationsEnabled,
         pushNotificationsEnabled: profile.pushNotificationsEnabled,
@@ -90,14 +94,11 @@ class _NotificationSettingsScreenState
         pushAnnouncements: profile.pushAnnouncements,
         emailAnnouncements: profile.emailAnnouncements,
       );
-      
-      ref
-          .read(notificationSettingsStateProvider.notifier)
-          .setInitial(prefs);
-          
+
+      ref.read(notificationSettingsStateProvider.notifier).setInitial(prefs);
+
       _initialized = true;
-    } catch (_) {
-    }
+    } catch (_) {}
   }
 
   Future<void> _handleMasterPushToggle(bool value, String userId) async {
@@ -106,11 +107,13 @@ class _NotificationSettingsScreenState
       AppSettings.openAppSettings(type: AppSettingsType.notification);
       // We don't update state here; we wait for them to return from settings
     } else {
-      await ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-        userId: userId,
-        profileRepo: ref.read(profileRepositoryProvider),
-        pushNotificationsEnabled: value,
-      );
+      await ref
+          .read(notificationSettingsStateProvider.notifier)
+          .updatePreferences(
+            userId: userId,
+            profileRepo: ref.read(profileRepositoryProvider),
+            pushNotificationsEnabled: value,
+          );
     }
   }
 
@@ -122,7 +125,8 @@ class _NotificationSettingsScreenState
     final prefs = ref.watch(notificationSettingsStateProvider);
 
     // Actual push enabled is true ONLY if both system and app preference are true
-    final effectivePushEnabled = _systemPushEnabled && prefs.pushNotificationsEnabled;
+    final effectivePushEnabled =
+        _systemPushEnabled && prefs.pushNotificationsEnabled;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -133,10 +137,14 @@ class _NotificationSettingsScreenState
             slivers: [
               const CollapsingTitleAppBar(
                 title: 'Notification Settings',
-                subtitle: 'Control how and when you receive\nupdates from the campus network.',
+                subtitle:
+                    'Control how and when you receive\nupdates from the campus network.',
               ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +152,9 @@ class _NotificationSettingsScreenState
                       const SizedBox(height: 16),
                       Text(
                         'Master Switches',
-                        style: typo.headlineSmall.copyWith(fontWeight: FontWeight.bold),
+                        style: typo.headlineSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       SettingToggleRow(
@@ -169,10 +179,14 @@ class _NotificationSettingsScreenState
                         onChanged: (val) {
                           if (user != null) {
                             ref
-                                .read(notificationSettingsStateProvider.notifier)
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
                                 .updatePreferences(
                                   userId: user.id,
-                                  profileRepo: ref.read(profileRepositoryProvider),
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
                                   emailNotificationsEnabled: val,
                                 );
                           }
@@ -181,7 +195,9 @@ class _NotificationSettingsScreenState
                       const SizedBox(height: 32),
                       Text(
                         'Category Preferences',
-                        style: typo.headlineSmall.copyWith(fontWeight: FontWeight.bold),
+                        style: typo.headlineSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       CategoryNotificationRow(
@@ -195,20 +211,32 @@ class _NotificationSettingsScreenState
                         emailEnabled: prefs.emailNotificationsEnabled,
                         onPushChanged: (val) {
                           if (user != null) {
-                            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                              pushMessages: val,
-                            );
+                            ref
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
+                                .updatePreferences(
+                                  userId: user.id,
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
+                                  pushMessages: val,
+                                );
                           }
                         },
                         onEmailChanged: (val) {
                           if (user != null) {
-                            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                              emailMessages: val,
-                            );
+                            ref
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
+                                .updatePreferences(
+                                  userId: user.id,
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
+                                  emailMessages: val,
+                                );
                           }
                         },
                       ),
@@ -224,20 +252,32 @@ class _NotificationSettingsScreenState
                         emailEnabled: prefs.emailNotificationsEnabled,
                         onPushChanged: (val) {
                           if (user != null) {
-                            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                              pushOrderUpdates: val,
-                            );
+                            ref
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
+                                .updatePreferences(
+                                  userId: user.id,
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
+                                  pushOrderUpdates: val,
+                                );
                           }
                         },
                         onEmailChanged: (val) {
                           if (user != null) {
-                            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                              emailOrderUpdates: val,
-                            );
+                            ref
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
+                                .updatePreferences(
+                                  userId: user.id,
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
+                                  emailOrderUpdates: val,
+                                );
                           }
                         },
                       ),
@@ -253,20 +293,32 @@ class _NotificationSettingsScreenState
                         emailEnabled: prefs.emailNotificationsEnabled,
                         onPushChanged: (val) {
                           if (user != null) {
-                            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                              pushCampusAnnouncements: val,
-                            );
+                            ref
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
+                                .updatePreferences(
+                                  userId: user.id,
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
+                                  pushCampusAnnouncements: val,
+                                );
                           }
                         },
                         onEmailChanged: (val) {
                           if (user != null) {
-                            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                              emailCampusAnnouncements: val,
-                            );
+                            ref
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
+                                .updatePreferences(
+                                  userId: user.id,
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
+                                  emailCampusAnnouncements: val,
+                                );
                           }
                         },
                       ),
@@ -282,20 +334,32 @@ class _NotificationSettingsScreenState
                         emailEnabled: prefs.emailNotificationsEnabled,
                         onPushChanged: (val) {
                           if (user != null) {
-                            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                              pushAnnouncements: val,
-                            );
+                            ref
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
+                                .updatePreferences(
+                                  userId: user.id,
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
+                                  pushAnnouncements: val,
+                                );
                           }
                         },
                         onEmailChanged: (val) {
                           if (user != null) {
-                            ref.read(notificationSettingsStateProvider.notifier).updatePreferences(
-                              userId: user.id,
-                              profileRepo: ref.read(profileRepositoryProvider),
-                              emailAnnouncements: val,
-                            );
+                            ref
+                                .read(
+                                  notificationSettingsStateProvider.notifier,
+                                )
+                                .updatePreferences(
+                                  userId: user.id,
+                                  profileRepo: ref.read(
+                                    profileRepositoryProvider,
+                                  ),
+                                  emailAnnouncements: val,
+                                );
                           }
                         },
                       ),

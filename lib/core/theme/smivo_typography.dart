@@ -79,31 +79,15 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
         color: c,
         height: 1.5,
       ),
-      bodyMedium: body(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        color: c,
-      ),
+      bodyMedium: body(fontSize: 14, fontWeight: FontWeight.w400, color: c),
       bodySmall: body(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: c.withValues(alpha: 0.7),
       ),
-      titleMedium: body(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        color: c,
-      ),
-      labelLarge: body(
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        color: c,
-      ),
-      labelSmall: body(
-        fontSize: 10,
-        fontWeight: FontWeight.w700,
-        color: c,
-      ),
+      titleMedium: body(fontSize: 16, fontWeight: FontWeight.w700, color: c),
+      labelLarge: body(fontSize: 14, fontWeight: FontWeight.w700, color: c),
+      labelSmall: body(fontSize: 10, fontWeight: FontWeight.w700, color: c),
       labelUppercase: body(
         fontSize: 10,
         fontWeight: FontWeight.w700,
@@ -142,42 +126,22 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
         color: c,
         letterSpacing: -0.48,
       ),
-      headlineSmall: font(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: c,
-      ),
+      headlineSmall: font(fontSize: 20, fontWeight: FontWeight.w700, color: c),
       bodyLarge: font(
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: c,
         height: 1.5,
       ),
-      bodyMedium: font(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        color: c,
-      ),
+      bodyMedium: font(fontSize: 14, fontWeight: FontWeight.w400, color: c),
       bodySmall: font(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: c.withValues(alpha: 0.7),
       ),
-      titleMedium: font(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        color: c,
-      ),
-      labelLarge: font(
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        color: c,
-      ),
-      labelSmall: font(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        color: c,
-      ),
+      titleMedium: font(fontSize: 16, fontWeight: FontWeight.w700, color: c),
+      labelLarge: font(fontSize: 14, fontWeight: FontWeight.w700, color: c),
+      labelSmall: font(fontSize: 12, fontWeight: FontWeight.w700, color: c),
       // IKEA labels are always uppercase with wider tracking
       labelUppercase: font(
         fontSize: 12,
@@ -240,20 +204,16 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
     if (other is! SmivoTypography) return this;
     return SmivoTypography(
       displayLarge: TextStyle.lerp(displayLarge, other.displayLarge, t)!,
-      headlineLarge:
-          TextStyle.lerp(headlineLarge, other.headlineLarge, t)!,
-      headlineMedium:
-          TextStyle.lerp(headlineMedium, other.headlineMedium, t)!,
-      headlineSmall:
-          TextStyle.lerp(headlineSmall, other.headlineSmall, t)!,
+      headlineLarge: TextStyle.lerp(headlineLarge, other.headlineLarge, t)!,
+      headlineMedium: TextStyle.lerp(headlineMedium, other.headlineMedium, t)!,
+      headlineSmall: TextStyle.lerp(headlineSmall, other.headlineSmall, t)!,
       bodyLarge: TextStyle.lerp(bodyLarge, other.bodyLarge, t)!,
       bodyMedium: TextStyle.lerp(bodyMedium, other.bodyMedium, t)!,
       bodySmall: TextStyle.lerp(bodySmall, other.bodySmall, t)!,
       titleMedium: TextStyle.lerp(titleMedium, other.titleMedium, t)!,
       labelLarge: TextStyle.lerp(labelLarge, other.labelLarge, t)!,
       labelSmall: TextStyle.lerp(labelSmall, other.labelSmall, t)!,
-      labelUppercase:
-          TextStyle.lerp(labelUppercase, other.labelUppercase, t)!,
+      labelUppercase: TextStyle.lerp(labelUppercase, other.labelUppercase, t)!,
       priceStyle: TextStyle.lerp(priceStyle, other.priceStyle, t)!,
     );
   }

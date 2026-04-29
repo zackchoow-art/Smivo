@@ -19,7 +19,7 @@ class NotificationList extends _$NotificationList {
   @override
   Future<List<AppNotification>> build() async {
     final user = ref.watch(authStateProvider).valueOrNull;
-    
+
     // Cleanup if user logs out or build re-runs
     if (user == null) {
       _unsubscribe();
@@ -30,13 +30,13 @@ class NotificationList extends _$NotificationList {
     // Subscribe once per Notifier instance lifecycle
     if (_channel == null) {
       final repository = ref.read(notificationRepositoryProvider);
-      
+
       _channel = repository.subscribeToNotifications(
         userId: user.id,
         onNotification: (newNotification) {
           // Safety check: don't update state if we're disposed or disposing
           if (_isDisposed) return;
-          
+
           final current = state.valueOrNull ?? [];
           if (current.any((n) => n.id == newNotification.id)) return;
           final updated = [newNotification, ...current];
@@ -78,12 +78,13 @@ class NotificationList extends _$NotificationList {
 
     // Update local state optimistically
     final current = state.valueOrNull ?? [];
-    final updated = current.map((n) {
-      if (n.id == notificationId) {
-        return n.copyWith(isRead: true);
-      }
-      return n;
-    }).toList();
+    final updated =
+        current.map((n) {
+          if (n.id == notificationId) {
+            return n.copyWith(isRead: true);
+          }
+          return n;
+        }).toList();
     state = AsyncValue.data(updated);
     _updateAppBadge(updated);
   }
@@ -110,7 +111,8 @@ class NotificationList extends _$NotificationList {
 
     // Update local state optimistically
     final current = state.valueOrNull ?? [];
-    final updated = current.where((n) => !notificationIds.contains(n.id)).toList();
+    final updated =
+        current.where((n) => !notificationIds.contains(n.id)).toList();
     state = AsyncValue.data(updated);
     _updateAppBadge(updated);
   }

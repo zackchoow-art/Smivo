@@ -6,7 +6,7 @@ part 'chat_listing_preview.g.dart';
 
 /// Minimal listing data embedded in ChatRoom for chat list display.
 ///
-/// Only includes the fields needed to show "product title + image" 
+/// Only includes the fields needed to show "product title + image"
 /// in the chat list — not the full Listing model.
 @freezed
 abstract class ChatListingPreview with _$ChatListingPreview {

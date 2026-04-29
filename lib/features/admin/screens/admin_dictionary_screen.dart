@@ -11,7 +11,8 @@ class AdminDictionaryScreen extends ConsumerStatefulWidget {
   const AdminDictionaryScreen({super.key});
 
   @override
-  ConsumerState<AdminDictionaryScreen> createState() => _AdminDictionaryScreenState();
+  ConsumerState<AdminDictionaryScreen> createState() =>
+      _AdminDictionaryScreenState();
 }
 
 class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
@@ -30,7 +31,10 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
       appBar: AppBar(
-        title: Text('System Dictionary', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800)),
+        title: Text(
+          'System Dictionary',
+          style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800),
+        ),
         backgroundColor: colors.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -58,23 +62,24 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: typesState.when(
-              data: (types) => Row(
-                children: [
-                  Text('Filter: ', style: typo.labelLarge),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _filterChip('All', 'all', colors),
-                          ...types.map((t) => _filterChip(t, t, colors)),
-                        ],
+              data:
+                  (types) => Row(
+                    children: [
+                      Text('Filter: ', style: typo.labelLarge),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _filterChip('All', 'all', colors),
+                              ...types.map((t) => _filterChip(t, t, colors)),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Error: $e'),
             ),
@@ -84,15 +89,29 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
           Expanded(
             child: dictState.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e', style: TextStyle(color: colors.error))),
+              error:
+                  (e, _) => Center(
+                    child: Text(
+                      'Error: $e',
+                      style: TextStyle(color: colors.error),
+                    ),
+                  ),
               data: (entries) {
-                final filtered = _selectedType == 'all'
-                    ? entries
-                    : entries.where((d) => d.dictType == _selectedType).toList();
+                final filtered =
+                    _selectedType == 'all'
+                        ? entries
+                        : entries
+                            .where((d) => d.dictType == _selectedType)
+                            .toList();
 
                 if (filtered.isEmpty) {
                   return Center(
-                    child: Text('No entries.', style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant)),
+                    child: Text(
+                      'No entries.',
+                      style: typo.bodyLarge.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
                   );
                 }
 
@@ -103,87 +122,138 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
                 }
 
                 return ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  children: grouped.entries.map((group) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: colors.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  group.key,
-                                  style: typo.labelLarge.copyWith(
-                                    color: colors.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${group.value.length} entries',
-                                style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ...group.value.map((dict) => Container(
-                          margin: const EdgeInsets.only(bottom: 6),
-                          decoration: BoxDecoration(
-                            color: colors.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(radius.sm),
-                            border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-                          ),
-                          child: ListTile(
-                            dense: true,
-                            title: Row(
-                              children: [
-                                // Color swatch from extra
-                                if (dict.extra != null && dict.extra!['color'] != null)
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
+                  children:
+                      grouped.entries.map((group) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                children: [
                                   Container(
-                                    width: 12, height: 12,
-                                    margin: const EdgeInsets.only(right: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: _parseColor(dict.extra!['color']),
-                                      shape: BoxShape.circle,
+                                      color: colors.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      group.key,
+                                      style: typo.labelLarge.copyWith(
+                                        color: colors.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                Text(
-                                  '${dict.dictKey} → ${dict.dictValue}',
-                                  style: typo.titleMedium.copyWith(fontWeight: FontWeight.w600, fontSize: 14),
-                                ),
-                              ],
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${group.value.length} entries',
+                                    style: typo.bodySmall.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            subtitle: dict.description != null
-                                ? Text(dict.description!, style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant))
-                                : null,
-                            trailing: canWrite
-                              ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.edit, size: 18, color: colors.primary),
-                                      onPressed: () => _showDialog(context, dict),
+                            ...group.value.map(
+                              (dict) => Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(
+                                    radius.sm,
+                                  ),
+                                  border: Border.all(
+                                    color: colors.outlineVariant.withValues(
+                                      alpha: 0.3,
                                     ),
-                                    IconButton(
-                                      icon: Icon(Icons.delete, size: 18, color: colors.error),
-                                      onPressed: () => _confirmDelete(context, dict),
-                                    ),
-                                  ],
-                                )
-                              : null,
-                          ),
-                        )),
-                      ],
-                    );
-                  }).toList(),
+                                  ),
+                                ),
+                                child: ListTile(
+                                  dense: true,
+                                  title: Row(
+                                    children: [
+                                      // Color swatch from extra
+                                      if (dict.extra != null &&
+                                          dict.extra!['color'] != null)
+                                        Container(
+                                          width: 12,
+                                          height: 12,
+                                          margin: const EdgeInsets.only(
+                                            right: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _parseColor(
+                                              dict.extra!['color'],
+                                            ),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      Text(
+                                        '${dict.dictKey} → ${dict.dictValue}',
+                                        style: typo.titleMedium.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  subtitle:
+                                      dict.description != null
+                                          ? Text(
+                                            dict.description!,
+                                            style: typo.bodySmall.copyWith(
+                                              color: colors.onSurfaceVariant,
+                                            ),
+                                          )
+                                          : null,
+                                  trailing:
+                                      canWrite
+                                          ? Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.edit,
+                                                  size: 18,
+                                                  color: colors.primary,
+                                                ),
+                                                onPressed:
+                                                    () => _showDialog(
+                                                      context,
+                                                      dict,
+                                                    ),
+                                              ),
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.delete,
+                                                  size: 18,
+                                                  color: colors.error,
+                                                ),
+                                                onPressed:
+                                                    () => _confirmDelete(
+                                                      context,
+                                                      dict,
+                                                    ),
+                                              ),
+                                            ],
+                                          )
+                                          : null,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
                 );
               },
             ),
@@ -217,13 +287,14 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
   void _showDialog(BuildContext context, SystemDictionary? dict) {
     showDialog(
       context: context,
-      builder: (context) => _DictionaryDialog(
-        dict: dict,
-        onSaved: () {
-          ref.invalidate(adminDictionariesProvider);
-          ref.invalidate(adminDictTypesProvider);
-        },
-      ),
+      builder:
+          (context) => _DictionaryDialog(
+            dict: dict,
+            onSaved: () {
+              ref.invalidate(adminDictionariesProvider);
+              ref.invalidate(adminDictTypesProvider);
+            },
+          ),
     );
   }
 
@@ -231,23 +302,29 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
     final colors = context.smivoColors;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Entry'),
-        content: Text('Delete "${dict.dictKey}"?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () async {
-              await ref.read(schoolDataRepositoryProvider).deleteDictionary(dict.id);
-              ref.invalidate(adminDictionariesProvider);
-              ref.invalidate(adminDictTypesProvider);
-              if (ctx.mounted) Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: colors.error),
-            child: const Text('Delete'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete Entry'),
+            content: Text('Delete "${dict.dictKey}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  await ref
+                      .read(schoolDataRepositoryProvider)
+                      .deleteDictionary(dict.id);
+                  ref.invalidate(adminDictionariesProvider);
+                  ref.invalidate(adminDictTypesProvider);
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                style: FilledButton.styleFrom(backgroundColor: colors.error),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -279,8 +356,12 @@ class _DictionaryDialogState extends ConsumerState<_DictionaryDialog> {
     _keyCtrl = TextEditingController(text: widget.dict?.dictKey ?? '');
     _valueCtrl = TextEditingController(text: widget.dict?.dictValue ?? '');
     _descCtrl = TextEditingController(text: widget.dict?.description ?? '');
-    _orderCtrl = TextEditingController(text: widget.dict?.displayOrder.toString() ?? '0');
-    _colorCtrl = TextEditingController(text: widget.dict?.extra?['color'] ?? '');
+    _orderCtrl = TextEditingController(
+      text: widget.dict?.displayOrder.toString() ?? '0',
+    );
+    _colorCtrl = TextEditingController(
+      text: widget.dict?.extra?['color'] ?? '',
+    );
     _iconCtrl = TextEditingController(text: widget.dict?.extra?['icon'] ?? '');
   }
 
@@ -302,8 +383,10 @@ class _DictionaryDialogState extends ConsumerState<_DictionaryDialog> {
     Map<String, dynamic>? extra;
     if (_colorCtrl.text.trim().isNotEmpty || _iconCtrl.text.trim().isNotEmpty) {
       extra = {};
-      if (_colorCtrl.text.trim().isNotEmpty) extra['color'] = _colorCtrl.text.trim();
-      if (_iconCtrl.text.trim().isNotEmpty) extra['icon'] = _iconCtrl.text.trim();
+      if (_colorCtrl.text.trim().isNotEmpty)
+        extra['color'] = _colorCtrl.text.trim();
+      if (_iconCtrl.text.trim().isNotEmpty)
+        extra['icon'] = _iconCtrl.text.trim();
     }
 
     final dict = SystemDictionary(
@@ -341,7 +424,8 @@ class _DictionaryDialogState extends ConsumerState<_DictionaryDialog> {
                   labelText: 'Dict Type',
                   hintText: 'e.g. order_status',
                 ),
-                validator: (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
+                validator:
+                    (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -350,7 +434,8 @@ class _DictionaryDialogState extends ConsumerState<_DictionaryDialog> {
                   labelText: 'Key',
                   hintText: 'e.g. pending',
                 ),
-                validator: (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
+                validator:
+                    (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -359,12 +444,15 @@ class _DictionaryDialogState extends ConsumerState<_DictionaryDialog> {
                   labelText: 'Display Value',
                   hintText: 'e.g. Pending',
                 ),
-                validator: (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
+                validator:
+                    (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descCtrl,
-                decoration: const InputDecoration(labelText: 'Description (optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                ),
                 maxLines: 2,
               ),
               const SizedBox(height: 16),
@@ -394,8 +482,14 @@ class _DictionaryDialogState extends ConsumerState<_DictionaryDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-        FilledButton(onPressed: _submit, child: Text(isEditing ? 'Save' : 'Add')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(isEditing ? 'Save' : 'Add'),
+        ),
       ],
     );
   }

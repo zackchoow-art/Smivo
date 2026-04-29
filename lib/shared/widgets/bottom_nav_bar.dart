@@ -48,7 +48,7 @@ class BottomNavBar extends ConsumerWidget {
                 isSelected: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
-               _NavBarItem(
+              _NavBarItem(
                 icon: Icons.chat_bubble,
                 outlinedIcon: Icons.chat_bubble_outline,
                 label: 'Chat',
@@ -104,29 +104,27 @@ class _NavBarItem extends StatelessWidget {
     final typo = context.smivoTypo;
     // NOTE: Active item uses navActiveIcon; inactive uses onSurfaceVariant.
     final color = isSelected ? colors.navActiveIcon : colors.onSurfaceVariant;
-    
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
         width: 64, // Touch target
         padding: const EdgeInsets.symmetric(vertical: 4),
-        decoration: isSelected
-            ? BoxDecoration(
-                color: colors.navActiveBackground,
-                borderRadius: context.smivoRadius.circularFull(),
-              )
-            : null,
+        decoration:
+            isSelected
+                ? BoxDecoration(
+                  color: colors.navActiveBackground,
+                  borderRadius: context.smivoRadius.circularFull(),
+                )
+                : null,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Badge(
               label: Text(
                 unreadCount > 99 ? '99+' : unreadCount.toString(),
-                style: TextStyle(
-                  fontSize: 10,
-                  color: colors.onPrimary,
-                ),
+                style: TextStyle(fontSize: 10, color: colors.onPrimary),
               ),
               isLabelVisible: unreadCount > 0,
               backgroundColor: colors.error,

@@ -44,9 +44,7 @@ class CustomTextField extends StatelessWidget {
           maxLines: maxLines,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
-          style: typo.bodyLarge.copyWith(
-            color: colors.onSurface,
-          ),
+          style: typo.bodyLarge.copyWith(color: colors.onSurface),
           decoration: InputDecoration(
             hintText: hintText,
             prefixText: prefixText != null ? '$prefixText ' : null,

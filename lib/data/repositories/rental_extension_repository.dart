@@ -30,19 +30,20 @@ class RentalExtensionRepository {
     required double priceDiff,
     required double newTotal,
   }) async {
-    final response = await _client
-        .from('rental_extensions')
-        .insert({
-          'order_id': orderId,
-          'requested_by': requestedBy,
-          'request_type': requestType,
-          'original_end_date': originalEndDate.toIso8601String(),
-          'new_end_date': newEndDate.toIso8601String(),
-          'price_diff': priceDiff,
-          'new_total': newTotal,
-        })
-        .select()
-        .single();
+    final response =
+        await _client
+            .from('rental_extensions')
+            .insert({
+              'order_id': orderId,
+              'requested_by': requestedBy,
+              'request_type': requestType,
+              'original_end_date': originalEndDate.toIso8601String(),
+              'new_end_date': newEndDate.toIso8601String(),
+              'price_diff': priceDiff,
+              'new_total': newTotal,
+            })
+            .select()
+            .single();
     return RentalExtension.fromJson(response);
   }
 

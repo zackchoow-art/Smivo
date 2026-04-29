@@ -22,10 +22,11 @@ class AdminShellScreen extends ConsumerWidget {
     final currentPath = GoRouterState.of(context).uri.path;
     final adminCtx = ref.watch(adminContextProvider).valueOrNull;
 
-    final navItems = _buildNavItems(currentPath).where((item) {
-      if (item.module == null) return true;
-      return adminCtx?.hasPermission(item.module!) ?? true;
-    }).toList();
+    final navItems =
+        _buildNavItems(currentPath).where((item) {
+          if (item.module == null) return true;
+          return adminCtx?.hasPermission(item.module!) ?? true;
+        }).toList();
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -62,10 +63,19 @@ class AdminShellScreen extends ConsumerWidget {
                       CircleAvatar(
                         radius: 16,
                         backgroundColor: colors.primary.withValues(alpha: 0.1),
-                        child: Icon(Icons.admin_panel_settings, color: colors.primary, size: 18),
+                        child: Icon(
+                          Icons.admin_panel_settings,
+                          color: colors.primary,
+                          size: 18,
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      Text('Admin', style: typo.labelLarge.copyWith(fontWeight: FontWeight.w600)),
+                      Text(
+                        'Admin',
+                        style: typo.labelLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                     ],
                   ),
@@ -81,17 +91,94 @@ class AdminShellScreen extends ConsumerWidget {
 
   List<_NavItem> _buildNavItems(String currentPath) {
     return [
-      _NavItem('Dashboard', Icons.dashboard_outlined, Icons.dashboard, AppRoutes.adminDashboardPath, AppRoutes.adminDashboard, AdminModule.dashboard),
-      _NavItem('Users', Icons.people_outline, Icons.people, AppRoutes.adminUsersPath, AppRoutes.adminUsers, AdminModule.users),
-      _NavItem('Listings', Icons.storefront_outlined, Icons.storefront, AppRoutes.adminListingsPath, AppRoutes.adminListings, AdminModule.listings),
-      _NavItem('Orders', Icons.receipt_long_outlined, Icons.receipt_long, AppRoutes.adminOrdersPath, AppRoutes.adminOrders, AdminModule.orders),
-      _NavItem('Schools', Icons.school_outlined, Icons.school, AppRoutes.adminSchoolsPath, AppRoutes.adminSchools, AdminModule.schools),
-      _NavItem('Categories', Icons.category_outlined, Icons.category, AppRoutes.adminCategoriesPath, AppRoutes.adminCategories, AdminModule.categories),
-      _NavItem('Conditions', Icons.star_half_outlined, Icons.star_half, AppRoutes.adminConditionsPath, AppRoutes.adminConditions, AdminModule.conditions),
-      _NavItem('Pickup Locations', Icons.location_on_outlined, Icons.location_on, AppRoutes.adminPickupLocationsPath, AppRoutes.adminPickupLocations, AdminModule.pickupLocations),
-      _NavItem('FAQs', Icons.help_outline, Icons.help, AppRoutes.adminFaqsPath, AppRoutes.adminFaqs, AdminModule.faqs),
-      _NavItem('Dictionary', Icons.book_outlined, Icons.book, AppRoutes.adminDictionaryPath, AppRoutes.adminDictionary, AdminModule.dictionary),
-      _NavItem('Roles', Icons.security_outlined, Icons.security, AppRoutes.adminRolesPath, AppRoutes.adminRoles, AdminModule.roles),
+      _NavItem(
+        'Dashboard',
+        Icons.dashboard_outlined,
+        Icons.dashboard,
+        AppRoutes.adminDashboardPath,
+        AppRoutes.adminDashboard,
+        AdminModule.dashboard,
+      ),
+      _NavItem(
+        'Users',
+        Icons.people_outline,
+        Icons.people,
+        AppRoutes.adminUsersPath,
+        AppRoutes.adminUsers,
+        AdminModule.users,
+      ),
+      _NavItem(
+        'Listings',
+        Icons.storefront_outlined,
+        Icons.storefront,
+        AppRoutes.adminListingsPath,
+        AppRoutes.adminListings,
+        AdminModule.listings,
+      ),
+      _NavItem(
+        'Orders',
+        Icons.receipt_long_outlined,
+        Icons.receipt_long,
+        AppRoutes.adminOrdersPath,
+        AppRoutes.adminOrders,
+        AdminModule.orders,
+      ),
+      _NavItem(
+        'Schools',
+        Icons.school_outlined,
+        Icons.school,
+        AppRoutes.adminSchoolsPath,
+        AppRoutes.adminSchools,
+        AdminModule.schools,
+      ),
+      _NavItem(
+        'Categories',
+        Icons.category_outlined,
+        Icons.category,
+        AppRoutes.adminCategoriesPath,
+        AppRoutes.adminCategories,
+        AdminModule.categories,
+      ),
+      _NavItem(
+        'Conditions',
+        Icons.star_half_outlined,
+        Icons.star_half,
+        AppRoutes.adminConditionsPath,
+        AppRoutes.adminConditions,
+        AdminModule.conditions,
+      ),
+      _NavItem(
+        'Pickup Locations',
+        Icons.location_on_outlined,
+        Icons.location_on,
+        AppRoutes.adminPickupLocationsPath,
+        AppRoutes.adminPickupLocations,
+        AdminModule.pickupLocations,
+      ),
+      _NavItem(
+        'FAQs',
+        Icons.help_outline,
+        Icons.help,
+        AppRoutes.adminFaqsPath,
+        AppRoutes.adminFaqs,
+        AdminModule.faqs,
+      ),
+      _NavItem(
+        'Dictionary',
+        Icons.book_outlined,
+        Icons.book,
+        AppRoutes.adminDictionaryPath,
+        AppRoutes.adminDictionary,
+        AdminModule.dictionary,
+      ),
+      _NavItem(
+        'Roles',
+        Icons.security_outlined,
+        Icons.security,
+        AppRoutes.adminRolesPath,
+        AppRoutes.adminRoles,
+        AdminModule.roles,
+      ),
     ];
   }
 
@@ -126,7 +213,11 @@ class AdminShellScreen extends ConsumerWidget {
                     color: colors.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.admin_panel_settings, color: colors.onPrimary, size: 20),
+                  child: Icon(
+                    Icons.admin_panel_settings,
+                    color: colors.onPrimary,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -152,7 +243,11 @@ class AdminShellScreen extends ConsumerWidget {
           }),
           const Spacer(),
           // Exit
-          Divider(color: colors.outlineVariant.withValues(alpha: 0.3), indent: 20, endIndent: 20),
+          Divider(
+            color: colors.outlineVariant.withValues(alpha: 0.3),
+            indent: 20,
+            endIndent: 20,
+          ),
           _SidebarNavItem(
             title: 'Logout',
             icon: Icons.logout,
@@ -193,12 +288,18 @@ class AdminShellScreen extends ConsumerWidget {
                       color: colors.primary,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.admin_panel_settings, color: colors.onPrimary, size: 20),
+                    child: Icon(
+                      Icons.admin_panel_settings,
+                      color: colors.onPrimary,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'Smivo Admin',
-                    style: typo.titleMedium.copyWith(fontWeight: FontWeight.w800),
+                    style: typo.titleMedium.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ],
               ),
@@ -214,8 +315,10 @@ class AdminShellScreen extends ConsumerWidget {
                 title: Text(
                   item.title,
                   style: typo.labelLarge.copyWith(
-                    color: isSelected ? colors.primary : colors.onSurfaceVariant,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color:
+                        isSelected ? colors.primary : colors.onSurfaceVariant,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
                 selected: isSelected,
@@ -230,7 +333,10 @@ class AdminShellScreen extends ConsumerWidget {
             Divider(color: colors.outlineVariant.withValues(alpha: 0.3)),
             ListTile(
               leading: Icon(Icons.logout, color: colors.onSurfaceVariant),
-              title: Text('Logout', style: typo.labelLarge.copyWith(color: colors.onSurfaceVariant)),
+              title: Text(
+                'Logout',
+                style: typo.labelLarge.copyWith(color: colors.onSurfaceVariant),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 context.goNamed(AppRoutes.adminLogin);
@@ -238,7 +344,10 @@ class AdminShellScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: Icon(Icons.arrow_back, color: colors.onSurfaceVariant),
-              title: Text('Back to App', style: typo.labelLarge.copyWith(color: colors.onSurfaceVariant)),
+              title: Text(
+                'Back to App',
+                style: typo.labelLarge.copyWith(color: colors.onSurfaceVariant),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 context.goNamed(AppRoutes.home);
@@ -259,7 +368,14 @@ class _NavItem {
   final String routeName;
   final AdminModule? module;
 
-  _NavItem(this.title, this.icon, this.selectedIcon, this.path, this.routeName, [this.module]);
+  _NavItem(
+    this.title,
+    this.icon,
+    this.selectedIcon,
+    this.path,
+    this.routeName, [
+    this.module,
+  ]);
 }
 
 class _SidebarNavItem extends StatelessWidget {
@@ -284,7 +400,10 @@ class _SidebarNavItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
-        color: isSelected ? colors.primary.withValues(alpha: 0.1) : Colors.transparent,
+        color:
+            isSelected
+                ? colors.primary.withValues(alpha: 0.1)
+                : Colors.transparent,
         borderRadius: BorderRadius.circular(radius.sm),
         child: InkWell(
           onTap: onTap,
@@ -302,7 +421,8 @@ class _SidebarNavItem extends StatelessWidget {
                 Text(
                   title,
                   style: typo.labelLarge.copyWith(
-                    color: isSelected ? colors.primary : colors.onSurfaceVariant,
+                    color:
+                        isSelected ? colors.primary : colors.onSurfaceVariant,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
                 ),

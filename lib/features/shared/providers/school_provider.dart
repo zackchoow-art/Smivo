@@ -27,7 +27,7 @@ Future<List<PickupLocation>> pickupLocationsForSchool(
   return repository.fetchForSchool(schoolId);
 }
 
-/// Convenience provider: pickup locations for the CURRENT 
+/// Convenience provider: pickup locations for the CURRENT
 /// user's school. Returns empty list if not logged in.
 @riverpod
 Future<List<PickupLocation>> myPickupLocations(Ref ref) async {

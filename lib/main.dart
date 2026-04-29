@@ -26,13 +26,11 @@ Future<void> main() async {
   // Initialize OneSignal for push notifications.
   final oneSignalAppId = dotenv.env['ONESIGNAL_APP_ID'] ?? '';
   if (oneSignalAppId.isNotEmpty) {
-    OneSignal.Debug.setLogLevel(OSLogLevel.verbose); // TODO: Remove in production
+    OneSignal.Debug.setLogLevel(
+      OSLogLevel.verbose,
+    ); // TODO: Remove in production
     OneSignal.initialize(oneSignalAppId);
   }
 
-  runApp(
-    const ProviderScope(
-      child: SmivoApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: SmivoApp()));
 }

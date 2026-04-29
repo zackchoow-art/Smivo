@@ -30,7 +30,9 @@ abstract class Listing with _$Listing {
     // the client reads them but never writes directly.
     @JsonKey(name: 'save_count') @Default(0) int saveCount,
     @JsonKey(name: 'inquiry_count') @Default(0) int inquiryCount,
-    @JsonKey(name: 'allow_pickup_change') @Default(false) bool allowPickupChange,
+    @JsonKey(name: 'allow_pickup_change')
+    @Default(false)
+    bool allowPickupChange,
     @JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,
     @JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,
     @JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,

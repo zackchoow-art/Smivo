@@ -22,9 +22,7 @@ class NotificationRepository {
           .select()
           .eq('user_id', userId)
           .order('created_at', ascending: false);
-      return data
-          .map((json) => AppNotification.fromJson(json))
-          .toList();
+      return data.map((json) => AppNotification.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -72,10 +70,7 @@ class NotificationRepository {
   Future<void> clearAllNotifications(String userId) async {
     try {
       await markAllAsRead(userId);
-      await _client
-          .from('notifications')
-          .delete()
-          .eq('user_id', userId);
+      await _client.from('notifications').delete().eq('user_id', userId);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

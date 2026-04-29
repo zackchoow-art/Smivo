@@ -19,11 +19,12 @@ class ProfileRepository {
   /// created outside the normal signup trigger flow).
   Future<UserProfile?> getProfile(String userId) async {
     try {
-      final data = await _client
-          .from('user_profiles')
-          .select()
-          .eq('id', userId)
-          .maybeSingle();
+      final data =
+          await _client
+              .from('user_profiles')
+              .select()
+              .eq('id', userId)
+              .maybeSingle();
 
       if (data == null) return null;
       return UserProfile.fromJson(data);
@@ -49,23 +50,25 @@ class ProfileRepository {
       final domain = email.split('@').last;
 
       // Look up school by email domain
-      final schoolRow = await _client
-          .from('schools')
-          .select('id')
-          .eq('email_domain', domain)
-          .eq('is_active', true)
-          .maybeSingle();
+      final schoolRow =
+          await _client
+              .from('schools')
+              .select('id')
+              .eq('email_domain', domain)
+              .eq('is_active', true)
+              .maybeSingle();
 
       String? schoolId = schoolRow?['id'] as String?;
 
       // Fallback: use first active school
       if (schoolId == null) {
-        final fallback = await _client
-            .from('schools')
-            .select('id')
-            .eq('is_active', true)
-            .limit(1)
-            .maybeSingle();
+        final fallback =
+            await _client
+                .from('schools')
+                .select('id')
+                .eq('is_active', true)
+                .limit(1)
+                .maybeSingle();
         schoolId = fallback?['id'] as String?;
       }
 
@@ -75,15 +78,12 @@ class ProfileRepository {
         );
       }
 
-      final data = await _client
-          .from('user_profiles')
-          .insert({
-            'id': userId,
-            'email': email,
-            'school_id': schoolId,
-          })
-          .select()
-          .single();
+      final data =
+          await _client
+              .from('user_profiles')
+              .insert({'id': userId, 'email': email, 'school_id': schoolId})
+              .select()
+              .single();
 
       return UserProfile.fromJson(data);
     } on supabase.PostgrestException catch (e) {
@@ -109,13 +109,14 @@ class ProfileRepository {
         'is_verified': profile.isVerified,
         'email_notifications_enabled': profile.emailNotificationsEnabled,
       };
-      final data = await _client
-          .from('user_profiles')
-          .update(updateData)
-          .eq('id', profile.id)
-          .select()
-          .single();
-      
+      final data =
+          await _client
+              .from('user_profiles')
+              .update(updateData)
+              .eq('id', profile.id)
+              .select()
+              .single();
+
       return UserProfile.fromJson(data);
     } on supabase.PostgrestException catch (e) {
       throw AppException.database('Failed to update profile: ${e.message}', e);
@@ -132,10 +133,13 @@ class ProfileRepository {
   Future<String> uploadAvatar(String userId, File file) async {
     try {
       final fileExt = file.path.split('.').last;
-      final fileName = '$userId-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final fileName =
+          '$userId-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final filePath = fileName; // Bucket RLS allows any path for auth users
 
-      await _client.storage.from('avatars').upload(
+      await _client.storage
+          .from('avatars')
+          .upload(
             filePath,
             file,
             fileOptions: const supabase.FileOptions(upsert: true),
@@ -165,7 +169,9 @@ class ProfileRepository {
     try {
       final filePath =
           '$userId-${DateTime.now().millisecondsSinceEpoch}-$fileName';
-      await _client.storage.from('avatars').uploadBinary(
+      await _client.storage
+          .from('avatars')
+          .uploadBinary(
             filePath,
             bytes,
             fileOptions: const supabase.FileOptions(upsert: true),
@@ -211,18 +217,21 @@ class ProfileRepository {
     required bool emailAnnouncements,
   }) async {
     try {
-      await _client.from('user_profiles').update({
-        'email_notifications_enabled': emailNotificationsEnabled,
-        'push_notifications_enabled': pushNotificationsEnabled,
-        'push_messages': pushMessages,
-        'email_messages': emailMessages,
-        'push_order_updates': pushOrderUpdates,
-        'email_order_updates': emailOrderUpdates,
-        'push_campus_announcements': pushCampusAnnouncements,
-        'email_campus_announcements': emailCampusAnnouncements,
-        'push_announcements': pushAnnouncements,
-        'email_announcements': emailAnnouncements,
-      }).eq('id', userId);
+      await _client
+          .from('user_profiles')
+          .update({
+            'email_notifications_enabled': emailNotificationsEnabled,
+            'push_notifications_enabled': pushNotificationsEnabled,
+            'push_messages': pushMessages,
+            'email_messages': emailMessages,
+            'push_order_updates': pushOrderUpdates,
+            'email_order_updates': emailOrderUpdates,
+            'push_campus_announcements': pushCampusAnnouncements,
+            'email_campus_announcements': emailCampusAnnouncements,
+            'push_announcements': pushAnnouncements,
+            'email_announcements': emailAnnouncements,
+          })
+          .eq('id', userId);
     } on supabase.PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

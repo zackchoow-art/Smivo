@@ -12,7 +12,8 @@ class AdminCategoriesScreen extends ConsumerStatefulWidget {
   const AdminCategoriesScreen({super.key});
 
   @override
-  ConsumerState<AdminCategoriesScreen> createState() => _AdminCategoriesScreenState();
+  ConsumerState<AdminCategoriesScreen> createState() =>
+      _AdminCategoriesScreenState();
 }
 
 class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
@@ -30,7 +31,10 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
       appBar: AppBar(
-        title: Text('Manage Categories', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800)),
+        title: Text(
+          'Manage Categories',
+          style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800),
+        ),
         backgroundColor: colors.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -51,20 +55,28 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: schoolsState.when(
-              data: (schools) => DropdownButtonFormField<String>(
-                initialValue: _selectedSchoolId,
-                decoration: InputDecoration(
-                  labelText: 'Select School',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm)),
-                  filled: true,
-                  fillColor: colors.surfaceContainerLow,
-                ),
-                items: schools.map((s) => DropdownMenuItem(
-                  value: s.id,
-                  child: Text(s.name),
-                )).toList(),
-                onChanged: (v) => setState(() => _selectedSchoolId = v),
-              ),
+              data:
+                  (schools) => DropdownButtonFormField<String>(
+                    initialValue: _selectedSchoolId,
+                    decoration: InputDecoration(
+                      labelText: 'Select School',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(radius.sm),
+                      ),
+                      filled: true,
+                      fillColor: colors.surfaceContainerLow,
+                    ),
+                    items:
+                        schools
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s.id,
+                                child: Text(s.name),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (v) => setState(() => _selectedSchoolId = v),
+                  ),
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Error: $e'),
             ),
@@ -72,14 +84,17 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
 
           // Category list
           Expanded(
-            child: _selectedSchoolId == null
-                ? Center(
-                    child: Text(
-                      'Select a school to manage its categories.',
-                      style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant),
-                    ),
-                  )
-                : _buildCategoryList(context, canWrite),
+            child:
+                _selectedSchoolId == null
+                    ? Center(
+                      child: Text(
+                        'Select a school to manage its categories.',
+                        style: typo.bodyLarge.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    )
+                    : _buildCategoryList(context, canWrite),
           ),
         ],
       ),
@@ -90,18 +105,28 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    final categoriesState = ref.watch(adminSchoolCategoriesProvider(_selectedSchoolId!));
+    final categoriesState = ref.watch(
+      adminSchoolCategoriesProvider(_selectedSchoolId!),
+    );
 
     return categoriesState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e', style: TextStyle(color: colors.error))),
+      error:
+          (e, _) => Center(
+            child: Text('Error: $e', style: TextStyle(color: colors.error)),
+          ),
       data: (categories) {
         if (categories.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('No categories.', style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant)),
+                Text(
+                  'No categories.',
+                  style: typo.bodyLarge.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
                   onPressed: () => _seedDefaults(context),
@@ -123,37 +148,55 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
               decoration: BoxDecoration(
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(radius.sm),
-                border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: colors.outlineVariant.withValues(alpha: 0.3),
+                ),
               ),
               child: ListTile(
                 leading: Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: colors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(Icons.category, color: colors.primary, size: 20),
                 ),
-                title: Text(cat.name, style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700)),
+                title: Text(
+                  cat.name,
+                  style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700),
+                ),
                 subtitle: Text(
                   'slug: ${cat.slug} • order: ${cat.displayOrder} • ${cat.isActive ? "Active" : "Inactive"}',
-                  style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                  style: typo.bodySmall.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
-                trailing: canWrite
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit, size: 20, color: colors.primary),
-                            onPressed: () => _showCategoryDialog(context, cat),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete, size: 20, color: colors.error),
-                            onPressed: () => _confirmDelete(context, cat),
-                          ),
-                        ],
-                      )
-                    : null,
+                trailing:
+                    canWrite
+                        ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                size: 20,
+                                color: colors.primary,
+                              ),
+                              onPressed:
+                                  () => _showCategoryDialog(context, cat),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: colors.error,
+                              ),
+                              onPressed: () => _confirmDelete(context, cat),
+                            ),
+                          ],
+                        )
+                        : null,
               ),
             );
           },
@@ -165,11 +208,15 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
   void _showCategoryDialog(BuildContext context, SchoolCategory? category) {
     showDialog(
       context: context,
-      builder: (context) => _CategoryDialog(
-        schoolId: _selectedSchoolId!,
-        category: category,
-        onSaved: () => ref.invalidate(adminSchoolCategoriesProvider(_selectedSchoolId!)),
-      ),
+      builder:
+          (context) => _CategoryDialog(
+            schoolId: _selectedSchoolId!,
+            category: category,
+            onSaved:
+                () => ref.invalidate(
+                  adminSchoolCategoriesProvider(_selectedSchoolId!),
+                ),
+          ),
     );
   }
 
@@ -177,27 +224,37 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     final colors = context.smivoColors;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Category'),
-        content: Text('Delete "${cat.name}"?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () async {
-              await ref.read(schoolDataRepositoryProvider).deleteCategory(cat.id);
-              ref.invalidate(adminSchoolCategoriesProvider(_selectedSchoolId!));
-              if (ctx.mounted) Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: colors.error),
-            child: const Text('Delete'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete Category'),
+            content: Text('Delete "${cat.name}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  await ref
+                      .read(schoolDataRepositoryProvider)
+                      .deleteCategory(cat.id);
+                  ref.invalidate(
+                    adminSchoolCategoriesProvider(_selectedSchoolId!),
+                  );
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                style: FilledButton.styleFrom(backgroundColor: colors.error),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   void _seedDefaults(BuildContext context) async {
-    await ref.read(schoolDataRepositoryProvider).seedSchoolDefaults(_selectedSchoolId!);
+    await ref
+        .read(schoolDataRepositoryProvider)
+        .seedSchoolDefaults(_selectedSchoolId!);
     ref.invalidate(adminSchoolCategoriesProvider(_selectedSchoolId!));
   }
 }
@@ -231,7 +288,9 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
     _slugCtrl = TextEditingController(text: widget.category?.slug ?? '');
     _nameCtrl = TextEditingController(text: widget.category?.name ?? '');
     _iconCtrl = TextEditingController(text: widget.category?.icon ?? '');
-    _orderCtrl = TextEditingController(text: widget.category?.displayOrder.toString() ?? '0');
+    _orderCtrl = TextEditingController(
+      text: widget.category?.displayOrder.toString() ?? '0',
+    );
     _isActive = widget.category?.isActive ?? true;
   }
 
@@ -279,18 +338,24 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(labelText: 'Display Name'),
-                validator: (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
+                validator:
+                    (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _slugCtrl,
-                decoration: const InputDecoration(labelText: 'Slug (lowercase, no spaces)'),
-                validator: (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
+                decoration: const InputDecoration(
+                  labelText: 'Slug (lowercase, no spaces)',
+                ),
+                validator:
+                    (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _iconCtrl,
-                decoration: const InputDecoration(labelText: 'Icon name (optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Icon name (optional)',
+                ),
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -309,8 +374,14 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-        FilledButton(onPressed: _submit, child: Text(isEditing ? 'Save' : 'Add')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(isEditing ? 'Save' : 'Add'),
+        ),
       ],
     );
   }

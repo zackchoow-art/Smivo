@@ -35,22 +35,23 @@ class MyListings extends _$MyListings {
 
   void _subscribe(String userId) {
     final client = ref.read(supabaseClientProvider);
-    _channel = client
-        .channel('my_listings:$userId')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'listings',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'seller_id',
-            value: userId,
-          ),
-          callback: (payload) {
-            ref.invalidateSelf();
-          },
-        )
-        .subscribe();
+    _channel =
+        client
+            .channel('my_listings:$userId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'listings',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'seller_id',
+                value: userId,
+              ),
+              callback: (payload) {
+                ref.invalidateSelf();
+              },
+            )
+            .subscribe();
   }
 }
 
@@ -59,7 +60,7 @@ class MyListings extends _$MyListings {
 Future<List<Order>> sellerOrders(Ref ref) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return [];
-  
+
   final allOrders = await ref.watch(allOrdersProvider.future);
   return allOrders.where((o) => o.sellerId == user.id).toList();
 }

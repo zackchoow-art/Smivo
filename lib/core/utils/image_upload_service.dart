@@ -79,17 +79,17 @@ class ImageUploadService {
       sourcePath: sourcePath,
       // NOTE: For avatars, force square aspect ratio.
       // For listing photos, let the user choose freely.
-      aspectRatio: isAvatar
-          ? const CropAspectRatio(ratioX: 1, ratioY: 1)
-          : null,
+      aspectRatio:
+          isAvatar ? const CropAspectRatio(ratioX: 1, ratioY: 1) : null,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: isAvatar ? 'Crop Avatar' : 'Crop Photo',
           toolbarColor: primaryColor,
           toolbarWidgetColor: Colors.white,
-          initAspectRatio: isAvatar
-              ? CropAspectRatioPreset.square
-              : CropAspectRatioPreset.original,
+          initAspectRatio:
+              isAvatar
+                  ? CropAspectRatioPreset.square
+                  : CropAspectRatioPreset.original,
           lockAspectRatio: isAvatar,
         ),
         IOSUiSettings(

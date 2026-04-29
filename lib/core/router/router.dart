@@ -42,6 +42,7 @@ import 'package:smivo/features/admin/screens/admin_pickup_locations_screen.dart'
 import 'package:smivo/features/admin/screens/admin_dictionary_screen.dart';
 import 'package:smivo/features/admin/screens/admin_schools_screen.dart';
 import 'package:smivo/features/admin/screens/admin_roles_screen.dart';
+import 'package:smivo/features/admin/screens/admin_review_tags_screen.dart';
 import 'app_routes.dart';
 
 part 'router.g.dart';
@@ -157,7 +158,8 @@ GoRouter router(Ref ref) {
         name: AppRoutes.emailVerification,
         path: AppRoutes.emailVerificationPath,
         builder: (context, state) {
-          final email = state.uri.queryParameters['email'] ?? 'your university email';
+          final email =
+              state.uri.queryParameters['email'] ?? 'your university email';
           return EmailVerificationScreen(email: email);
         },
       ),
@@ -209,47 +211,51 @@ GoRouter router(Ref ref) {
       GoRoute(
         name: AppRoutes.createListing,
         path: AppRoutes.createListingPath,
-        builder: (context, state) => CreateListingFormScreen(
-          initialMode: state.uri.queryParameters['type'] ?? 'sale',
-        ),
+        builder:
+            (context, state) => CreateListingFormScreen(
+              initialMode: state.uri.queryParameters['type'] ?? 'sale',
+            ),
       ),
       GoRoute(
         name: AppRoutes.listingDetail,
         path: AppRoutes.listingDetailPath,
-        builder: (context, state) =>
-            ListingDetailScreen(id: state.pathParameters['id']!),
+        builder:
+            (context, state) =>
+                ListingDetailScreen(id: state.pathParameters['id']!),
       ),
       GoRoute(
         name: AppRoutes.editListing,
         path: AppRoutes.editListingPath,
-        builder: (context, state) =>
+        builder:
+            (context, state) =>
             // TODO: Create edit_listing_screen.dart (Stitch MCP)
             const _PlaceholderScreen(name: 'Edit Listing'),
       ),
       GoRoute(
         name: AppRoutes.myListings,
         path: AppRoutes.myListingsPath,
-        builder: (context, state) =>
+        builder:
+            (context, state) =>
             // TODO: Create my_listings_screen.dart (Stitch MCP)
             const _PlaceholderScreen(name: 'My Listings'),
       ),
 
       // ── Chat (auth required) ─────────────────────────────
-
       GoRoute(
         name: AppRoutes.chatRoom,
         path: AppRoutes.chatRoomPath,
-        builder: (context, state) =>
-            ChatRoomScreen(chatRoomId: state.pathParameters['id']!),
+        builder:
+            (context, state) =>
+                ChatRoomScreen(chatRoomId: state.pathParameters['id']!),
       ),
 
       // ── Orders (auth required) ───────────────────────────
-
       GoRoute(
         name: AppRoutes.orderDetail,
         path: AppRoutes.orderDetailPath,
-        builder: (context, state) =>
-            OrderDetailScreen(orderId: state.pathParameters['id']!),
+        builder:
+            (context, state) =>
+                OrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
 
       // ── Seller Center ─────────────────────────────────────
@@ -262,10 +268,12 @@ GoRouter router(Ref ref) {
       GoRoute(
         name: AppRoutes.transactionManagement,
         path: AppRoutes.transactionManagementPath,
-        builder: (context, state) => TransactionManagementScreen(
-          listingId: state.pathParameters['id']!,
-          initialTab: int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0,
-        ),
+        builder:
+            (context, state) => TransactionManagementScreen(
+              listingId: state.pathParameters['id']!,
+              initialTab:
+                  int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0,
+            ),
       ),
 
       // ── Buyer Center ─────────────────────────────────────
@@ -293,7 +301,8 @@ GoRouter router(Ref ref) {
       GoRoute(
         name: AppRoutes.profile,
         path: AppRoutes.profilePath,
-        builder: (context, state) =>
+        builder:
+            (context, state) =>
             // TODO: Create profile_screen.dart (Stitch MCP)
             const _PlaceholderScreen(name: 'Profile'),
       ),
@@ -400,6 +409,11 @@ GoRouter router(Ref ref) {
             name: AppRoutes.adminRoles,
             path: AppRoutes.adminRolesPath,
             builder: (context, state) => const AdminRolesScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.adminTags,
+            path: AppRoutes.adminTagsPath,
+            builder: (context, state) => const AdminReviewTagsScreen(),
           ),
         ],
       ),

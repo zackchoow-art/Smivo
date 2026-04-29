@@ -11,7 +11,7 @@ part 'saved_listing_provider.g.dart';
 Future<bool> isListingSaved(Ref ref, String listingId) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return false;
-  
+
   final repo = ref.watch(savedRepositoryProvider);
   return repo.isListingSaved(userId: user.id, listingId: listingId);
 }
@@ -21,7 +21,7 @@ Future<bool> isListingSaved(Ref ref, String listingId) async {
 Future<List<SavedListing>> mySavedListings(Ref ref) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return [];
-  
+
   final repo = ref.watch(savedRepositoryProvider);
   return repo.fetchMySavedListingsWithDetails(user.id);
 }
@@ -54,7 +54,7 @@ class SavedListingActions extends _$SavedListingActions {
       // Invalidate the check provider so UI updates
       ref.invalidate(isListingSavedProvider(listingId));
       ref.invalidate(mySavedListingsProvider);
-      
+
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

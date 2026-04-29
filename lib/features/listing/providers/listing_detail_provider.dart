@@ -9,7 +9,7 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 part 'listing_detail_provider.g.dart';
 
 /// State for the selected rental rate (DAY, WEEK, MONTH).
-/// 
+///
 /// Defaults to 'MONTH' as per the primary design.
 @riverpod
 class SelectedRentalRate extends _$SelectedRentalRate {
@@ -61,7 +61,7 @@ class RentalEndDate extends _$RentalEndDate {
 }
 
 /// Fetches a single listing with all joined details (images, seller) from Supabase.
-/// 
+///
 /// Takes a listing [id] as a parameter.
 @riverpod
 Future<Listing> listingDetail(Ref ref, String id) async {
@@ -84,7 +84,7 @@ Future<Listing> listingDetail(Ref ref, String id) async {
 Future<Order?> existingBuyerOrder(Ref ref, String listingId) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return null;
-  
+
   final repo = ref.watch(orderRepositoryProvider);
   return repo.fetchOrderByListingAndBuyer(
     listingId: listingId,

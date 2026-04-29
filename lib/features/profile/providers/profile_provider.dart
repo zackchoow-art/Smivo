@@ -25,10 +25,7 @@ class Profile extends _$Profile {
     // the normal signup flow (e.g. via Supabase Dashboard).
     // Auto-create with school derived from email domain.
     if (user.email != null) {
-      return repo.createProfileForUser(
-        userId: user.id,
-        email: user.email!,
-      );
+      return repo.createProfileForUser(userId: user.id, email: user.email!);
     }
 
     return null;
@@ -56,7 +53,7 @@ class Profile extends _$Profile {
       final avatarUrl = await ref
           .read(profileRepositoryProvider)
           .uploadAvatar(currentProfile.id, file);
-      
+
       final updated = currentProfile.copyWith(avatarUrl: avatarUrl);
       return ref.read(profileRepositoryProvider).updateProfile(updated);
     });
@@ -92,7 +89,7 @@ class Profile extends _$Profile {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       String? avatarUrl = currentProfile.avatarUrl;
-      
+
       if (avatarFile != null) {
         avatarUrl = await ref
             .read(profileRepositoryProvider)
@@ -103,7 +100,7 @@ class Profile extends _$Profile {
         displayName: displayName,
         avatarUrl: avatarUrl,
       );
-      
+
       return ref.read(profileRepositoryProvider).updateProfile(updated);
     });
   }

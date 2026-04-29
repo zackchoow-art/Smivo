@@ -27,9 +27,9 @@ class SelectedOrdersTab extends _$SelectedOrdersTab {
 
 /// Fetches all orders for the current user with realtime updates.
 ///
-/// Subscribes to INSERT/UPDATE on the orders table. RLS ensures 
-/// we only receive events for rows where we are buyer or seller. 
-/// Any change re-fetches the list so status transitions propagate 
+/// Subscribes to INSERT/UPDATE on the orders table. RLS ensures
+/// we only receive events for rows where we are buyer or seller.
+/// Any change re-fetches the list so status transitions propagate
 /// to all screens holding this provider.
 @riverpod
 class AllOrders extends _$AllOrders {
@@ -53,17 +53,18 @@ class AllOrders extends _$AllOrders {
 
   void _subscribe(String userId) {
     final client = ref.read(supabaseClientProvider);
-    _channel = client
-        .channel('orders_list:$userId')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'orders',
-          callback: (payload) {
-            ref.invalidateSelf();
-          },
-        )
-        .subscribe();
+    _channel =
+        client
+            .channel('orders_list:$userId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'orders',
+              callback: (payload) {
+                ref.invalidateSelf();
+              },
+            )
+            .subscribe();
   }
 }
 
@@ -103,26 +104,39 @@ class OrderDetail extends _$OrderDetail {
 
   void _subscribe(String orderId) {
     final client = ref.read(supabaseClientProvider);
-    _channel = client
-        .channel('order_detail:$orderId')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'orders',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'id',
-            value: orderId,
-          ),
-          callback: (payload) {
-            ref.invalidateSelf();
-          },
-        )
-        .subscribe();
+    _channel =
+        client
+            .channel('order_detail:$orderId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'orders',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'id',
+                value: orderId,
+              ),
+              callback: (payload) {
+                ref.invalidateSelf();
+              },
+            )
+            .subscribe();
   }
 }
 
-/// Mutation actions for a specific order.
+/// Fetches the latest order for a specific listing and buyer.
+@riverpod
+Future<Order?> latestOrderByListingAndBuyer(
+  LatestOrderByListingAndBuyerRef ref, {
+  required String listingId,
+  required String buyerId,
+}) {
+  return ref
+      .read(orderRepositoryProvider)
+      .fetchLatestOrderByListingAndBuyer(listingId, buyerId);
+}
+
+/// Handles order actions (cancel, confirm delivery, request return, etc.).
 @riverpod
 class OrderActions extends _$OrderActions {
   @override
@@ -132,13 +146,13 @@ class OrderActions extends _$OrderActions {
   ///
   /// For sale: totalPrice = listing.price
   /// For rental: totalPrice = listing.price * number of days
-  /// 
+  ///
   /// Returns the created Order on success. Throws on failure.
   Future<Order> createOrder({
     required String listingId,
     required String sellerId,
     required double price,
-    required String orderType,  // 'sale' or 'rental'
+    required String orderType, // 'sale' or 'rental'
     double depositAmount = 0.0,
     DateTime? rentalStartDate,
     DateTime? rentalEndDate,
@@ -161,7 +175,7 @@ class OrderActions extends _$OrderActions {
 
       final now = DateTime.now();
       final draft = Order(
-        id: '',  // Database will generate
+        id: '', // Database will generate
         listingId: listingId,
         buyerId: user.id,
         sellerId: sellerId,
@@ -176,12 +190,13 @@ class OrderActions extends _$OrderActions {
         updatedAt: now,
       );
 
-      final created = await ref.read(orderRepositoryProvider)
+      final created = await ref
+          .read(orderRepositoryProvider)
           .createOrder(draft);
 
       // Refresh orders list so the new order appears
       ref.invalidate(allOrdersProvider);
-      
+
       state = const AsyncValue.data(null);
       return created;
     } catch (e, st) {
@@ -197,20 +212,21 @@ class OrderActions extends _$OrderActions {
     state = const AsyncValue.loading();
     try {
       final repo = ref.read(orderRepositoryProvider);
-      
+
       // 1. Fetch order to get listingId and orderType
       final order = await repo.fetchOrder(orderId);
-      
+
       // 2. Update status to confirmed and mark others as missed
       await repo.acceptOrderAndRejectOthers(orderId, order.listingId);
-      
+
       // 4. Sale: auto-mark listing as 'sold' (removes from home feed)
       //    Rental: keep listing active until delivery is confirmed
       if (order.orderType == 'sale') {
-        await ref.read(listingRepositoryProvider)
+        await ref
+            .read(listingRepositoryProvider)
             .updateListingStatus(order.listingId, 'sold');
       }
-      
+
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
       state = const AsyncValue.data(null);
@@ -224,7 +240,9 @@ class OrderActions extends _$OrderActions {
   Future<void> cancelOrder(String orderId) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(orderRepositoryProvider).updateOrderStatus(orderId, 'cancelled');
+      await ref
+          .read(orderRepositoryProvider)
+          .updateOrderStatus(orderId, 'cancelled');
       // Refresh order lists so the cancelled order shows updated status
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
@@ -249,36 +267,42 @@ class OrderActions extends _$OrderActions {
 
       final isBuyer = order.buyerId == user.id;
 
-      // Sale orders: only buyers can confirm, and it directly 
+      // Sale orders: only buyers can confirm, and it directly
       // completes the order. Seller has no action here.
       if (order.orderType == 'sale') {
         if (!isBuyer) {
           throw StateError('Only the buyer can confirm a sale pickup');
         }
-        
-        await ref.read(orderRepositoryProvider)
+
+        await ref
+            .read(orderRepositoryProvider)
             .updateOrderStatus(order.id, 'completed');
       } else {
         // Rental: keep dual confirmation
         final role = isBuyer ? 'buyer' : 'seller';
-        await ref.read(orderRepositoryProvider).confirmDelivery(
-          orderId: order.id,
-          byUserRole: role,
-          orderType: order.orderType,
-        );
-        
+        await ref
+            .read(orderRepositoryProvider)
+            .confirmDelivery(
+              orderId: order.id,
+              byUserRole: role,
+              orderType: order.orderType,
+            );
+
         // After both parties confirm, activate the rental
         // (instead of completing it — rental has a return lifecycle)
-        final updated = await ref.read(orderRepositoryProvider)
+        final updated = await ref
+            .read(orderRepositoryProvider)
             .fetchOrder(order.id);
-        if (updated.deliveryConfirmedByBuyer && 
+        if (updated.deliveryConfirmedByBuyer &&
             updated.deliveryConfirmedBySeller &&
             updated.rentalStatus == null) {
-          await ref.read(orderRepositoryProvider)
+          await ref
+              .read(orderRepositoryProvider)
               .updateRentalStatus(order.id, 'active');
           // NOTE: Mark listing as 'rented' once rental is active
           // This removes it from the home feed
-          await ref.read(listingRepositoryProvider)
+          await ref
+              .read(listingRepositoryProvider)
               .updateListingStatus(order.listingId, 'rented');
         }
       }
@@ -297,7 +321,8 @@ class OrderActions extends _$OrderActions {
   Future<void> activateRental(String orderId) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(orderRepositoryProvider)
+      await ref
+          .read(orderRepositoryProvider)
           .updateRentalStatus(orderId, 'active');
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
@@ -311,7 +336,8 @@ class OrderActions extends _$OrderActions {
   Future<void> requestReturn(String orderId) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(orderRepositoryProvider)
+      await ref
+          .read(orderRepositoryProvider)
           .updateRentalStatus(orderId, 'return_requested');
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
@@ -348,10 +374,12 @@ class OrderActions extends _$OrderActions {
   Future<void> refundDeposit(String orderId) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(orderRepositoryProvider)
+      await ref
+          .read(orderRepositoryProvider)
           .updateRentalStatus(orderId, 'deposit_refunded');
       // Mark the order as completed after deposit refund
-      await ref.read(orderRepositoryProvider)
+      await ref
+          .read(orderRepositoryProvider)
           .updateOrderStatus(orderId, 'completed');
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
@@ -369,11 +397,13 @@ class OrderActions extends _$OrderActions {
   }) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(orderRepositoryProvider).updateReminderPreferences(
-        orderId: orderId,
-        daysBefore: daysBefore,
-        sendEmail: sendEmail,
-      );
+      await ref
+          .read(orderRepositoryProvider)
+          .updateReminderPreferences(
+            orderId: orderId,
+            daysBefore: daysBefore,
+            sendEmail: sendEmail,
+          );
       ref.invalidate(orderDetailProvider(orderId));
       state = const AsyncValue.data(null);
     } catch (e, st) {
@@ -385,7 +415,9 @@ class OrderActions extends _$OrderActions {
 @riverpod
 Future<int> unreadOrderUpdatesCount(Ref ref) async {
   final notifications = await ref.watch(notificationListProvider.future);
-  return notifications.where((n) => !n.isRead && n.actionType == 'order').length;
+  return notifications
+      .where((n) => !n.isRead && n.actionType == 'order')
+      .length;
 }
 
 @riverpod
@@ -394,11 +426,12 @@ Future<int> unreadBuyerUpdatesCount(Ref ref) async {
   if (user == null) return 0;
   final notifications = await ref.watch(notificationListProvider.future);
   final allOrdersList = await ref.watch(allOrdersProvider.future);
-  
+
   int count = 0;
   for (final n in notifications) {
     if (!n.isRead && n.actionType == 'order' && n.relatedOrderId != null) {
-      final order = allOrdersList.where((o) => o.id == n.relatedOrderId).firstOrNull;
+      final order =
+          allOrdersList.where((o) => o.id == n.relatedOrderId).firstOrNull;
       if (order != null && order.buyerId == user.id) {
         count++;
       }
@@ -413,11 +446,12 @@ Future<int> unreadSellerUpdatesCount(Ref ref) async {
   if (user == null) return 0;
   final notifications = await ref.watch(notificationListProvider.future);
   final allOrdersList = await ref.watch(allOrdersProvider.future);
-  
+
   int count = 0;
   for (final n in notifications) {
     if (!n.isRead && n.actionType == 'order' && n.relatedOrderId != null) {
-      final order = allOrdersList.where((o) => o.id == n.relatedOrderId).firstOrNull;
+      final order =
+          allOrdersList.where((o) => o.id == n.relatedOrderId).firstOrNull;
       if (order != null && order.sellerId == user.id) {
         count++;
       }

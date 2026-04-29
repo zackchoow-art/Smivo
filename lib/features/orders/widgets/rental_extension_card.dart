@@ -22,7 +22,8 @@ class RentalExtensionCard extends ConsumerStatefulWidget {
   final bool showTitle;
 
   @override
-  ConsumerState<RentalExtensionCard> createState() => _RentalExtensionCardState();
+  ConsumerState<RentalExtensionCard> createState() =>
+      _RentalExtensionCardState();
 }
 
 class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
@@ -30,23 +31,43 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
   int _quantityOffset = 0;
   bool _isSubmitting = false;
 
-  ({String rateType, int quantity, double unitPrice}) _inferRentalRate(Order order) {
+  ({String rateType, int quantity, double unitPrice}) _inferRentalRate(
+    Order order,
+  ) {
     if (order.rentalStartDate == null || order.rentalEndDate == null) {
-      return (rateType: 'daily', quantity: 1, unitPrice: order.listing?.rentalDailyPrice ?? 0);
+      return (
+        rateType: 'daily',
+        quantity: 1,
+        unitPrice: order.listing?.rentalDailyPrice ?? 0,
+      );
     }
     final days = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
     final listing = order.listing;
-    
+
     // Check monthly first
-    if (days >= 30 && days % 30 == 0 && (listing?.rentalMonthlyPrice ?? 0) > 0) {
-      return (rateType: 'monthly', quantity: days ~/ 30, unitPrice: listing!.rentalMonthlyPrice!);
+    if (days >= 30 &&
+        days % 30 == 0 &&
+        (listing?.rentalMonthlyPrice ?? 0) > 0) {
+      return (
+        rateType: 'monthly',
+        quantity: days ~/ 30,
+        unitPrice: listing!.rentalMonthlyPrice!,
+      );
     }
     // Then weekly
     if (days >= 7 && days % 7 == 0 && (listing?.rentalWeeklyPrice ?? 0) > 0) {
-      return (rateType: 'weekly', quantity: days ~/ 7, unitPrice: listing!.rentalWeeklyPrice!);
+      return (
+        rateType: 'weekly',
+        quantity: days ~/ 7,
+        unitPrice: listing!.rentalWeeklyPrice!,
+      );
     }
     // Default to daily
-    return (rateType: 'daily', quantity: days, unitPrice: listing?.rentalDailyPrice ?? 0);
+    return (
+      rateType: 'daily',
+      quantity: days,
+      unitPrice: listing?.rentalDailyPrice ?? 0,
+    );
   }
 
   void _resetAdjustment() {
@@ -86,7 +107,11 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
           ],
           extensionsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => Text('Error: $err', style: typo.bodySmall.copyWith(color: colors.error)),
+            error:
+                (err, _) => Text(
+                  'Error: $err',
+                  style: typo.bodySmall.copyWith(color: colors.error),
+                ),
             data: (extensions) {
               if (extensions.isEmpty && !widget.isBuyer) {
                 return Text(
@@ -95,13 +120,19 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
                 );
               }
 
-              final hasPending = extensions.any((ext) => ext.status == 'pending');
+              final hasPending = extensions.any(
+                (ext) => ext.status == 'pending',
+              );
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ...extensions.map((ext) => _buildExtensionItem(context, ref, ext)),
-                  if (widget.isBuyer && widget.order.rentalStatus == 'active' && !hasPending) ...[
+                  ...extensions.map(
+                    (ext) => _buildExtensionItem(context, ref, ext),
+                  ),
+                  if (widget.isBuyer &&
+                      widget.order.rentalStatus == 'active' &&
+                      !hasPending) ...[
                     if (!_isAdjusting)
                       OutlinedButton(
                         onPressed: () => setState(() => _isAdjusting = true),
@@ -131,7 +162,7 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
     final originalEndDate = widget.order.rentalEndDate!;
     final currentQuantity = rateInfo.quantity;
     final newQuantity = currentQuantity + _quantityOffset;
-    
+
     final canDecrease = newQuantity > 1; // Can't shorten to 0 or less
     final canIncrease = newQuantity < 365;
 
@@ -172,19 +203,31 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Rate:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-              Text(rateInfo.rateType.toUpperCase(), style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Rate:',
+                style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+              ),
+              Text(
+                rateInfo.rateType.toUpperCase(),
+                style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Quantity:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+              Text(
+                'Quantity:',
+                style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+              ),
               Row(
                 children: [
                   IconButton(
-                    onPressed: canDecrease ? () => setState(() => _quantityOffset--) : null,
+                    onPressed:
+                        canDecrease
+                            ? () => setState(() => _quantityOffset--)
+                            : null,
                     icon: const Icon(Icons.remove_circle_outline),
                     color: colors.primary,
                   ),
@@ -197,7 +240,10 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
                     ),
                   ),
                   IconButton(
-                    onPressed: canIncrease ? () => setState(() => _quantityOffset++) : null,
+                    onPressed:
+                        canIncrease
+                            ? () => setState(() => _quantityOffset++)
+                            : null,
                     icon: const Icon(Icons.add_circle_outline),
                     color: colors.primary,
                   ),
@@ -211,9 +257,9 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
               child: Divider(),
             ),
             Text(
-              _quantityOffset > 0 
-                ? 'Extension (+$_quantityOffset ${rateInfo.rateType})'
-                : 'Early Return ($_quantityOffset ${rateInfo.rateType})',
+              _quantityOffset > 0
+                  ? 'Extension (+$_quantityOffset ${rateInfo.rateType})'
+                  : 'Early Return ($_quantityOffset ${rateInfo.rateType})',
               style: typo.bodyMedium.copyWith(
                 color: _quantityOffset > 0 ? colors.primary : colors.error,
                 fontWeight: FontWeight.bold,
@@ -223,51 +269,86 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('New end date:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-                Text(DateFormat.yMMMd().format(newEndDate), style: typo.bodyMedium),
+                Text(
+                  'New end date:',
+                  style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+                ),
+                Text(
+                  DateFormat.yMMMd().format(newEndDate),
+                  style: typo.bodyMedium,
+                ),
               ],
             ),
             const SizedBox(height: 2),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Days change:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-                Text('${daysDiff > 0 ? '+' : ''}$daysDiff', style: typo.bodyMedium),
+                Text(
+                  'Days change:',
+                  style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+                ),
+                Text(
+                  '${daysDiff > 0 ? '+' : ''}$daysDiff',
+                  style: typo.bodyMedium,
+                ),
               ],
             ),
             const SizedBox(height: 2),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Price change:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-                Text('${priceDiff >= 0 ? '+' : '-'}\$${priceDiff.abs().toStringAsFixed(2)}', style: typo.bodyMedium),
+                Text(
+                  'Price change:',
+                  style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+                ),
+                Text(
+                  '${priceDiff >= 0 ? '+' : '-'}\$${priceDiff.abs().toStringAsFixed(2)}',
+                  style: typo.bodyMedium,
+                ),
               ],
             ),
             const SizedBox(height: 2),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('New rental total:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
-                Text('\$${newTotal.toStringAsFixed(2)}', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'New rental total:',
+                  style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+                ),
+                Text(
+                  '\$${newTotal.toStringAsFixed(2)}',
+                  style: typo.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _isSubmitting ? null : () => _submitRequest(
-                requestType: requestType,
-                originalEndDate: originalEndDate,
-                newEndDate: newEndDate,
-                priceDiff: priceDiff,
-                newTotal: newTotal,
-              ),
+              onPressed:
+                  _isSubmitting
+                      ? null
+                      : () => _submitRequest(
+                        requestType: requestType,
+                        originalEndDate: originalEndDate,
+                        newEndDate: newEndDate,
+                        priceDiff: priceDiff,
+                        newTotal: newTotal,
+                      ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.primary,
                 foregroundColor: colors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: _isSubmitting 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Submit Request'),
+              child:
+                  _isSubmitting
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Text('Submit Request'),
             ),
           ],
         ],
@@ -284,15 +365,17 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
   }) async {
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(rentalExtensionActionsProvider.notifier).requestExtension(
-        orderId: widget.order.id,
-        requestedBy: widget.order.buyerId,
-        requestType: requestType,
-        originalEndDate: originalEndDate,
-        newEndDate: newEndDate,
-        priceDiff: priceDiff,
-        newTotal: newTotal,
-      );
+      await ref
+          .read(rentalExtensionActionsProvider.notifier)
+          .requestExtension(
+            orderId: widget.order.id,
+            requestedBy: widget.order.buyerId,
+            requestType: requestType,
+            originalEndDate: originalEndDate,
+            newEndDate: newEndDate,
+            priceDiff: priceDiff,
+            newTotal: newTotal,
+          );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -330,12 +413,16 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
     }
   }
 
-  Widget _buildExtensionItem(BuildContext context, WidgetRef ref, RentalExtension ext) {
+  Widget _buildExtensionItem(
+    BuildContext context,
+    WidgetRef ref,
+    RentalExtension ext,
+  ) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final isPending = ext.status == 'pending';
-    
+
     final originalEndDate = ext.originalEndDate;
     final daysDiff = ext.newEndDate.difference(originalEndDate).inDays;
     final grandTotal = ext.newTotal + widget.order.depositAmount;
@@ -358,14 +445,18 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
                 child: Row(
                   children: [
                     Icon(
-                      ext.requestType == 'extend' ? Icons.event_available : Icons.event_busy,
+                      ext.requestType == 'extend'
+                          ? Icons.event_available
+                          : Icons.event_busy,
                       size: 16,
                       color: colors.primary,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        ext.requestType == 'extend' ? 'Extension Request' : 'Early Return Request',
+                        ext.requestType == 'extend'
+                            ? 'Extension Request'
+                            : 'Early Return Request',
                         style: typo.titleMedium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -426,14 +517,20 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
                 children: [
                   TextButton(
                     onPressed: () => _handleReject(ref, ext),
-                    child: Text('Reject', style: TextStyle(color: colors.error)),
+                    child: Text(
+                      'Reject',
+                      style: TextStyle(color: colors.error),
+                    ),
                   ),
                   ElevatedButton(
                     onPressed: () => _handleApprove(ref, ext),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
                       foregroundColor: colors.onPrimary,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                     ),
                     child: const Text('Approve'),
                   ),
@@ -479,7 +576,10 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
       ),
       child: Text(
         status.toUpperCase(),
-        style: typo.labelSmall.copyWith(color: textColor, fontWeight: FontWeight.bold),
+        style: typo.labelSmall.copyWith(
+          color: textColor,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -487,18 +587,29 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
   Future<void> _handleApprove(WidgetRef ref, RentalExtension ext) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Approve Change'),
-        content: const Text('This will update the order dates and total price. Continue?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Approve')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Approve Change'),
+            content: const Text(
+              'This will update the order dates and total price. Continue?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Approve'),
+              ),
+            ],
+          ),
     );
 
     if (confirmed == true) {
-      await ref.read(rentalExtensionActionsProvider.notifier).approveExtension(ext.id, widget.order.id);
+      await ref
+          .read(rentalExtensionActionsProvider.notifier)
+          .approveExtension(ext.id, widget.order.id);
       // NOTE: Refresh order data so updated dates/prices appear immediately
       ref.invalidate(orderDetailProvider(widget.order.id));
       if (mounted) {
@@ -522,36 +633,45 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
     final noteController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Reject Change'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Optional: Add a reason for rejection'),
-            const SizedBox(height: 8),
-            TextField(
-              controller: noteController,
-              decoration: const InputDecoration(
-                hintText: 'e.g. Item is reserved by another student',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Reject Change'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Optional: Add a reason for rejection'),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: noteController,
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. Item is reserved by another student',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Reject')),
-        ],
-      ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Reject'),
+              ),
+            ],
+          ),
     );
 
     if (confirmed == true) {
-      await ref.read(rentalExtensionActionsProvider.notifier).rejectExtension(
-        ext.id, 
-        widget.order.id, 
-        note: noteController.text.isEmpty ? null : noteController.text,
-      );
+      await ref
+          .read(rentalExtensionActionsProvider.notifier)
+          .rejectExtension(
+            ext.id,
+            widget.order.id,
+            note: noteController.text.isEmpty ? null : noteController.text,
+          );
       // NOTE: Refresh order data after rejection
       ref.invalidate(orderDetailProvider(widget.order.id));
       if (mounted) {

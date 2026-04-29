@@ -5,7 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:smivo/features/orders/providers/order_chat_provider.dart';
 
 class ChatHistorySection extends ConsumerStatefulWidget {
-  const ChatHistorySection({super.key, required this.chatRoomId, required this.currentUserId});
+  const ChatHistorySection({
+    super.key,
+    required this.chatRoomId,
+    required this.currentUserId,
+  });
   final String chatRoomId;
   final String currentUserId;
 
@@ -18,7 +22,9 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
 
   @override
   Widget build(BuildContext context) {
-    final messagesAsync = ref.watch(orderChatMessagesProvider(widget.chatRoomId));
+    final messagesAsync = ref.watch(
+      orderChatMessagesProvider(widget.chatRoomId),
+    );
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -34,7 +40,12 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('Chat History', style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'Chat History',
+                    style: typo.titleMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 AnimatedRotation(
                   turns: _isExpanded ? 0.5 : 0,
@@ -56,7 +67,10 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
             error: (e, _) => Text('Error: $e'),
             data: (messages) {
               if (messages.isEmpty) {
-                return Text('No messages yet.', style: typo.bodySmall.copyWith(color: colors.outlineVariant));
+                return Text(
+                  'No messages yet.',
+                  style: typo.bodySmall.copyWith(color: colors.outlineVariant),
+                );
               }
               return Container(
                 constraints: const BoxConstraints(maxHeight: 300),
@@ -72,7 +86,9 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
                     final msg = messages[index];
                     final isMe = msg.senderId == widget.currentUserId;
                     final senderName = msg.sender?.displayName ?? 'Unknown';
-                    final timeStr = DateFormat('MMM d · h:mm a').format(msg.createdAt.toLocal());
+                    final timeStr = DateFormat(
+                      'MMM d · h:mm a',
+                    ).format(msg.createdAt.toLocal());
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Row(
@@ -80,10 +96,17 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
                         children: [
                           CircleAvatar(
                             radius: 14,
-                            backgroundColor: isMe ? colors.primary.withValues(alpha: 0.1) : colors.surfaceContainerHigh,
+                            backgroundColor:
+                                isMe
+                                    ? colors.primary.withValues(alpha: 0.1)
+                                    : colors.surfaceContainerHigh,
                             child: Text(
-                              senderName.isNotEmpty ? senderName[0].toUpperCase() : '?',
-                              style: typo.labelSmall.copyWith(color: isMe ? colors.primary : colors.onSurface),
+                              senderName.isNotEmpty
+                                  ? senderName[0].toUpperCase()
+                                  : '?',
+                              style: typo.labelSmall.copyWith(
+                                color: isMe ? colors.primary : colors.onSurface,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -91,11 +114,24 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(children: [
-                                  Text(isMe ? 'You' : senderName, style: typo.bodySmall.copyWith(fontWeight: FontWeight.w600)),
-                                  const SizedBox(width: 6),
-                                  Text(timeStr, style: typo.bodySmall.copyWith(color: colors.outlineVariant, fontSize: 10)),
-                                ]),
+                                Row(
+                                  children: [
+                                    Text(
+                                      isMe ? 'You' : senderName,
+                                      style: typo.bodySmall.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      timeStr,
+                                      style: typo.bodySmall.copyWith(
+                                        color: colors.outlineVariant,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(height: 2),
                                 Text(msg.content, style: typo.bodySmall),
                               ],

@@ -62,39 +62,39 @@ class SmivoRadius extends ThemeExtension<SmivoRadius> {
 
   // ── Factory: Teal (rounded) ────────────────────────────────
   factory SmivoRadius.teal() => const SmivoRadius(
-        xs: 4,
-        sm: 8,
-        md: 12,
-        lg: 16,
-        xl: 24,
-        full: 999,
-        card: 16,
-        button: 12,
-        input: 12,
-        chip: 999,
-        avatar: 999,
-        image: 12,
-        bottomSheet: 24,
-        dialog: 16,
-      );
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    full: 999,
+    card: 16,
+    button: 12,
+    input: 12,
+    chip: 999,
+    avatar: 999,
+    image: 12,
+    bottomSheet: 24,
+    dialog: 16,
+  );
 
   // ── Factory: IKEA (architectural / sharp) ──────────────────
   factory SmivoRadius.ikea() => const SmivoRadius(
-        xs: 2,
-        sm: 2,
-        md: 4,
-        lg: 4,
-        xl: 8,
-        full: 12,
-        card: 4,
-        button: 2,
-        input: 2,
-        chip: 2,
-        avatar: 999, // Avatars stay round in both themes
-        image: 4,
-        bottomSheet: 8,
-        dialog: 8,
-      );
+    xs: 2,
+    sm: 2,
+    md: 4,
+    lg: 4,
+    xl: 8,
+    full: 12,
+    card: 4,
+    button: 2,
+    input: 2,
+    chip: 2,
+    avatar: 999, // Avatars stay round in both themes
+    image: 4,
+    bottomSheet: 8,
+    dialog: 8,
+  );
 
   /// Resolve the correct radii for a given [variant].
   factory SmivoRadius.fromVariant(SmivoThemeVariant variant) {

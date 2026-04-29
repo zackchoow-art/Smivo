@@ -49,17 +49,18 @@ class OrderEvidenceRepository {
           .getPublicUrl(path);
 
       // Create DB record
-      final data = await _client
-          .from(AppConstants.tableOrderEvidence)
-          .insert({
-            'order_id': orderId,
-            'uploader_id': uploaderId,
-            'image_url': imageUrl,
-            'evidence_type': evidenceType,
-            'caption': caption,
-          })
-          .select()
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableOrderEvidence)
+              .insert({
+                'order_id': orderId,
+                'uploader_id': uploaderId,
+                'image_url': imageUrl,
+                'evidence_type': evidenceType,
+                'caption': caption,
+              })
+              .select()
+              .single();
       return OrderEvidence.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

@@ -7,10 +7,7 @@ part 'order_chat_provider.g.dart';
 
 /// Fetches the chat history for a specific chat room.
 @riverpod
-Future<List<Message>> orderChatMessages(
-  Ref ref,
-  String chatRoomId,
-) async {
+Future<List<Message>> orderChatMessages(Ref ref, String chatRoomId) async {
   final repo = ref.watch(chatRepositoryProvider);
   return repo.fetchMessages(chatRoomId);
 }
@@ -30,16 +27,18 @@ Future<String?> orderChatRoomId(
   try {
     // Try buyer's rooms first
     final buyerRooms = await repo.fetchChatRooms(buyerId);
-    final match = buyerRooms.where(
-        (r) => r.listingId == listingId && 
-               r.sellerId == sellerId).firstOrNull;
+    final match =
+        buyerRooms
+            .where((r) => r.listingId == listingId && r.sellerId == sellerId)
+            .firstOrNull;
     if (match != null) return match.id;
 
     // Fallback: try seller's rooms (covers case when current user is seller)
     final sellerRooms = await repo.fetchChatRooms(sellerId);
-    final sellerMatch = sellerRooms.where(
-        (r) => r.listingId == listingId &&
-               r.buyerId == buyerId).firstOrNull;
+    final sellerMatch =
+        sellerRooms
+            .where((r) => r.listingId == listingId && r.buyerId == buyerId)
+            .firstOrNull;
     return sellerMatch?.id;
   } catch (_) {
     return null;

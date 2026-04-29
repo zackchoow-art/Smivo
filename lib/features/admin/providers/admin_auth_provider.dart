@@ -22,11 +22,7 @@ enum AdminModule {
 }
 
 /// Permission levels, ordered by access.
-enum PermissionLevel {
-  none,
-  read,
-  write,
-}
+enum PermissionLevel { none, read, write }
 
 /// Encapsulates the current user's admin context: their roles,
 /// permission overrides, and helper methods for authorization.
@@ -44,8 +40,8 @@ class AdminContext {
 
   /// Whether the user is a platform-level sysadmin.
   bool get isSysadmin => roles.any(
-        (r) => r.isActive && r.role == 'sysadmin' && r.scopeType == 'platform',
-      );
+    (r) => r.isActive && r.role == 'sysadmin' && r.scopeType == 'platform',
+  );
 
   /// The user's highest role across all scopes.
   String get highestRole {
@@ -97,22 +93,20 @@ class AdminContext {
   }
 
   /// Get the effective permission level for a module.
-  PermissionLevel _effectivePermission(
-    AdminModule module, {
-    String? schoolId,
-  }) {
+  PermissionLevel _effectivePermission(AdminModule module, {String? schoolId}) {
     final moduleName = module.name;
 
     // Collect applicable roles sorted by priority (sysadmin > admin > operator)
-    final applicable = roles.where((r) {
-      if (!r.isActive) return false;
-      if (r.scopeType == 'platform') return true;
-      if (r.scopeType == 'school') {
-        return schoolId == null || r.scopeId == schoolId;
-      }
-      return false;
-    }).toList()
-      ..sort((a, b) => _rolePriority(b.role) - _rolePriority(a.role));
+    final applicable =
+        roles.where((r) {
+            if (!r.isActive) return false;
+            if (r.scopeType == 'platform') return true;
+            if (r.scopeType == 'school') {
+              return schoolId == null || r.scopeId == schoolId;
+            }
+            return false;
+          }).toList()
+          ..sort((a, b) => _rolePriority(b.role) - _rolePriority(a.role));
 
     if (applicable.isEmpty) return PermissionLevel.none;
 

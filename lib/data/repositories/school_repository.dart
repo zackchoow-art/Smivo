@@ -14,10 +14,10 @@ class SchoolRepository {
 
   final SupabaseClient _client;
 
-  /// Fetches all active schools, used for displaying lists 
+  /// Fetches all active schools, used for displaying lists
   /// and matching email domains at registration.
   ///
-  /// Excludes pseudo-schools with slug starting with 
+  /// Excludes pseudo-schools with slug starting with
   /// 'smivo-dev' (debug-only domains).
   Future<List<School>> fetchActiveSchools() async {
     try {
@@ -36,11 +36,7 @@ class SchoolRepository {
   /// Fetches a single school by its id.
   Future<School> fetchSchool(String id) async {
     try {
-      final data = await _client
-          .from('schools')
-          .select()
-          .eq('id', id)
-          .single();
+      final data = await _client.from('schools').select().eq('id', id).single();
       return School.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -51,10 +47,7 @@ class SchoolRepository {
 
   Future<List<School>> fetchAllSchools() async {
     try {
-      final data = await _client
-          .from('schools')
-          .select()
-          .order('name');
+      final data = await _client.from('schools').select().order('name');
       return data.map((json) => School.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -63,11 +56,12 @@ class SchoolRepository {
 
   Future<School> createSchool(School school) async {
     try {
-      final response = await _client
-          .from('schools')
-          .insert(school.toJson()..remove('id')) // DB auto-generates uuid
-          .select()
-          .single();
+      final response =
+          await _client
+              .from('schools')
+              .insert(school.toJson()..remove('id')) // DB auto-generates uuid
+              .select()
+              .single();
       return School.fromJson(response);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -78,20 +72,21 @@ class SchoolRepository {
 
   Future<School> updateSchool(School school) async {
     try {
-      final response = await _client
-          .from('schools')
-          .update({
-            'slug': school.slug,
-            'name': school.name,
-            'email_domain': school.emailDomain,
-            'primary_color': school.primaryColor,
-            'logo_url': school.logoUrl,
-            'is_active': school.isActive,
-            'updated_at': DateTime.now().toIso8601String(),
-          })
-          .eq('id', school.id)
-          .select()
-          .single();
+      final response =
+          await _client
+              .from('schools')
+              .update({
+                'slug': school.slug,
+                'name': school.name,
+                'email_domain': school.emailDomain,
+                'primary_color': school.primaryColor,
+                'logo_url': school.logoUrl,
+                'is_active': school.isActive,
+                'updated_at': DateTime.now().toIso8601String(),
+              })
+              .eq('id', school.id)
+              .select()
+              .single();
       return School.fromJson(response);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

@@ -13,10 +13,12 @@ class NotificationCenterScreen extends ConsumerStatefulWidget {
   const NotificationCenterScreen({super.key});
 
   @override
-  ConsumerState<NotificationCenterScreen> createState() => _NotificationCenterScreenState();
+  ConsumerState<NotificationCenterScreen> createState() =>
+      _NotificationCenterScreenState();
 }
 
-class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScreen> {
+class _NotificationCenterScreenState
+    extends ConsumerState<NotificationCenterScreen> {
   bool _unreadExpanded = true;
   bool _todayExpanded = true;
   bool _yesterdayExpanded = true;
@@ -36,7 +38,11 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: colors.onSurface),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 20,
+            color: colors.onSurface,
+          ),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -45,20 +51,32 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
             }
           },
         ),
-        title: Text('Notifications', style: typo.headlineSmall.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+        title: Text(
+          'Notifications',
+          style: typo.headlineSmall.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () async {
               await ref.read(notificationListProvider.notifier).markAllAsRead();
             },
-            child: Text('Mark Read', style: typo.labelSmall.copyWith(color: colors.primary)),
+            child: Text(
+              'Mark Read',
+              style: typo.labelSmall.copyWith(color: colors.primary),
+            ),
           ),
           TextButton(
             onPressed: () async {
               // 一键清空：让所有信息变成已读然后删除
               await ref.read(notificationListProvider.notifier).clearAll();
             },
-            child: Text('Clear All', style: typo.labelSmall.copyWith(color: colors.error)),
+            child: Text(
+              'Clear All',
+              style: typo.labelSmall.copyWith(color: colors.error),
+            ),
           ),
         ],
       ),
@@ -72,15 +90,19 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
             },
             child: notificationsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 100),
-                    child: Text('Error loading notifications', style: typo.bodyMedium.copyWith(color: colors.error)),
+              error:
+                  (e, _) => SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 100),
+                        child: Text(
+                          'Error loading notifications',
+                          style: typo.bodyMedium.copyWith(color: colors.error),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
               data: (notifications) {
                 if (notifications.isEmpty) return _buildEmptyState(context);
 
@@ -92,7 +114,9 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
 
                 final now = DateTime.now();
                 final todayStart = DateTime(now.year, now.month, now.day);
-                final yesterdayStart = todayStart.subtract(const Duration(days: 1));
+                final yesterdayStart = todayStart.subtract(
+                  const Duration(days: 1),
+                );
                 final weekStart = todayStart.subtract(const Duration(days: 7));
 
                 for (final n in notifications) {
@@ -100,11 +124,14 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
                     unread.add(n);
                   } else {
                     final date = n.createdAt.toLocal();
-                    if (date.isAfter(todayStart) || date.isAtSameMomentAs(todayStart)) {
+                    if (date.isAfter(todayStart) ||
+                        date.isAtSameMomentAs(todayStart)) {
                       today.add(n);
-                    } else if (date.isAfter(yesterdayStart) || date.isAtSameMomentAs(yesterdayStart)) {
+                    } else if (date.isAfter(yesterdayStart) ||
+                        date.isAtSameMomentAs(yesterdayStart)) {
                       yesterday.add(n);
-                    } else if (date.isAfter(weekStart) || date.isAtSameMomentAs(weekStart)) {
+                    } else if (date.isAfter(weekStart) ||
+                        date.isAtSameMomentAs(weekStart)) {
                       thisWeek.add(n);
                     } else {
                       older.add(n);
@@ -120,35 +147,50 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
                         title: 'Unread',
                         items: unread,
                         isExpanded: _unreadExpanded,
-                        onToggle: () => setState(() => _unreadExpanded = !_unreadExpanded),
+                        onToggle:
+                            () => setState(
+                              () => _unreadExpanded = !_unreadExpanded,
+                            ),
                       ),
                     if (today.isNotEmpty)
                       _buildSection(
                         title: 'Today',
                         items: today,
                         isExpanded: _todayExpanded,
-                        onToggle: () => setState(() => _todayExpanded = !_todayExpanded),
+                        onToggle:
+                            () => setState(
+                              () => _todayExpanded = !_todayExpanded,
+                            ),
                       ),
                     if (yesterday.isNotEmpty)
                       _buildSection(
                         title: 'Yesterday',
                         items: yesterday,
                         isExpanded: _yesterdayExpanded,
-                        onToggle: () => setState(() => _yesterdayExpanded = !_yesterdayExpanded),
+                        onToggle:
+                            () => setState(
+                              () => _yesterdayExpanded = !_yesterdayExpanded,
+                            ),
                       ),
                     if (thisWeek.isNotEmpty)
                       _buildSection(
                         title: 'This Week',
                         items: thisWeek,
                         isExpanded: _thisWeekExpanded,
-                        onToggle: () => setState(() => _thisWeekExpanded = !_thisWeekExpanded),
+                        onToggle:
+                            () => setState(
+                              () => _thisWeekExpanded = !_thisWeekExpanded,
+                            ),
                       ),
                     if (older.isNotEmpty)
                       _buildSection(
                         title: 'Older',
                         items: older,
                         isExpanded: _olderExpanded,
-                        onToggle: () => setState(() => _olderExpanded = !_olderExpanded),
+                        onToggle:
+                            () => setState(
+                              () => _olderExpanded = !_olderExpanded,
+                            ),
                       ),
                     const SizedBox(height: 24),
                   ],
@@ -180,7 +222,9 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
             child: Row(
               children: [
                 Icon(
-                  isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
+                  isExpanded
+                      ? Icons.keyboard_arrow_down
+                      : Icons.keyboard_arrow_right,
                   color: colors.onSurfaceVariant,
                   size: 20,
                 ),
@@ -194,7 +238,10 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -211,24 +258,34 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
                 TextButton(
                   onPressed: () {
                     final ids = items.map((e) => e.id).toList();
-                    ref.read(notificationListProvider.notifier).deleteNotifications(ids);
+                    ref
+                        .read(notificationListProvider.notifier)
+                        .deleteNotifications(ids);
                   },
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: Text('Clear', style: typo.labelSmall.copyWith(color: colors.error)),
+                  child: Text(
+                    'Clear',
+                    style: typo.labelSmall.copyWith(color: colors.error),
+                  ),
                 ),
               ],
             ),
           ),
         ),
         if (isExpanded)
-          ...items.map((notification) => NotificationListItem(
-                notification: notification,
-                onTap: () => _handleTap(context, ref, notification),
-              )),
+          ...items.map(
+            (notification) => NotificationListItem(
+              notification: notification,
+              onTap: () => _handleTap(context, ref, notification),
+            ),
+          ),
       ],
     );
   }
@@ -244,11 +301,21 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.notifications_none_outlined, size: 64, color: colors.outlineVariant.withValues(alpha: 0.5)),
+              Icon(
+                Icons.notifications_none_outlined,
+                size: 64,
+                color: colors.outlineVariant.withValues(alpha: 0.5),
+              ),
               const SizedBox(height: 12),
-              Text('No notifications yet', style: typo.bodyLarge.copyWith(color: colors.outlineVariant)),
+              Text(
+                'No notifications yet',
+                style: typo.bodyLarge.copyWith(color: colors.outlineVariant),
+              ),
               const SizedBox(height: 4),
-              Text("We'll notify you when something happens.", style: typo.bodySmall.copyWith(color: colors.outlineVariant)),
+              Text(
+                "We'll notify you when something happens.",
+                style: typo.bodySmall.copyWith(color: colors.outlineVariant),
+              ),
             ],
           ),
         ),
@@ -256,19 +323,28 @@ class _NotificationCenterScreenState extends ConsumerState<NotificationCenterScr
     );
   }
 
-  void _handleTap(BuildContext context, WidgetRef ref, AppNotification notification) {
+  void _handleTap(
+    BuildContext context,
+    WidgetRef ref,
+    AppNotification notification,
+  ) {
     if (!notification.isRead) {
       ref.read(notificationListProvider.notifier).markAsRead(notification.id);
     }
     switch (notification.actionType) {
       case 'order':
         if (notification.relatedOrderId != null) {
-          context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': notification.relatedOrderId!});
+          context.pushNamed(
+            AppRoutes.orderDetail,
+            pathParameters: {'id': notification.relatedOrderId!},
+          );
         }
       case 'url':
-        if (notification.actionUrl != null) launchUrl(Uri.parse(notification.actionUrl!));
+        if (notification.actionUrl != null)
+          launchUrl(Uri.parse(notification.actionUrl!));
       case 'route':
-        if (notification.actionUrl != null) context.push(notification.actionUrl!);
+        if (notification.actionUrl != null)
+          context.push(notification.actionUrl!);
       case 'none':
       default:
         break;

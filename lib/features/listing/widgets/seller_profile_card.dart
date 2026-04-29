@@ -1,24 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/data/models/user_profile.dart';
+import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
 
 class SellerProfileCard extends StatelessWidget {
   const SellerProfileCard({
     super.key,
-    required this.name,
-    required this.avatarUrl,
-    required this.rating,
-    required this.reviewCount,
+    required this.user,
     this.label = 'SELLER',
-    this.email,
     this.onMessageTap,
   });
 
-  final String name;
-  final String avatarUrl;
-  final String rating;
-  final int reviewCount;
+  final UserProfile user;
   final String label;
-  final String? email;
   final VoidCallback? onMessageTap;
 
   @override
@@ -26,14 +20,18 @@ class SellerProfileCard extends StatelessWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
+    final name = user.displayName ?? 'Anonymous Student';
+    final email = user.email;
+    final avatarUrl =
+        (user.avatarUrl != null && user.avatarUrl!.isNotEmpty)
+            ? user.avatarUrl!
+            : 'https://i.pravatar.cc/150?u=${user.id}';
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundImage: NetworkImage(avatarUrl),
-          ),
+          CircleAvatar(radius: 24, backgroundImage: NetworkImage(avatarUrl)),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -46,29 +44,13 @@ class SellerProfileCard extends StatelessWidget {
                     letterSpacing: 0.5,
                   ),
                 ),
+                Text(name, style: typo.titleMedium),
                 Text(
-                  name,
-                  style: typo.titleMedium,
+                  email,
+                  style: typo.bodySmall.copyWith(color: colors.outlineVariant),
                 ),
-                if (email != null)
-                  Text(
-                    email!,
-                    style: typo.bodySmall.copyWith(
-                      color: colors.outlineVariant,
-                    ),
-                  ),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: colors.primary, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$rating ($reviewCount reviews)',
-                      style: typo.labelSmall.copyWith(
-                        color: colors.primary,
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 4),
+                UserRatingBadge(user: user, role: 'seller'),
               ],
             ),
           ),

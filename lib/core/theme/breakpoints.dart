@@ -18,8 +18,7 @@ class Breakpoints {
   static bool isMobile(double width) => width < mobile;
 
   /// Returns true if [width] is in tablet range.
-  static bool isTablet(double width) =>
-      width >= mobile && width < desktop;
+  static bool isTablet(double width) => width >= mobile && width < desktop;
 
   /// Returns true if [width] is in desktop range.
   static bool isDesktop(double width) => width >= desktop;

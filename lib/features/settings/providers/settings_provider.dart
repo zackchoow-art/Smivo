@@ -41,14 +41,18 @@ class NotificationPreferences {
     bool? emailAnnouncements,
   }) {
     return NotificationPreferences(
-      emailNotificationsEnabled: emailNotificationsEnabled ?? this.emailNotificationsEnabled,
-      pushNotificationsEnabled: pushNotificationsEnabled ?? this.pushNotificationsEnabled,
+      emailNotificationsEnabled:
+          emailNotificationsEnabled ?? this.emailNotificationsEnabled,
+      pushNotificationsEnabled:
+          pushNotificationsEnabled ?? this.pushNotificationsEnabled,
       pushMessages: pushMessages ?? this.pushMessages,
       emailMessages: emailMessages ?? this.emailMessages,
       pushOrderUpdates: pushOrderUpdates ?? this.pushOrderUpdates,
       emailOrderUpdates: emailOrderUpdates ?? this.emailOrderUpdates,
-      pushCampusAnnouncements: pushCampusAnnouncements ?? this.pushCampusAnnouncements,
-      emailCampusAnnouncements: emailCampusAnnouncements ?? this.emailCampusAnnouncements,
+      pushCampusAnnouncements:
+          pushCampusAnnouncements ?? this.pushCampusAnnouncements,
+      emailCampusAnnouncements:
+          emailCampusAnnouncements ?? this.emailCampusAnnouncements,
       pushAnnouncements: pushAnnouncements ?? this.pushAnnouncements,
       emailAnnouncements: emailAnnouncements ?? this.emailAnnouncements,
     );
@@ -93,7 +97,7 @@ class NotificationSettingsState extends _$NotificationSettingsState {
       pushAnnouncements: pushAnnouncements,
       emailAnnouncements: emailAnnouncements,
     );
-    
+
     state = newState;
 
     try {

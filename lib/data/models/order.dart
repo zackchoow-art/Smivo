@@ -27,8 +27,12 @@ abstract class Order with _$Order {
     // was returned, not just whether it was. null = not yet returned.
     @JsonKey(name: 'return_confirmed_at') DateTime? returnConfirmedAt,
     @JsonKey(name: 'transaction_snapshot_url') String? transactionSnapshotUrl,
-    @JsonKey(name: 'delivery_confirmed_by_buyer') @Default(false) bool deliveryConfirmedByBuyer,
-    @JsonKey(name: 'delivery_confirmed_by_seller') @Default(false) bool deliveryConfirmedBySeller,
+    @JsonKey(name: 'delivery_confirmed_by_buyer')
+    @Default(false)
+    bool deliveryConfirmedByBuyer,
+    @JsonKey(name: 'delivery_confirmed_by_seller')
+    @Default(false)
+    bool deliveryConfirmedBySeller,
     @JsonKey(name: 'delivery_photo_url') String? deliveryPhotoUrl,
     @JsonKey(name: 'delivery_note') String? deliveryNote,
     @JsonKey(name: 'total_price') required double totalPrice,
@@ -39,12 +43,12 @@ abstract class Order with _$Order {
     @JsonKey(name: 'rental_status') String? rentalStatus,
     @JsonKey(name: 'deposit_refunded_at') DateTime? depositRefundedAt,
     @JsonKey(name: 'return_requested_at') DateTime? returnRequestedAt,
-    
+
     // Rental reminder preferences
     @JsonKey(name: 'reminder_days_before') @Default(1) int reminderDaysBefore,
     @JsonKey(name: 'reminder_email') @Default(false) bool reminderEmail,
     @JsonKey(name: 'reminder_sent') @Default(false) bool reminderSent,
-    
+
     // Nested join data — populated only by specific join queries
     UserProfile? buyer,
     UserProfile? seller,
@@ -52,6 +56,5 @@ abstract class Order with _$Order {
     @JsonKey(name: 'pickup_location') PickupLocation? pickupLocation,
   }) = _Order;
 
-  factory Order.fromJson(Map<String, dynamic> json) =>
-      _$OrderFromJson(json);
+  factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
 }

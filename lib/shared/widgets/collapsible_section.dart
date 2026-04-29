@@ -41,9 +41,10 @@ class _CollapsibleSectionState extends State<CollapsibleSection>
       parent: _controller,
       curve: Curves.easeInOut,
     );
-    _rotationAnimation = Tween<double>(begin: 0, end: 0.5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _rotationAnimation = Tween<double>(
+      begin: 0,
+      end: 0.5,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -81,7 +82,9 @@ class _CollapsibleSectionState extends State<CollapsibleSection>
                 Expanded(
                   child: Text(
                     widget.title,
-                    style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                    style: typo.titleMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 RotationTransition(

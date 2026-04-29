@@ -14,8 +14,10 @@ class OrdersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final unreadBuyerCount = ref.watch(unreadBuyerUpdatesCountProvider).valueOrNull ?? 0;
-    final unreadSellerCount = ref.watch(unreadSellerUpdatesCountProvider).valueOrNull ?? 0;
+    final unreadBuyerCount =
+        ref.watch(unreadBuyerUpdatesCountProvider).valueOrNull ?? 0;
+    final unreadSellerCount =
+        ref.watch(unreadSellerUpdatesCountProvider).valueOrNull ?? 0;
     // NOTE: ContentWidthConstraint centers the hub cards on desktop.
     // On desktop the two cards also switch to a Row for better space use.
     final screenWidth = MediaQuery.of(context).size.width;
@@ -31,9 +33,7 @@ class OrdersScreen extends ConsumerWidget {
             children: [
               Text(
                 'My Orders',
-                style: typo.headlineLarge.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
+                style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 8),
               Text(
@@ -48,74 +48,117 @@ class OrdersScreen extends ConsumerWidget {
               Expanded(
                 child: ContentWidthConstraint(
                   maxWidth: 960,
-                  child: isDesktop
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: _HubCard(
+                  child:
+                      isDesktop
+                          ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _HubCard(
+                                  icon: Icons.shopping_bag_outlined,
+                                  title: 'Buyer Center',
+                                  subtitle:
+                                      'Your purchase requests,\naccepted orders, and history.',
+                                  gradient: [
+                                    colors.gradientStart,
+                                    colors.gradientEnd,
+                                  ],
+                                  onTap:
+                                      () => context.pushNamed(
+                                        AppRoutes.buyerCenter,
+                                      ),
+                                  badgeCount: unreadBuyerCount,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _HubCard(
+                                  icon: Icons.storefront_outlined,
+                                  title: 'Seller Center',
+                                  subtitle:
+                                      'Active listings, incoming\norders, and sales history.',
+                                  gradient: [
+                                    colors.secondaryGradientStart,
+                                    colors.secondaryGradientEnd,
+                                  ],
+                                  onTap:
+                                      () => context.pushNamed(
+                                        AppRoutes.sellerCenter,
+                                      ),
+                                  badgeCount: unreadSellerCount,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _HubCard(
+                                  icon: Icons.bookmark_outline,
+                                  title: 'Saved Items',
+                                  subtitle:
+                                      'Listings you have saved\nfor later viewing.',
+                                  gradient: [
+                                    colors.tertiary,
+                                    colors.onSecondaryContainer,
+                                  ],
+                                  onTap:
+                                      () => context.pushNamed(
+                                        AppRoutes.savedListings,
+                                      ),
+                                  badgeCount: 0,
+                                ),
+                              ),
+                            ],
+                          )
+                          : Column(
+                            children: [
+                              _HubCard(
                                 icon: Icons.shopping_bag_outlined,
                                 title: 'Buyer Center',
-                                subtitle: 'Your purchase requests,\naccepted orders, and history.',
-                                gradient: [colors.gradientStart, colors.gradientEnd],
-                                onTap: () => context.pushNamed(AppRoutes.buyerCenter),
+                                subtitle:
+                                    'Your purchase requests,\naccepted orders, and history.',
+                                gradient: [
+                                  colors.gradientStart,
+                                  colors.gradientEnd,
+                                ],
+                                onTap:
+                                    () => context.pushNamed(
+                                      AppRoutes.buyerCenter,
+                                    ),
                                 badgeCount: unreadBuyerCount,
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _HubCard(
+                              const SizedBox(height: 16),
+                              _HubCard(
                                 icon: Icons.storefront_outlined,
                                 title: 'Seller Center',
-                                subtitle: 'Active listings, incoming\norders, and sales history.',
-                                gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
-                                onTap: () => context.pushNamed(AppRoutes.sellerCenter),
+                                subtitle:
+                                    'Active listings, incoming\norders, and sales history.',
+                                gradient: [
+                                  colors.secondaryGradientStart,
+                                  colors.secondaryGradientEnd,
+                                ],
+                                onTap:
+                                    () => context.pushNamed(
+                                      AppRoutes.sellerCenter,
+                                    ),
                                 badgeCount: unreadSellerCount,
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _HubCard(
+                              const SizedBox(height: 16),
+                              _HubCard(
                                 icon: Icons.bookmark_outline,
                                 title: 'Saved Items',
-                                subtitle: 'Listings you have saved\nfor later viewing.',
-                                gradient: [colors.tertiary, colors.onSecondaryContainer],
-                                onTap: () => context.pushNamed(AppRoutes.savedListings),
+                                subtitle:
+                                    'Listings you have saved\nfor later viewing.',
+                                gradient: [
+                                  colors.tertiary,
+                                  colors.onSecondaryContainer,
+                                ],
+                                onTap:
+                                    () => context.pushNamed(
+                                      AppRoutes.savedListings,
+                                    ),
                                 badgeCount: 0,
                               ),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          children: [
-                            _HubCard(
-                              icon: Icons.shopping_bag_outlined,
-                              title: 'Buyer Center',
-                              subtitle: 'Your purchase requests,\naccepted orders, and history.',
-                              gradient: [colors.gradientStart, colors.gradientEnd],
-                              onTap: () => context.pushNamed(AppRoutes.buyerCenter),
-                              badgeCount: unreadBuyerCount,
-                            ),
-                            const SizedBox(height: 16),
-                            _HubCard(
-                              icon: Icons.storefront_outlined,
-                              title: 'Seller Center',
-                              subtitle: 'Active listings, incoming\norders, and sales history.',
-                              gradient: [colors.secondaryGradientStart, colors.secondaryGradientEnd],
-                              onTap: () => context.pushNamed(AppRoutes.sellerCenter),
-                              badgeCount: unreadSellerCount,
-                            ),
-                            const SizedBox(height: 16),
-                            _HubCard(
-                              icon: Icons.bookmark_outline,
-                              title: 'Saved Items',
-                              subtitle: 'Listings you have saved\nfor later viewing.',
-                              gradient: [colors.tertiary, colors.onSecondaryContainer],
-                              onTap: () => context.pushNamed(AppRoutes.savedListings),
-                              badgeCount: 0,
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
                 ),
               ),
             ],
@@ -187,14 +230,20 @@ class _HubCard extends StatelessWidget {
                       if (badgeCount > 0) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.error,
                             borderRadius: BorderRadius.circular(radius.full),
                           ),
                           child: Text(
                             badgeCount > 99 ? '99+' : badgeCount.toString(),
-                            style: typo.labelSmall.copyWith(color: colors.onPrimary, fontWeight: FontWeight.bold),
+                            style: typo.labelSmall.copyWith(
+                              color: colors.onPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],

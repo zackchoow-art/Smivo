@@ -30,7 +30,7 @@ class HomeScreen extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = Breakpoints.isDesktop(constraints.maxWidth);
-            
+
             final content = RefreshIndicator(
               onRefresh: () async {
                 try {
@@ -57,19 +57,23 @@ class HomeScreen extends ConsumerWidget {
                   const SliverToBoxAdapter(child: HomeCategoryChips()),
                   const SliverToBoxAdapter(child: SizedBox(height: 24)),
                   listingsAsync.when(
-                    loading: () => const SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                    error: (error, stack) => SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Text(
-                          'Error loading listings',
-                          style: typo.bodyMedium.copyWith(color: colors.error),
+                    loading:
+                        () => const SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(child: CircularProgressIndicator()),
                         ),
-                      ),
-                    ),
+                    error:
+                        (error, stack) => SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Text(
+                              'Error loading listings',
+                              style: typo.bodyMedium.copyWith(
+                                color: colors.error,
+                              ),
+                            ),
+                          ),
+                        ),
                     data: (listings) {
                       if (listings.isEmpty) {
                         return SliverFillRemaining(
@@ -95,10 +99,7 @@ class HomeScreen extends ConsumerWidget {
             );
 
             if (isDesktop) {
-              return ContentWidthConstraint(
-                maxWidth: 1280,
-                child: content,
-              );
+              return ContentWidthConstraint(maxWidth: 1280, child: content);
             }
 
             return content;
@@ -114,21 +115,14 @@ class HomeScreen extends ConsumerWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            // First 3 items are featured, the rest are compact
-            if (index < 3 && index < listings.length) {
-              return FeaturedListingCard(
-                listing: listings[index],
-              );
-            } else {
-              return CompactListingCard(
-                listing: listings[index],
-              );
-            }
-          },
-          childCount: listings.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          // First 3 items are featured, the rest are compact
+          if (index < 3 && index < listings.length) {
+            return FeaturedListingCard(listing: listings[index]);
+          } else {
+            return CompactListingCard(listing: listings[index]);
+          }
+        }, childCount: listings.length),
       ),
     );
   }
@@ -147,9 +141,8 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) => IkeaFeaturedListingCard(
-                listing: listings[index],
-              ),
+              (context, index) =>
+                  IkeaFeaturedListingCard(listing: listings[index]),
               childCount: featuredCount,
             ),
           ),
@@ -168,9 +161,10 @@ class HomeScreen extends ConsumerWidget {
                 final width = constraints.crossAxisExtent;
                 // NOTE: Dynamic column count based on available width.
                 // `width` is already the content area inside padding.
-                final crossAxisCount = Breakpoints.isDesktop(width + 32)
-                    ? 4
-                    : Breakpoints.isTablet(width + 32)
+                final crossAxisCount =
+                    Breakpoints.isDesktop(width + 32)
+                        ? 4
+                        : Breakpoints.isTablet(width + 32)
                         ? 3
                         : 2;
 
@@ -188,9 +182,8 @@ class HomeScreen extends ConsumerWidget {
                     childAspectRatio: 0.68,
                   ),
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => IkeaGridListingCard(
-                      listing: gridItems[index],
-                    ),
+                    (context, index) =>
+                        IkeaGridListingCard(listing: gridItems[index]),
                     childCount: gridItems.length,
                   ),
                 );
@@ -199,9 +192,7 @@ class HomeScreen extends ConsumerWidget {
           ),
 
         // Bottom spacing so last grid row isn't flush with nav bar
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 24),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],
     );
   }
@@ -214,12 +205,16 @@ class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get minExtent => 64.0;
-  
+
   @override
   double get maxExtent => 64.0;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: backgroundColor,
       padding: const EdgeInsets.symmetric(vertical: 8.0),

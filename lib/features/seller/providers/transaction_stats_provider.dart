@@ -1,4 +1,3 @@
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/saved_listing.dart';
@@ -29,22 +28,23 @@ class ListingOrders extends _$ListingOrders {
 
   void _subscribe(String listingId) {
     final client = ref.read(supabaseClientProvider);
-    _channel = client
-        .channel('listing_orders:$listingId')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'orders',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'listing_id',
-            value: listingId,
-          ),
-          callback: (payload) {
-            ref.invalidateSelf();
-          },
-        )
-        .subscribe();
+    _channel =
+        client
+            .channel('listing_orders:$listingId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'orders',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'listing_id',
+                value: listingId,
+              ),
+              callback: (payload) {
+                ref.invalidateSelf();
+              },
+            )
+            .subscribe();
   }
 }
 
@@ -68,21 +68,22 @@ class ListingSaves extends _$ListingSaves {
 
   void _subscribe(String listingId) {
     final client = ref.read(supabaseClientProvider);
-    _channel = client
-        .channel('listing_saves:$listingId')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'saved_listings',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'listing_id',
-            value: listingId,
-          ),
-          callback: (payload) {
-            ref.invalidateSelf();
-          },
-        )
-        .subscribe();
+    _channel =
+        client
+            .channel('listing_saves:$listingId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'saved_listings',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'listing_id',
+                value: listingId,
+              ),
+              callback: (payload) {
+                ref.invalidateSelf();
+              },
+            )
+            .subscribe();
   }
 }

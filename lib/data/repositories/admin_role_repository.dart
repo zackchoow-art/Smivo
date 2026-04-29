@@ -49,10 +49,7 @@ class AdminRoleRepository {
 
     return (res as List).map((row) {
       final school = row['schools'] as Map<String, dynamic>?;
-      return AdminRole.fromJson({
-        ...row,
-        'school_name': school?['name'],
-      });
+      return AdminRole.fromJson({...row, 'school_name': school?['name']});
     }).toList();
   }
 
@@ -103,9 +100,7 @@ class AdminRoleRepository {
         .eq('role_id', roleId)
         .order('module');
 
-    return (res as List)
-        .map((row) => AdminPermission.fromJson(row))
-        .toList();
+    return (res as List).map((row) => AdminPermission.fromJson(row)).toList();
   }
 
   /// Upsert a permission override.

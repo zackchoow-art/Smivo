@@ -39,6 +39,10 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
       json['email_campus_announcements'] as bool? ?? false,
   pushAnnouncements: json['push_announcements'] as bool? ?? true,
   emailAnnouncements: json['email_announcements'] as bool? ?? false,
+  buyerRating: (json['buyer_rating'] as num?)?.toDouble() ?? 0.0,
+  buyerRatingCount: (json['buyer_rating_count'] as num?)?.toInt() ?? 0,
+  sellerRating: (json['seller_rating'] as num?)?.toDouble() ?? 0.0,
+  sellerRatingCount: (json['seller_rating_count'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
@@ -64,4 +68,8 @@ Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
       'email_campus_announcements': instance.emailCampusAnnouncements,
       'push_announcements': instance.pushAnnouncements,
       'email_announcements': instance.emailAnnouncements,
+      'buyer_rating': instance.buyerRating,
+      'buyer_rating_count': instance.buyerRatingCount,
+      'seller_rating': instance.sellerRating,
+      'seller_rating_count': instance.sellerRatingCount,
     };

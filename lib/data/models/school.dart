@@ -41,6 +41,5 @@ abstract class School with _$School {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _School;
 
-  factory School.fromJson(Map<String, dynamic> json) =>
-      _$SchoolFromJson(json);
+  factory School.fromJson(Map<String, dynamic> json) => _$SchoolFromJson(json);
 }

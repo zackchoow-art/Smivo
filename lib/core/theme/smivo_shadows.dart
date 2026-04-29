@@ -29,65 +29,57 @@ class SmivoShadows extends ThemeExtension<SmivoShadows> {
 
   // ── Factory: Teal (subtle / minimal) ───────────────────────
   factory SmivoShadows.teal() => const SmivoShadows(
-        card: [],
-        elevated: [
-          BoxShadow(
-            color: Color(0x11000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-        floating: [
-          BoxShadow(
-            color: Color(0x18000000),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
-        bottomNav: [
-          BoxShadow(
-            color: Color(0x11000000),
-            blurRadius: 8,
-            offset: Offset(0, -2),
-          ),
-        ],
-      );
+    card: [],
+    elevated: [
+      BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, 2)),
+    ],
+    floating: [
+      BoxShadow(
+        color: Color(0x18000000),
+        blurRadius: 16,
+        offset: Offset(0, -4),
+      ),
+    ],
+    bottomNav: [
+      BoxShadow(color: Color(0x11000000), blurRadius: 8, offset: Offset(0, -2)),
+    ],
+  );
 
   // ── Factory: IKEA (ambient / diffused) ─────────────────────
   factory SmivoShadows.ikea() => const SmivoShadows(
-        card: [
-          BoxShadow(
-            color: Color(0x0F1A1C1C),
-            blurRadius: 24,
-            spreadRadius: -4,
-            offset: Offset(0, 8),
-          ),
-        ],
-        elevated: [
-          BoxShadow(
-            color: Color(0x0F1A1C1C),
-            blurRadius: 24,
-            spreadRadius: -4,
-            offset: Offset(0, 8),
-          ),
-        ],
-        floating: [
-          BoxShadow(
-            color: Color(0x0F1A1C1C),
-            blurRadius: 24,
-            spreadRadius: -4,
-            offset: Offset(0, -8),
-          ),
-        ],
-        bottomNav: [
-          BoxShadow(
-            color: Color(0x0F1A1C1C),
-            blurRadius: 24,
-            spreadRadius: -4,
-            offset: Offset(0, -8),
-          ),
-        ],
-      );
+    card: [
+      BoxShadow(
+        color: Color(0x0F1A1C1C),
+        blurRadius: 24,
+        spreadRadius: -4,
+        offset: Offset(0, 8),
+      ),
+    ],
+    elevated: [
+      BoxShadow(
+        color: Color(0x0F1A1C1C),
+        blurRadius: 24,
+        spreadRadius: -4,
+        offset: Offset(0, 8),
+      ),
+    ],
+    floating: [
+      BoxShadow(
+        color: Color(0x0F1A1C1C),
+        blurRadius: 24,
+        spreadRadius: -4,
+        offset: Offset(0, -8),
+      ),
+    ],
+    bottomNav: [
+      BoxShadow(
+        color: Color(0x0F1A1C1C),
+        blurRadius: 24,
+        spreadRadius: -4,
+        offset: Offset(0, -8),
+      ),
+    ],
+  );
 
   /// Resolve the correct shadows for a given [variant].
   factory SmivoShadows.fromVariant(SmivoThemeVariant variant) {

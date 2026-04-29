@@ -67,9 +67,10 @@ class StorageRepository {
   }) async {
     try {
       // Prefer order-based path; fall back to chat room path
-      final basePath = orderId != null
-          ? '$orderId/chat/$fileName'
-          : 'unlinked/$chatRoomId/$fileName';
+      final basePath =
+          orderId != null
+              ? '$orderId/chat/$fileName'
+              : 'unlinked/$chatRoomId/$fileName';
       await _client.storage
           .from(AppConstants.bucketOrderFiles)
           .uploadBinary(basePath, fileBytes);

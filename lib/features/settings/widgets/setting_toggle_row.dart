@@ -33,11 +33,7 @@ class SettingToggleRow extends StatelessWidget {
               color: colors.surfaceContainerLowest,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: colors.settingsIcon,
-              size: 20,
-            ),
+            child: Icon(icon, color: colors.settingsIcon, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -67,8 +63,7 @@ class SettingToggleRow extends StatelessWidget {
           CupertinoSwitch(
             value: value,
             activeTrackColor: colors.settingsIcon,
-            inactiveTrackColor:
-                colors.onSurface.withValues(alpha: 0.15),
+            inactiveTrackColor: colors.onSurface.withValues(alpha: 0.15),
             onChanged: onChanged,
           ),
         ],

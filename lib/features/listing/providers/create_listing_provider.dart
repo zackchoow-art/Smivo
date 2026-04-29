@@ -67,9 +67,9 @@ class SelectedListingCategory extends _$SelectedListingCategory {
 
 /// Handles the async submission of the create listing form.
 ///
-/// Reads photo paths from ListingPhotos, reads form fields 
-/// as parameters, uploads photos + creates the listing + 
-/// creates listing_images records — all via the repository's 
+/// Reads photo paths from ListingPhotos, reads form fields
+/// as parameters, uploads photos + creates the listing +
+/// creates listing_images records — all via the repository's
 /// atomic createListingWithImages method.
 @riverpod
 class CreateListingAction extends _$CreateListingAction {
@@ -119,7 +119,7 @@ class CreateListingAction extends _$CreateListingAction {
         throw ArgumentError('Sale price is required');
       }
       if (transactionType == 'rental') {
-        final hasAnyRate = 
+        final hasAnyRate =
             (dailyRate != null && dailyRate > 0) ||
             (weeklyRate != null && weeklyRate > 0) ||
             (monthlyRate != null && monthlyRate > 0);
@@ -179,11 +179,11 @@ class CreateListingAction extends _$CreateListingAction {
 
       // Invalidate home listings so the new item appears
       ref.invalidate(homeListingsProvider);
-      
+
       // Clear form state for next time
       ref.read(listingPhotosProvider.notifier).clear();
       ref.read(selectedListingCategoryProvider.notifier).clear();
-      
+
       state = AsyncValue.data(created);
       return created;
     } catch (e, st) {

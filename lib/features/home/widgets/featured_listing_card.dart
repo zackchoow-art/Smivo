@@ -13,10 +13,7 @@ import 'package:smivo/core/router/app_routes.dart';
 /// showing title, description, and price. The gradient uses the
 /// theme's gradient colors for brand consistency.
 class FeaturedListingCard extends StatelessWidget {
-  const FeaturedListingCard({
-    super.key,
-    required this.listing,
-  });
+  const FeaturedListingCard({super.key, required this.listing});
 
   final Listing listing;
 
@@ -47,22 +44,24 @@ class FeaturedListingCard extends StatelessWidget {
         final isDesktop = Breakpoints.isDesktop(constraints.maxWidth);
 
         Widget content = GestureDetector(
-          onTap: () => context.pushNamed(
-            AppRoutes.listingDetail,
-            pathParameters: {'id': listing.id},
-          ),
+          onTap:
+              () => context.pushNamed(
+                AppRoutes.listingDetail,
+                pathParameters: {'id': listing.id},
+              ),
           child: Container(
             height: 300,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
               color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(radius.xl),
-              image: imageUrl != null
-                  ? DecorationImage(
-                      image: NetworkImage(imageUrl),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
+              image:
+                  imageUrl != null
+                      ? DecorationImage(
+                        image: NetworkImage(imageUrl),
+                        fit: BoxFit.cover,
+                      )
+                      : null,
             ),
             child: Stack(
               children: [
@@ -80,7 +79,9 @@ class FeaturedListingCard extends StatelessWidget {
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: TransactionTag(transactionType: listing.transactionType),
+                  child: TransactionTag(
+                    transactionType: listing.transactionType,
+                  ),
                 ),
 
                 // Bottom Info Gradient & Text
@@ -124,7 +125,9 @@ class FeaturedListingCard extends StatelessWidget {
                                 Text(
                                   listing.description!,
                                   style: typo.bodySmall.copyWith(
-                                    color: colors.onPrimary.withValues(alpha: 0.7),
+                                    color: colors.onPrimary.withValues(
+                                      alpha: 0.7,
+                                    ),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,

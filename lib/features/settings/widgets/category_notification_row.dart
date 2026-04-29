@@ -86,7 +86,8 @@ class CategoryNotificationRow extends StatelessWidget {
                 'Push Notification',
                 style: typo.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: pushEnabled ? colors.onSurface : colors.onSurfaceVariant,
+                  color:
+                      pushEnabled ? colors.onSurface : colors.onSurfaceVariant,
                 ),
               ),
               Switch.adaptive(
@@ -104,7 +105,8 @@ class CategoryNotificationRow extends StatelessWidget {
                 'Email',
                 style: typo.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: emailEnabled ? colors.onSurface : colors.onSurfaceVariant,
+                  color:
+                      emailEnabled ? colors.onSurface : colors.onSurfaceVariant,
                 ),
               ),
               Switch.adaptive(

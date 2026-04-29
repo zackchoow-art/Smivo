@@ -103,42 +103,55 @@ class AdminSchoolsScreen extends ConsumerWidget {
                       color: colors.onSurfaceVariant,
                     ),
                   ),
-                  trailing: canWrite
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit,
-                                  size: 20, color: colors.primary),
-                              onPressed: () =>
-                                  _showSchoolDialog(context, ref, school),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete,
-                                  size: 20, color: colors.error),
-                              onPressed: () =>
-                                  _confirmDelete(context, ref, school),
-                            ),
-                          ],
-                        )
-                      : null,
+                  trailing:
+                      canWrite
+                          ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.edit,
+                                  size: 20,
+                                  color: colors.primary,
+                                ),
+                                onPressed:
+                                    () =>
+                                        _showSchoolDialog(context, ref, school),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.delete,
+                                  size: 20,
+                                  color: colors.error,
+                                ),
+                                onPressed:
+                                    () => _confirmDelete(context, ref, school),
+                              ),
+                            ],
+                          )
+                          : null,
                 ),
               );
             },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Text('Error loading schools: $err', style: TextStyle(color: colors.error)),
-        ),
+        error:
+            (err, stack) => Center(
+              child: Text(
+                'Error loading schools: $err',
+                style: TextStyle(color: colors.error),
+              ),
+            ),
       ),
-      floatingActionButton: canWrite
-          ? FloatingActionButton(
-              onPressed: () => _showSchoolDialog(context, ref, null),
-              backgroundColor: colors.primary,
-              child: Icon(Icons.add, color: colors.onPrimary),
-            )
-          : null,
+      floatingActionButton:
+          canWrite
+              ? FloatingActionButton(
+                onPressed: () => _showSchoolDialog(context, ref, null),
+                backgroundColor: colors.primary,
+                child: Icon(Icons.add, color: colors.onPrimary),
+              )
+              : null,
     );
   }
 
@@ -152,24 +165,29 @@ class AdminSchoolsScreen extends ConsumerWidget {
   void _confirmDelete(BuildContext context, WidgetRef ref, School school) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete School'),
-        content: Text('Are you sure you want to delete "${school.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete School'),
+            content: Text('Are you sure you want to delete "${school.name}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  ref
+                      .read(adminSchoolControllerProvider.notifier)
+                      .deleteSchool(school.id);
+                  Navigator.of(context).pop();
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.smivoColors.error,
+                ),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () {
-              ref.read(adminSchoolControllerProvider.notifier).deleteSchool(school.id);
-              Navigator.of(context).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: context.smivoColors.error),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -211,11 +229,17 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
     _cityCtrl = TextEditingController(text: widget.school?.city ?? '');
     _stateCtrl = TextEditingController(text: widget.school?.state ?? '');
     _zipCtrl = TextEditingController(text: widget.school?.zipCode ?? '');
-    _latCtrl = TextEditingController(text: widget.school?.latitude?.toString() ?? '');
-    _lngCtrl = TextEditingController(text: widget.school?.longitude?.toString() ?? '');
+    _latCtrl = TextEditingController(
+      text: widget.school?.latitude?.toString() ?? '',
+    );
+    _lngCtrl = TextEditingController(
+      text: widget.school?.longitude?.toString() ?? '',
+    );
     _websiteCtrl = TextEditingController(text: widget.school?.websiteUrl ?? '');
     _descCtrl = TextEditingController(text: widget.school?.description ?? '');
-    _studentCountCtrl = TextEditingController(text: widget.school?.studentCount?.toString() ?? '');
+    _studentCountCtrl = TextEditingController(
+      text: widget.school?.studentCount?.toString() ?? '',
+    );
     _isActive = widget.school?.isActive ?? false;
   }
 
@@ -245,15 +269,18 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
       slug: _slugCtrl.text.trim(),
       name: _nameCtrl.text.trim(),
       emailDomain: _domainCtrl.text.trim(),
-      primaryColor: _colorCtrl.text.trim().isEmpty ? null : _colorCtrl.text.trim(),
+      primaryColor:
+          _colorCtrl.text.trim().isEmpty ? null : _colorCtrl.text.trim(),
       isActive: _isActive,
-      address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+      address:
+          _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
       city: _cityCtrl.text.trim().isEmpty ? null : _cityCtrl.text.trim(),
       state: _stateCtrl.text.trim().isEmpty ? null : _stateCtrl.text.trim(),
       zipCode: _zipCtrl.text.trim().isEmpty ? null : _zipCtrl.text.trim(),
       latitude: double.tryParse(_latCtrl.text.trim()),
       longitude: double.tryParse(_lngCtrl.text.trim()),
-      websiteUrl: _websiteCtrl.text.trim().isEmpty ? null : _websiteCtrl.text.trim(),
+      websiteUrl:
+          _websiteCtrl.text.trim().isEmpty ? null : _websiteCtrl.text.trim(),
       description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       studentCount: int.tryParse(_studentCountCtrl.text.trim()),
       createdAt: widget.school?.createdAt ?? DateTime.now(),
@@ -261,10 +288,9 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
     );
 
     if (widget.school == null) {
-      ref.read(adminSchoolControllerProvider.notifier).addSchool(
-        newSchool,
-        seedDefaults: _seedDefaults,
-      );
+      ref
+          .read(adminSchoolControllerProvider.notifier)
+          .addSchool(newSchool, seedDefaults: _seedDefaults);
     } else {
       ref.read(adminSchoolControllerProvider.notifier).updateSchool(newSchool);
     }
@@ -288,12 +314,21 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Basic Info ──
-                Text('Basic Info', style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  'Basic Info',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Name (e.g. Smith College)'),
-                  validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
+                  decoration: const InputDecoration(
+                    labelText: 'Name (e.g. Smith College)',
+                  ),
+                  validator:
+                      (val) =>
+                          val != null && val.trim().isNotEmpty
+                              ? null
+                              : 'Required',
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -302,15 +337,25 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
                       child: TextFormField(
                         controller: _slugCtrl,
                         decoration: const InputDecoration(labelText: 'Slug'),
-                        validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
+                        validator:
+                            (val) =>
+                                val != null && val.trim().isNotEmpty
+                                    ? null
+                                    : 'Required',
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextFormField(
                         controller: _domainCtrl,
-                        decoration: const InputDecoration(labelText: 'Email Domain'),
-                        validator: (val) => val != null && val.trim().isNotEmpty ? null : 'Required',
+                        decoration: const InputDecoration(
+                          labelText: 'Email Domain',
+                        ),
+                        validator:
+                            (val) =>
+                                val != null && val.trim().isNotEmpty
+                                    ? null
+                                    : 'Required',
                       ),
                     ),
                   ],
@@ -332,19 +377,50 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: TextFormField(controller: _cityCtrl, decoration: const InputDecoration(labelText: 'City'))),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _cityCtrl,
+                        decoration: const InputDecoration(labelText: 'City'),
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: TextFormField(controller: _stateCtrl, decoration: const InputDecoration(labelText: 'State'))),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _stateCtrl,
+                        decoration: const InputDecoration(labelText: 'State'),
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: TextFormField(controller: _zipCtrl, decoration: const InputDecoration(labelText: 'ZIP'))),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _zipCtrl,
+                        decoration: const InputDecoration(labelText: 'ZIP'),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: TextFormField(controller: _latCtrl, decoration: const InputDecoration(labelText: 'Latitude'), keyboardType: TextInputType.number)),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _latCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Latitude',
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: TextFormField(controller: _lngCtrl, decoration: const InputDecoration(labelText: 'Longitude'), keyboardType: TextInputType.number)),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _lngCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Longitude',
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
                   ],
                 ),
 
@@ -353,9 +429,23 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(child: TextFormField(controller: _colorCtrl, decoration: const InputDecoration(labelText: 'Primary Color Hex'))),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _colorCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Primary Color Hex',
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: TextFormField(controller: _websiteCtrl, decoration: const InputDecoration(labelText: 'Website URL'))),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _websiteCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Website URL',
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -374,7 +464,9 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
                 if (!isEditing)
                   SwitchListTile(
                     title: const Text('Seed Default Data'),
-                    subtitle: const Text('Create default categories, conditions, pickup locations'),
+                    subtitle: const Text(
+                      'Create default categories, conditions, pickup locations',
+                    ),
                     value: _seedDefaults,
                     onChanged: (val) => setState(() => _seedDefaults = val),
                   ),
@@ -396,4 +488,3 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
     );
   }
 }
-

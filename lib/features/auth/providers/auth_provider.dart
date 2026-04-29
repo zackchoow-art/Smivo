@@ -14,7 +14,10 @@ part 'auth_provider.g.dart';
 /// GoRouter and other providers listen to this to react to login/logout.
 @riverpod
 Stream<supabase.User?> authState(Ref ref) {
-  return ref.watch(authRepositoryProvider).authStateChanges.map((state) => state.session?.user);
+  return ref
+      .watch(authRepositoryProvider)
+      .authStateChanges
+      .map((state) => state.session?.user);
 }
 
 @riverpod
@@ -69,10 +72,9 @@ class Auth extends _$Auth {
         throw AuthException(passwordError);
       }
 
-      await ref.read(authRepositoryProvider).signUp(
-            email: fullEmail,
-            password: password,
-          );
+      await ref
+          .read(authRepositoryProvider)
+          .signUp(email: fullEmail, password: password);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(_mapError(e, st), st);
@@ -97,10 +99,9 @@ class Auth extends _$Auth {
         throw AuthException(passwordError);
       }
 
-      await ref.read(authRepositoryProvider).signUp(
-            email: fullEmail.trim(),
-            password: password,
-          );
+      await ref
+          .read(authRepositoryProvider)
+          .signUp(email: fullEmail.trim(), password: password);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(_mapError(e, st), st);
@@ -114,10 +115,9 @@ class Auth extends _$Auth {
     state = const AsyncValue.loading();
     try {
       final fullEmail = "${prefix.trim()}@smith.edu";
-      await ref.read(authRepositoryProvider).signIn(
-            email: fullEmail,
-            password: password,
-          );
+      await ref
+          .read(authRepositoryProvider)
+          .signIn(email: fullEmail, password: password);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       // Per requirements: ignore "Email not confirmed" error here as router handles it
@@ -141,10 +141,9 @@ class Auth extends _$Auth {
         );
       }
 
-      await ref.read(authRepositoryProvider).signIn(
-            email: fullEmail.trim(),
-            password: password,
-          );
+      await ref
+          .read(authRepositoryProvider)
+          .signIn(email: fullEmail.trim(), password: password);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(_mapError(e, st), st);

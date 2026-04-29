@@ -45,9 +45,10 @@ class ChatListItem extends StatelessWidget {
                 onPressed: (_) => onTogglePin?.call(),
                 backgroundColor: colors.primary,
                 foregroundColor: colors.onPrimary,
-                icon: conversation.isPinned
-                    ? Icons.push_pin
-                    : Icons.push_pin_outlined,
+                icon:
+                    conversation.isPinned
+                        ? Icons.push_pin
+                        : Icons.push_pin_outlined,
                 label: conversation.isPinned ? 'Unpin' : 'Pin',
               ),
               SlidableAction(
@@ -66,13 +67,13 @@ class ChatListItem extends StatelessWidget {
             children: [
               SlidableAction(
                 onPressed: (_) => onArchive?.call(),
-                backgroundColor: isArchiveView
-                    ? colors.success
-                    : colors.onSurfaceVariant,
+                backgroundColor:
+                    isArchiveView ? colors.success : colors.onSurfaceVariant,
                 foregroundColor: Colors.white,
-                icon: isArchiveView
-                    ? Icons.unarchive_outlined
-                    : Icons.archive_outlined,
+                icon:
+                    isArchiveView
+                        ? Icons.unarchive_outlined
+                        : Icons.archive_outlined,
                 label: isArchiveView ? 'Unarchive' : 'Archive',
               ),
             ],
@@ -83,9 +84,10 @@ class ChatListItem extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 // NOTE: Pinned rooms get a slightly tinted background to stand out.
-                color: conversation.isPinned
-                    ? colors.primary.withValues(alpha: 0.07)
-                    : colors.surfaceContainerHigh,
+                color:
+                    conversation.isPinned
+                        ? colors.primary.withValues(alpha: 0.07)
+                        : colors.surfaceContainerHigh,
               ),
               child: Row(
                 children: [
@@ -96,17 +98,20 @@ class ChatListItem extends StatelessWidget {
                       CircleAvatar(
                         radius: 24,
                         backgroundColor: colors.surfaceContainer,
-                        backgroundImage: conversation.avatarUrl != null
-                            ? NetworkImage(conversation.avatarUrl!)
-                            : null,
-                        child: conversation.avatarUrl == null &&
-                                conversation.initials != null
-                            ? Text(
-                                conversation.initials!,
-                                style: typo.titleMedium
-                                    .copyWith(color: colors.onSurface),
-                              )
-                            : null,
+                        backgroundImage:
+                            conversation.avatarUrl != null
+                                ? NetworkImage(conversation.avatarUrl!)
+                                : null,
+                        child:
+                            conversation.avatarUrl == null &&
+                                    conversation.initials != null
+                                ? Text(
+                                  conversation.initials!,
+                                  style: typo.titleMedium.copyWith(
+                                    color: colors.onSurface,
+                                  ),
+                                )
+                                : null,
                       ),
                       if (conversation.unreadCount > 0)
                         Positioned(
@@ -118,7 +123,9 @@ class ChatListItem extends StatelessWidget {
                                   ? '99+'
                                   : conversation.unreadCount.toString(),
                               style: TextStyle(
-                                  fontSize: 10, color: colors.onPrimary),
+                                fontSize: 10,
+                                color: colors.onPrimary,
+                              ),
                             ),
                             backgroundColor: colors.error,
                           ),
@@ -143,8 +150,9 @@ class ChatListItem extends StatelessWidget {
                                     Icon(
                                       Icons.push_pin,
                                       size: 12,
-                                      color: colors.primary
-                                          .withValues(alpha: 0.7),
+                                      color: colors.primary.withValues(
+                                        alpha: 0.7,
+                                      ),
                                     ),
                                     const SizedBox(width: 4),
                                   ],

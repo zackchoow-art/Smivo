@@ -17,6 +17,9 @@ import 'package:smivo/features/orders/widgets/rental_extension_card.dart';
 import 'package:smivo/features/orders/widgets/rental_reminder_settings.dart';
 import 'package:smivo/shared/widgets/collapsible_section.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/features/shared/widgets/order_review_form.dart';
+import 'package:smivo/features/shared/widgets/submitted_review_card.dart';
+import 'package:smivo/features/shared/providers/order_review_provider.dart';
 
 class RentalOrderDetailScreen extends ConsumerWidget {
   const RentalOrderDetailScreen({
@@ -81,7 +84,10 @@ class RentalOrderDetailScreen extends ConsumerWidget {
               // Section 3: Order Info — collapsible, default open, counterparty only
               OrderInfoSection(
                 order: order,
-                counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
+                counterpartyName:
+                    isBuyer
+                        ? order.seller?.displayName
+                        : order.buyer?.displayName,
                 buyer: order.buyer,
                 seller: order.seller,
                 currentUserId: currentUserId,
@@ -100,10 +106,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
                       // Rental reminder settings — only for active rentals, buyer only
                       if (order.rentalStatus == 'active' && isBuyer) ...[
                         const SizedBox(height: 16),
-                        RentalReminderSettings(
-                          order: order,
-                          isBuyer: isBuyer,
-                        ),
+                        RentalReminderSettings(order: order, isBuyer: isBuyer),
                       ],
                     ],
                   ),
@@ -112,7 +115,9 @@ class RentalOrderDetailScreen extends ConsumerWidget {
               ],
 
               // Section 5: Delivery & Return — collapsible, default open
-              if (order.status == 'pending' || order.status == 'confirmed' || order.status == 'completed') ...[
+              if (order.status == 'pending' ||
+                  order.status == 'confirmed' ||
+                  order.status == 'completed') ...[
                 CollapsibleSection(
                   title: 'Delivery & Return',
                   initiallyExpanded: true,
@@ -125,12 +130,23 @@ class RentalOrderDetailScreen extends ConsumerWidget {
                         EvidencePhotoSection(
                           label: 'Delivery Evidence',
                           orderId: order.id,
-                          canUpload: _canUploadDeliveryEvidence(order, isBuyer, isSeller),
+                          canUpload: _canUploadDeliveryEvidence(
+                            order,
+                            isBuyer,
+                            isSeller,
+                          ),
                           evidenceType: 'delivery',
                         ),
                         const SizedBox(height: 16),
                       ],
-                      _buildPrimaryActions(context, ref, order, isBuyer, isSeller, isActing),
+                      _buildPrimaryActions(
+                        context,
+                        ref,
+                        order,
+                        isBuyer,
+                        isSeller,
+                        isActing,
+                      ),
                     ],
                   ),
                 ),
@@ -168,12 +184,21 @@ class RentalOrderDetailScreen extends ConsumerWidget {
                       EvidencePhotoSection(
                         label: 'Return Evidence',
                         orderId: order.id,
-                        canUpload: _canUploadReturnEvidence(order, isBuyer, isSeller),
+                        canUpload: _canUploadReturnEvidence(
+                          order,
+                          isBuyer,
+                          isSeller,
+                        ),
                         evidenceType: 'return',
                       ),
                       const SizedBox(height: 12),
                       _buildRentalLifecycleActions(
-                        context, ref, order, isBuyer, isSeller, isActing,
+                        context,
+                        ref,
+                        order,
+                        isBuyer,
+                        isSeller,
+                        isActing,
                       ),
                       // NOTE: Status banner placed here so it shares the same
                       // parent width as the lifecycle action above it.
@@ -193,6 +218,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
                 _buildStatusBanner(context, order),
               // Section 8: Chat History — collapsible, default closed
               _buildChatSection(ref, order),
+              _buildReviewSection(context, ref, order, isBuyer, currentUserId),
             ],
           ),
         ),
@@ -285,7 +311,10 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     }
 
     if (order.status == 'confirmed') {
-      final myConfirmed = isBuyer ? order.deliveryConfirmedByBuyer : order.deliveryConfirmedBySeller;
+      final myConfirmed =
+          isBuyer
+              ? order.deliveryConfirmedByBuyer
+              : order.deliveryConfirmedBySeller;
       if (myConfirmed) {
         return Column(
           children: [
@@ -302,14 +331,19 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             // NOTE: Only show cancel button if NEITHER party has confirmed
-            if (!order.deliveryConfirmedByBuyer && !order.deliveryConfirmedBySeller)
+            if (!order.deliveryConfirmedByBuyer &&
+                !order.deliveryConfirmedBySeller)
               _buildCancelButton(context, ref, order, isActing, isBuyer),
           ],
         );
       }
-      
+
       final evidenceAsync = ref.watch(orderEvidenceProvider(order.id));
-      final deliveryPhotosCount = evidenceAsync.valueOrNull?.where((p) => p.evidenceType == 'delivery').length ?? 0;
+      final deliveryPhotosCount =
+          evidenceAsync.valueOrNull
+              ?.where((p) => p.evidenceType == 'delivery')
+              .length ??
+          0;
       final canConfirm = deliveryPhotosCount >= 1;
 
       return Column(
@@ -319,7 +353,10 @@ class RentalOrderDetailScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 'Please upload at least one photo as evidence to continue.',
-                style: typo.bodyMedium.copyWith(color: colors.error, fontWeight: FontWeight.w600),
+                style: typo.bodyMedium.copyWith(
+                  color: colors.error,
+                  fontWeight: FontWeight.w600,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -329,17 +366,20 @@ class RentalOrderDetailScreen extends ConsumerWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: (isActing || !canConfirm)
-                      ? null
-                      : () async => await ref
-                          .read(orderActionsProvider.notifier)
-                          .confirmDelivery(order),
+                  onPressed:
+                      (isActing || !canConfirm)
+                          ? null
+                          : () async => await ref
+                              .read(orderActionsProvider.notifier)
+                              .confirmDelivery(order),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(
-                    isActing ? 'Processing...' : (isBuyer ? 'Confirm Pickup' : 'Confirm Delivery'),
+                    isActing
+                        ? 'Processing...'
+                        : (isBuyer ? 'Confirm Pickup' : 'Confirm Delivery'),
                     style: typo.titleMedium.copyWith(color: colors.onPrimary),
                   ),
                 ),
@@ -347,10 +387,15 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          if (!order.deliveryConfirmedByBuyer && !order.deliveryConfirmedBySeller)
+          if (!order.deliveryConfirmedByBuyer &&
+              !order.deliveryConfirmedBySeller)
             _buildCancelButton(context, ref, order, isActing, isBuyer),
         ],
       );
+    }
+
+    if (order.status == 'completed') {
+      return const SizedBox.shrink();
     }
 
     return const SizedBox.shrink();
@@ -358,10 +403,10 @@ class RentalOrderDetailScreen extends ConsumerWidget {
 
   List<TimelineStep> _buildRentalSteps(Order order) {
     // NOTE: 'missed' treated same as 'cancelled' for terminal display
-    final isTerminated = order.status == 'cancelled' ||
-        order.status == 'missed';
-    final delivered = order.deliveryConfirmedByBuyer &&
-        order.deliveryConfirmedBySeller;
+    final isTerminated =
+        order.status == 'cancelled' || order.status == 'missed';
+    final delivered =
+        order.deliveryConfirmedByBuyer && order.deliveryConfirmedBySeller;
 
     final steps = <TimelineStep>[
       TimelineStep(
@@ -372,11 +417,9 @@ class RentalOrderDetailScreen extends ConsumerWidget {
       ),
       TimelineStep(
         label: 'Accepted',
-        date: !isTerminated && order.status != 'pending'
-            ? order.updatedAt
-            : null,
-        isCompleted:
-            order.status == 'confirmed' || order.status == 'completed',
+        date:
+            !isTerminated && order.status != 'pending' ? order.updatedAt : null,
+        isCompleted: order.status == 'confirmed' || order.status == 'completed',
         subtitle:
             order.status != 'pending' && !isTerminated
                 ? '${order.buyer?.displayName ?? 'Buyer'}\'s offer'
@@ -396,44 +439,54 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         order.rentalStatus == 'returned' ||
         order.rentalStatus == 'deposit_refunded' ||
         order.status == 'completed') {
-      steps.add(TimelineStep(
-        label: 'Returned',
-        date: order.returnConfirmedAt,
-        isCompleted: order.returnConfirmedAt != null,
-      ));
+      steps.add(
+        TimelineStep(
+          label: 'Returned',
+          date: order.returnConfirmedAt,
+          isCompleted: order.returnConfirmedAt != null,
+        ),
+      );
     }
 
     if (order.depositRefundedAt != null) {
-      steps.add(TimelineStep(
-        label: 'Deposit Refunded',
-        date: order.depositRefundedAt,
-        isCompleted: true,
-      ));
+      steps.add(
+        TimelineStep(
+          label: 'Deposit Refunded',
+          date: order.depositRefundedAt,
+          isCompleted: true,
+        ),
+      );
     }
 
     if (order.status == 'completed') {
-      steps.add(TimelineStep(
-        label: 'Completed',
-        date: order.updatedAt,
-        isCompleted: true,
-      ));
+      steps.add(
+        TimelineStep(
+          label: 'Completed',
+          date: order.updatedAt,
+          isCompleted: true,
+        ),
+      );
     }
     if (order.status == 'cancelled') {
-      steps.add(TimelineStep(
-        label: 'Cancelled',
-        date: order.updatedAt,
-        isCompleted: true,
-        isCancelled: true,
-      ));
+      steps.add(
+        TimelineStep(
+          label: 'Cancelled',
+          date: order.updatedAt,
+          isCompleted: true,
+          isCancelled: true,
+        ),
+      );
     }
     if (order.status == 'missed') {
-      steps.add(TimelineStep(
-        label: 'Offer Missed',
-        date: order.updatedAt,
-        isCompleted: true,
-        isCancelled: true,
-        subtitle: 'Another offer was accepted',
-      ));
+      steps.add(
+        TimelineStep(
+          label: 'Offer Missed',
+          date: order.updatedAt,
+          isCompleted: true,
+          isCancelled: true,
+          subtitle: 'Another offer was accepted',
+        ),
+      );
     }
 
     return steps;
@@ -445,14 +498,24 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Delivery Confirmation',
+        Text(
+          'Delivery Confirmation',
           style: typo.labelSmall.copyWith(
             color: colors.onSurface.withValues(alpha: 0.5),
             letterSpacing: 0.5,
-          )),
+          ),
+        ),
         const SizedBox(height: 8),
-        _infoRow(context, 'Buyer', order.deliveryConfirmedByBuyer ? '✓ Confirmed' : 'Waiting'),
-        _infoRow(context, 'Seller', order.deliveryConfirmedBySeller ? '✓ Confirmed' : 'Waiting'),
+        _infoRow(
+          context,
+          'Buyer',
+          order.deliveryConfirmedByBuyer ? '✓ Confirmed' : 'Waiting',
+        ),
+        _infoRow(
+          context,
+          'Seller',
+          order.deliveryConfirmedBySeller ? '✓ Confirmed' : 'Waiting',
+        ),
       ],
     );
   }
@@ -478,11 +541,13 @@ class RentalOrderDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildChatSection(WidgetRef ref, Order order) {
-    final chatRoomAsync = ref.watch(orderChatRoomIdProvider(
-      listingId: order.listingId,
-      buyerId: order.buyerId,
-      sellerId: order.sellerId,
-    ));
+    final chatRoomAsync = ref.watch(
+      orderChatRoomIdProvider(
+        listingId: order.listingId,
+        buyerId: order.buyerId,
+        sellerId: order.sellerId,
+      ),
+    );
 
     return chatRoomAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -497,6 +562,67 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
           ],
+        );
+      },
+    );
+  }
+
+  Widget _buildReviewSection(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isBuyer,
+    String? currentUserId,
+  ) {
+    if (order.status == 'missed') return const SizedBox.shrink();
+
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
+    if (order.status != 'completed' && order.status != 'cancelled') {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
+        child: Text(
+          'You can submit a review after the order is completed or cancelled.',
+          style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    final targetUserId = isBuyer ? order.sellerId : order.buyerId;
+    final roleToRate = isBuyer ? 'seller' : 'buyer';
+    
+    final orderReviewAsync = ref.watch(
+      orderReviewProvider(
+        orderId: order.id,
+        reviewerId: currentUserId ?? '',
+      ),
+    );
+
+    return orderReviewAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (review) {
+        if (review != null) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
+            child: SubmittedReviewCard(review: review),
+          );
+        }
+        
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
+          child: CollapsibleSection(
+            title: 'Leave a Review',
+            initiallyExpanded: true,
+            child: OrderReviewSection(
+              order: order,
+              currentUserId: currentUserId ?? '',
+              targetUserId: targetUserId,
+              role: roleToRate,
+            ),
+          ),
         );
       },
     );
@@ -520,9 +646,12 @@ class RentalOrderDetailScreen extends ConsumerWidget {
           return SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: isActing
-                  ? null
-                  : () => ref.read(orderActionsProvider.notifier).requestReturn(order.id),
+              onPressed:
+                  isActing
+                      ? null
+                      : () => ref
+                          .read(orderActionsProvider.notifier)
+                          .requestReturn(order.id),
               icon: const Icon(Icons.assignment_return),
               label: Text(isActing ? 'Processing...' : 'Request Return'),
               style: ElevatedButton.styleFrom(
@@ -555,12 +684,15 @@ class RentalOrderDetailScreen extends ConsumerWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: isActing
-                      ? null
-                      : () => ref.read(orderActionsProvider.notifier).confirmReturn(
-                            order.id,
-                            depositAmount: order.depositAmount,
-                          ),
+                  onPressed:
+                      isActing
+                          ? null
+                          : () => ref
+                              .read(orderActionsProvider.notifier)
+                              .confirmReturn(
+                                order.id,
+                                depositAmount: order.depositAmount,
+                              ),
                   icon: const Icon(Icons.check),
                   label: Text(isActing ? 'Processing...' : 'Confirm Return'),
                   style: ElevatedButton.styleFrom(
@@ -600,9 +732,12 @@ class RentalOrderDetailScreen extends ConsumerWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: isActing
-                      ? null
-                      : () => ref.read(orderActionsProvider.notifier).refundDeposit(order.id),
+                  onPressed:
+                      isActing
+                          ? null
+                          : () => ref
+                              .read(orderActionsProvider.notifier)
+                              .refundDeposit(order.id),
                   icon: const Icon(Icons.payments),
                   label: Text(
                     isActing
@@ -672,7 +807,8 @@ class RentalOrderDetailScreen extends ConsumerWidget {
   ) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final canCancel = order.status == 'pending' ||
+    final canCancel =
+        order.status == 'pending' ||
         (order.status == 'confirmed' &&
             !order.deliveryConfirmedByBuyer &&
             !order.deliveryConfirmedBySeller);
@@ -684,36 +820,50 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         child: SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: isActing
-                ? null
-                : () async {
-                    final latestOrder = await ref.refresh(orderDetailProvider(order.id).future);
-                    if (latestOrder.deliveryConfirmedByBuyer || latestOrder.deliveryConfirmedBySeller) {
-                      final otherName = isBuyer ? latestOrder.seller?.displayName : latestOrder.buyer?.displayName;
-                      if (context.mounted) {
-                        _showErrorDialog(context, 'Cannot Cancel', '${otherName ?? 'The other party'} has already confirmed. You cannot cancel this order.');
+            onPressed:
+                isActing
+                    ? null
+                    : () async {
+                      final latestOrder = await ref.refresh(
+                        orderDetailProvider(order.id).future,
+                      );
+                      if (latestOrder.deliveryConfirmedByBuyer ||
+                          latestOrder.deliveryConfirmedBySeller) {
+                        final otherName =
+                            isBuyer
+                                ? latestOrder.seller?.displayName
+                                : latestOrder.buyer?.displayName;
+                        if (context.mounted) {
+                          _showErrorDialog(
+                            context,
+                            'Cannot Cancel',
+                            '${otherName ?? 'The other party'} has already confirmed. You cannot cancel this order.',
+                          );
+                        }
+                        return;
                       }
-                      return;
-                    }
-                    if (!context.mounted) return;
-                    
-                    final confirmed = await _showConfirmDialog(
-                      context,
-                      'Cancel Order',
-                      'Are you sure you want to cancel this order?',
-                    );
-                    if (confirmed == true) {
-                      await ref
-                          .read(orderActionsProvider.notifier)
-                          .cancelOrder(order.id);
-                    }
-                  },
+                      if (!context.mounted) return;
+
+                      final confirmed = await _showConfirmDialog(
+                        context,
+                        'Cancel Order',
+                        'Are you sure you want to cancel this order?',
+                      );
+                      if (confirmed == true) {
+                        await ref
+                            .read(orderActionsProvider.notifier)
+                            .cancelOrder(order.id);
+                      }
+                    },
             style: OutlinedButton.styleFrom(
               foregroundColor: colors.error,
               side: BorderSide(color: colors.error),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: Text(isActing ? 'Processing...' : 'Cancel Order', style: typo.titleMedium),
+            child: Text(
+              isActing ? 'Processing...' : 'Cancel Order',
+              style: typo.titleMedium,
+            ),
           ),
         ),
       ),
@@ -724,45 +874,60 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.surface,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.lg)),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: colors.error.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.close, color: colors.error, size: 48),
+      builder:
+          (ctx) => AlertDialog(
+            backgroundColor: colors.surface,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius.lg),
             ),
-            const SizedBox(height: 16),
-            Text(title, style: typo.headlineSmall.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text(message, style: typo.bodyMedium.copyWith(color: colors.onSurface.withValues(alpha: 0.7)), textAlign: TextAlign.center),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: colors.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+            contentPadding: const EdgeInsets.all(24),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colors.error.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.close, color: colors.error, size: 48),
                 ),
-                child: Text('OK', style: typo.titleMedium),
-              ),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: typo.headlineSmall.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  style: typo.bodyMedium.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: colors.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text('OK', style: typo.titleMedium),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -773,20 +938,21 @@ class RentalOrderDetailScreen extends ConsumerWidget {
   ) {
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('No'),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('No'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Yes'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Yes'),
-          ),
-        ],
-      ),
     );
   }
 

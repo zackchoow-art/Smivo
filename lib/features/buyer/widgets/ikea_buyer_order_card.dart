@@ -25,14 +25,18 @@ class IkeaBuyerOrderCard extends StatelessWidget {
     final shadows = context.smivoShadows;
 
     final listing = order.listing;
-    final imageUrl = listing?.images.isNotEmpty == true ? listing!.images.first.imageUrl : null;
+    final imageUrl =
+        listing?.images.isNotEmpty == true
+            ? listing!.images.first.imageUrl
+            : null;
     final title = listing?.title ?? 'Order';
     final price = '\$${order.totalPrice.toStringAsFixed(0)}';
-    
-    final infoText = sectionTitle == 'Awaiting Delivery'
-        ? (order.pickupLocation?.name ?? 'Unknown location')
-        : (order.seller?.displayName ?? 'Seller');
-        
+
+    final infoText =
+        sectionTitle == 'Awaiting Delivery'
+            ? (order.pickupLocation?.name ?? 'Unknown location')
+            : (order.seller?.displayName ?? 'Seller');
+
     final dateStr = DateFormat('M/d HH:mm').format(order.createdAt);
 
     return Container(
@@ -58,12 +62,16 @@ class IkeaBuyerOrderCard extends StatelessWidget {
                       // NOTE: 1.3 ratio keeps image compact, leaving more room
                       // for the text section below without overflow.
                       aspectRatio: 1.3,
-                      child: imageUrl != null
-                          ? Image.network(imageUrl, fit: BoxFit.cover)
-                          : Container(
-                              color: colors.surfaceContainerHigh,
-                              child: Icon(Icons.image, color: colors.onSurfaceVariant),
-                            ),
+                      child:
+                          imageUrl != null
+                              ? Image.network(imageUrl, fit: BoxFit.cover)
+                              : Container(
+                                color: colors.surfaceContainerHigh,
+                                child: Icon(
+                                  Icons.image,
+                                  color: colors.onSurfaceVariant,
+                                ),
+                              ),
                     ),
                     // Status Chip
                     Positioned(
@@ -103,7 +111,9 @@ class IkeaBuyerOrderCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           title,
-                          style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                          style: typo.labelLarge.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -121,7 +131,9 @@ class IkeaBuyerOrderCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     infoText,
-                    style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -180,7 +192,8 @@ class IkeaBuyerOrderCard extends StatelessWidget {
   }
 
   (Color, Color, String) _confirmedChip(dynamic colors, String? rentalStatus) {
-    final deliveredByBoth = (order.deliveryConfirmedByBuyer as bool) &&
+    final deliveredByBoth =
+        (order.deliveryConfirmedByBuyer as bool) &&
         (order.deliveryConfirmedBySeller as bool);
 
     if (!deliveredByBoth) {

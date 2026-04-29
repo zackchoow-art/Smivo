@@ -45,9 +45,7 @@ class TransactionSnapshotModal extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(radius.xl),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(radius.xl)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -62,7 +60,7 @@ class TransactionSnapshotModal extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
             child: Column(
@@ -97,16 +95,13 @@ class TransactionSnapshotModal extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Details Grid
                 _SnapshotRow(label: 'BUYER', value: buyerName),
                 Divider(height: 32, color: colors.dividerColor),
                 _SnapshotRow(label: 'SELLER', value: sellerName),
                 Divider(height: 32, color: colors.dividerColor),
-                _SnapshotRow(
-                  label: 'TRANSACTION TIME',
-                  value: transactionTime,
-                ),
+                _SnapshotRow(label: 'TRANSACTION TIME', value: transactionTime),
                 Divider(height: 32, color: colors.dividerColor),
                 _SnapshotRow(
                   label: 'AMOUNT',
@@ -114,19 +109,13 @@ class TransactionSnapshotModal extends StatelessWidget {
                 ),
                 if (rentalPeriod != null) ...[
                   Divider(height: 32, color: colors.dividerColor),
-                  _SnapshotRow(
-                    label: 'RENTAL PERIOD',
-                    value: rentalPeriod!,
-                  ),
+                  _SnapshotRow(label: 'RENTAL PERIOD', value: rentalPeriod!),
                 ],
                 Divider(height: 32, color: colors.dividerColor),
-                _SnapshotRow(
-                  label: 'PICKUP LOCATION',
-                  value: pickupLocation,
-                ),
-                
+                _SnapshotRow(label: 'PICKUP LOCATION', value: pickupLocation),
+
                 const SizedBox(height: 40),
-                
+
                 // Seal / Certification
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -139,10 +128,7 @@ class TransactionSnapshotModal extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.verified_user_outlined,
-                        color: colors.primary,
-                      ),
+                      Icon(Icons.verified_user_outlined, color: colors.primary),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(

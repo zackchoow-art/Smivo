@@ -18,19 +18,14 @@ class SchoolTag extends StatelessWidget {
     final radius = context.smivoRadius;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(radius.sm),
       ),
       child: Text(
         school,
-        style: typo.labelSmall.copyWith(
-          color: colors.onSurfaceVariant,
-        ),
+        style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
       ),
     );
   }

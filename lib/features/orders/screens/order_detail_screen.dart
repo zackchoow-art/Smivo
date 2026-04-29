@@ -36,10 +36,20 @@ class OrderDetailScreen extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: colors.onSurface),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 20,
+            color: colors.onSurface,
+          ),
           onPressed: () => context.pop(),
         ),
-        title: Text('Order Details', style: context.smivoTypo.headlineSmall.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+        title: Text(
+          'Order Details',
+          style: context.smivoTypo.headlineSmall.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
       ),
       body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

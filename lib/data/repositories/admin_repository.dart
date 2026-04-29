@@ -41,15 +41,42 @@ class AdminRepository {
   /// Fetches aggregate dashboard metrics from multiple tables.
   Future<DashboardMetrics> fetchDashboardMetrics() async {
     try {
-      final usersRes = await _client.from('user_profiles').select('id').count(CountOption.exact);
-      final listingsRes = await _client.from('listings').select('id').count(CountOption.exact);
-      final activeListingsRes = await _client.from('listings').select('id').eq('status', 'active').count(CountOption.exact);
-      final ordersRes = await _client.from('orders').select('id').count(CountOption.exact);
-      final completedOrdersRes = await _client.from('orders').select('id').eq('status', 'completed').count(CountOption.exact);
-      final pendingOrdersRes = await _client.from('orders').select('id').eq('status', 'pending').count(CountOption.exact);
-      final schoolsRes = await _client.from('schools').select('id').count(CountOption.exact);
+      final usersRes = await _client
+          .from('user_profiles')
+          .select('id')
+          .count(CountOption.exact);
+      final listingsRes = await _client
+          .from('listings')
+          .select('id')
+          .count(CountOption.exact);
+      final activeListingsRes = await _client
+          .from('listings')
+          .select('id')
+          .eq('status', 'active')
+          .count(CountOption.exact);
+      final ordersRes = await _client
+          .from('orders')
+          .select('id')
+          .count(CountOption.exact);
+      final completedOrdersRes = await _client
+          .from('orders')
+          .select('id')
+          .eq('status', 'completed')
+          .count(CountOption.exact);
+      final pendingOrdersRes = await _client
+          .from('orders')
+          .select('id')
+          .eq('status', 'pending')
+          .count(CountOption.exact);
+      final schoolsRes = await _client
+          .from('schools')
+          .select('id')
+          .count(CountOption.exact);
 
-      final categoriesRes = await _client.from('school_categories').select('id').count(CountOption.exact);
+      final categoriesRes = await _client
+          .from('school_categories')
+          .select('id')
+          .count(CountOption.exact);
 
       return DashboardMetrics(
         totalUsers: usersRes.count,
@@ -73,7 +100,9 @@ class AdminRepository {
     try {
       final data = await _client
           .from('user_profiles')
-          .select('id, email, display_name, avatar_url, school_id, created_at, updated_at')
+          .select(
+            'id, email, display_name, avatar_url, school_id, created_at, updated_at',
+          )
           .order('created_at', ascending: false);
 
       // Enrich with school name
@@ -87,7 +116,8 @@ class AdminRepository {
         final m = Map<String, dynamic>.from(u);
         m['school_name'] = schoolMap[m['school_id']] ?? 'Unknown';
         // NOTE: email_verified is approximated by presence of email
-        m['email_verified'] = m['email'] != null && (m['email'] as String).isNotEmpty;
+        m['email_verified'] =
+            m['email'] != null && (m['email'] as String).isNotEmpty;
         return m;
       }).toList();
     } on PostgrestException catch (e) {
@@ -102,11 +132,15 @@ class AdminRepository {
     try {
       final data = await _client
           .from('listings')
-          .select('id, title, description, category, price, listing_type, status, condition, created_at, seller_id')
+          .select(
+            'id, title, description, category, price, listing_type, status, condition, created_at, seller_id',
+          )
           .order('created_at', ascending: false);
 
       // Enrich with seller names
-      final profiles = await _client.from('user_profiles').select('id, display_name');
+      final profiles = await _client
+          .from('user_profiles')
+          .select('id, display_name');
       final nameMap = <String, String>{};
       for (final p in profiles) {
         nameMap[p['id']] = p['display_name'] ?? 'Unknown';
@@ -129,11 +163,15 @@ class AdminRepository {
     try {
       final data = await _client
           .from('orders')
-          .select('id, listing_id, buyer_id, seller_id, status, order_type, total_price, created_at')
+          .select(
+            'id, listing_id, buyer_id, seller_id, status, order_type, total_price, created_at',
+          )
           .order('created_at', ascending: false);
 
       // Enrich with names and listing titles
-      final profiles = await _client.from('user_profiles').select('id, display_name');
+      final profiles = await _client
+          .from('user_profiles')
+          .select('id, display_name');
       final nameMap = <String, String>{};
       for (final p in profiles) {
         nameMap[p['id']] = p['display_name'] ?? 'Unknown';
@@ -164,11 +202,15 @@ class AdminRepository {
     try {
       final data = await _client
           .from('orders')
-          .select('id, listing_id, buyer_id, status, order_type, total_price, created_at')
+          .select(
+            'id, listing_id, buyer_id, status, order_type, total_price, created_at',
+          )
           .order('created_at', ascending: false)
           .limit(limit);
 
-      final profiles = await _client.from('user_profiles').select('id, display_name');
+      final profiles = await _client
+          .from('user_profiles')
+          .select('id, display_name');
       final nameMap = <String, String>{};
       for (final p in profiles) {
         nameMap[p['id']] = p['display_name'] ?? 'Unknown';
@@ -205,6 +247,60 @@ class AdminRepository {
       // RPC returns a jsonb object: {"table_name": count, ...}
       final data = result as Map<String, dynamic>;
       return data.map((k, v) => MapEntry(k, (v as num).toInt()));
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message);
+    } catch (e) {
+      throw NetworkException(e.toString());
+    }
+  }
+
+  /// Broadcasts a system announcement to all users via Edge Function.
+  Future<void> broadcastAnnouncement(String title, String body) async {
+    try {
+      final response = await _client.functions.invoke(
+        'broadcast-announcement',
+        body: {'title': title, 'body': body},
+      );
+
+      if (response.status != 200) {
+        throw NetworkException('Failed to send broadcast: ${response.data}');
+      }
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw NetworkException(e.toString());
+    }
+  }
+
+  /// Fetches all review tags for administration
+  Future<List<Map<String, dynamic>>> fetchAllReviewTags() async {
+    try {
+      final data = await _client
+          .from('review_tags')
+          .select()
+          .order('created_at', ascending: true);
+      return List<Map<String, dynamic>>.from(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message);
+    } catch (e) {
+      throw NetworkException(e.toString());
+    }
+  }
+
+  /// Creates a new review tag
+  Future<void> createReviewTag(String name, String type) async {
+    try {
+      await _client.from('review_tags').insert({'name': name, 'type': type});
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message);
+    } catch (e) {
+      throw NetworkException(e.toString());
+    }
+  }
+
+  /// Deletes a review tag
+  Future<void> deleteReviewTag(String id) async {
+    try {
+      await _client.from('review_tags').delete().eq('id', id);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message);
     } catch (e) {

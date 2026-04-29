@@ -24,7 +24,10 @@ class AdminDashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
       appBar: AppBar(
-        title: Text('Dashboard', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800)),
+        title: Text(
+          'Dashboard',
+          style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800),
+        ),
         backgroundColor: colors.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -46,64 +49,76 @@ class AdminDashboardScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Metrics cards
-            Text('Platform Overview', style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              'Platform Overview',
+              style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 20),
             metricsState.when(
-              data: (metrics) => Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: [
-                  _MetricCard(
-                    title: 'Total Users',
-                    value: metrics.totalUsers.toString(),
-                    icon: Icons.people,
-                    color: const Color(0xFF4F46E5),
+              data:
+                  (metrics) => Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      _MetricCard(
+                        title: 'Total Users',
+                        value: metrics.totalUsers.toString(),
+                        icon: Icons.people,
+                        color: const Color(0xFF4F46E5),
+                      ),
+                      _MetricCard(
+                        title: 'Active Listings',
+                        value: metrics.activeListings.toString(),
+                        subtitle: '${metrics.totalListings} total',
+                        icon: Icons.storefront,
+                        color: const Color(0xFF059669),
+                      ),
+                      _MetricCard(
+                        title: 'Pending Orders',
+                        value: metrics.pendingOrders.toString(),
+                        icon: Icons.hourglass_empty,
+                        color: const Color(0xFFD97706),
+                      ),
+                      _MetricCard(
+                        title: 'Completed Orders',
+                        value: metrics.completedOrders.toString(),
+                        subtitle: '${metrics.totalOrders} total',
+                        icon: Icons.check_circle,
+                        color: const Color(0xFF7C3AED),
+                      ),
+                      _MetricCard(
+                        title: 'Schools',
+                        value: metrics.totalSchools.toString(),
+                        icon: Icons.school,
+                        color: const Color(0xFF0891B2),
+                      ),
+                      _MetricCard(
+                        title: 'Categories',
+                        value: metrics.totalCategories.toString(),
+                        icon: Icons.category,
+                        color: const Color(0xFFDB2777),
+                      ),
+                    ],
                   ),
-                  _MetricCard(
-                    title: 'Active Listings',
-                    value: metrics.activeListings.toString(),
-                    subtitle: '${metrics.totalListings} total',
-                    icon: Icons.storefront,
-                    color: const Color(0xFF059669),
+              loading:
+                  () => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
-                  _MetricCard(
-                    title: 'Pending Orders',
-                    value: metrics.pendingOrders.toString(),
-                    icon: Icons.hourglass_empty,
-                    color: const Color(0xFFD97706),
-                  ),
-                  _MetricCard(
-                    title: 'Completed Orders',
-                    value: metrics.completedOrders.toString(),
-                    subtitle: '${metrics.totalOrders} total',
-                    icon: Icons.check_circle,
-                    color: const Color(0xFF7C3AED),
-                  ),
-                  _MetricCard(
-                    title: 'Schools',
-                    value: metrics.totalSchools.toString(),
-                    icon: Icons.school,
-                    color: const Color(0xFF0891B2),
-                  ),
-                  _MetricCard(
-                    title: 'Categories',
-                    value: metrics.totalCategories.toString(),
-                    icon: Icons.category,
-                    color: const Color(0xFFDB2777),
-                  ),
-                ],
-              ),
-              loading: () => const Center(child: Padding(
-                padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(),
-              )),
-              error: (err, _) => _ErrorCard(message: 'Error loading metrics: $err'),
+              error:
+                  (err, _) =>
+                      _ErrorCard(message: 'Error loading metrics: $err'),
             ),
 
             const SizedBox(height: 40),
 
             // Quick actions
-            Text('Quick Actions', style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              'Quick Actions',
+              style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 16),
             Wrap(
               spacing: 12,
@@ -134,6 +149,16 @@ class AdminDashboardScreen extends ConsumerWidget {
                   label: 'Roles',
                   onTap: () => context.goNamed(AppRoutes.adminRoles),
                 ),
+                _QuickActionChip(
+                  icon: Icons.campaign,
+                  label: 'Broadcast',
+                  onTap: () => _showBroadcastDialog(context, ref),
+                ),
+                _QuickActionChip(
+                  icon: Icons.label,
+                  label: 'Tags',
+                  onTap: () => context.goNamed(AppRoutes.adminTags),
+                ),
               ],
             ),
 
@@ -143,7 +168,8 @@ class AdminDashboardScreen extends ConsumerWidget {
             Builder(
               builder: (context) {
                 final adminCtx = ref.watch(adminContextProvider).valueOrNull;
-                final canWrite = adminCtx?.canWrite(AdminModule.dashboard) ?? false;
+                final canWrite =
+                    adminCtx?.canWrite(AdminModule.dashboard) ?? false;
                 if (!canWrite) return const SizedBox.shrink();
 
                 return Column(
@@ -168,8 +194,11 @@ class AdminDashboardScreen extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.warning_amber_rounded,
-                              color: colors.error, size: 28),
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: colors.error,
+                            size: 28,
+                          ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -211,7 +240,10 @@ class AdminDashboardScreen extends ConsumerWidget {
             ),
 
             // Recent activity
-            Text('Recent Orders', style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              'Recent Orders',
+              style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 20),
             recentState.when(
               data: (orders) {
@@ -219,7 +251,12 @@ class AdminDashboardScreen extends ConsumerWidget {
                   return Center(
                     child: Padding(
                       padding: const EdgeInsets.all(32),
-                      child: Text('No recent orders.', style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant)),
+                      child: Text(
+                        'No recent orders.',
+                        style: typo.bodyLarge.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   );
                 }
@@ -228,82 +265,115 @@ class AdminDashboardScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: colors.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(radius.md),
-                    border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: colors.outlineVariant.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Column(
-                    children: orders.asMap().entries.map((entry) {
-                      final order = entry.value;
-                      final isLast = entry.key == orders.length - 1;
-                      final status = order['status'] ?? '';
-                      final createdAt = order['created_at'] != null
-                          ? DateFormat('MMM d, yyyy HH:mm').format(DateTime.parse(order['created_at']))
-                          : '-';
+                    children:
+                        orders.asMap().entries.map((entry) {
+                          final order = entry.value;
+                          final isLast = entry.key == orders.length - 1;
+                          final status = order['status'] ?? '';
+                          final createdAt =
+                              order['created_at'] != null
+                                  ? DateFormat(
+                                    'MMM d, yyyy HH:mm',
+                                  ).format(DateTime.parse(order['created_at']))
+                                  : '-';
 
-                      // NOTE: Use DB-driven status colors via StatusResolver
-                      final resolver = ref.watch(statusResolverProvider).valueOrNull;
-                      final statusColor = resolver?.orderColor(status) ?? colors.onSurfaceVariant;
+                          // NOTE: Use DB-driven status colors via StatusResolver
+                          final resolver =
+                              ref.watch(statusResolverProvider).valueOrNull;
+                          final statusColor =
+                              resolver?.orderColor(status) ??
+                              colors.onSurfaceVariant;
 
-                      return Column(
-                        children: [
-                          ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                            leading: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                status == 'completed'
-                                    ? Icons.check_circle_outline
-                                    : status == 'pending'
+                          return Column(
+                            children: [
+                              ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 4,
+                                ),
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    status == 'completed'
+                                        ? Icons.check_circle_outline
+                                        : status == 'pending'
                                         ? Icons.schedule
                                         : status == 'cancelled'
-                                            ? Icons.cancel_outlined
-                                            : Icons.receipt_long,
-                                color: statusColor,
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              order['listing_title'] ?? 'Unknown Item',
-                              style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700, fontSize: 14),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(
-                              '${order['buyer_name'] ?? 'Unknown'} • ${order['order_type'] ?? 'sale'} • $createdAt',
-                              style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
-                            ),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                resolver?.orderLabel(status) ?? status.toUpperCase(),
-                                style: typo.labelSmall.copyWith(
-                                  color: statusColor,
-                                  fontWeight: FontWeight.bold,
+                                        ? Icons.cancel_outlined
+                                        : Icons.receipt_long,
+                                    color: statusColor,
+                                    size: 20,
+                                  ),
+                                ),
+                                title: Text(
+                                  order['listing_title'] ?? 'Unknown Item',
+                                  style: typo.titleMedium.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  '${order['buyer_name'] ?? 'Unknown'} • ${order['order_type'] ?? 'sale'} • $createdAt',
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                ),
+                                trailing: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    resolver?.orderLabel(status) ??
+                                        status.toUpperCase(),
+                                    style: typo.labelSmall.copyWith(
+                                      color: statusColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                          if (!isLast)
-                            Divider(height: 1, indent: 20, endIndent: 20, color: colors.outlineVariant.withValues(alpha: 0.3)),
-                        ],
-                      );
-                    }).toList(),
+                              if (!isLast)
+                                Divider(
+                                  height: 1,
+                                  indent: 20,
+                                  endIndent: 20,
+                                  color: colors.outlineVariant.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
+                            ],
+                          );
+                        }).toList(),
                   ),
                 );
               },
-              loading: () => const Center(child: Padding(
-                padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(),
-              )),
-              error: (err, _) => _ErrorCard(message: 'Error loading recent orders: $err'),
+              loading:
+                  () => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+              error:
+                  (err, _) =>
+                      _ErrorCard(message: 'Error loading recent orders: $err'),
             ),
           ],
         ),
@@ -320,107 +390,121 @@ class AdminDashboardScreen extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          return AlertDialog(
-            title: Row(
-              children: [
-                Icon(Icons.warning_amber_rounded,
-                    color: colors.error, size: 24),
-                const SizedBox(width: 12),
-                const Text('Clear Test Data'),
-              ],
-            ),
-            content: SizedBox(
-              width: 420,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'This will permanently delete:',
-                    style: typo.bodyMedium
-                        .copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  ...[
-                    '• All orders & order evidence',
-                    '• All rental extensions',
-                    '• All messages & chat rooms',
-                    '• All notifications',
-                    '• All saved listings',
-                    '• All listing images',
-                    '• All listings',
-                  ].map((t) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Text(t,
+      builder:
+          (ctx) => StatefulBuilder(
+            builder: (ctx, setDialogState) {
+              return AlertDialog(
+                title: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: colors.error,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text('Clear Test Data'),
+                  ],
+                ),
+                content: SizedBox(
+                  width: 420,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'This will permanently delete:',
+                        style: typo.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...[
+                        '• All orders & order evidence',
+                        '• All rental extensions',
+                        '• All messages & chat rooms',
+                        '• All notifications',
+                        '• All saved listings',
+                        '• All listing images',
+                        '• All listings',
+                      ].map(
+                        (t) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            t,
                             style: typo.bodySmall.copyWith(
-                                color: colors.onSurfaceVariant)),
-                      )),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF059669)
-                          .withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '✓ Schools, categories, conditions, pickup locations, FAQs, dictionary, admin roles, and user accounts will NOT be deleted.',
-                      style: typo.bodySmall.copyWith(
-                        color: const Color(0xFF059669),
-                        fontWeight: FontWeight.w500,
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFF059669,
+                          ).withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '✓ Schools, categories, conditions, pickup locations, FAQs, dictionary, admin roles, and user accounts will NOT be deleted.',
+                          style: typo.bodySmall.copyWith(
+                            color: const Color(0xFF059669),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Type DELETE to confirm:',
+                        style: typo.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: confirmCtrl,
+                        onChanged: (_) => setDialogState(() {}),
+                        decoration: InputDecoration(
+                          hintText: 'DELETE',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      confirmCtrl.dispose();
+                      Navigator.of(ctx).pop();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  FilledButton(
+                    onPressed:
+                        confirmCtrl.text.trim() == 'DELETE'
+                            ? () async {
+                              confirmCtrl.dispose();
+                              Navigator.of(ctx).pop();
+                              _executeClearData(context, ref);
+                            }
+                            : null,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.error,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: colors.error.withValues(
+                        alpha: 0.3,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Type DELETE to confirm:',
-                    style: typo.bodyMedium
-                        .copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: confirmCtrl,
-                    onChanged: (_) => setDialogState(() {}),
-                    decoration: InputDecoration(
-                      hintText: 'DELETE',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+                    child: const Text('Confirm Delete'),
                   ),
                 ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  confirmCtrl.dispose();
-                  Navigator.of(ctx).pop();
-                },
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: confirmCtrl.text.trim() == 'DELETE'
-                    ? () async {
-                        confirmCtrl.dispose();
-                        Navigator.of(ctx).pop();
-                        _executeClearData(context, ref);
-                      }
-                    : null,
-                style: FilledButton.styleFrom(
-                  backgroundColor: colors.error,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor:
-                      colors.error.withValues(alpha: 0.3),
-                ),
-                child: const Text('Confirm Delete'),
-              ),
-            ],
-          );
-        },
-      ),
+              );
+            },
+          ),
     );
   }
 
@@ -429,15 +513,16 @@ class AdminDashboardScreen extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 24),
-            Text('Clearing data…'),
-          ],
-        ),
-      ),
+      builder:
+          (_) => const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 24),
+                Text('Clearing data…'),
+              ],
+            ),
+          ),
     );
 
     try {
@@ -459,40 +544,50 @@ class AdminDashboardScreen extends ConsumerWidget {
 
         showDialog(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Color(0xFF059669), size: 24),
-                SizedBox(width: 12),
-                Text('Data Cleared'),
-              ],
-            ),
-            content: SizedBox(
-              width: 380,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('$total records deleted.',
-                      style: context.smivoTypo.bodyMedium
-                          .copyWith(fontWeight: FontWeight.w700)),
-                  if (details.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(details,
-                        style: context.smivoTypo.bodySmall.copyWith(
-                            color:
-                                context.smivoColors.onSurfaceVariant)),
+          builder:
+              (ctx) => AlertDialog(
+                title: const Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF059669),
+                      size: 24,
+                    ),
+                    SizedBox(width: 12),
+                    Text('Data Cleared'),
                   ],
+                ),
+                content: SizedBox(
+                  width: 380,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$total records deleted.',
+                        style: context.smivoTypo.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (details.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          details,
+                          style: context.smivoTypo.bodySmall.copyWith(
+                            color: context.smivoColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                actions: [
+                  FilledButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('OK'),
+                  ),
                 ],
               ),
-            ),
-            actions: [
-              FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
         );
       }
     } catch (e) {
@@ -501,6 +596,135 @@ class AdminDashboardScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error clearing data: $e'),
+            backgroundColor: context.smivoColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Dialog to enter system broadcast details
+  void _showBroadcastDialog(BuildContext context, WidgetRef ref) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final titleCtrl = TextEditingController();
+    final bodyCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (ctx) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.campaign, color: colors.primary, size: 24),
+                const SizedBox(width: 12),
+                const Text('System Broadcast'),
+              ],
+            ),
+            content: SizedBox(
+              width: 420,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Send a push notification to all users.',
+                    style: typo.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: titleCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Notification Title',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: bodyCtrl,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Message Body',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  titleCtrl.dispose();
+                  bodyCtrl.dispose();
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final title = titleCtrl.text.trim();
+                  final body = bodyCtrl.text.trim();
+                  if (title.isNotEmpty && body.isNotEmpty) {
+                    titleCtrl.dispose();
+                    bodyCtrl.dispose();
+                    Navigator.of(ctx).pop();
+                    _executeBroadcast(context, ref, title, body);
+                  }
+                },
+                child: const Text('Send Broadcast'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  /// Executes the broadcast edge function
+  void _executeBroadcast(
+    BuildContext context,
+    WidgetRef ref,
+    String title,
+    String body,
+  ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 24),
+                Text('Sending broadcast…'),
+              ],
+            ),
+          ),
+    );
+
+    try {
+      final repo = ref.read(adminRepositoryProvider);
+      await repo.broadcastAnnouncement(title, body);
+
+      if (context.mounted) Navigator.of(context).pop(); // dismiss loading
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Broadcast sent successfully.'),
+            backgroundColor: Color(0xFF059669),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.of(context).pop(); // dismiss loading
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error sending broadcast: $e'),
             backgroundColor: context.smivoColors.error,
           ),
         );
@@ -568,7 +792,9 @@ class _MetricCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               subtitle!,
-              style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant.withValues(alpha: 0.7)),
+              style: typo.bodySmall.copyWith(
+                color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
             ),
           ],
         ],

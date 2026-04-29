@@ -43,22 +43,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_agreedToEula) {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Action Required'),
-          content: const Text(
-            'You must read and agree to the zero tolerance policy for objectionable content and abusive users before creating an account.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Action Required'),
+              content: const Text(
+                'You must read and agree to the zero tolerance policy for objectionable content and abusive users before creating an account.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
             ),
-          ],
-        ),
       );
       return;
     }
-    
+
     if (!_formKey.currentState!.validate()) return;
 
     final emailValue = _emailController.text.trim();
@@ -93,17 +94,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     ref.listen(authProvider, (previous, next) {
       if (next.hasError && !next.isLoading) {
         final error = next.error;
-        final message = error is AppException 
-            ? error.message 
-            : 'Something went wrong. Please try again';
-        
+        final message =
+            error is AppException
+                ? error.message
+                : 'Something went wrong. Please try again';
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: colors.error,
-          ),
+          SnackBar(content: Text(message), backgroundColor: colors.error),
         );
-      } else if (!next.isLoading && !next.hasError && previous != null && previous.isLoading) {
+      } else if (!next.isLoading &&
+          !next.hasError &&
+          previous != null &&
+          previous.isLoading) {
         // Successful registration!
         // We navigate manually because Supabase doesn't issue a session immediately
         // for unverified emails, so router.dart won't pick it up automatically yet.
@@ -189,14 +191,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                               // ── Email Field ───────────────────────────────
                               AppTextField(
-                                label: _isDebugMode ? 'Test Email' : 'University Username',
-                                hintText: _isDebugMode ? 'test@smivo.dev' : 'username',
+                                label:
+                                    _isDebugMode
+                                        ? 'Test Email'
+                                        : 'University Username',
+                                hintText:
+                                    _isDebugMode
+                                        ? 'test@smivo.dev'
+                                        : 'username',
                                 suffixText: _isDebugMode ? null : '@smith.edu',
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                validator: _isDebugMode
-                                    ? Validators.eduEmail
-                                    : Validators.emailPrefix,
+                                validator:
+                                    _isDebugMode
+                                        ? Validators.eduEmail
+                                        : Validators.emailPrefix,
                               ),
                               const SizedBox(height: 24),
 
@@ -221,10 +230,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 hintText: '••••••••',
                                 controller: _confirmPasswordController,
                                 obscureText: true,
-                                validator: (val) => Validators.confirmPassword(
-                                  _passwordController.text,
-                                  val,
-                                ),
+                                validator:
+                                    (val) => Validators.confirmPassword(
+                                      _passwordController.text,
+                                      val,
+                                    ),
                                 prefixIcon: Icon(
                                   Icons.verified_user_outlined,
                                   size: 16,
@@ -243,7 +253,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     child: Checkbox(
                                       value: _agreedToEula,
                                       onChanged: (val) {
-                                        setState(() => _agreedToEula = val ?? false);
+                                        setState(
+                                          () => _agreedToEula = val ?? false,
+                                        );
                                       },
                                       activeColor: colors.primary,
                                     ),
@@ -252,27 +264,35 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   Expanded(
                                     child: RichText(
                                       text: TextSpan(
-                                        text: 'I agree to the Terms of Use and acknowledge that there is ',
+                                        text:
+                                            'I agree to the Terms of Use and acknowledge that there is ',
                                         style: typo.bodySmall.copyWith(
                                           color: colors.onSurfaceVariant,
                                           height: 1.4,
                                         ),
                                         children: [
                                           TextSpan(
-                                            text: 'zero tolerance for objectionable content or abusive users',
+                                            text:
+                                                'zero tolerance for objectionable content or abusive users',
                                             style: typo.bodySmall.copyWith(
                                               color: colors.primary,
                                               fontWeight: FontWeight.w600,
                                               height: 1.4,
-                                              decoration: TextDecoration.underline,
+                                              decoration:
+                                                  TextDecoration.underline,
                                             ),
-                                            recognizer: TapGestureRecognizer()
-                                              ..onTap = () async {
-                                                final url = Uri.parse('https://zackchoow-art.github.io/Smivo/safety.html');
-                                                if (await canLaunchUrl(url)) {
-                                                  await launchUrl(url);
-                                                }
-                                              },
+                                            recognizer:
+                                                TapGestureRecognizer()
+                                                  ..onTap = () async {
+                                                    final url = Uri.parse(
+                                                      'https://zackchoow-art.github.io/Smivo/safety.html',
+                                                    );
+                                                    if (await canLaunchUrl(
+                                                      url,
+                                                    )) {
+                                                      await launchUrl(url);
+                                                    }
+                                                  },
                                           ),
                                           const TextSpan(text: '.'),
                                         ],
@@ -288,7 +308,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 height: 60,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(radius.xl),
+                                  borderRadius: BorderRadius.circular(
+                                    radius.xl,
+                                  ),
                                   gradient: LinearGradient(
                                     colors: [
                                       colors.gradientStart,
@@ -299,7 +321,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: colors.primary.withValues(alpha: 0.2),
+                                      color: colors.primary.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       blurRadius: 15,
                                       offset: const Offset(0, 10),
                                     ),
@@ -311,36 +335,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(radius.xl),
+                                      borderRadius: BorderRadius.circular(
+                                        radius.xl,
+                                      ),
                                     ),
                                   ),
-                                  child: isLoading
-                                      ? SizedBox(
-                                          height: 24,
-                                          width: 24,
-                                          child: CircularProgressIndicator(
-                                            color: colors.onPrimary,
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              'Create Account',
-                                              style: typo.labelLarge.copyWith(
-                                                color: colors.onPrimary,
-                                                fontSize: 18,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Icon(
-                                              Icons.person_add_alt_1_rounded,
-                                              size: 18,
+                                  child:
+                                      isLoading
+                                          ? SizedBox(
+                                            height: 24,
+                                            width: 24,
+                                            child: CircularProgressIndicator(
                                               color: colors.onPrimary,
+                                              strokeWidth: 2,
                                             ),
-                                          ],
-                                        ),
+                                          )
+                                          : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Create Account',
+                                                style: typo.labelLarge.copyWith(
+                                                  color: colors.onPrimary,
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Icon(
+                                                Icons.person_add_alt_1_rounded,
+                                                size: 18,
+                                                color: colors.onPrimary,
+                                              ),
+                                            ],
+                                          ),
                                 ),
                               ),
 
@@ -350,12 +378,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 TextButton.icon(
                                   onPressed: _toggleDebugMode,
                                   icon: Icon(
-                                    _isDebugMode ? Icons.bug_report : Icons.bug_report_outlined,
+                                    _isDebugMode
+                                        ? Icons.bug_report
+                                        : Icons.bug_report_outlined,
                                     size: 18,
                                     color: colors.onSurfaceVariant,
                                   ),
                                   label: Text(
-                                    _isDebugMode ? 'Switch to Normal' : 'Switch to Debug',
+                                    _isDebugMode
+                                        ? 'Switch to Normal'
+                                        : 'Switch to Debug',
                                     style: typo.bodySmall.copyWith(
                                       color: colors.onSurfaceVariant,
                                     ),

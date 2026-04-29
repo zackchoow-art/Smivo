@@ -11,7 +11,9 @@ Future<List<SystemDictionary>> adminDictionaries(
   Ref ref, {
   String? dictType,
 }) async {
-  return ref.watch(schoolDataRepositoryProvider).fetchDictionaries(dictType: dictType);
+  return ref
+      .watch(schoolDataRepositoryProvider)
+      .fetchDictionaries(dictType: dictType);
 }
 
 /// Fetches distinct dict_type values for the filter dropdown.

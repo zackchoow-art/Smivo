@@ -18,8 +18,8 @@ class ChatRepository {
 
   /// Fetches all chat rooms for [userId] with joined context data.
   ///
-  /// Includes both participant profiles (buyer & seller), the listing 
-  /// preview (title + first image), and the most recent message. 
+  /// Includes both participant profiles (buyer & seller), the listing
+  /// preview (title + first image), and the most recent message.
   /// UI layer picks the "other party" by comparing against userId.
   Future<List<ChatRoom>> fetchChatRooms(String userId) async {
     try {
@@ -36,31 +36,32 @@ class ChatRepository {
           .order('last_message_at', ascending: false, nullsFirst: false)
           .order('created_at', referencedTable: 'messages', ascending: false)
           .limit(1, referencedTable: 'messages');
-      
+
       return data.map((json) => ChatRoom.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
   }
+
   /// Fetches a single chat room by [id] with context data.
   Future<ChatRoom> fetchChatRoom(String id) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableChatRooms)
-          .select('''
+      final data =
+          await _client
+              .from(AppConstants.tableChatRooms)
+              .select('''
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
             listing:listings(id, title, images:listing_images(image_url))
           ''')
-          .eq('id', id)
-          .single();
+              .eq('id', id)
+              .single();
       return ChatRoom.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
   }
-
 
   /// Fetches or creates a chat room for a listing between buyer and seller.
   Future<ChatRoom> getOrCreateChatRoom({
@@ -69,24 +70,26 @@ class ChatRepository {
     required String sellerId,
   }) async {
     try {
-      final existing = await _client
-          .from(AppConstants.tableChatRooms)
-          .select()
-          .eq('listing_id', listingId)
-          .eq('buyer_id', buyerId)
-          .eq('seller_id', sellerId)
-          .maybeSingle();
+      final existing =
+          await _client
+              .from(AppConstants.tableChatRooms)
+              .select()
+              .eq('listing_id', listingId)
+              .eq('buyer_id', buyerId)
+              .eq('seller_id', sellerId)
+              .maybeSingle();
       if (existing != null) return ChatRoom.fromJson(existing);
 
-      final data = await _client
-          .from(AppConstants.tableChatRooms)
-          .insert({
-            'listing_id': listingId,
-            'buyer_id': buyerId,
-            'seller_id': sellerId,
-          })
-          .select()
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableChatRooms)
+              .insert({
+                'listing_id': listingId,
+                'buyer_id': buyerId,
+                'seller_id': sellerId,
+              })
+              .select()
+              .single();
       return ChatRoom.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -114,15 +117,16 @@ class ChatRepository {
     required String content,
   }) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableMessages)
-          .insert({
-            'chat_room_id': chatRoomId,
-            'sender_id': senderId,
-            'content': content,
-          })
-          .select('*, sender:user_profiles!sender_id(*)')
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableMessages)
+              .insert({
+                'chat_room_id': chatRoomId,
+                'sender_id': senderId,
+                'content': content,
+              })
+              .select('*, sender:user_profiles!sender_id(*)')
+              .single();
       return Message.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -136,17 +140,18 @@ class ChatRepository {
     required String imageUrl,
   }) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableMessages)
-          .insert({
-            'chat_room_id': chatRoomId,
-            'sender_id': senderId,
-            'content': '[Image]',
-            'message_type': 'image',
-            'image_url': imageUrl,
-          })
-          .select('*, sender:user_profiles!sender_id(*)')
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableMessages)
+              .insert({
+                'chat_room_id': chatRoomId,
+                'sender_id': senderId,
+                'content': '[Image]',
+                'message_type': 'image',
+                'image_url': imageUrl,
+              })
+              .select('*, sender:user_profiles!sender_id(*)')
+              .single();
       return Message.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -171,15 +176,17 @@ class ChatRepository {
           .eq('is_read', false);
 
       // Determine which unread counter to reset based on user role
-      final room = await _client
-          .from(AppConstants.tableChatRooms)
-          .select('buyer_id, seller_id')
-          .eq('id', chatRoomId)
-          .single();
+      final room =
+          await _client
+              .from(AppConstants.tableChatRooms)
+              .select('buyer_id, seller_id')
+              .eq('id', chatRoomId)
+              .single();
 
-      final updateField = (room['buyer_id'] == userId)
-          ? 'unread_count_buyer'
-          : 'unread_count_seller';
+      final updateField =
+          (room['buyer_id'] == userId)
+              ? 'unread_count_buyer'
+              : 'unread_count_seller';
 
       await _client
           .from(AppConstants.tableChatRooms)

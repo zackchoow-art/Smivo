@@ -10,5 +10,4 @@ part 'supabase_provider.g.dart';
 /// Repositories receive it via Riverpod injection — they never
 /// call Supabase.instance directly.
 @Riverpod(keepAlive: true)
-SupabaseClient supabaseClient(Ref ref) =>
-    Supabase.instance.client;
+SupabaseClient supabaseClient(Ref ref) => Supabase.instance.client;

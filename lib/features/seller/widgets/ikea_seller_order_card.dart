@@ -53,21 +53,19 @@ class IkeaSellerOrderCard extends StatelessWidget {
         boxShadow: shadows.card,
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: _buildContent(context),
-      ),
+      child: InkWell(onTap: onTap, child: _buildContent(context)),
     );
   }
 
   Widget _buildContent(BuildContext context) {
     return switch (cardType) {
-      IkeaSellerCardType.activeListing =>
-        _buildActiveListingContent(context),
-      IkeaSellerCardType.awaitingDelivery =>
-        _buildAwaitingDeliveryContent(context),
-      IkeaSellerCardType.activeTransaction =>
-        _buildActiveTransactionContent(context),
+      IkeaSellerCardType.activeListing => _buildActiveListingContent(context),
+      IkeaSellerCardType.awaitingDelivery => _buildAwaitingDeliveryContent(
+        context,
+      ),
+      IkeaSellerCardType.activeTransaction => _buildActiveTransactionContent(
+        context,
+      ),
       IkeaSellerCardType.history => _buildHistoryContent(context),
     };
   }
@@ -89,12 +87,13 @@ class IkeaSellerOrderCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(radius.image),
             child: AspectRatio(
               aspectRatio: 1.3,
-              child: imageUrl != null
-                  ? Image.network(imageUrl, fit: BoxFit.cover)
-                  : Container(
-                      color: colors.surfaceContainerHigh,
-                      child: const Icon(Icons.image),
-                    ),
+              child:
+                  imageUrl != null
+                      ? Image.network(imageUrl, fit: BoxFit.cover)
+                      : Container(
+                        color: colors.surfaceContainerHigh,
+                        child: const Icon(Icons.image),
+                      ),
             ),
           ),
         ),
@@ -111,8 +110,9 @@ class IkeaSellerOrderCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       listing.title,
-                      style: typo.labelLarge
-                          .copyWith(fontWeight: FontWeight.bold),
+                      style: typo.labelLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -130,8 +130,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
               const SizedBox(height: 1),
               Text(
                 listing.transactionType,
-                style:
-                    typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
               ),
               const SizedBox(height: 4),
               // NOTE: Each stat icon navigates to its own TransactionManagement tab.
@@ -176,9 +175,10 @@ class IkeaSellerOrderCard extends StatelessWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final listingData = order.listing;
-    final imageUrl = listingData?.images.isNotEmpty == true
-        ? listingData!.images.first.imageUrl
-        : null;
+    final imageUrl =
+        listingData?.images.isNotEmpty == true
+            ? listingData!.images.first.imageUrl
+            : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,19 +192,23 @@ class IkeaSellerOrderCard extends StatelessWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 1.3,
-                  child: imageUrl != null
-                      ? Image.network(imageUrl, fit: BoxFit.cover)
-                      : Container(
-                          color: colors.surfaceContainerHigh,
-                          child: const Icon(Icons.image),
-                        ),
+                  child:
+                      imageUrl != null
+                          ? Image.network(imageUrl, fit: BoxFit.cover)
+                          : Container(
+                            color: colors.surfaceContainerHigh,
+                            child: const Icon(Icons.image),
+                          ),
                 ),
                 // NOTE: Status chip moved to image top-right per design request.
                 Positioned(
                   top: 6,
                   right: 6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: colors.primary,
                       borderRadius: BorderRadius.circular(radius.full),
@@ -220,11 +224,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
                   ),
                 ),
                 if (hasUnread)
-                  Positioned(
-                    top: 6,
-                    left: 6,
-                    child: _buildUnreadDot(context),
-                  ),
+                  Positioned(top: 6, left: 6, child: _buildUnreadDot(context)),
               ],
             ),
           ),
@@ -241,8 +241,9 @@ class IkeaSellerOrderCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       listingData?.title ?? 'Order',
-                      style: typo.labelLarge
-                          .copyWith(fontWeight: FontWeight.bold),
+                      style: typo.labelLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -260,8 +261,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 order.pickupLocation?.name ?? 'Unknown location',
-                style:
-                    typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -278,8 +278,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
     final radius = context.smivoRadius;
     final buyer = order.buyer;
     final listingTitle = order.listing?.title ?? 'Transaction';
-    final dateStr =
-        DateFormat('M/d HH:mm').format(order.updatedAt.toLocal());
+    final dateStr = DateFormat('M/d HH:mm').format(order.updatedAt.toLocal());
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,24 +294,27 @@ class IkeaSellerOrderCard extends StatelessWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 1.3,
-                  child: buyer?.avatarUrl != null &&
-                          buyer!.avatarUrl!.isNotEmpty
-                      ? Image.network(buyer!.avatarUrl!, fit: BoxFit.cover)
-                      : Container(
-                          color: colors.surfaceContainerHigh,
-                          child: Icon(
-                            Icons.person,
-                            color: colors.onSurface.withValues(alpha: 0.3),
-                            size: 48,
+                  child:
+                      buyer?.avatarUrl != null && buyer!.avatarUrl!.isNotEmpty
+                          ? Image.network(buyer!.avatarUrl!, fit: BoxFit.cover)
+                          : Container(
+                            color: colors.surfaceContainerHigh,
+                            child: Icon(
+                              Icons.person,
+                              color: colors.onSurface.withValues(alpha: 0.3),
+                              size: 48,
+                            ),
                           ),
-                        ),
                 ),
                 // NOTE: Status chip moved to image top-right per design request.
                 Positioned(
                   top: 6,
                   right: 6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: colors.primary,
                       borderRadius: BorderRadius.circular(radius.full),
@@ -328,11 +330,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
                   ),
                 ),
                 if (hasUnread)
-                  Positioned(
-                    top: 6,
-                    left: 6,
-                    child: _buildUnreadDot(context),
-                  ),
+                  Positioned(top: 6, left: 6, child: _buildUnreadDot(context)),
               ],
             ),
           ),
@@ -345,8 +343,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
             children: [
               Text(
                 listingTitle,
-                style: typo.labelLarge
-                    .copyWith(fontWeight: FontWeight.bold),
+                style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -354,8 +351,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
               Text(
                 '\$${order.totalPrice.toStringAsFixed(0)} · '
                 '${buyer?.displayName ?? 'Buyer'}',
-                style:
-                    typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -378,9 +374,9 @@ class IkeaSellerOrderCard extends StatelessWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    final dateStr = DateFormat('M/d/yy').format(
-      historyItem.updatedAt ?? historyItem.createdAt ?? DateTime.now(),
-    );
+    final dateStr = DateFormat(
+      'M/d/yy',
+    ).format(historyItem.updatedAt ?? historyItem.createdAt ?? DateTime.now());
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,23 +391,31 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 AspectRatio(
                   // NOTE: Unified aspect ratio across all card types for visual consistency.
                   aspectRatio: 1.3,
-                  child: historyItem.imageUrl != null
-                      ? Image.network(historyItem.imageUrl!, fit: BoxFit.cover)
-                      : Container(
-                          color: colors.surfaceContainerHigh,
-                          child: const Icon(Icons.image),
-                        ),
+                  child:
+                      historyItem.imageUrl != null
+                          ? Image.network(
+                            historyItem.imageUrl!,
+                            fit: BoxFit.cover,
+                          )
+                          : Container(
+                            color: colors.surfaceContainerHigh,
+                            child: const Icon(Icons.image),
+                          ),
                 ),
                 // NOTE: Status chip moved to image top-right per design request.
                 Positioned(
                   top: 6,
                   right: 6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
-                      color: historyItem.isCompleted
-                          ? colors.success
-                          : colors.statusCancelled,
+                      color:
+                          historyItem.isCompleted
+                              ? colors.success
+                              : colors.statusCancelled,
                       borderRadius: BorderRadius.circular(radius.full),
                     ),
                     child: Text(
@@ -436,16 +440,14 @@ class IkeaSellerOrderCard extends StatelessWidget {
             children: [
               Text(
                 historyItem.title,
-                style: typo.labelLarge
-                    .copyWith(fontWeight: FontWeight.bold),
+                style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 1),
               Text(
                 historyItem.subtitle,
-                style:
-                    typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

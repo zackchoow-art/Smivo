@@ -58,9 +58,10 @@ class NavigationRailBar extends ConsumerWidget {
       // to reduce visual clutter in the narrow 72px strip.
       // On desktop (extended) labels are shown inline via the
       // extended property, so labelType is set to none.
-      labelType: extended
-          ? NavigationRailLabelType.none
-          : NavigationRailLabelType.selected,
+      labelType:
+          extended
+              ? NavigationRailLabelType.none
+              : NavigationRailLabelType.selected,
       leading: Padding(
         padding: const EdgeInsets.only(top: 8, bottom: 16),
         child: Text(
@@ -88,8 +89,7 @@ class NavigationRailBar extends ConsumerWidget {
                     color: colors.onSurfaceVariant,
                   ),
                   tooltip: 'Settings',
-                  onPressed: () =>
-                      context.pushNamed(AppRoutes.settings),
+                  onPressed: () => context.pushNamed(AppRoutes.settings),
                 ),
                 if (extended)
                   Padding(
@@ -141,9 +141,7 @@ class NavigationRailBar extends ConsumerWidget {
         NavigationRailDestination(
           icon: Badge(
             label: Text(
-              unreadOrderUpdates > 99
-                  ? '99+'
-                  : unreadOrderUpdates.toString(),
+              unreadOrderUpdates > 99 ? '99+' : unreadOrderUpdates.toString(),
               style: TextStyle(fontSize: 9, color: colors.onPrimary),
             ),
             isLabelVisible: unreadOrderUpdates > 0,
@@ -152,9 +150,7 @@ class NavigationRailBar extends ConsumerWidget {
           ),
           selectedIcon: Badge(
             label: Text(
-              unreadOrderUpdates > 99
-                  ? '99+'
-                  : unreadOrderUpdates.toString(),
+              unreadOrderUpdates > 99 ? '99+' : unreadOrderUpdates.toString(),
               style: TextStyle(fontSize: 9, color: colors.onPrimary),
             ),
             isLabelVisible: unreadOrderUpdates > 0,

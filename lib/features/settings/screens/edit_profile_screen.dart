@@ -8,6 +8,7 @@ import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -38,18 +39,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       backgroundColor: colors.surfaceContainerLowest,
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text('Error: $e', style: typo.bodyMedium.copyWith(color: colors.error)),
-        ),
+        error:
+            (e, _) => Center(
+              child: Text(
+                'Error: $e',
+                style: typo.bodyMedium.copyWith(color: colors.error),
+              ),
+            ),
         data: (profile) {
           if (profile == null) {
             return Center(
-              child: Text('No profile found.', style: typo.bodyMedium.copyWith(color: colors.outlineVariant)),
+              child: Text(
+                'No profile found.',
+                style: typo.bodyMedium.copyWith(color: colors.outlineVariant),
+              ),
             );
           }
 
           if (!_initialized) {
-            _displayNameController = TextEditingController(text: profile.displayName ?? '');
+            _displayNameController = TextEditingController(
+              text: profile.displayName ?? '',
+            );
             _initialized = true;
           }
 
@@ -63,7 +73,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     subtitle: 'Manage your campus identity.',
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
                     sliver: SliverToBoxAdapter(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,117 +92,164 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               borderRadius: BorderRadius.circular(radius.xl),
                               boxShadow: [
                                 BoxShadow(
-                                    color: colors.shadow,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4)),
+                                  color: colors.shadow,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
                               ],
                             ),
-                            child: Column(children: [
-                              // Avatar with edit overlay
-                              GestureDetector(
-                                onTap: () => _pickAvatar(context),
-                                child: Stack(children: [
-                                  CircleAvatar(
-                                    radius: 50,
-                                    backgroundColor: colors.surfaceContainerHigh,
-                                    backgroundImage: profile.avatarUrl != null
-                                        ? NetworkImage(profile.avatarUrl!)
-                                        : null,
-                                    child: profile.avatarUrl == null
-                                        ? Icon(Icons.person,
-                                            size: 48,
-                                            color: colors.onSurface
-                                                .withValues(alpha: 0.4))
-                                        : null,
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: colors.surfaceContainerLowest,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: colors.shadow,
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2)),
-                                        ],
+                            child: Column(
+                              children: [
+                                // Avatar with edit overlay
+                                GestureDetector(
+                                  onTap: () => _pickAvatar(context),
+                                  child: Stack(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 50,
+                                        backgroundColor:
+                                            colors.surfaceContainerHigh,
+                                        backgroundImage:
+                                            profile.avatarUrl != null
+                                                ? NetworkImage(
+                                                  profile.avatarUrl!,
+                                                )
+                                                : null,
+                                        child:
+                                            profile.avatarUrl == null
+                                                ? Icon(
+                                                  Icons.person,
+                                                  size: 48,
+                                                  color: colors.onSurface
+                                                      .withValues(alpha: 0.4),
+                                                )
+                                                : null,
                                       ),
-                                      child: Icon(Icons.edit,
-                                          size: 16, color: colors.settingsIcon),
-                                    ),
+                                      Positioned(
+                                        right: 0,
+                                        bottom: 0,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                colors.surfaceContainerLowest,
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: colors.shadow,
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Icon(
+                                            Icons.edit,
+                                            size: 16,
+                                            color: colors.settingsIcon,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ]),
-                              ),
-                              const SizedBox(height: 24),
+                                ),
+                                const SizedBox(height: 24),
 
-                              // Verification status
-                              Text('Student Verification',
+                                // Verification status
+                                Text(
+                                  'Student Verification',
                                   style: typo.titleMedium.copyWith(
-                                      color: colors.onSurface,
-                                      fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Verify your .edu email to access exclusive\ncampus features.',
-                                textAlign: TextAlign.center,
-                                style: typo.bodySmall.copyWith(
-                                    color: colors.onSurfaceVariant, height: 1.3),
-                              ),
-                              const SizedBox(height: 16),
+                                    color: colors.onSurface,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Verify your .edu email to access exclusive\ncampus features.',
+                                  textAlign: TextAlign.center,
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                    height: 1.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
 
-                              // Email + badge
-                              Row(
+                                // Email + badge
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 6),
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: profile.isVerified
-                                            ? colors.successContainer
-                                            : colors.error.withValues(alpha: 0.1),
+                                        color:
+                                            profile.isVerified
+                                                ? colors.successContainer
+                                                : colors.error.withValues(
+                                                  alpha: 0.1,
+                                                ),
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              profile.isVerified
-                                                  ? Icons.verified
-                                                  : Icons.warning_amber_rounded,
-                                              color: profile.isVerified
-                                                  ? colors.success
-                                                  : colors.error,
-                                              size: 16,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              profile.isVerified
-                                                  ? 'Verified'
-                                                  : 'Not Verified',
-                                              style: typo.labelSmall.copyWith(
-                                                color: profile.isVerified
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            profile.isVerified
+                                                ? Icons.verified
+                                                : Icons.warning_amber_rounded,
+                                            color:
+                                                profile.isVerified
                                                     ? colors.success
                                                     : colors.error,
-                                                fontWeight: FontWeight.w700,
-                                              ),
+                                            size: 16,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            profile.isVerified
+                                                ? 'Verified'
+                                                : 'Not Verified',
+                                            style: typo.labelSmall.copyWith(
+                                              color:
+                                                  profile.isVerified
+                                                      ? colors.success
+                                                      : colors.error,
+                                              fontWeight: FontWeight.w700,
                                             ),
-                                          ]),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     Flexible(
                                       child: Text(
                                         profile.email,
                                         style: typo.bodySmall.copyWith(
-                                            color: colors.onSurface
-                                                .withValues(alpha: 0.8)),
+                                          color: colors.onSurface.withValues(
+                                            alpha: 0.8,
+                                          ),
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                  ]),
-                            ]),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    UserRatingBadge(
+                                      user: profile,
+                                      role: 'buyer',
+                                    ),
+                                    const SizedBox(width: 8),
+                                    UserRatingBadge(
+                                      user: profile,
+                                      role: 'seller',
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
 
                           const SizedBox(height: 24),
@@ -203,138 +263,182 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               borderRadius: BorderRadius.circular(radius.xl),
                               boxShadow: [
                                 BoxShadow(
-                                    color: colors.shadow,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4)),
+                                  color: colors.shadow,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
                               ],
                             ),
                             child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildFieldLabel(context, 'Display Name'),
-                                  TextFormField(
-                                    controller: _displayNameController,
-                                    style: typo.bodyLarge
-                                        .copyWith(color: colors.onSurface),
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: colors.settingsIconBg,
-                                      border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(radius.card),
-                                        borderSide: BorderSide.none,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildFieldLabel(context, 'Display Name'),
+                                TextFormField(
+                                  controller: _displayNameController,
+                                  style: typo.bodyLarge.copyWith(
+                                    color: colors.onSurface,
+                                  ),
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: colors.settingsIconBg,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        radius.card,
                                       ),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 16),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'This is how you will appear to other students.',
-                                    style: typo.bodySmall.copyWith(
-                                        color: colors.onSurfaceVariant,
-                                        height: 1.3),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'This is how you will appear to other students.',
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                    height: 1.3,
                                   ),
-                                  const SizedBox(height: 32),
-                                  Divider(color: colors.dividerColor),
-                                  const SizedBox(height: 24),
+                                ),
+                                const SizedBox(height: 32),
+                                Divider(color: colors.dividerColor),
+                                const SizedBox(height: 24),
 
-                                  // Cancel / Save buttons
-                                  Row(children: [
+                                // Cancel / Save buttons
+                                Row(
+                                  children: [
                                     Expanded(
                                       child: OutlinedButton(
                                         onPressed: () => context.pop(),
                                         style: OutlinedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
-                                              vertical: 16),
+                                            vertical: 16,
+                                          ),
                                           side: BorderSide(
-                                              color: colors.dividerColor),
+                                            color: colors.dividerColor,
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      radius.md)),
+                                            borderRadius: BorderRadius.circular(
+                                              radius.md,
+                                            ),
+                                          ),
                                         ),
-                                        child: Text('Cancel',
-                                            style: typo.labelLarge.copyWith(
-                                                color: colors.settingsIcon,
-                                                fontWeight: FontWeight.w700)),
+                                        child: Text(
+                                          'Cancel',
+                                          style: typo.labelLarge.copyWith(
+                                            color: colors.settingsIcon,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: ElevatedButton(
-                                        onPressed: _isSaving
-                                            ? null
-                                            : () => _save(context),
+                                        onPressed:
+                                            _isSaving
+                                                ? null
+                                                : () => _save(context),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: colors.primary,
                                           padding: const EdgeInsets.symmetric(
-                                              vertical: 16),
+                                            vertical: 16,
+                                          ),
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      radius.md)),
+                                            borderRadius: BorderRadius.circular(
+                                              radius.md,
+                                            ),
+                                          ),
                                         ),
-                                        child: _isSaving
-                                            ? SizedBox(
-                                                height: 20,
-                                                width: 20,
-                                                child:
-                                                    CircularProgressIndicator(
+                                        child:
+                                            _isSaving
+                                                ? SizedBox(
+                                                  height: 20,
+                                                  width: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
                                                         strokeWidth: 2,
-                                                        color:
-                                                            colors.onPrimary),
-                                              )
-                                            : Text('Save',
-                                                style: typo.labelLarge.copyWith(
-                                                    color: colors.onPrimary,
-                                                    fontWeight:
-                                                        FontWeight.w700)),
+                                                        color: colors.onPrimary,
+                                                      ),
+                                                )
+                                                : Text(
+                                                  'Save',
+                                                  style: typo.labelLarge
+                                                      .copyWith(
+                                                        color: colors.onPrimary,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                ),
                                       ),
                                     ),
-                                  ]),
-                                ]),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 32),
                           // Delete Account — destructive action with confirmation dialog
-                          Center(child: Consumer(builder: (context, ref, child) {
-                            return TextButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (dialogContext) => AlertDialog(
-                                    title: const Text('Delete Account'),
-                                    content: const Text(
-                                      'This action is permanent and cannot be undone. '
-                                      'All your listings, orders, messages, and profile data will be deleted.',
+                          Center(
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                return TextButton(
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder:
+                                          (dialogContext) => AlertDialog(
+                                            title: const Text('Delete Account'),
+                                            content: const Text(
+                                              'This action is permanent and cannot be undone. '
+                                              'All your listings, orders, messages, and profile data will be deleted.',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed:
+                                                    () => Navigator.pop(
+                                                      dialogContext,
+                                                    ),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () async {
+                                                  Navigator.pop(dialogContext);
+                                                  await ref
+                                                      .read(
+                                                        authProvider.notifier,
+                                                      )
+                                                      .deleteAccount();
+                                                  if (context.mounted) {
+                                                    context.goNamed(
+                                                      AppRoutes.home,
+                                                    );
+                                                  }
+                                                },
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: colors.error,
+                                                ),
+                                                child: const Text('Delete'),
+                                              ),
+                                            ],
+                                          ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Delete Account',
+                                    style: typo.labelLarge.copyWith(
+                                      color: colors.error.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(dialogContext),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () async {
-                                          Navigator.pop(dialogContext);
-                                          await ref.read(authProvider.notifier).deleteAccount();
-                                          if (context.mounted) {
-                                            context.goNamed(AppRoutes.home);
-                                          }
-                                        },
-                                        style: TextButton.styleFrom(foregroundColor: colors.error),
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
                                   ),
                                 );
                               },
-                              child: Text('Delete Account', style: typo.labelLarge.copyWith(
-                                color: colors.error.withValues(alpha: 0.7),
-                                fontWeight: FontWeight.w500,
-                              )),
-                            );
-                          })),
+                            ),
+                          ),
                           const SizedBox(height: 48),
                         ],
                       ),
@@ -354,16 +458,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final typo = context.smivoTypo;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(label,
-          style: typo.bodyMedium.copyWith(
-              color: colors.onSurface, fontWeight: FontWeight.w700)),
+      child: Text(
+        label,
+        style: typo.bodyMedium.copyWith(
+          color: colors.onSurface,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 
   /// Pick an avatar image, crop it, then upload via bytes.
   Future<void> _pickAvatar(BuildContext context) async {
-    final xFile =
-        await ImageUploadService().pickAndCropImage(context, isAvatar: true);
+    final xFile = await ImageUploadService().pickAndCropImage(
+      context,
+      isAvatar: true,
+    );
     if (xFile == null) return;
     if (!mounted) return;
 
@@ -377,11 +487,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Row(children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 8),
-              Text('Avatar updated'),
-            ]),
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Avatar updated'),
+              ],
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -390,11 +502,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(children: [
-              const Icon(Icons.error_outline, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(child: Text('Failed to update avatar: $e')),
-            ]),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Failed to update avatar: $e')),
+              ],
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -421,11 +535,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Row(children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 8),
-              Text('Profile updated'),
-            ]),
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Profile updated'),
+              ],
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -434,11 +550,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(children: [
-              const Icon(Icons.error_outline, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(child: Text('Failed to save: $e')),
-            ]),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Failed to save: $e')),
+              ],
+            ),
             backgroundColor: Colors.red,
           ),
         );

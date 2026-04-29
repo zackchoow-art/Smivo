@@ -10,6 +10,7 @@ import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
+import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
 
 /// Collapsible order information section with buyer/seller profiles.
 ///
@@ -55,7 +56,12 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('Order Info', style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'Order Info',
+                    style: typo.titleMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 AnimatedRotation(
                   turns: _isExpanded ? 0.5 : 0,
@@ -82,40 +88,63 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // NOTE: Show only counterparty info, not the current user's own row
-                if (widget.buyer != null && widget.buyer!.id != widget.currentUserId)
+                if (widget.buyer != null &&
+                    widget.buyer!.id != widget.currentUserId)
                   _buildUserRow(context, 'Buyer', widget.buyer!),
-                if (widget.seller != null && widget.seller!.id != widget.currentUserId)
+                if (widget.seller != null &&
+                    widget.seller!.id != widget.currentUserId)
                   _buildUserRow(context, 'Seller', widget.seller!),
                 if (widget.buyer != null || widget.seller != null)
                   const Divider(height: 16),
                 // Info items Grid/List via LayoutBuilder
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final isDesktop = Breakpoints.isDesktop(MediaQuery.sizeOf(context).width);
-                    final itemWidth = isDesktop ? constraints.maxWidth / 2 : constraints.maxWidth;
-                    
+                    final isDesktop = Breakpoints.isDesktop(
+                      MediaQuery.sizeOf(context).width,
+                    );
+                    final itemWidth =
+                        isDesktop
+                            ? constraints.maxWidth / 2
+                            : constraints.maxWidth;
+
                     return Wrap(
                       children: [
                         // 1. Listed date
                         SizedBox(
                           width: itemWidth,
-                          child: _infoRow(context, 'Listed', _formatDate(widget.order.createdAt)),
+                          child: _infoRow(
+                            context,
+                            'Listed',
+                            _formatDate(widget.order.createdAt),
+                          ),
                         ),
                         // 2. Transaction type
                         SizedBox(
                           width: itemWidth,
-                          child: _infoRow(context, 'Type', isRental ? 'Rent' : 'Sale'),
+                          child: _infoRow(
+                            context,
+                            'Type',
+                            isRental ? 'Rent' : 'Sale',
+                          ),
                         ),
                         // 3. Status — use DB-driven label via StatusResolver
                         SizedBox(
                           width: itemWidth,
-                          child: _infoRow(context, 'Status', _resolveStatusLabel(widget.order.status)),
+                          child: _infoRow(
+                            context,
+                            'Status',
+                            _resolveStatusLabel(widget.order.status),
+                          ),
                         ),
                         // 4. Pickup location
                         if (widget.order.pickupLocation != null)
                           SizedBox(
                             width: itemWidth,
-                            child: _infoRow(context, 'Pickup', widget.order.pickupLocation!.name),
+                            child: _infoRow(
+                              context,
+                              'Pickup',
+                              widget.order.pickupLocation!.name,
+                            ),
                           ),
                         // 5. Price / Rental Total
                         SizedBox(
@@ -179,9 +208,10 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: role == 'Buyer'
-                    ? colors.primary.withValues(alpha: 0.1)
-                    : colors.success.withValues(alpha: 0.1),
+                color:
+                    role == 'Buyer'
+                        ? colors.primary.withValues(alpha: 0.1)
+                        : colors.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -199,15 +229,18 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
           CircleAvatar(
             radius: 18,
             backgroundColor: colors.surfaceContainerHigh,
-            backgroundImage: user.avatarUrl != null &&
-                    user.avatarUrl!.trim().isNotEmpty
-                ? NetworkImage(user.avatarUrl!)
-                : null,
-            child: user.avatarUrl == null || user.avatarUrl!.trim().isEmpty
-                ? Icon(Icons.person,
-                    size: 18,
-                    color: colors.onSurface.withValues(alpha: 0.5))
-                : null,
+            backgroundImage:
+                user.avatarUrl != null && user.avatarUrl!.trim().isNotEmpty
+                    ? NetworkImage(user.avatarUrl!)
+                    : null,
+            child:
+                user.avatarUrl == null || user.avatarUrl!.trim().isEmpty
+                    ? Icon(
+                      Icons.person,
+                      size: 18,
+                      color: colors.onSurface.withValues(alpha: 0.5),
+                    )
+                    : null,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -216,22 +249,25 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
               children: [
                 Text(
                   user.displayName ?? 'Unknown',
-                  style: typo.bodyMedium
-                      .copyWith(fontWeight: FontWeight.w600),
+                  style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (user.email.isNotEmpty)
-                  Text(user.email,
-                      style: typo.bodySmall
-                          .copyWith(color: colors.onSurfaceVariant)),
+                  Text(
+                    user.email,
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                const SizedBox(height: 4),
+                UserRatingBadge(user: user, role: role.toLowerCase()),
               ],
             ),
           ),
           if (!isSelf)
             IconButton(
-              icon: Icon(Icons.chat_outlined,
-                  size: 18, color: colors.primary),
+              icon: Icon(Icons.chat_outlined, size: 18, color: colors.primary),
               tooltip: 'Message $role',
               onPressed: () => _openChat(user),
               visualDensity: VisualDensity.compact,
@@ -309,8 +345,9 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
     final resolver = ref.read(statusResolverProvider).valueOrNull;
     if (resolver != null) return resolver.orderLabel(status);
     // Fallback if resolver not yet loaded
-    return status.split('_').map((w) =>
-      w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}'
-    ).join(' ');
+    return status
+        .split('_')
+        .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
   }
 }

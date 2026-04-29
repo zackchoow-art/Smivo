@@ -14,10 +14,7 @@ import 'package:smivo/shared/widgets/navigation_rail_bar.dart';
 /// navigation across all device classes while preserving the existing
 /// GoRouter shell-branch architecture.
 class ResponsiveScaffold extends StatelessWidget {
-  const ResponsiveScaffold({
-    super.key,
-    required this.navigationShell,
-  });
+  const ResponsiveScaffold({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 

@@ -6,10 +6,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 class MessageBadgeIcon extends StatelessWidget {
   final int unreadCount;
 
-  const MessageBadgeIcon({
-    super.key,
-    this.unreadCount = 3,
-  });
+  const MessageBadgeIcon({super.key, this.unreadCount = 3});
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +21,7 @@ class MessageBadgeIcon extends StatelessWidget {
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            color: colors.primary,
-            size: 28,
-          ),
+          Icon(Icons.chat_bubble_outline, color: colors.primary, size: 28),
           if (unreadCount > 0)
             Positioned(
               right: -4,
@@ -43,10 +36,7 @@ class MessageBadgeIcon extends StatelessWidget {
                     width: 2,
                   ),
                 ),
-                constraints: const BoxConstraints(
-                  minWidth: 22,
-                  minHeight: 22,
-                ),
+                constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
                 child: Center(
                   child: Text(
                     unreadCount.toString(),

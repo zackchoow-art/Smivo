@@ -112,9 +112,10 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: widget.isSale
-                            ? colors.onPrimary.withValues(alpha: 0.3)
-                            : colors.onSurface.withValues(alpha: 0.5),
+                        color:
+                            widget.isSale
+                                ? colors.onPrimary.withValues(alpha: 0.3)
+                                : colors.onSurface.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(radius.chip),
                       ),
                       child: Row(
@@ -159,9 +160,10 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                           margin: const EdgeInsets.symmetric(horizontal: 3),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _currentIndex == index
-                                ? colors.primary
-                                : colors.onPrimary.withValues(alpha: 0.5),
+                            color:
+                                _currentIndex == index
+                                    ? colors.primary
+                                    : colors.onPrimary.withValues(alpha: 0.5),
                           ),
                         ),
                       ),

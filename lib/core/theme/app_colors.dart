@@ -16,7 +16,9 @@ class AppColors {
   static const Color surfaceContainerLow = Color(0xFFf1f4f4);
   static const Color surfaceContainerLowest = Color(0xFFffffff);
   static const Color surfaceContainerHigh = Color(0xFFe5e9e9);
-  static const Color surfaceBright = Color(0xFFf6fafa); // Used for glassmorphism base
+  static const Color surfaceBright = Color(
+    0xFFf6fafa,
+  ); // Used for glassmorphism base
 
   // ── Text & Elements ────────────────────────────────────────
   static const Color onSurface = Color(0xFF181c1d);

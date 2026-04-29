@@ -26,6 +26,189 @@ final filteredOrdersProvider = AutoDisposeFutureProvider<List<Order>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FilteredOrdersRef = AutoDisposeFutureProviderRef<List<Order>>;
+String _$latestOrderByListingAndBuyerHash() =>
+    r'eb59ce578ff0b7be7662ba577015b314ef7fe89b';
+
+/// Copied from Dart SDK
+class _SystemHash {
+  _SystemHash._();
+
+  static int combine(int hash, int value) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + value);
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
+    return hash ^ (hash >> 6);
+  }
+
+  static int finish(int hash) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
+    // ignore: parameter_assignments
+    hash = hash ^ (hash >> 11);
+    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
+  }
+}
+
+/// Fetches the latest order for a specific listing and buyer.
+///
+/// Copied from [latestOrderByListingAndBuyer].
+@ProviderFor(latestOrderByListingAndBuyer)
+const latestOrderByListingAndBuyerProvider =
+    LatestOrderByListingAndBuyerFamily();
+
+/// Fetches the latest order for a specific listing and buyer.
+///
+/// Copied from [latestOrderByListingAndBuyer].
+class LatestOrderByListingAndBuyerFamily extends Family<AsyncValue<Order?>> {
+  /// Fetches the latest order for a specific listing and buyer.
+  ///
+  /// Copied from [latestOrderByListingAndBuyer].
+  const LatestOrderByListingAndBuyerFamily();
+
+  /// Fetches the latest order for a specific listing and buyer.
+  ///
+  /// Copied from [latestOrderByListingAndBuyer].
+  LatestOrderByListingAndBuyerProvider call({
+    required String listingId,
+    required String buyerId,
+  }) {
+    return LatestOrderByListingAndBuyerProvider(
+      listingId: listingId,
+      buyerId: buyerId,
+    );
+  }
+
+  @override
+  LatestOrderByListingAndBuyerProvider getProviderOverride(
+    covariant LatestOrderByListingAndBuyerProvider provider,
+  ) {
+    return call(listingId: provider.listingId, buyerId: provider.buyerId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'latestOrderByListingAndBuyerProvider';
+}
+
+/// Fetches the latest order for a specific listing and buyer.
+///
+/// Copied from [latestOrderByListingAndBuyer].
+class LatestOrderByListingAndBuyerProvider
+    extends AutoDisposeFutureProvider<Order?> {
+  /// Fetches the latest order for a specific listing and buyer.
+  ///
+  /// Copied from [latestOrderByListingAndBuyer].
+  LatestOrderByListingAndBuyerProvider({
+    required String listingId,
+    required String buyerId,
+  }) : this._internal(
+         (ref) => latestOrderByListingAndBuyer(
+           ref as LatestOrderByListingAndBuyerRef,
+           listingId: listingId,
+           buyerId: buyerId,
+         ),
+         from: latestOrderByListingAndBuyerProvider,
+         name: r'latestOrderByListingAndBuyerProvider',
+         debugGetCreateSourceHash:
+             const bool.fromEnvironment('dart.vm.product')
+                 ? null
+                 : _$latestOrderByListingAndBuyerHash,
+         dependencies: LatestOrderByListingAndBuyerFamily._dependencies,
+         allTransitiveDependencies:
+             LatestOrderByListingAndBuyerFamily._allTransitiveDependencies,
+         listingId: listingId,
+         buyerId: buyerId,
+       );
+
+  LatestOrderByListingAndBuyerProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.listingId,
+    required this.buyerId,
+  }) : super.internal();
+
+  final String listingId;
+  final String buyerId;
+
+  @override
+  Override overrideWith(
+    FutureOr<Order?> Function(LatestOrderByListingAndBuyerRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: LatestOrderByListingAndBuyerProvider._internal(
+        (ref) => create(ref as LatestOrderByListingAndBuyerRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        listingId: listingId,
+        buyerId: buyerId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<Order?> createElement() {
+    return _LatestOrderByListingAndBuyerProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is LatestOrderByListingAndBuyerProvider &&
+        other.listingId == listingId &&
+        other.buyerId == buyerId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, listingId.hashCode);
+    hash = _SystemHash.combine(hash, buyerId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin LatestOrderByListingAndBuyerRef on AutoDisposeFutureProviderRef<Order?> {
+  /// The parameter `listingId` of this provider.
+  String get listingId;
+
+  /// The parameter `buyerId` of this provider.
+  String get buyerId;
+}
+
+class _LatestOrderByListingAndBuyerProviderElement
+    extends AutoDisposeFutureProviderElement<Order?>
+    with LatestOrderByListingAndBuyerRef {
+  _LatestOrderByListingAndBuyerProviderElement(super.provider);
+
+  @override
+  String get listingId =>
+      (origin as LatestOrderByListingAndBuyerProvider).listingId;
+  @override
+  String get buyerId =>
+      (origin as LatestOrderByListingAndBuyerProvider).buyerId;
+}
+
 String _$unreadOrderUpdatesCountHash() =>
     r'755c023d9908483c8f20a9c36cae051cd766c757';
 
@@ -128,27 +311,6 @@ final allOrdersProvider =
 
 typedef _$AllOrders = AutoDisposeAsyncNotifier<List<Order>>;
 String _$orderDetailHash() => r'd5fdd919f9c21f2cba5655ac50667dfbcb417a44';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
 
 abstract class _$OrderDetail extends BuildlessAutoDisposeAsyncNotifier<Order> {
   late final String orderId;
@@ -292,7 +454,7 @@ class _OrderDetailProviderElement
 
 String _$orderActionsHash() => r'9623b1b5f8e98f2cfa43297e32bf3e8620fe8529';
 
-/// Mutation actions for a specific order.
+/// Handles order actions (cancel, confirm delivery, request return, etc.).
 ///
 /// Copied from [OrderActions].
 @ProviderFor(OrderActions)

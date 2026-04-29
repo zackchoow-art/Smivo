@@ -44,10 +44,10 @@ class ModerationActions extends _$ModerationActions {
     state = await AsyncValue.guard(() async {
       final repo = ref.read(moderationRepositoryProvider);
       await repo.blockUser(user.id, blockedUserId);
-      
+
       // Invalidate the blocked users provider to refresh the cache
       ref.invalidate(blockedUsersProvider);
-      
+
       // Invalidate the home feed so the abusive user's content disappears instantly
       ref.invalidate(homeListingsProvider);
       ref.invalidate(blockedUsersListProvider);
@@ -62,7 +62,7 @@ class ModerationActions extends _$ModerationActions {
     state = await AsyncValue.guard(() async {
       final repo = ref.read(moderationRepositoryProvider);
       await repo.unblockUser(user.id, blockedUserId);
-      
+
       ref.invalidate(blockedUsersProvider);
       ref.invalidate(blockedUsersListProvider);
       ref.invalidate(homeListingsProvider);

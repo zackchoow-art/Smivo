@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'
-    hide AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
@@ -19,10 +18,7 @@ class AuthRepository {
   /// Signs up with email and password.
   ///
   /// Throws [AuthException] if signup fails (e.g. duplicate email).
-  Future<void> signUp({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signUp({required String email, required String password}) async {
     try {
       await _client.auth.signUp(email: email, password: password);
     } on AuthApiException catch (e) {
@@ -33,25 +29,16 @@ class AuthRepository {
   /// Resends the verification email for the given [email].
   Future<void> resendVerification(String email) async {
     try {
-      await _client.auth.resend(
-        type: OtpType.signup,
-        email: email,
-      );
+      await _client.auth.resend(type: OtpType.signup, email: email);
     } on AuthApiException catch (e) {
       throw AuthException(e.message, e);
     }
   }
 
   /// Signs in with email and password.
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signIn({required String email, required String password}) async {
     try {
-      await _client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
+      await _client.auth.signInWithPassword(email: email, password: password);
     } on AuthApiException catch (e) {
       throw AuthException(e.message, e);
     }
@@ -83,11 +70,12 @@ class AuthRepository {
   /// Returns the current user's profile, or null if not found.
   Future<UserProfile?> getProfile(String userId) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableUserProfiles)
-          .select()
-          .eq('id', userId)
-          .maybeSingle();
+      final data =
+          await _client
+              .from(AppConstants.tableUserProfiles)
+              .select()
+              .eq('id', userId)
+              .maybeSingle();
       if (data == null) return null;
       return UserProfile.fromJson(data);
     } on PostgrestException catch (e) {
@@ -98,11 +86,12 @@ class AuthRepository {
   /// Creates or updates the user's profile.
   Future<UserProfile> upsertProfile(UserProfile profile) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableUserProfiles)
-          .upsert(profile.toJson())
-          .select()
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableUserProfiles)
+              .upsert(profile.toJson())
+              .select()
+              .single();
       return UserProfile.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -113,8 +102,7 @@ class AuthRepository {
   User? get currentUser => _client.auth.currentUser;
 
   /// Stream of auth state changes.
-  Stream<AuthState> get authStateChanges =>
-      _client.auth.onAuthStateChange;
+  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
 }
 
 @riverpod

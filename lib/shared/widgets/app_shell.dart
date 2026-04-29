@@ -8,10 +8,7 @@ import 'package:smivo/shared/widgets/responsive_scaffold.dart';
 /// adaptive navigation (BottomNav / Rail / Sidebar) based on
 /// screen width breakpoints.
 class AppShell extends StatelessWidget {
-  const AppShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 

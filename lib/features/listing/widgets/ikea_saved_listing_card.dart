@@ -19,11 +19,16 @@ class IkeaSavedListingCard extends StatelessWidget {
     final shadows = context.smivoShadows;
 
     final listing = savedListing.listing;
-    final imageUrl = listing?.images.isNotEmpty == true ? listing!.images.first.imageUrl : null;
+    final imageUrl =
+        listing?.images.isNotEmpty == true
+            ? listing!.images.first.imageUrl
+            : null;
     final title = listing?.title ?? 'Untitled Listing';
-    final price = listing != null ? '\$${listing.price.toStringAsFixed(0)}' : '';
-        
-    final dateStr = 'Saved ${DateFormat('M/d HH:mm').format(savedListing.createdAt)}';
+    final price =
+        listing != null ? '\$${listing.price.toStringAsFixed(0)}' : '';
+
+    final dateStr =
+        'Saved ${DateFormat('M/d HH:mm').format(savedListing.createdAt)}';
 
     return Container(
       decoration: BoxDecoration(
@@ -33,10 +38,11 @@ class IkeaSavedListingCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => context.pushNamed(
-          AppRoutes.listingDetail, 
-          pathParameters: {'id': savedListing.listingId},
-        ),
+        onTap:
+            () => context.pushNamed(
+              AppRoutes.listingDetail,
+              pathParameters: {'id': savedListing.listingId},
+            ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -49,12 +55,16 @@ class IkeaSavedListingCard extends StatelessWidget {
                   children: [
                     AspectRatio(
                       aspectRatio: 1.3,
-                      child: imageUrl != null
-                          ? Image.network(imageUrl, fit: BoxFit.cover)
-                          : Container(
-                              color: colors.surfaceContainerHigh,
-                              child: Icon(Icons.image, color: colors.onSurfaceVariant),
-                            ),
+                      child:
+                          imageUrl != null
+                              ? Image.network(imageUrl, fit: BoxFit.cover)
+                              : Container(
+                                color: colors.surfaceContainerHigh,
+                                child: Icon(
+                                  Icons.image,
+                                  color: colors.onSurfaceVariant,
+                                ),
+                              ),
                     ),
                     // Status Chip
                     Positioned(
@@ -78,7 +88,9 @@ class IkeaSavedListingCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           title,
-                          style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                          style: typo.labelLarge.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -117,7 +129,7 @@ class IkeaSavedListingCard extends StatelessWidget {
 
     final status = savedListing.listing?.status ?? 'inactive';
     final isAvailable = status == 'active';
-    
+
     final bgColor = isAvailable ? colors.success : colors.outlineVariant;
     final textColor = Colors.white;
     final label = isAvailable ? 'Available' : 'Delisted';

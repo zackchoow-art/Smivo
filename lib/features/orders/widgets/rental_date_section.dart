@@ -14,24 +14,14 @@ class RentalDateSection extends StatelessWidget {
       children: [
         // Duration row: computed from date range (daily / weekly / monthly)
         _infoRow(context, 'Duration', _computeRentalDuration(order)),
-        _infoRow(
-          context,
-          'Start',
-          _formatDate(order.rentalStartDate!),
-        ),
+        _infoRow(context, 'Start', _formatDate(order.rentalStartDate!)),
         _infoRow(
           context,
           'End',
-          order.rentalEndDate != null
-              ? _formatDate(order.rentalEndDate!)
-              : '—',
+          order.rentalEndDate != null ? _formatDate(order.rentalEndDate!) : '—',
         ),
         if (order.returnConfirmedAt != null)
-          _infoRow(
-            context,
-            'Returned',
-            _formatDate(order.returnConfirmedAt!),
-          ),
+          _infoRow(context, 'Returned', _formatDate(order.returnConfirmedAt!)),
       ],
     );
   }
@@ -66,8 +56,7 @@ class RentalDateSection extends StatelessWidget {
     if (order.rentalStartDate == null || order.rentalEndDate == null) {
       return '—';
     }
-    final days =
-        order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+    final days = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
     if (days >= 30 && days % 30 == 0) {
       final months = days ~/ 30;
       return '$months Month${months > 1 ? 's' : ''}';

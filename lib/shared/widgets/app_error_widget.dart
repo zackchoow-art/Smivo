@@ -6,11 +6,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 /// Shows an error icon, message, and optional retry button.
 /// Use this in AsyncValue.when(error:) handlers for consistency.
 class AppErrorWidget extends StatelessWidget {
-  const AppErrorWidget({
-    required this.message,
-    this.onRetry,
-    super.key,
-  });
+  const AppErrorWidget({required this.message, this.onRetry, super.key});
 
   /// The error message to display.
   final String message;
@@ -42,10 +38,7 @@ class AppErrorWidget extends StatelessWidget {
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: onRetry,
-                child: const Text('Retry'),
-              ),
+              OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
             ],
           ],
         ),

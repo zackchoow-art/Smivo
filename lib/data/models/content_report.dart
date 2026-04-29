@@ -19,11 +19,12 @@ abstract class ContentReport with _$ContentReport {
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
     @JsonKey(name: 'resolution_note') String? resolutionNote,
-    
+
     // Joined data for display
     @JsonKey(name: 'reported_user') UserProfile? reportedUser,
     Listing? listing,
   }) = _ContentReport;
 
-  factory ContentReport.fromJson(Map<String, dynamic> json) => _$ContentReportFromJson(json);
+  factory ContentReport.fromJson(Map<String, dynamic> json) =>
+      _$ContentReportFromJson(json);
 }

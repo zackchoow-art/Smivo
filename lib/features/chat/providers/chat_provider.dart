@@ -76,34 +76,39 @@ class ChatRoomList extends _$ChatRoomList {
     // Subscribe to new messages
     _subscribe(user.id);
 
-    final allRooms = await ref.read(chatRepositoryProvider).fetchChatRooms(user.id);
-    
+    final allRooms = await ref
+        .read(chatRepositoryProvider)
+        .fetchChatRooms(user.id);
+
     // Filter out chat rooms where the other participant is blocked
-    final blockedUserIds = ref.watch(blockedUsersProvider).valueOrNull ?? <String>[];
+    final blockedUserIds =
+        ref.watch(blockedUsersProvider).valueOrNull ?? <String>[];
     final blockedSet = blockedUserIds.toSet();
-    
+
     return allRooms.where((room) {
-      final otherUserId = room.buyerId == user.id ? room.sellerId : room.buyerId;
+      final otherUserId =
+          room.buyerId == user.id ? room.sellerId : room.buyerId;
       return !blockedSet.contains(otherUserId);
     }).toList();
   }
 
   void _subscribe(String userId) {
     final client = ref.read(supabaseClientProvider);
-    _channel = client
-        .channel('chat_rooms_list:$userId')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.insert,
-          schema: 'public',
-          table: AppConstants.tableMessages,
-          callback: (payload) {
-            // A new message was inserted somewhere in the system.
-            // Re-fetch chat rooms to refresh unread counts and last message.
-            // RLS ensures we only get messages for rooms we're in.
-            ref.invalidateSelf();
-          },
-        )
-        .subscribe();
+    _channel =
+        client
+            .channel('chat_rooms_list:$userId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.insert,
+              schema: 'public',
+              table: AppConstants.tableMessages,
+              callback: (payload) {
+                // A new message was inserted somewhere in the system.
+                // Re-fetch chat rooms to refresh unread counts and last message.
+                // RLS ensures we only get messages for rooms we're in.
+                ref.invalidateSelf();
+              },
+            )
+            .subscribe();
   }
 
   /// Toggle pin state and refresh list.
@@ -170,7 +175,7 @@ class ChatMessages extends _$ChatMessages {
     if (content.trim().isEmpty) return;
 
     final repository = ref.read(chatRepositoryProvider);
-    
+
     // The realtime listener will receive the message and update state.
     await repository.sendMessage(
       chatRoomId: chatRoomId,
@@ -223,13 +228,14 @@ class ChatMessages extends _$ChatMessages {
 Future<int> chatTotalUnread(Ref ref) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return 0;
-  
+
   final rooms = await ref.watch(chatRoomListProvider.future);
   return rooms.fold<int>(0, (sum, room) {
     final isBuyer = room.buyerId == user.id;
     return sum + (isBuyer ? room.unreadCountBuyer : room.unreadCountSeller);
   });
 }
+
 /// Fetches details for a single chat room.
 @riverpod
 Future<ChatRoom> chatRoom(Ref ref, String chatRoomId) async {

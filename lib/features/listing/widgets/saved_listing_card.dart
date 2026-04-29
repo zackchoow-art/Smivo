@@ -16,8 +16,9 @@ class SavedListingCard extends StatelessWidget {
     final imageUrl = listing?.images.firstOrNull?.imageUrl;
     final title = listing?.title ?? 'Untitled Listing';
     final status = listing?.status ?? 'inactive';
-    final price = listing != null ? '\$${listing.price.toStringAsFixed(0)}' : '';
-    
+    final price =
+        listing != null ? '\$${listing.price.toStringAsFixed(0)}' : '';
+
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -25,10 +26,11 @@ class SavedListingCard extends StatelessWidget {
     final dateStr = DateFormat('MMM d, yyyy').format(savedListing.createdAt);
 
     return InkWell(
-      onTap: () => context.pushNamed(
-        AppRoutes.listingDetail, 
-        pathParameters: {'id': savedListing.listingId},
-      ),
+      onTap:
+          () => context.pushNamed(
+            AppRoutes.listingDetail,
+            pathParameters: {'id': savedListing.listingId},
+          ),
       borderRadius: BorderRadius.circular(radius.card),
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -37,17 +39,19 @@ class SavedListingCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(radius.card),
           boxShadow: [
             BoxShadow(
-              color: colors.shadow, 
-              blurRadius: 10, 
-              offset: const Offset(0, 4)
-            )
+              color: colors.shadow,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
           children: [
             _buildImage(imageUrl, colors, radius),
             const SizedBox(width: 12),
-            Expanded(child: _buildDetails(title, price, status, dateStr, colors, typo)),
+            Expanded(
+              child: _buildDetails(title, price, status, dateStr, colors, typo),
+            ),
             const SizedBox(width: 8),
             Icon(Icons.chevron_right, color: colors.outlineVariant),
           ],
@@ -60,21 +64,33 @@ class SavedListingCard extends StatelessWidget {
     if (imageUrl != null && imageUrl.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(radius.sm),
-        child: Image.network(imageUrl, width: 60, height: 60, fit: BoxFit.cover),
+        child: Image.network(
+          imageUrl,
+          width: 60,
+          height: 60,
+          fit: BoxFit.cover,
+        ),
       );
     }
     return Container(
-      width: 60, 
+      width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow, 
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(radius.sm),
       ),
       child: Icon(Icons.image_not_supported, color: colors.outlineVariant),
     );
   }
 
-  Widget _buildDetails(String title, String price, String status, String dateStr, SmivoColors colors, SmivoTypography typo) {
+  Widget _buildDetails(
+    String title,
+    String price,
+    String status,
+    String dateStr,
+    SmivoColors colors,
+    SmivoTypography typo,
+  ) {
     final isAvailable = status == 'active';
     final statusText = isAvailable ? 'Available' : 'Delisted';
     final statusColor = isAvailable ? colors.success : colors.outlineVariant;
@@ -106,8 +122,12 @@ class SavedListingCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text('Saved on $dateStr',
-          style: typo.labelSmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6))),
+        Text(
+          'Saved on $dateStr',
+          style: typo.labelSmall.copyWith(
+            color: colors.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
       ],
     );
   }

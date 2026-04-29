@@ -6,7 +6,6 @@ import 'package:smivo/core/providers/theme_provider.dart';
 import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/features/shared/providers/school_data_provider.dart';
 
-
 class HomeCategoryChips extends ConsumerWidget {
   const HomeCategoryChips({super.key});
 
@@ -45,7 +44,10 @@ class HomeCategoryChips extends ConsumerWidget {
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            onTap: (index) => ref.read(selectedCategoryProvider.notifier).setCategory(categories[index]),
+            onTap:
+                (index) => ref
+                    .read(selectedCategoryProvider.notifier)
+                    .setCategory(categories[index]),
             labelColor: colors.primary,
             unselectedLabelColor: colors.onSurfaceVariant,
             indicatorColor: colors.primary,
@@ -67,24 +69,24 @@ class HomeCategoryChips extends ConsumerWidget {
         itemBuilder: (context, index) {
           final category = categories[index];
           final isSelected = selectedCategory == category;
-          
+
           return GestureDetector(
-            onTap: () => ref.read(selectedCategoryProvider.notifier).setCategory(category),
+            onTap:
+                () => ref
+                    .read(selectedCategoryProvider.notifier)
+                    .setCategory(category),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? colors.primary
-                    : colors.surfaceContainerHigh,
+                color:
+                    isSelected ? colors.primary : colors.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(radius.chip),
               ),
               child: Text(
                 nameMap[category] ?? category,
                 style: typo.labelLarge.copyWith(
-                  color: isSelected
-                      ? colors.onPrimary
-                      : colors.onSurface,
+                  color: isSelected ? colors.onPrimary : colors.onSurface,
                 ),
               ),
             ),

@@ -12,10 +12,7 @@ import 'package:smivo/core/router/app_routes.dart';
 /// side by side on the right. Uses system theme primary color
 /// for the price.
 class CompactListingCard extends StatelessWidget {
-  const CompactListingCard({
-    super.key,
-    required this.listing,
-  });
+  const CompactListingCard({super.key, required this.listing});
 
   final Listing listing;
 
@@ -39,15 +36,17 @@ class CompactListingCard extends StatelessWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    final priceText = listing.transactionType.toLowerCase() == 'rental'
-        ? _rentalPriceLabel(listing)
-        : '\$${listing.price.toStringAsFixed(0)}';
+    final priceText =
+        listing.transactionType.toLowerCase() == 'rental'
+            ? _rentalPriceLabel(listing)
+            : '\$${listing.price.toStringAsFixed(0)}';
 
     return GestureDetector(
-      onTap: () => context.pushNamed(
-        AppRoutes.listingDetail,
-        pathParameters: {'id': listing.id},
-      ),
+      onTap:
+          () => context.pushNamed(
+            AppRoutes.listingDetail,
+            pathParameters: {'id': listing.id},
+          ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         child: Row(
@@ -60,22 +59,24 @@ class CompactListingCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(radius.image),
-                image: imageUrl != null 
-                    ? DecorationImage(
-                        image: NetworkImage(imageUrl),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+                image:
+                    imageUrl != null
+                        ? DecorationImage(
+                          image: NetworkImage(imageUrl),
+                          fit: BoxFit.cover,
+                        )
+                        : null,
               ),
-              child: imageUrl == null
-                  ? Center(
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 32,
-                        color: colors.outlineVariant.withValues(alpha: 0.5),
-                      ),
-                    )
-                  : null,
+              child:
+                  imageUrl == null
+                      ? Center(
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 32,
+                          color: colors.outlineVariant.withValues(alpha: 0.5),
+                        ),
+                      )
+                      : null,
             ),
             const SizedBox(width: 12),
             // NOTE: Title and price side by side on the right,
@@ -112,7 +113,8 @@ class CompactListingCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (listing.description != null && listing.description!.isNotEmpty) ...[
+                  if (listing.description != null &&
+                      listing.description!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       listing.description!,

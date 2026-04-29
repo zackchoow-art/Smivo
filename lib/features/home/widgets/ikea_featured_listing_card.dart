@@ -7,7 +7,6 @@ import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/features/home/widgets/transaction_tag.dart';
 
-
 /// IKEA-themed full-width featured card for the first 3 listings.
 ///
 /// Layout: vertical stack — large product image on top, info section
@@ -19,10 +18,7 @@ import 'package:smivo/features/home/widgets/transaction_tag.dart';
 /// build tree (IKEA = top-image + bottom-info vs Teal = overlay
 /// gradient on full-bleed image).
 class IkeaFeaturedListingCard extends StatelessWidget {
-  const IkeaFeaturedListingCard({
-    super.key,
-    required this.listing,
-  });
+  const IkeaFeaturedListingCard({super.key, required this.listing});
 
   final Listing listing;
 
@@ -55,10 +51,11 @@ class IkeaFeaturedListingCard extends StatelessWidget {
         final isDesktop = Breakpoints.isDesktop(constraints.maxWidth);
 
         Widget content = GestureDetector(
-          onTap: () => context.pushNamed(
-            AppRoutes.listingDetail,
-            pathParameters: {'id': listing.id},
-          ),
+          onTap:
+              () => context.pushNamed(
+                AppRoutes.listingDetail,
+                pathParameters: {'id': listing.id},
+              ),
           child: Container(
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
@@ -81,9 +78,8 @@ class IkeaFeaturedListingCard extends StatelessWidget {
                         Image.network(
                           imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildImageFallback(
-                            colors,
-                          ),
+                          errorBuilder:
+                              (_, __, ___) => _buildImageFallback(colors),
                         )
                       else
                         _buildImageFallback(colors),
@@ -92,7 +88,9 @@ class IkeaFeaturedListingCard extends StatelessWidget {
                       Positioned(
                         top: 12,
                         right: 12,
-                        child: TransactionTag(transactionType: listing.transactionType),
+                        child: TransactionTag(
+                          transactionType: listing.transactionType,
+                        ),
                       ),
                     ],
                   ),

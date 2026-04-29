@@ -30,7 +30,10 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
       appBar: AppBar(
-        title: Text('Manage Roles', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800)),
+        title: Text(
+          'Manage Roles',
+          style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800),
+        ),
         backgroundColor: colors.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -58,8 +61,13 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
               decoration: InputDecoration(
                 hintText: 'Search by name or email…',
                 prefixIcon: const Icon(Icons.search, size: 20),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.md)),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(radius.md),
+                ),
                 filled: true,
                 fillColor: colors.surfaceContainerLow,
               ),
@@ -68,24 +76,43 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
           Expanded(
             child: rolesState.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err', style: TextStyle(color: colors.error))),
+              error:
+                  (err, _) => Center(
+                    child: Text(
+                      'Error: $err',
+                      style: TextStyle(color: colors.error),
+                    ),
+                  ),
               data: (roles) {
                 var filtered = roles;
                 if (_searchQuery.isNotEmpty) {
                   final q = _searchQuery.toLowerCase();
-                  filtered = roles.where((r) =>
-                    (r.userName ?? '').toLowerCase().contains(q) ||
-                    (r.userEmail ?? '').toLowerCase().contains(q)).toList();
+                  filtered =
+                      roles
+                          .where(
+                            (r) =>
+                                (r.userName ?? '').toLowerCase().contains(q) ||
+                                (r.userEmail ?? '').toLowerCase().contains(q),
+                          )
+                          .toList();
                 }
 
                 if (filtered.isEmpty) {
                   return Center(
-                    child: Text('No roles found.', style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant)),
+                    child: Text(
+                      'No roles found.',
+                      style: typo.bodyLarge.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
                   );
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final role = filtered[index];
@@ -108,19 +135,21 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
   void _showAssignDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (ctx) => _AssignRoleDialog(
-        onSaved: () => ref.invalidate(adminRolesProvider),
-      ),
+      builder:
+          (ctx) => _AssignRoleDialog(
+            onSaved: () => ref.invalidate(adminRolesProvider),
+          ),
     );
   }
 
   void _showEditDialog(BuildContext context, AdminRole role) {
     showDialog(
       context: context,
-      builder: (ctx) => _EditRoleDialog(
-        role: role,
-        onSaved: () => ref.invalidate(adminRolesProvider),
-      ),
+      builder:
+          (ctx) => _EditRoleDialog(
+            role: role,
+            onSaved: () => ref.invalidate(adminRolesProvider),
+          ),
     );
   }
 
@@ -128,23 +157,31 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
     final colors = context.smivoColors;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Remove Role'),
-        content: Text('Remove ${role.role} role for ${role.userName ?? role.userEmail}?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () async {
-              await ref.read(adminRoleRepositoryProvider).deleteRole(role.id);
-              ref.invalidate(adminRolesProvider);
-              ref.invalidate(adminContextProvider);
-              if (ctx.mounted) Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: colors.error),
-            child: const Text('Remove'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Remove Role'),
+            content: Text(
+              'Remove ${role.role} role for ${role.userName ?? role.userEmail}?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  await ref
+                      .read(adminRoleRepositoryProvider)
+                      .deleteRole(role.id);
+                  ref.invalidate(adminRolesProvider);
+                  ref.invalidate(adminContextProvider);
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                style: FilledButton.styleFrom(backgroundColor: colors.error),
+                child: const Text('Remove'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -155,7 +192,12 @@ class _RoleCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _RoleCard({required this.role, required this.canWrite, required this.onEdit, required this.onDelete});
+  const _RoleCard({
+    required this.role,
+    required this.canWrite,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -175,9 +217,8 @@ class _RoleCard extends StatelessWidget {
       _ => 'Operator',
     };
 
-    final scopeLabel = role.scopeType == 'platform'
-        ? 'Platform'
-        : role.schoolName ?? 'School';
+    final scopeLabel =
+        role.scopeType == 'platform' ? 'Platform' : role.schoolName ?? 'School';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -190,7 +231,11 @@ class _RoleCard extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: roleColor.withValues(alpha: 0.1),
           child: Icon(
-            role.role == 'sysadmin' ? Icons.shield : role.role == 'admin' ? Icons.admin_panel_settings : Icons.person,
+            role.role == 'sysadmin'
+                ? Icons.shield
+                : role.role == 'admin'
+                ? Icons.admin_panel_settings
+                : Icons.person,
             color: roleColor,
             size: 20,
           ),
@@ -214,7 +259,10 @@ class _RoleCard extends StatelessWidget {
               ),
               child: Text(
                 roleLabel,
-                style: typo.labelSmall.copyWith(color: roleColor, fontWeight: FontWeight.bold),
+                style: typo.labelSmall.copyWith(
+                  color: roleColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             if (!role.isActive) ...[
@@ -223,8 +271,14 @@ class _RoleCard extends StatelessWidget {
             ],
             if (canWrite) ...[
               const SizedBox(width: 8),
-              IconButton(icon: Icon(Icons.edit, size: 20, color: colors.primary), onPressed: onEdit),
-              IconButton(icon: Icon(Icons.delete, size: 20, color: colors.error), onPressed: onDelete),
+              IconButton(
+                icon: Icon(Icons.edit, size: 20, color: colors.primary),
+                onPressed: onEdit,
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, size: 20, color: colors.error),
+                onPressed: onDelete,
+              ),
             ],
           ],
         ),
@@ -280,12 +334,16 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
               items: const [
                 DropdownMenuItem(value: 'operator', child: Text('Operator')),
                 DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                DropdownMenuItem(value: 'sysadmin', child: Text('System Admin')),
+                DropdownMenuItem(
+                  value: 'sysadmin',
+                  child: Text('System Admin'),
+                ),
               ],
-              onChanged: (v) => setState(() {
-                _role = v ?? 'operator';
-                if (_role == 'sysadmin') _scopeType = 'platform';
-              }),
+              onChanged:
+                  (v) => setState(() {
+                    _role = v ?? 'operator';
+                    if (_role == 'sysadmin') _scopeType = 'platform';
+                  }),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -295,20 +353,30 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
                 DropdownMenuItem(value: 'platform', child: Text('Platform')),
                 DropdownMenuItem(value: 'school', child: Text('School')),
               ],
-              onChanged: (v) => setState(() {
-                _scopeType = v ?? 'school';
-                if (_scopeType == 'platform') _scopeId = null;
-              }),
+              onChanged:
+                  (v) => setState(() {
+                    _scopeType = v ?? 'school';
+                    if (_scopeType == 'platform') _scopeId = null;
+                  }),
             ),
             if (_scopeType == 'school') ...[
               const SizedBox(height: 16),
               schoolsState.when(
-                data: (schools) => DropdownButtonFormField<String>(
-                  initialValue: _scopeId,
-                  decoration: const InputDecoration(labelText: 'School'),
-                  items: schools.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
-                  onChanged: (v) => setState(() => _scopeId = v),
-                ),
+                data:
+                    (schools) => DropdownButtonFormField<String>(
+                      initialValue: _scopeId,
+                      decoration: const InputDecoration(labelText: 'School'),
+                      items:
+                          schools
+                              .map(
+                                (s) => DropdownMenuItem(
+                                  value: s.id,
+                                  child: Text(s.name),
+                                ),
+                              )
+                              .toList(),
+                      onChanged: (v) => setState(() => _scopeId = v),
+                    ),
                 loading: () => const LinearProgressIndicator(),
                 error: (e, _) => Text('Error: $e'),
               ),
@@ -317,10 +385,20 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
         FilledButton(
           onPressed: _loading ? null : _submit,
-          child: _loading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Assign'),
+          child:
+              _loading
+                  ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Assign'),
         ),
       ],
     );
@@ -333,17 +411,21 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
 
     setState(() => _loading = true);
     try {
-      await ref.read(adminRoleRepositoryProvider).createRole(
-        userId: userId,
-        role: _role,
-        scopeType: _scopeType,
-        scopeId: _scopeType == 'platform' ? null : _scopeId,
-      );
+      await ref
+          .read(adminRoleRepositoryProvider)
+          .createRole(
+            userId: userId,
+            role: _role,
+            scopeType: _scopeType,
+            scopeId: _scopeType == 'platform' ? null : _scopeId,
+          );
       widget.onSaved();
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -376,7 +458,9 @@ class _EditRoleDialogState extends ConsumerState<_EditRoleDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Edit Role: ${widget.role.userName ?? widget.role.userEmail}'),
+      title: Text(
+        'Edit Role: ${widget.role.userName ?? widget.role.userEmail}',
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -399,14 +483,15 @@ class _EditRoleDialogState extends ConsumerState<_EditRoleDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
         FilledButton(
           onPressed: () async {
-            await ref.read(adminRoleRepositoryProvider).updateRole(
-              widget.role.id,
-              role: _role,
-              isActive: _isActive,
-            );
+            await ref
+                .read(adminRoleRepositoryProvider)
+                .updateRole(widget.role.id, role: _role, isActive: _isActive);
             widget.onSaved();
             ref.invalidate(adminContextProvider);
             if (context.mounted) Navigator.of(context).pop();

@@ -69,10 +69,7 @@ class _FrontSide extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 if (imageUrl != null && imageUrl.isNotEmpty)
-                  Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                  )
+                  Image.network(imageUrl, fit: BoxFit.cover)
                 else
                   Container(color: colors.surfaceContainerLow),
 
@@ -225,7 +222,7 @@ class _BackSide extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          
+
           // Counterparty row
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -244,7 +241,8 @@ class _BackSide extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (counterparty?.avatarUrl != null && counterparty!.avatarUrl!.isNotEmpty)
+                if (counterparty?.avatarUrl != null &&
+                    counterparty!.avatarUrl!.isNotEmpty)
                   CircleAvatar(
                     radius: 12,
                     backgroundImage: NetworkImage(counterparty.avatarUrl!),
@@ -262,10 +260,24 @@ class _BackSide extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          _buildInfoRow(context, 'AMOUNT', order.orderType == 'rental' ? '\$${order.totalPrice.toInt()}/mo' : '\$${order.totalPrice.toInt()}'),
-          _buildInfoRow(context, 'DATE', order.createdAt.toLocal().toString().split(' ')[0]),
+          _buildInfoRow(
+            context,
+            'AMOUNT',
+            order.orderType == 'rental'
+                ? '\$${order.totalPrice.toInt()}/mo'
+                : '\$${order.totalPrice.toInt()}',
+          ),
+          _buildInfoRow(
+            context,
+            'DATE',
+            order.createdAt.toLocal().toString().split(' ')[0],
+          ),
           if (order.orderType == 'rental' && order.rentalStartDate != null)
-            _buildInfoRow(context, 'RENTAL\nPERIOD', '${order.rentalStartDate.toString().split(' ')[0]} - ${order.rentalEndDate?.toString().split(' ')[0] ?? 'N/A'}'),
+            _buildInfoRow(
+              context,
+              'RENTAL\nPERIOD',
+              '${order.rentalStartDate.toString().split(' ')[0]} - ${order.rentalEndDate?.toString().split(' ')[0] ?? 'N/A'}',
+            ),
           _buildInfoRow(context, 'STATUS', _getStatusText(status)),
 
           // Pickup Location row
@@ -300,15 +312,16 @@ class _BackSide extends StatelessWidget {
           ),
 
           const Spacer(),
-          
+
           // Completed Orders: Show snapshot as a small link
           if (status == 'completed')
             Center(
               child: GestureDetector(
-                onTap: () => TransactionSnapshotModal.show(
-                  context, 
-                  title: 'Order Snapshot',
-                ),
+                onTap:
+                    () => TransactionSnapshotModal.show(
+                      context,
+                      title: 'Order Snapshot',
+                    ),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
@@ -334,7 +347,11 @@ class _BackSide extends StatelessWidget {
                     pathParameters: {'id': order.id},
                   );
                 },
-                icon: Icon(Icons.info_outline, color: colors.onPrimary, size: 18),
+                icon: Icon(
+                  Icons.info_outline,
+                  color: colors.onPrimary,
+                  size: 18,
+                ),
                 label: Text(
                   'View Details',
                   style: typo.labelLarge.copyWith(color: colors.onPrimary),
@@ -348,7 +365,7 @@ class _BackSide extends StatelessWidget {
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 16),
           Center(
             child: Text(

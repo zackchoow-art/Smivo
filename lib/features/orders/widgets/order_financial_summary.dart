@@ -28,25 +28,40 @@ class OrderFinancialSummary extends StatelessWidget {
         children: [
           // Sale order: show listing price
           if (!isRental) ...[
-            _pricingRow(context, 'Sale Price',
-                '\$${order.totalPrice.toStringAsFixed(2)}'),
+            _pricingRow(
+              context,
+              'Sale Price',
+              '\$${order.totalPrice.toStringAsFixed(2)}',
+            ),
           ],
 
           // Rental order: show available rental rates + deposit
           if (isRental && listing != null) ...[
             if ((listing.rentalDailyPrice ?? 0) > 0)
-              _pricingRow(context, 'Daily Rate',
-                  '\$${listing.rentalDailyPrice!.toStringAsFixed(2)} / day'),
+              _pricingRow(
+                context,
+                'Daily Rate',
+                '\$${listing.rentalDailyPrice!.toStringAsFixed(2)} / day',
+              ),
             if ((listing.rentalWeeklyPrice ?? 0) > 0)
-              _pricingRow(context, 'Weekly Rate',
-                  '\$${listing.rentalWeeklyPrice!.toStringAsFixed(2)} / week'),
+              _pricingRow(
+                context,
+                'Weekly Rate',
+                '\$${listing.rentalWeeklyPrice!.toStringAsFixed(2)} / week',
+              ),
             if ((listing.rentalMonthlyPrice ?? 0) > 0)
-              _pricingRow(context, 'Monthly Rate',
-                  '\$${listing.rentalMonthlyPrice!.toStringAsFixed(2)} / month'),
+              _pricingRow(
+                context,
+                'Monthly Rate',
+                '\$${listing.rentalMonthlyPrice!.toStringAsFixed(2)} / month',
+              ),
             if (order.depositAmount > 0) ...[
               const Divider(height: 16),
-              _pricingRow(context, 'Deposit',
-                  '\$${order.depositAmount.toStringAsFixed(2)}'),
+              _pricingRow(
+                context,
+                'Deposit',
+                '\$${order.depositAmount.toStringAsFixed(2)}',
+              ),
             ],
           ],
         ],

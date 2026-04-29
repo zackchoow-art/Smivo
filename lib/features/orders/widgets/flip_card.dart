@@ -5,11 +5,7 @@ class FlipCard extends StatefulWidget {
   final Widget front;
   final Widget back;
 
-  const FlipCard({
-    super.key,
-    required this.front,
-    required this.back,
-  });
+  const FlipCard({super.key, required this.front, required this.back});
 
   @override
   State<FlipCard> createState() => _FlipCardState();
@@ -54,9 +50,10 @@ class _FlipCardState extends State<FlipCard>
         animation: _animation,
         builder: (context, child) {
           final angle = _animation.value * pi;
-          final transform = Matrix4.identity()
-            ..setEntry(3, 2, 0.001) // perspective
-            ..rotateY(angle);
+          final transform =
+              Matrix4.identity()
+                ..setEntry(3, 2, 0.001) // perspective
+                ..rotateY(angle);
 
           // If the angle is > pi/2, the card is showing the back side.
           // We need to render the back widget but flipped horizontally so it isn't mirrored.
@@ -65,14 +62,15 @@ class _FlipCardState extends State<FlipCard>
           return Transform(
             transform: transform,
             alignment: Alignment.center,
-            child: isShowingBack
-                ? Transform(
-                    // Flip the back content horizontally
-                    transform: Matrix4.identity()..rotateY(pi),
-                    alignment: Alignment.center,
-                    child: widget.back,
-                  )
-                : widget.front,
+            child:
+                isShowingBack
+                    ? Transform(
+                      // Flip the back content horizontally
+                      transform: Matrix4.identity()..rotateY(pi),
+                      alignment: Alignment.center,
+                      child: widget.back,
+                    )
+                    : widget.front,
           );
         },
       ),

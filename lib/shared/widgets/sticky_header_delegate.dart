@@ -20,7 +20,11 @@ class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => maxHeight;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: backgroundColor,
       alignment: Alignment.center,

@@ -4,7 +4,11 @@ import 'package:smivo/data/models/notification.dart';
 
 /// A single notification row in the notification center list.
 class NotificationListItem extends StatelessWidget {
-  const NotificationListItem({super.key, required this.notification, required this.onTap});
+  const NotificationListItem({
+    super.key,
+    required this.notification,
+    required this.onTap,
+  });
   final AppNotification notification;
   final VoidCallback onTap;
 
@@ -21,8 +25,15 @@ class NotificationListItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isUnread ? colors.primary.withValues(alpha: 0.04) : Colors.transparent,
-          border: Border(bottom: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.2))),
+          color:
+              isUnread
+                  ? colors.primary.withValues(alpha: 0.04)
+                  : Colors.transparent,
+          border: Border(
+            bottom: BorderSide(
+              color: colors.outlineVariant.withValues(alpha: 0.2),
+            ),
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,12 +41,17 @@ class NotificationListItem extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 6, right: 12),
               child: Container(
-                width: 8, height: 8,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: isUnread ? colors.primary : Colors.transparent),
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isUnread ? colors.primary : Colors.transparent,
+                ),
               ),
             ),
             Container(
-              width: 40, height: 40,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: _iconBgColor(colors).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(radius.md),
@@ -47,23 +63,42 @@ class NotificationListItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(notification.title,
-                    style: typo.bodyMedium.copyWith(fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    notification.title,
+                    style: typo.bodyMedium.copyWith(
+                      fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 2),
-                  Text(notification.body,
-                    style: typo.bodySmall.copyWith(color: colors.onSurface.withValues(alpha: 0.6)),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(
+                    notification.body,
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.6),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 4),
-                  Text(_formatTimeAgo(notification.createdAt),
-                    style: typo.bodySmall.copyWith(color: colors.outlineVariant, fontSize: 11)),
+                  Text(
+                    _formatTimeAgo(notification.createdAt),
+                    style: typo.bodySmall.copyWith(
+                      color: colors.outlineVariant,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
             ),
             if (hasAction)
               Padding(
                 padding: const EdgeInsets.only(top: 8, left: 4),
-                child: Icon(Icons.chevron_right, color: colors.outlineVariant, size: 20),
+                child: Icon(
+                  Icons.chevron_right,
+                  color: colors.outlineVariant,
+                  size: 20,
+                ),
               ),
           ],
         ),
@@ -97,7 +132,20 @@ class NotificationListItem extends StatelessWidget {
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
-    final months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${months[dateTime.month - 1]} ${dateTime.day}';
   }
 }

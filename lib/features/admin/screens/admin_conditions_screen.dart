@@ -12,7 +12,8 @@ class AdminConditionsScreen extends ConsumerStatefulWidget {
   const AdminConditionsScreen({super.key});
 
   @override
-  ConsumerState<AdminConditionsScreen> createState() => _AdminConditionsScreenState();
+  ConsumerState<AdminConditionsScreen> createState() =>
+      _AdminConditionsScreenState();
 }
 
 class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
@@ -30,7 +31,10 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
       appBar: AppBar(
-        title: Text('Manage Conditions', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800)),
+        title: Text(
+          'Manage Conditions',
+          style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800),
+        ),
         backgroundColor: colors.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -51,30 +55,44 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: schoolsState.when(
-              data: (schools) => DropdownButtonFormField<String>(
-                initialValue: _selectedSchoolId,
-                decoration: InputDecoration(
-                  labelText: 'Select School',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.sm)),
-                  filled: true,
-                  fillColor: colors.surfaceContainerLow,
-                ),
-                items: schools.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
-                onChanged: (v) => setState(() => _selectedSchoolId = v),
-              ),
+              data:
+                  (schools) => DropdownButtonFormField<String>(
+                    initialValue: _selectedSchoolId,
+                    decoration: InputDecoration(
+                      labelText: 'Select School',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(radius.sm),
+                      ),
+                      filled: true,
+                      fillColor: colors.surfaceContainerLow,
+                    ),
+                    items:
+                        schools
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s.id,
+                                child: Text(s.name),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (v) => setState(() => _selectedSchoolId = v),
+                  ),
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Error: $e'),
             ),
           ),
           Expanded(
-            child: _selectedSchoolId == null
-                ? Center(
-                    child: Text(
-                      'Select a school to manage its conditions.',
-                      style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant),
-                    ),
-                  )
-                : _buildList(context, canWrite),
+            child:
+                _selectedSchoolId == null
+                    ? Center(
+                      child: Text(
+                        'Select a school to manage its conditions.',
+                        style: typo.bodyLarge.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    )
+                    : _buildList(context, canWrite),
           ),
         ],
       ),
@@ -89,19 +107,31 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
 
     return state.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e', style: TextStyle(color: colors.error))),
+      error:
+          (e, _) => Center(
+            child: Text('Error: $e', style: TextStyle(color: colors.error)),
+          ),
       data: (conditions) {
         if (conditions.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('No conditions.', style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant)),
+                Text(
+                  'No conditions.',
+                  style: typo.bodyLarge.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
                   onPressed: () async {
-                    await ref.read(schoolDataRepositoryProvider).seedSchoolDefaults(_selectedSchoolId!);
-                    ref.invalidate(adminSchoolConditionsProvider(_selectedSchoolId!));
+                    await ref
+                        .read(schoolDataRepositoryProvider)
+                        .seedSchoolDefaults(_selectedSchoolId!);
+                    ref.invalidate(
+                      adminSchoolConditionsProvider(_selectedSchoolId!),
+                    );
                   },
                   icon: const Icon(Icons.auto_fix_high),
                   label: const Text('Seed Defaults'),
@@ -121,37 +151,58 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
               decoration: BoxDecoration(
                 color: colors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(radius.sm),
-                border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: colors.outlineVariant.withValues(alpha: 0.3),
+                ),
               ),
               child: ListTile(
                 leading: Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.star_half, color: Color(0xFF7C3AED), size: 20),
+                  child: const Icon(
+                    Icons.star_half,
+                    color: Color(0xFF7C3AED),
+                    size: 20,
+                  ),
                 ),
-                title: Text(cond.name, style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700)),
+                title: Text(
+                  cond.name,
+                  style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700),
+                ),
                 subtitle: Text(
                   '${cond.description ?? "-"} • order: ${cond.displayOrder}',
-                  style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                  style: typo.bodySmall.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
-                trailing: canWrite
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit, size: 20, color: colors.primary),
-                            onPressed: () => _showDialog(context, cond),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete, size: 20, color: colors.error),
-                            onPressed: () => _confirmDelete(context, cond),
-                          ),
-                        ],
-                      )
-                    : null,
+                trailing:
+                    canWrite
+                        ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                size: 20,
+                                color: colors.primary,
+                              ),
+                              onPressed: () => _showDialog(context, cond),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: colors.error,
+                              ),
+                              onPressed: () => _confirmDelete(context, cond),
+                            ),
+                          ],
+                        )
+                        : null,
               ),
             );
           },
@@ -163,11 +214,15 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
   void _showDialog(BuildContext context, SchoolCondition? condition) {
     showDialog(
       context: context,
-      builder: (context) => _ConditionDialog(
-        schoolId: _selectedSchoolId!,
-        condition: condition,
-        onSaved: () => ref.invalidate(adminSchoolConditionsProvider(_selectedSchoolId!)),
-      ),
+      builder:
+          (context) => _ConditionDialog(
+            schoolId: _selectedSchoolId!,
+            condition: condition,
+            onSaved:
+                () => ref.invalidate(
+                  adminSchoolConditionsProvider(_selectedSchoolId!),
+                ),
+          ),
     );
   }
 
@@ -175,22 +230,30 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
     final colors = context.smivoColors;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Condition'),
-        content: Text('Delete "${cond.name}"?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () async {
-              await ref.read(schoolDataRepositoryProvider).deleteCondition(cond.id);
-              ref.invalidate(adminSchoolConditionsProvider(_selectedSchoolId!));
-              if (ctx.mounted) Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: colors.error),
-            child: const Text('Delete'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete Condition'),
+            content: Text('Delete "${cond.name}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  await ref
+                      .read(schoolDataRepositoryProvider)
+                      .deleteCondition(cond.id);
+                  ref.invalidate(
+                    adminSchoolConditionsProvider(_selectedSchoolId!),
+                  );
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                style: FilledButton.styleFrom(backgroundColor: colors.error),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -200,7 +263,11 @@ class _ConditionDialog extends ConsumerStatefulWidget {
   final SchoolCondition? condition;
   final VoidCallback onSaved;
 
-  const _ConditionDialog({required this.schoolId, this.condition, required this.onSaved});
+  const _ConditionDialog({
+    required this.schoolId,
+    this.condition,
+    required this.onSaved,
+  });
 
   @override
   ConsumerState<_ConditionDialog> createState() => _ConditionDialogState();
@@ -219,8 +286,12 @@ class _ConditionDialogState extends ConsumerState<_ConditionDialog> {
     super.initState();
     _slugCtrl = TextEditingController(text: widget.condition?.slug ?? '');
     _nameCtrl = TextEditingController(text: widget.condition?.name ?? '');
-    _descCtrl = TextEditingController(text: widget.condition?.description ?? '');
-    _orderCtrl = TextEditingController(text: widget.condition?.displayOrder.toString() ?? '0');
+    _descCtrl = TextEditingController(
+      text: widget.condition?.description ?? '',
+    );
+    _orderCtrl = TextEditingController(
+      text: widget.condition?.displayOrder.toString() ?? '0',
+    );
     _isActive = widget.condition?.isActive ?? true;
   }
 
@@ -268,18 +339,22 @@ class _ConditionDialogState extends ConsumerState<_ConditionDialog> {
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(labelText: 'Display Name'),
-                validator: (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
+                validator:
+                    (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _slugCtrl,
                 decoration: const InputDecoration(labelText: 'Slug'),
-                validator: (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
+                validator:
+                    (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descCtrl,
-                decoration: const InputDecoration(labelText: 'Description (optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                ),
                 maxLines: 2,
               ),
               const SizedBox(height: 16),
@@ -299,8 +374,14 @@ class _ConditionDialogState extends ConsumerState<_ConditionDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-        FilledButton(onPressed: _submit, child: Text(isEditing ? 'Save' : 'Add')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(isEditing ? 'Save' : 'Add'),
+        ),
       ],
     );
   }

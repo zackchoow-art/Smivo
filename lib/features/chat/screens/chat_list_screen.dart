@@ -37,18 +37,19 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final isBuyer = room.buyerId == currentUserId;
     final otherUser = isBuyer ? room.seller : room.buyer;
 
-    final rawUnread =
-        isBuyer ? room.unreadCountBuyer : room.unreadCountSeller;
+    final rawUnread = isBuyer ? room.unreadCountBuyer : room.unreadCountSeller;
     // Manual unread override takes priority over the database count
     final effectiveUnread =
         room.isUnreadOverride ? (rawUnread > 0 ? rawUnread : 1) : rawUnread;
 
-    final lastMessagePreview = room.lastMessage.isNotEmpty
-        ? room.lastMessage.first.content
-        : 'No messages yet';
-    final timeText = room.lastMessageAt != null
-        ? timeago.format(room.lastMessageAt!, locale: 'en_short')
-        : '';
+    final lastMessagePreview =
+        room.lastMessage.isNotEmpty
+            ? room.lastMessage.first.content
+            : 'No messages yet';
+    final timeText =
+        room.lastMessageAt != null
+            ? timeago.format(room.lastMessageAt!, locale: 'en_short')
+            : '';
 
     return ChatConversation(
       id: room.id,
@@ -60,9 +61,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       time: timeText,
       unreadCount: effectiveUnread,
       avatarUrl: otherUser?.avatarUrl,
-      initials: otherUser?.displayName?.isNotEmpty == true
-          ? otherUser!.displayName!.substring(0, 1).toUpperCase()
-          : null,
+      initials:
+          otherUser?.displayName?.isNotEmpty == true
+              ? otherUser!.displayName!.substring(0, 1).toUpperCase()
+              : null,
       // Search fields
       partnerName: otherUser?.displayName ?? '',
       partnerEmail: otherUser?.email ?? '',
@@ -78,8 +80,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     final chatRoomsAsync = ref.watch(chatRoomListProvider);
-    final currentUserId =
-        ref.watch(authStateProvider).valueOrNull?.id;
+    final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -108,12 +109,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 padding: const EdgeInsets.only(left: 24, right: 24, top: 12),
                 sliver: SliverToBoxAdapter(
                   // NOTE: ContentWidthConstraint centers content on tablet/desktop.
-                  child: useWidthConstraint
-                      ? ContentWidthConstraint(
-                          maxWidth: 768,
-                          child: _buildHeaderRow(context, typo, colors),
-                        )
-                      : _buildHeaderRow(context, typo, colors),
+                  child:
+                      useWidthConstraint
+                          ? ContentWidthConstraint(
+                            maxWidth: 768,
+                            child: _buildHeaderRow(context, typo, colors),
+                          )
+                          : _buildHeaderRow(context, typo, colors),
                 ),
               ),
               SliverPersistentHeader(
@@ -123,67 +125,77 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   minHeight: 68.0,
                   maxHeight: 68.0,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                    child: useWidthConstraint
-                        ? ContentWidthConstraint(
-                            maxWidth: 768,
-                            child: _buildSearchField(context, typo, colors, radius),
-                          )
-                        : _buildSearchField(context, typo, colors, radius),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 10,
+                    ),
+                    child:
+                        useWidthConstraint
+                            ? ContentWidthConstraint(
+                              maxWidth: 768,
+                              child: _buildSearchField(
+                                context,
+                                typo,
+                                colors,
+                                radius,
+                              ),
+                            )
+                            : _buildSearchField(context, typo, colors, radius),
                   ),
                 ),
               ),
               chatRoomsAsync.when(
-                loading: () =>
-                    const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
-                error: (err, stack) => SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Error loading conversations'),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: () =>
-                              ref.invalidate(chatRoomListProvider),
-                          child: const Text('Retry'),
-                        ),
-                      ],
+                loading:
+                    () => const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
                     ),
-                  ),
-                ),
+                error:
+                    (err, stack) => SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Error loading conversations'),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed:
+                                  () => ref.invalidate(chatRoomListProvider),
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 data: (rooms) {
                   // Step 1: Filter by active / archived view
-                  final viewFiltered = rooms
-                      .where((r) => r.isArchived == _showArchived)
-                      .toList();
+                  final viewFiltered =
+                      rooms
+                          .where((r) => r.isArchived == _showArchived)
+                          .toList();
 
                   // Step 2: Apply search query
-                  final searchFiltered = _searchQuery.isEmpty
-                      ? viewFiltered
-                      : viewFiltered.where((room) {
-                          final q = _searchQuery.toLowerCase();
-                          final conv = _buildConversation(
-                              room, currentUserId);
-                          return conv.listingTitle
-                                  .toLowerCase()
-                                  .contains(q) ||
-                              conv.partnerName
-                                  .toLowerCase()
-                                  .contains(q) ||
-                              conv.partnerEmail
-                                  .toLowerCase()
-                                  .contains(q) ||
-                              conv.listingDescription
-                                  .toLowerCase()
-                                  .contains(q) ||
-                              conv.listingPrice
-                                  .toStringAsFixed(2)
-                                  .contains(q) ||
-                              conv.latestMessage
-                                  .toLowerCase()
-                                  .contains(q);
-                        }).toList();
+                  final searchFiltered =
+                      _searchQuery.isEmpty
+                          ? viewFiltered
+                          : viewFiltered.where((room) {
+                            final q = _searchQuery.toLowerCase();
+                            final conv = _buildConversation(
+                              room,
+                              currentUserId,
+                            );
+                            return conv.listingTitle.toLowerCase().contains(
+                                  q,
+                                ) ||
+                                conv.partnerName.toLowerCase().contains(q) ||
+                                conv.partnerEmail.toLowerCase().contains(q) ||
+                                conv.listingDescription.toLowerCase().contains(
+                                  q,
+                                ) ||
+                                conv.listingPrice
+                                    .toStringAsFixed(2)
+                                    .contains(q) ||
+                                conv.latestMessage.toLowerCase().contains(q);
+                          }).toList();
 
                   // Step 3: Sort — pinned rooms always at top
                   searchFiltered.sort((a, b) {
@@ -199,11 +211,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           _searchQuery.isNotEmpty
                               ? 'No matching conversations.'
                               : _showArchived
-                                  ? 'No archived conversations.'
-                                  : 'No conversations yet.\nStart chatting from a listing.',
+                              ? 'No archived conversations.'
+                              : 'No conversations yet.\nStart chatting from a listing.',
                           textAlign: TextAlign.center,
                           style: typo.bodyMedium.copyWith(
-                              color: colors.outlineVariant),
+                            color: colors.outlineVariant,
+                          ),
                         ),
                       ),
                     );
@@ -212,49 +225,50 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   return SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final room = searchFiltered[index];
-                          final conversation =
-                              _buildConversation(room, currentUserId);
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final room = searchFiltered[index];
+                        final conversation = _buildConversation(
+                          room,
+                          currentUserId,
+                        );
 
-                          // NOTE: Wrap each list item in ContentWidthConstraint
-                          // on tablet/desktop to keep the card width bounded.
-                          Widget item = ChatListItem(
-                            conversation: conversation,
-                            isArchiveView: _showArchived,
-                            onTap: () {
-                              if (isDesktop) {
-                                // NOTE: On desktop, select the room inline
-                                // instead of navigating to a new page.
-                                setState(() =>
-                                    _selectedChatRoomId = room.id);
-                              } else {
-                                context.pushNamed(
-                                  AppRoutes.chatRoom,
-                                  pathParameters: {'id': room.id},
-                                );
-                              }
-                            },
-                            onTogglePin: () => ref
-                                .read(chatRoomListProvider.notifier)
-                                .togglePin(room.id, !room.isPinned),
-                            onToggleUnread: () => ref
-                                .read(chatRoomListProvider.notifier)
-                                .toggleUnreadOverride(
-                                    room.id, !room.isUnreadOverride),
-                            onArchive: () => ref
-                                .read(chatRoomListProvider.notifier)
-                                .toggleArchive(
-                                    room.id, !room.isArchived),
-                          );
-                          return useWidthConstraint
-                              ? ContentWidthConstraint(
-                                  maxWidth: 768, child: item)
-                              : item;
-                        },
-                        childCount: searchFiltered.length,
-                      ),
+                        // NOTE: Wrap each list item in ContentWidthConstraint
+                        // on tablet/desktop to keep the card width bounded.
+                        Widget item = ChatListItem(
+                          conversation: conversation,
+                          isArchiveView: _showArchived,
+                          onTap: () {
+                            if (isDesktop) {
+                              // NOTE: On desktop, select the room inline
+                              // instead of navigating to a new page.
+                              setState(() => _selectedChatRoomId = room.id);
+                            } else {
+                              context.pushNamed(
+                                AppRoutes.chatRoom,
+                                pathParameters: {'id': room.id},
+                              );
+                            }
+                          },
+                          onTogglePin:
+                              () => ref
+                                  .read(chatRoomListProvider.notifier)
+                                  .togglePin(room.id, !room.isPinned),
+                          onToggleUnread:
+                              () => ref
+                                  .read(chatRoomListProvider.notifier)
+                                  .toggleUnreadOverride(
+                                    room.id,
+                                    !room.isUnreadOverride,
+                                  ),
+                          onArchive:
+                              () => ref
+                                  .read(chatRoomListProvider.notifier)
+                                  .toggleArchive(room.id, !room.isArchived),
+                        );
+                        return useWidthConstraint
+                            ? ContentWidthConstraint(maxWidth: 768, child: item)
+                            : item;
+                      }, childCount: searchFiltered.length),
                     ),
                   );
                 },
@@ -270,12 +284,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     if (isDesktop) {
       return ChatSplitView(
         chatList: listScaffold,
-        chatRoom: _selectedChatRoomId != null
-            ? ChatRoomScreen(
-                key: ValueKey(_selectedChatRoomId),
-                chatRoomId: _selectedChatRoomId!,
-              )
-            : null,
+        chatRoom:
+            _selectedChatRoomId != null
+                ? ChatRoomScreen(
+                  key: ValueKey(_selectedChatRoomId),
+                  chatRoomId: _selectedChatRoomId!,
+                )
+                : null,
       );
     }
 
@@ -283,11 +298,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   }
 
   /// Builds the header row containing the screen title and archive toggle.
-  Widget _buildHeaderRow(
-    BuildContext context,
-    dynamic typo,
-    dynamic colors,
-  ) {
+  Widget _buildHeaderRow(BuildContext context, dynamic typo, dynamic colors) {
     return Row(
       children: [
         Expanded(
@@ -300,17 +311,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           ),
         ),
         IconButton(
-          tooltip: _showArchived
-              ? 'Show active chats'
-              : 'Show archived chats',
+          tooltip: _showArchived ? 'Show active chats' : 'Show archived chats',
           icon: Icon(
-            _showArchived
-                ? Icons.chat_bubble_outline
-                : Icons.archive_outlined,
+            _showArchived ? Icons.chat_bubble_outline : Icons.archive_outlined,
             color: colors.onSurfaceVariant,
           ),
-          onPressed: () =>
-              setState(() => _showArchived = !_showArchived),
+          onPressed: () => setState(() => _showArchived = !_showArchived),
         ),
       ],
     );
@@ -335,17 +341,20 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           Icons.search,
           color: colors.onSurfaceVariant.withValues(alpha: 0.6),
         ),
-        suffixIcon: _searchQuery.isNotEmpty
-            ? IconButton(
-                icon: Icon(Icons.close,
-                    color: colors.onSurfaceVariant, size: 18),
-                onPressed: () => setState(() => _searchQuery = ''),
-              )
-            : null,
+        suffixIcon:
+            _searchQuery.isNotEmpty
+                ? IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: colors.onSurfaceVariant,
+                    size: 18,
+                  ),
+                  onPressed: () => setState(() => _searchQuery = ''),
+                )
+                : null,
         filled: true,
         fillColor: colors.surfaceContainerLow,
-        contentPadding: const EdgeInsets.symmetric(
-            vertical: 8, horizontal: 12),
+        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius.input),
           borderSide: BorderSide.none,

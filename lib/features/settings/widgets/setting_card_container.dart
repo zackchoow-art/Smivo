@@ -4,10 +4,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 class SettingCardContainer extends StatelessWidget {
   final Widget child;
 
-  const SettingCardContainer({
-    super.key,
-    required this.child,
-  });
+  const SettingCardContainer({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

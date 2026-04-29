@@ -26,18 +26,23 @@ class BlockedUsersScreen extends ConsumerWidget {
             slivers: [
               const CollapsingTitleAppBar(
                 title: 'Blocked Users',
-                subtitle: 'Manage users you have blocked from\nviewing or interacting with.',
+                subtitle:
+                    'Manage users you have blocked from\nviewing or interacting with.',
               ),
               blockedUsersAsync.when(
-                loading: () => const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (err, stack) => SliverFillRemaining(
-                  child: Center(
-                    child: Text('Error loading blocked users.',
-                        style: typo.bodyMedium.copyWith(color: colors.error)),
-                  ),
-                ),
+                loading:
+                    () => const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                error:
+                    (err, stack) => SliverFillRemaining(
+                      child: Center(
+                        child: Text(
+                          'Error loading blocked users.',
+                          style: typo.bodyMedium.copyWith(color: colors.error),
+                        ),
+                      ),
+                    ),
                 data: (users) {
                   if (users.isEmpty) {
                     return SliverFillRemaining(
@@ -45,11 +50,20 @@ class BlockedUsersScreen extends ConsumerWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.person_off_outlined,
-                                size: 64, color: colors.onSurfaceVariant.withValues(alpha: 0.5)),
+                            Icon(
+                              Icons.person_off_outlined,
+                              size: 64,
+                              color: colors.onSurfaceVariant.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
                             const SizedBox(height: 16),
-                            Text('No blocked users.',
-                                style: typo.titleMedium.copyWith(color: colors.onSurfaceVariant)),
+                            Text(
+                              'No blocked users.',
+                              style: typo.titleMedium.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -57,53 +71,77 @@ class BlockedUsersScreen extends ConsumerWidget {
                   }
 
                   return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final user = users[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: colors.surfaceContainerLowest,
-                              borderRadius: BorderRadius.circular(radius.card),
-                              border: Border.all(color: colors.dividerColor),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final user = users[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(radius.card),
+                            border: Border.all(color: colors.dividerColor),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
                             ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              leading: CircleAvatar(
-                                radius: 24,
-                                backgroundColor: colors.surfaceContainerHigh,
-                                backgroundImage: user.avatarUrl != null
-                                    ? CachedNetworkImageProvider(user.avatarUrl!)
-                                    : null,
-                                child: user.avatarUrl == null
-                                    ? Icon(Icons.person, color: colors.onSurfaceVariant)
-                                    : null,
-                              ),
-                              title: Text(user.displayName ?? 'Unknown User',
-                                  style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700)),
-                              subtitle: Text(user.school,
-                                  style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant)),
-                              trailing: TextButton(
-                                onPressed: () async {
-                                  await ref.read(moderationActionsProvider.notifier).unblockUser(user.id);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('${user.displayName ?? 'User'} unblocked.')),
-                                    );
-                                  }
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: colors.primary,
-                                ),
-                                child: const Text('Unblock'),
+                            leading: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: colors.surfaceContainerHigh,
+                              backgroundImage:
+                                  user.avatarUrl != null
+                                      ? CachedNetworkImageProvider(
+                                        user.avatarUrl!,
+                                      )
+                                      : null,
+                              child:
+                                  user.avatarUrl == null
+                                      ? Icon(
+                                        Icons.person,
+                                        color: colors.onSurfaceVariant,
+                                      )
+                                      : null,
+                            ),
+                            title: Text(
+                              user.displayName ?? 'Unknown User',
+                              style: typo.titleMedium.copyWith(
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                          );
-                        },
-                        childCount: users.length,
-                      ),
+                            subtitle: Text(
+                              user.school,
+                              style: typo.bodySmall.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                            trailing: TextButton(
+                              onPressed: () async {
+                                await ref
+                                    .read(moderationActionsProvider.notifier)
+                                    .unblockUser(user.id);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '${user.displayName ?? 'User'} unblocked.',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: colors.primary,
+                              ),
+                              child: const Text('Unblock'),
+                            ),
+                          ),
+                        );
+                      }, childCount: users.length),
                     ),
                   );
                 },

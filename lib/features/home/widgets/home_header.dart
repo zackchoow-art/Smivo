@@ -53,22 +53,36 @@ class HomeHeader extends ConsumerWidget {
                           children: [
                             Text(
                               profile.displayName ?? 'User',
-                              style: typo.labelLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.bold),
+                              style: typo.labelLarge.copyWith(
+                                color: colors.onSurface,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: colors.success.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.verified, size: 12, color: colors.success),
+                                  Icon(
+                                    Icons.verified,
+                                    size: 12,
+                                    color: colors.success,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Verified',
-                                    style: typo.labelSmall.copyWith(color: colors.success, fontSize: 10, fontWeight: FontWeight.bold),
+                                    style: typo.labelSmall.copyWith(
+                                      color: colors.success,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -78,18 +92,26 @@ class HomeHeader extends ConsumerWidget {
                         const SizedBox(height: 2),
                         Text(
                           profile.email,
-                          style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                          style: typo.labelSmall.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     )
                   else
                     Row(
                       children: [
-                        Icon(Icons.account_circle, size: 14, color: colors.onSurfaceVariant),
+                        Icon(
+                          Icons.account_circle,
+                          size: 14,
+                          color: colors.onSurfaceVariant,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Not logged in',
-                          style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                          style: typo.labelSmall.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -112,12 +134,14 @@ class HomeHeader extends ConsumerWidget {
                       child: CircleAvatar(
                         radius: 20,
                         backgroundColor: colors.surfaceContainerHigh,
-                        backgroundImage: profile?.avatarUrl != null
-                            ? NetworkImage(profile!.avatarUrl!)
-                            : null,
-                        child: profile?.avatarUrl == null
-                            ? Icon(Icons.person, color: colors.onSurface)
-                            : null,
+                        backgroundImage:
+                            profile?.avatarUrl != null
+                                ? NetworkImage(profile!.avatarUrl!)
+                                : null,
+                        child:
+                            profile?.avatarUrl == null
+                                ? Icon(Icons.person, color: colors.onSurface)
+                                : null,
                       ),
                     ),
                   ),
@@ -166,10 +190,7 @@ class _NotificationBellIcon extends StatelessWidget {
                     width: 1.5,
                   ),
                 ),
-                constraints: const BoxConstraints(
-                  minWidth: 18,
-                  minHeight: 18,
-                ),
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                 child: Center(
                   child: Text(
                     unreadCount > 9 ? '9+' : unreadCount.toString(),

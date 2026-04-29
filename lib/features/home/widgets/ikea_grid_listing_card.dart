@@ -12,10 +12,7 @@ import 'package:smivo/features/home/widgets/transaction_tag.dart';
 /// RENT/SALE tag overlay on image top-right, followed by a compact info
 /// section: price (right-aligned), title, description, and a spacer line.
 class IkeaGridListingCard extends StatelessWidget {
-  const IkeaGridListingCard({
-    super.key,
-    required this.listing,
-  });
+  const IkeaGridListingCard({super.key, required this.listing});
 
   final Listing listing;
 
@@ -44,10 +41,11 @@ class IkeaGridListingCard extends StatelessWidget {
     final shadows = context.smivoShadows;
 
     return GestureDetector(
-      onTap: () => context.pushNamed(
-        AppRoutes.listingDetail,
-        pathParameters: {'id': listing.id},
-      ),
+      onTap:
+          () => context.pushNamed(
+            AppRoutes.listingDetail,
+            pathParameters: {'id': listing.id},
+          ),
       child: Container(
         decoration: BoxDecoration(
           color: colors.surfaceContainerLowest,
@@ -73,9 +71,8 @@ class IkeaGridListingCard extends StatelessWidget {
                         Image.network(
                           imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildImageFallback(
-                            colors,
-                          ),
+                          errorBuilder:
+                              (_, __, ___) => _buildImageFallback(colors),
                         )
                       else
                         _buildImageFallback(colors),
@@ -120,9 +117,7 @@ class IkeaGridListingCard extends StatelessWidget {
                     // Line 2: product name
                     Text(
                       listing.title,
-                      style: typo.labelLarge.copyWith(
-                        color: colors.onSurface,
-                      ),
+                      style: typo.labelLarge.copyWith(color: colors.onSurface),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

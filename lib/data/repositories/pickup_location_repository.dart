@@ -23,9 +23,7 @@ class PickupLocationRepository {
           .eq('school_id', schoolId)
           .eq('is_active', true)
           .order('display_order');
-      return data
-          .map((json) => PickupLocation.fromJson(json))
-          .toList();
+      return data.map((json) => PickupLocation.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

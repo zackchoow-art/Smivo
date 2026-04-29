@@ -16,10 +16,12 @@ class RentalReminderSettings extends ConsumerStatefulWidget {
   final bool isBuyer;
 
   @override
-  ConsumerState<RentalReminderSettings> createState() => _RentalReminderSettingsState();
+  ConsumerState<RentalReminderSettings> createState() =>
+      _RentalReminderSettingsState();
 }
 
-class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings> {
+class _RentalReminderSettingsState
+    extends ConsumerState<RentalReminderSettings> {
   late int _selectedDays;
   late bool _sendEmail;
   bool _isSaving = false;
@@ -50,7 +52,9 @@ class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings>
   Future<void> _savePreferences() async {
     setState(() => _isSaving = true);
     try {
-      await ref.read(orderActionsProvider.notifier).updateReminderPreferences(
+      await ref
+          .read(orderActionsProvider.notifier)
+          .updateReminderPreferences(
             orderId: widget.order.id,
             daysBefore: _selectedDays,
             sendEmail: _sendEmail,
@@ -91,7 +95,11 @@ class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings>
         children: [
           Row(
             children: [
-              Icon(Icons.notifications_active_outlined, size: 20, color: colors.primary),
+              Icon(
+                Icons.notifications_active_outlined,
+                size: 20,
+                color: colors.primary,
+              ),
               const SizedBox(width: 8),
               Text(
                 'RENTAL REMINDER',
@@ -103,10 +111,7 @@ class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings>
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            'Return Reminder Timing',
-            style: typo.titleMedium,
-          ),
+          Text('Return Reminder Timing', style: typo.titleMedium),
           const SizedBox(height: 4),
           Text(
             'A reminder is always sent before the rental expires. Adjust how early you want to be notified.',
@@ -121,18 +126,22 @@ class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings>
                 child: DropdownButtonFormField<int>(
                   initialValue: _selectedDays,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(radius.md),
                       borderSide: BorderSide(color: colors.outlineVariant),
                     ),
                   ),
-                  items: [1, 2, 3, 5, 7].map((days) {
-                    return DropdownMenuItem(
-                      value: days,
-                      child: Text('$days ${days == 1 ? 'day' : 'days'}'),
-                    );
-                  }).toList(),
+                  items:
+                      [1, 2, 3, 5, 7].map((days) {
+                        return DropdownMenuItem(
+                          value: days,
+                          child: Text('$days ${days == 1 ? 'day' : 'days'}'),
+                        );
+                      }).toList(),
                   onChanged: (val) {
                     if (val != null) setState(() => _selectedDays = val);
                   },
@@ -160,16 +169,25 @@ class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings>
               decoration: BoxDecoration(
                 color: colors.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(radius.md),
-                border: Border.all(color: colors.success.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: colors.success.withValues(alpha: 0.2),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle_outline, size: 18, color: colors.success),
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 18,
+                    color: colors.success,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Reminder already sent',
-                      style: typo.bodySmall.copyWith(color: colors.success, fontWeight: FontWeight.bold),
+                      style: typo.bodySmall.copyWith(
+                        color: colors.success,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -191,9 +209,17 @@ class _RentalReminderSettingsState extends ConsumerState<RentalReminderSettings>
                     foregroundColor: colors.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: _isSaving
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Save Preferences'),
+                  child:
+                      _isSaving
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : const Text('Save Preferences'),
                 ),
               ),
             ],

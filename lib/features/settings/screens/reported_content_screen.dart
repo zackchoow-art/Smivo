@@ -25,22 +25,27 @@ class ReportedContentScreen extends ConsumerWidget {
         backgroundColor: colors.surfaceContainerLowest,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: colors.onSurface),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 20,
+            color: colors.onSurface,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
       body: reportsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Text(
-              'Failed to load reports: ${err.toString()}',
-              style: typo.bodyMedium.copyWith(color: colors.error),
-              textAlign: TextAlign.center,
+        error:
+            (err, stack) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  'Failed to load reports: ${err.toString()}',
+                  style: typo.bodyMedium.copyWith(color: colors.error),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
-          ),
-        ),
         data: (reports) {
           if (reports.isEmpty) {
             return Center(
@@ -51,12 +56,16 @@ class ReportedContentScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text(
                     'No Reported Content',
-                    style: typo.titleMedium.copyWith(color: colors.onSurfaceVariant),
+                    style: typo.titleMedium.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'You have not reported any users or listings.',
-                    style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -64,15 +73,19 @@ class ReportedContentScreen extends ConsumerWidget {
             );
           }
 
-          final userReports = reports.where((r) => r.listingId == null).toList();
-          final listingReports = reports.where((r) => r.listingId != null).toList();
+          final userReports =
+              reports.where((r) => r.listingId == null).toList();
+          final listingReports =
+              reports.where((r) => r.listingId != null).toList();
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
               if (userReports.isNotEmpty)
                 Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  data: Theme.of(
+                    context,
+                  ).copyWith(dividerColor: Colors.transparent),
                   child: ExpansionTile(
                     initiallyExpanded: true,
                     title: Text(
@@ -83,17 +96,22 @@ class ReportedContentScreen extends ConsumerWidget {
                     collapsedIconColor: colors.onSurfaceVariant,
                     tilePadding: const EdgeInsets.symmetric(horizontal: 8),
                     childrenPadding: const EdgeInsets.only(top: 8, bottom: 16),
-                    children: userReports
-                        .map((report) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: FlippableReportCard(report: report),
-                            ))
-                        .toList(),
+                    children:
+                        userReports
+                            .map(
+                              (report) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: FlippableReportCard(report: report),
+                              ),
+                            )
+                            .toList(),
                   ),
                 ),
               if (listingReports.isNotEmpty)
                 Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  data: Theme.of(
+                    context,
+                  ).copyWith(dividerColor: Colors.transparent),
                   child: ExpansionTile(
                     initiallyExpanded: true,
                     title: Text(
@@ -104,12 +122,15 @@ class ReportedContentScreen extends ConsumerWidget {
                     collapsedIconColor: colors.onSurfaceVariant,
                     tilePadding: const EdgeInsets.symmetric(horizontal: 8),
                     childrenPadding: const EdgeInsets.only(top: 8, bottom: 16),
-                    children: listingReports
-                        .map((report) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: FlippableReportCard(report: report),
-                            ))
-                        .toList(),
+                    children:
+                        listingReports
+                            .map(
+                              (report) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: FlippableReportCard(report: report),
+                              ),
+                            )
+                            .toList(),
                   ),
                 ),
             ],

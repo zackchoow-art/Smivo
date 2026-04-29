@@ -68,15 +68,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.listen(authProvider, (previous, next) {
       if (next.hasError && !next.isLoading) {
         final error = next.error;
-        final message = error is AppException 
-            ? error.message 
-            : 'Something went wrong. Please try again';
-        
+        final message =
+            error is AppException
+                ? error.message
+                : 'Something went wrong. Please try again';
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: colors.error,
-          ),
+          SnackBar(content: Text(message), backgroundColor: colors.error),
         );
       }
     });
@@ -143,14 +141,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                               // ── Email Field ───────────────────────────────
                               AppTextField(
-                                label: _isDebugMode ? 'Test Email' : 'University Username',
-                                hintText: _isDebugMode ? 'test@smivo.dev' : 'username',
+                                label:
+                                    _isDebugMode
+                                        ? 'Test Email'
+                                        : 'University Username',
+                                hintText:
+                                    _isDebugMode
+                                        ? 'test@smivo.dev'
+                                        : 'username',
                                 suffixText: _isDebugMode ? null : '@smith.edu',
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                validator: _isDebugMode
-                                    ? Validators.eduEmail
-                                    : Validators.emailPrefix,
+                                validator:
+                                    _isDebugMode
+                                        ? Validators.eduEmail
+                                        : Validators.emailPrefix,
                               ),
                               const SizedBox(height: 24),
 
@@ -185,7 +190,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 height: 60,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(radius.xl),
+                                  borderRadius: BorderRadius.circular(
+                                    radius.xl,
+                                  ),
                                   gradient: LinearGradient(
                                     colors: [
                                       colors.gradientStart,
@@ -196,7 +203,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: colors.primary.withValues(alpha: 0.2),
+                                      color: colors.primary.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       blurRadius: 15,
                                       offset: const Offset(0, 10),
                                     ),
@@ -208,36 +217,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(radius.xl),
+                                      borderRadius: BorderRadius.circular(
+                                        radius.xl,
+                                      ),
                                     ),
                                   ),
-                                  child: isLoading
-                                      ? SizedBox(
-                                          height: 24,
-                                          width: 24,
-                                          child: CircularProgressIndicator(
-                                            color: colors.onPrimary,
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              'Sign In',
-                                              style: typo.labelLarge.copyWith(
-                                                color: colors.onPrimary,
-                                                fontSize: 18,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Icon(
-                                              Icons.arrow_forward_rounded,
-                                              size: 16,
+                                  child:
+                                      isLoading
+                                          ? SizedBox(
+                                            height: 24,
+                                            width: 24,
+                                            child: CircularProgressIndicator(
                                               color: colors.onPrimary,
+                                              strokeWidth: 2,
                                             ),
-                                          ],
-                                        ),
+                                          )
+                                          : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Sign In',
+                                                style: typo.labelLarge.copyWith(
+                                                  color: colors.onPrimary,
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Icon(
+                                                Icons.arrow_forward_rounded,
+                                                size: 16,
+                                                color: colors.onPrimary,
+                                              ),
+                                            ],
+                                          ),
                                 ),
                               ),
 
@@ -247,12 +260,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 TextButton.icon(
                                   onPressed: _toggleDebugMode,
                                   icon: Icon(
-                                    _isDebugMode ? Icons.bug_report : Icons.bug_report_outlined,
+                                    _isDebugMode
+                                        ? Icons.bug_report
+                                        : Icons.bug_report_outlined,
                                     size: 18,
                                     color: colors.onSurfaceVariant,
                                   ),
                                   label: Text(
-                                    _isDebugMode ? 'Switch to Normal Mode' : 'Switch to Debug Mode',
+                                    _isDebugMode
+                                        ? 'Switch to Normal Mode'
+                                        : 'Switch to Debug Mode',
                                     style: typo.bodySmall.copyWith(
                                       color: colors.onSurfaceVariant,
                                     ),
@@ -269,7 +286,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   Divider(color: colors.dividerColor),
                                   Container(
                                     color: colors.surface,
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
                                     child: Text(
                                       'NEW TO THE QUAD?',
                                       style: typo.bodyLarge.copyWith(
@@ -288,14 +307,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 height: 60,
                                 width: double.infinity,
                                 child: OutlinedButton(
-                                  onPressed: () => context.pushNamed(AppRoutes.register),
+                                  onPressed:
+                                      () =>
+                                          context.pushNamed(AppRoutes.register),
                                   style: OutlinedButton.styleFrom(
                                     side: BorderSide(
                                       color: colors.outlineVariant,
                                       width: 2,
                                     ),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(radius.xl),
+                                      borderRadius: BorderRadius.circular(
+                                        radius.xl,
+                                      ),
                                     ),
                                   ),
                                   child: Row(

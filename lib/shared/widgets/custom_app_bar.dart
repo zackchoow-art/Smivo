@@ -26,35 +26,38 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
-      leading: showBackButton
-          ? IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: colors.onSurface,
-                size: 20,
-              ),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                }
-              },
-            )
-          : null,
-      title: title != null
-          ? Text(
-              title!,
-              style: typo.headlineSmall.copyWith(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            )
-          : null,
-      actions: showActions
-          ? [
-              MessageBadgeIcon(unreadCount: unreadMessageCount),
-              const SizedBox(width: 8),
-            ]
-          : null,
+      leading:
+          showBackButton
+              ? IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: colors.onSurface,
+                  size: 20,
+                ),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  }
+                },
+              )
+              : null,
+      title:
+          title != null
+              ? Text(
+                title!,
+                style: typo.headlineSmall.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              )
+              : null,
+      actions:
+          showActions
+              ? [
+                MessageBadgeIcon(unreadCount: unreadMessageCount),
+                const SizedBox(width: 8),
+              ]
+              : null,
     );
   }
 

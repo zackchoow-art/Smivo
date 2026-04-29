@@ -7,11 +7,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 /// the remaining width with the selected chat room or a placeholder.
 /// This widget is a pure layout container — it contains no business logic.
 class ChatSplitView extends StatelessWidget {
-  const ChatSplitView({
-    super.key,
-    required this.chatList,
-    this.chatRoom,
-  });
+  const ChatSplitView({super.key, required this.chatList, this.chatRoom});
 
   /// Widget displayed in the left 320px master panel.
   final Widget chatList;
@@ -28,10 +24,7 @@ class ChatSplitView extends StatelessWidget {
     return Row(
       children: [
         // Left master panel: fixed 320px width
-        SizedBox(
-          width: 320,
-          child: chatList,
-        ),
+        SizedBox(width: 320, child: chatList),
         // Vertical divider between panels
         VerticalDivider(
           width: 1,
@@ -40,7 +33,8 @@ class ChatSplitView extends StatelessWidget {
         ),
         // Right detail panel: fills remaining width
         Expanded(
-          child: chatRoom ??
+          child:
+              chatRoom ??
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

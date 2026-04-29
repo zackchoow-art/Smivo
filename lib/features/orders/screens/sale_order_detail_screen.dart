@@ -12,6 +12,9 @@ import 'package:smivo/features/orders/widgets/order_info_section.dart';
 import 'package:smivo/features/orders/widgets/order_timeline.dart';
 import 'package:smivo/shared/widgets/collapsible_section.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/features/shared/widgets/order_review_form.dart';
+import 'package:smivo/features/shared/widgets/submitted_review_card.dart';
+import 'package:smivo/features/shared/providers/order_review_provider.dart';
 
 class SaleOrderDetailScreen extends ConsumerWidget {
   const SaleOrderDetailScreen({
@@ -64,14 +67,19 @@ class SaleOrderDetailScreen extends ConsumerWidget {
               // Section 3: Order Info — collapsible, default open
               OrderInfoSection(
                 order: order,
-                counterpartyName: isBuyer ? order.seller?.displayName : order.buyer?.displayName,
+                counterpartyName:
+                    isBuyer
+                        ? order.seller?.displayName
+                        : order.buyer?.displayName,
                 buyer: order.buyer,
                 seller: order.seller,
                 currentUserId: currentUserId,
               ),
               const SizedBox(height: 16),
               // Section 5: Delivery & Return — collapsible, default open
-              if (order.status == 'pending' || order.status == 'confirmed' || order.status == 'completed') ...[
+              if (order.status == 'pending' ||
+                  order.status == 'confirmed' ||
+                  order.status == 'completed') ...[
                 CollapsibleSection(
                   title: 'Delivery & Return',
                   initiallyExpanded: true,
@@ -83,11 +91,22 @@ class SaleOrderDetailScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         EvidencePhotoSection(
                           orderId: order.id,
-                          canUpload: _canUploadEvidence(order, isBuyer, isSeller),
+                          canUpload: _canUploadEvidence(
+                            order,
+                            isBuyer,
+                            isSeller,
+                          ),
                         ),
                         const SizedBox(height: 16),
                       ],
-                      _buildPrimaryActions(context, ref, order, isBuyer, isSeller, isActing),
+                      _buildPrimaryActions(
+                        context,
+                        ref,
+                        order,
+                        isBuyer,
+                        isSeller,
+                        isActing,
+                      ),
                     ],
                   ),
                 ),
@@ -95,6 +114,7 @@ class SaleOrderDetailScreen extends ConsumerWidget {
               ],
               // Section 6: Chat History — collapsible, default closed
               _buildChatSection(ref, order),
+              _buildReviewSection(context, ref, order, isBuyer, currentUserId),
               _buildStatusBanner(context, order),
             ],
           ),
@@ -197,11 +217,12 @@ class SaleOrderDetailScreen extends ConsumerWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: isActing
-                        ? null
-                        : () async => await ref
-                            .read(orderActionsProvider.notifier)
-                            .confirmDelivery(order),
+                    onPressed:
+                        isActing
+                            ? null
+                            : () async => await ref
+                                .read(orderActionsProvider.notifier)
+                                .confirmDelivery(order),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -239,13 +260,17 @@ class SaleOrderDetailScreen extends ConsumerWidget {
       }
     }
 
+    if (order.status == 'completed') {
+      return const SizedBox.shrink();
+    }
+
     return const SizedBox.shrink();
   }
 
   List<TimelineStep> _buildSaleSteps(Order order) {
     // NOTE: 'missed' is treated like 'cancelled' for timeline display purposes
-    final isTerminated = order.status == 'cancelled' ||
-        order.status == 'missed';
+    final isTerminated =
+        order.status == 'cancelled' || order.status == 'missed';
 
     return [
       TimelineStep(
@@ -256,11 +281,9 @@ class SaleOrderDetailScreen extends ConsumerWidget {
       ),
       TimelineStep(
         label: 'Accepted',
-        date: !isTerminated && order.status != 'pending'
-            ? order.updatedAt
-            : null,
-        isCompleted:
-            order.status == 'confirmed' || order.status == 'completed',
+        date:
+            !isTerminated && order.status != 'pending' ? order.updatedAt : null,
+        isCompleted: order.status == 'confirmed' || order.status == 'completed',
         subtitle:
             order.status != 'pending' && !isTerminated
                 ? '${order.buyer?.displayName ?? 'Buyer'}\'s offer'
@@ -298,14 +321,24 @@ class SaleOrderDetailScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('DELIVERY CONFIRMATION',
+        Text(
+          'DELIVERY CONFIRMATION',
           style: typo.labelSmall.copyWith(
             color: colors.onSurface.withValues(alpha: 0.5),
             letterSpacing: 0.5,
-          )),
+          ),
+        ),
         const SizedBox(height: 8),
-        _infoRow(context, 'Buyer', order.deliveryConfirmedByBuyer ? '✓ Confirmed' : 'Waiting'),
-        _infoRow(context, 'Seller', order.deliveryConfirmedBySeller ? '✓ Confirmed' : 'Waiting'),
+        _infoRow(
+          context,
+          'Buyer',
+          order.deliveryConfirmedByBuyer ? '✓ Confirmed' : 'Waiting',
+        ),
+        _infoRow(
+          context,
+          'Seller',
+          order.deliveryConfirmedBySeller ? '✓ Confirmed' : 'Waiting',
+        ),
       ],
     );
   }
@@ -331,11 +364,13 @@ class SaleOrderDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildChatSection(WidgetRef ref, Order order) {
-    final chatRoomAsync = ref.watch(orderChatRoomIdProvider(
-      listingId: order.listingId,
-      buyerId: order.buyerId,
-      sellerId: order.sellerId,
-    ));
+    final chatRoomAsync = ref.watch(
+      orderChatRoomIdProvider(
+        listingId: order.listingId,
+        buyerId: order.buyerId,
+        sellerId: order.sellerId,
+      ),
+    );
 
     return chatRoomAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -355,6 +390,67 @@ class SaleOrderDetailScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildReviewSection(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isBuyer,
+    String? currentUserId,
+  ) {
+    if (order.status == 'missed') return const SizedBox.shrink();
+
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
+    if (order.status != 'completed' && order.status != 'cancelled') {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
+        child: Text(
+          'You can submit a review after the order is completed or cancelled.',
+          style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    final targetUserId = isBuyer ? order.sellerId : order.buyerId;
+    final roleToRate = isBuyer ? 'seller' : 'buyer';
+    
+    final orderReviewAsync = ref.watch(
+      orderReviewProvider(
+        orderId: order.id,
+        reviewerId: currentUserId ?? '',
+      ),
+    );
+
+    return orderReviewAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (review) {
+        if (review != null) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
+            child: SubmittedReviewCard(review: review),
+          );
+        }
+        
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
+          child: CollapsibleSection(
+            title: 'Leave a Review',
+            initiallyExpanded: true,
+            child: OrderReviewSection(
+              order: order,
+              currentUserId: currentUserId ?? '',
+              targetUserId: targetUserId,
+              role: roleToRate,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildCancelButton(
     BuildContext context,
     WidgetRef ref,
@@ -363,7 +459,8 @@ class SaleOrderDetailScreen extends ConsumerWidget {
   ) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final canCancel = order.status == 'pending' ||
+    final canCancel =
+        order.status == 'pending' ||
         (order.status == 'confirmed' &&
             !order.deliveryConfirmedByBuyer &&
             !order.deliveryConfirmedBySeller);
@@ -375,26 +472,30 @@ class SaleOrderDetailScreen extends ConsumerWidget {
         child: SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: isActing
-                ? null
-                : () async {
-                    final confirmed = await _showConfirmDialog(
-                      context,
-                      'Cancel Order',
-                      'Are you sure you want to cancel this order?',
-                    );
-                    if (confirmed == true) {
-                      await ref
-                          .read(orderActionsProvider.notifier)
-                          .cancelOrder(order.id);
-                    }
-                  },
+            onPressed:
+                isActing
+                    ? null
+                    : () async {
+                      final confirmed = await _showConfirmDialog(
+                        context,
+                        'Cancel Order',
+                        'Are you sure you want to cancel this order?',
+                      );
+                      if (confirmed == true) {
+                        await ref
+                            .read(orderActionsProvider.notifier)
+                            .cancelOrder(order.id);
+                      }
+                    },
             style: OutlinedButton.styleFrom(
               foregroundColor: colors.error,
               side: BorderSide(color: colors.error),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: Text(isActing ? 'Processing...' : 'Cancel Order', style: typo.titleMedium),
+            child: Text(
+              isActing ? 'Processing...' : 'Cancel Order',
+              style: typo.titleMedium,
+            ),
           ),
         ),
       ),
@@ -408,20 +509,21 @@ class SaleOrderDetailScreen extends ConsumerWidget {
   ) {
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('No'),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('No'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Yes'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Yes'),
-          ),
-        ],
-      ),
     );
   }
 

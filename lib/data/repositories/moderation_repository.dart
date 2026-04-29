@@ -61,7 +61,13 @@ class ModerationRepository {
           .select('user_profiles!user_blocks_blocked_user_id_fkey(*)')
           .eq('user_id', currentUserId)
           .order('created_at', ascending: false);
-      return data.map((json) => UserProfile.fromJson(json['user_profiles'] as Map<String, dynamic>)).toList();
+      return data
+          .map(
+            (json) => UserProfile.fromJson(
+              json['user_profiles'] as Map<String, dynamic>,
+            ),
+          )
+          .toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -93,7 +99,9 @@ class ModerationRepository {
     try {
       final data = await _client
           .from('content_reports')
-          .select('*, reported_user:user_profiles!content_reports_reported_user_id_fkey(*), listing:listings(*, images:listing_images(*))')
+          .select(
+            '*, reported_user:user_profiles!content_reports_reported_user_id_fkey(*), listing:listings(*, images:listing_images(*))',
+          )
           .eq('reporter_id', reporterId)
           .order('created_at', ascending: false);
       return data.map((json) => ContentReport.fromJson(json)).toList();

@@ -15,16 +15,17 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
-
 class CreateListingFormScreen extends ConsumerStatefulWidget {
   const CreateListingFormScreen({super.key, required this.initialMode});
   final String initialMode;
 
   @override
-  ConsumerState<CreateListingFormScreen> createState() => _CreateListingFormScreenState();
+  ConsumerState<CreateListingFormScreen> createState() =>
+      _CreateListingFormScreenState();
 }
 
-class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScreen> {
+class _CreateListingFormScreenState
+    extends ConsumerState<CreateListingFormScreen> {
   late ProviderListenable<String> modeProvider;
   PickupLocation? _selectedPickup;
   bool _allowBuyerToSuggest = false;
@@ -56,7 +57,15 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
     _weeklyController.text = '';
     _monthlyController.text = '';
     _depositController.text = '';
-    for (final c in [_titleController, _descriptionController, _priceController, _depositController, _dailyController, _weeklyController, _monthlyController]) {
+    for (final c in [
+      _titleController,
+      _descriptionController,
+      _priceController,
+      _depositController,
+      _dailyController,
+      _weeklyController,
+      _monthlyController,
+    ]) {
       c.addListener(() => setState(() {}));
     }
   }
@@ -92,9 +101,10 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
           slivers: [
             CollapsingTitleAppBar(
               title: isSale ? 'List an Item' : 'List a Rental',
-              subtitle: isSale 
-                  ? 'Turn your unused gear into cash on campus.' 
-                  : 'Make money by renting out your stuff.',
+              subtitle:
+                  isSale
+                      ? 'Turn your unused gear into cash on campus.'
+                      : 'Make money by renting out your stuff.',
             ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -103,130 +113,344 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
                 // maxWidth 640 keeps the form readable without stretching.
                 child: ContentWidthConstraint(
                   maxWidth: 640,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const SizedBox(height: 8),
-                  DefaultTabController(
-                    length: 2,
-                    initialIndex: mode == 'sale' ? 0 : 1,
-                    child: TabBar(
-                      onTap: (index) => ref.read(listingFormModeProvider(initialMode: widget.initialMode).notifier).setMode(index == 0 ? 'sale' : 'rental'),
-                      labelColor: colors.primary,
-                      unselectedLabelColor: colors.onSurfaceVariant,
-                      indicatorColor: colors.primary,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      dividerColor: Colors.transparent,
-                      tabs: const [
-                        Tab(text: 'Sell'),
-                        Tab(text: 'Rent'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      DefaultTabController(
+                        length: 2,
+                        initialIndex: mode == 'sale' ? 0 : 1,
+                        child: TabBar(
+                          onTap:
+                              (index) => ref
+                                  .read(
+                                    listingFormModeProvider(
+                                      initialMode: widget.initialMode,
+                                    ).notifier,
+                                  )
+                                  .setMode(index == 0 ? 'sale' : 'rental'),
+                          labelColor: colors.primary,
+                          unselectedLabelColor: colors.onSurfaceVariant,
+                          indicatorColor: colors.primary,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          dividerColor: Colors.transparent,
+                          tabs: const [Tab(text: 'Sell'), Tab(text: 'Rent')],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      // NOTE: ConstrainedBox limits photo area height on desktop
+                      // to avoid the picker dominating the wide-screen layout.
+                      if (isDesktop)
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 300),
+                          child: const PhotoPickerSection(),
+                        )
+                      else
+                        const PhotoPickerSection(),
+                      const SizedBox(height: 24),
+                      CustomTextField(
+                        label: 'Item Title',
+                        hintText: "Name of the item",
+                        controller: _titleController,
+                      ),
+                      const SizedBox(height: 24),
+                      CustomTextField(
+                        label: 'Item Description',
+                        hintText:
+                            "Describe its condition, features, and why someone should buy it...",
+                        maxLines: 4,
+                        controller: _descriptionController,
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Category',
+                        style: typo.labelLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _CategoryTabBar(),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Condition',
+                        style: typo.labelLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _ConditionTabBar(
+                        selectedCondition: _selectedCondition,
+                        onChanged:
+                            (v) => setState(() => _selectedCondition = v),
+                      ),
+                      const SizedBox(height: 32),
+                      if (isSale)
+                        CustomTextField(
+                          label: 'Price',
+                          hintText: '0.00',
+                          prefixText: '\$',
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          controller: _priceController,
+                        )
+                      else ...[
+                        Text(
+                          'Rental Pricing',
+                          style: typo.labelLarge.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colors.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildRentalRateRow(
+                          context,
+                          label: 'Daily Rate',
+                          controller: _dailyController,
+                          enabled: _dailyEnabled,
+                          hasError: _dailyHasError,
+                          onChanged:
+                              (v) => setState(() {
+                                _dailyEnabled = v ?? false;
+                                if (!_dailyEnabled) {
+                                  _dailyController.clear();
+                                  _dailyHasError = false;
+                                }
+                              }),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildRentalRateRow(
+                          context,
+                          label: 'Weekly Rate',
+                          controller: _weeklyController,
+                          enabled: _weeklyEnabled,
+                          hasError: _weeklyHasError,
+                          onChanged:
+                              (v) => setState(() {
+                                _weeklyEnabled = v ?? false;
+                                if (!_weeklyEnabled) {
+                                  _weeklyController.clear();
+                                  _weeklyHasError = false;
+                                }
+                              }),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildRentalRateRow(
+                          context,
+                          label: 'Monthly Rate',
+                          controller: _monthlyController,
+                          enabled: _monthlyEnabled,
+                          hasError: _monthlyHasError,
+                          onChanged:
+                              (v) => setState(() {
+                                _monthlyEnabled = v ?? false;
+                                if (!_monthlyEnabled) {
+                                  _monthlyController.clear();
+                                  _monthlyHasError = false;
+                                }
+                              }),
+                        ),
+                        if (_rentalRateErrorText != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4, left: 140),
+                            child: Text(
+                              _rentalRateErrorText!,
+                              style: TextStyle(
+                                color: colors.error,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Security Deposit',
+                          style: typo.labelLarge.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colors.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _depositController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          style: typo.bodyLarge.copyWith(
+                            color: colors.onSurface,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Required for rentals',
+                            prefixText: '\$ ',
+                            prefixStyle: typo.bodyLarge.copyWith(
+                              color: colors.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            filled: true,
+                            fillColor: colors.surfaceContainerLow,
+                            contentPadding: const EdgeInsets.all(12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(radius.input),
+                              borderSide:
+                                  _depositHasError
+                                      ? BorderSide(
+                                        color: colors.error,
+                                        width: 2,
+                                      )
+                                      : BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(radius.input),
+                              borderSide:
+                                  _depositHasError
+                                      ? BorderSide(
+                                        color: colors.error,
+                                        width: 2,
+                                      )
+                                      : BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(radius.input),
+                              borderSide: BorderSide(
+                                color:
+                                    _depositHasError
+                                        ? colors.error
+                                        : colors.primary,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Pickup Location',
+                        style: typo.labelLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final pickupsAsync = ref.watch(
+                            myPickupLocationsProvider,
+                          );
+                          return pickupsAsync.when(
+                            loading:
+                                () => const SizedBox(
+                                  height: 56,
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                            error:
+                                (err, _) =>
+                                    Text('Failed to load locations: $err'),
+                            data: (locations) {
+                              if (locations.isEmpty)
+                                return const Text(
+                                  'No pickup locations available',
+                                );
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(
+                                    radius.input,
+                                  ),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<PickupLocation>(
+                                    value: _selectedPickup,
+                                    hint: const Text('Select pickup location'),
+                                    isExpanded: true,
+                                    icon: Icon(
+                                      Icons.arrow_drop_down,
+                                      color: colors.onSurfaceVariant,
+                                    ),
+                                    style: typo.titleMedium.copyWith(
+                                      color: colors.onSurface,
+                                    ),
+                                    onChanged:
+                                        (v) =>
+                                            setState(() => _selectedPickup = v),
+                                    items:
+                                        locations
+                                            .map(
+                                              (loc) => DropdownMenuItem<
+                                                PickupLocation
+                                              >(
+                                                value: loc,
+                                                child: Text(loc.name),
+                                              ),
+                                            )
+                                            .toList(),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      CheckboxListTile(
+                        title: const Text(
+                          'Allow buyer to suggest alternative location',
+                        ),
+                        value: _allowBuyerToSuggest,
+                        onChanged:
+                            (v) => setState(
+                              () => _allowBuyerToSuggest = v ?? false,
+                            ),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      const SizedBox(height: 24),
+                      const SizedBox(height: 48),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed:
+                              _isSubmitting
+                                  ? null
+                                  : () => _handleSubmit(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                radius.button,
+                              ),
+                            ),
+                            elevation: 0,
+                          ),
+                          child:
+                              _isSubmitting
+                                  ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Text(
+                                    isSale
+                                        ? 'List Item for Sale'
+                                        : 'Post Rental',
+                                    style: typo.titleMedium.copyWith(
+                                      color: colors.onPrimary,
+                                    ),
+                                  ),
+                        ),
+                      ),
+                      const SizedBox(height: 80),
+                    ],
                   ),
-                  const SizedBox(height: 32),
-                  // NOTE: ConstrainedBox limits photo area height on desktop
-                  // to avoid the picker dominating the wide-screen layout.
-                  if (isDesktop)
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 300),
-                      child: const PhotoPickerSection(),
-                    )
-                  else
-                    const PhotoPickerSection(),
-          const SizedBox(height: 24),
-          CustomTextField(label: 'Item Title', hintText: "Name of the item", controller: _titleController),
-          const SizedBox(height: 24),
-          CustomTextField(label: 'Item Description', hintText: "Describe its condition, features, and why someone should buy it...", maxLines: 4, controller: _descriptionController),
-          const SizedBox(height: 24),
-          Text('Category', style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold, color: colors.onSurface)),
-          const SizedBox(height: 8),
-          _CategoryTabBar(),
-          const SizedBox(height: 32),
-          Text('Condition', style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold, color: colors.onSurface)),
-          const SizedBox(height: 8),
-          _ConditionTabBar(
-            selectedCondition: _selectedCondition,
-            onChanged: (v) => setState(() => _selectedCondition = v),
-          ),
-          const SizedBox(height: 32),
-          if (isSale)
-            CustomTextField(label: 'Price', hintText: '0.00', prefixText: '\$',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true), controller: _priceController)
-          else ...[
-            Text('Rental Pricing', style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold, color: colors.onSurface)),
-            const SizedBox(height: 12),
-            _buildRentalRateRow(context, label: 'Daily Rate', controller: _dailyController, enabled: _dailyEnabled, hasError: _dailyHasError,
-              onChanged: (v) => setState(() { _dailyEnabled = v ?? false; if (!_dailyEnabled) { _dailyController.clear(); _dailyHasError = false; } })),
-            const SizedBox(height: 12),
-            _buildRentalRateRow(context, label: 'Weekly Rate', controller: _weeklyController, enabled: _weeklyEnabled, hasError: _weeklyHasError,
-              onChanged: (v) => setState(() { _weeklyEnabled = v ?? false; if (!_weeklyEnabled) { _weeklyController.clear(); _weeklyHasError = false; } })),
-            const SizedBox(height: 12),
-            _buildRentalRateRow(context, label: 'Monthly Rate', controller: _monthlyController, enabled: _monthlyEnabled, hasError: _monthlyHasError,
-              onChanged: (v) => setState(() { _monthlyEnabled = v ?? false; if (!_monthlyEnabled) { _monthlyController.clear(); _monthlyHasError = false; } })),
-            if (_rentalRateErrorText != null) Padding(
-              padding: const EdgeInsets.only(top: 4, left: 140),
-              child: Text(_rentalRateErrorText!, style: TextStyle(color: colors.error, fontSize: 12))),
-            const SizedBox(height: 24),
-            Text('Security Deposit', style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold, color: colors.onSurface)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _depositController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: typo.bodyLarge.copyWith(color: colors.onSurface),
-              decoration: InputDecoration(
-                hintText: 'Required for rentals', prefixText: '\$ ',
-                prefixStyle: typo.bodyLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.bold),
-                filled: true, fillColor: colors.surfaceContainerLow, contentPadding: const EdgeInsets.all(12),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
-                  borderSide: _depositHasError ? BorderSide(color: colors.error, width: 2) : BorderSide.none),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
-                  borderSide: _depositHasError ? BorderSide(color: colors.error, width: 2) : BorderSide.none),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
-                  borderSide: BorderSide(color: _depositHasError ? colors.error : colors.primary, width: 2)),
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          Text('Pickup Location', style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold, color: colors.onSurface)),
-          const SizedBox(height: 8),
-          Consumer(builder: (context, ref, _) {
-            final pickupsAsync = ref.watch(myPickupLocationsProvider);
-            return pickupsAsync.when(
-              loading: () => const SizedBox(height: 56, child: Center(child: CircularProgressIndicator())),
-              error: (err, _) => Text('Failed to load locations: $err'),
-              data: (locations) {
-                if (locations.isEmpty) return const Text('No pickup locations available');
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(color: colors.surfaceContainerLow, borderRadius: BorderRadius.circular(radius.input)),
-                  child: DropdownButtonHideUnderline(child: DropdownButton<PickupLocation>(
-                    value: _selectedPickup, hint: const Text('Select pickup location'), isExpanded: true,
-                    icon: Icon(Icons.arrow_drop_down, color: colors.onSurfaceVariant),
-                    style: typo.titleMedium.copyWith(color: colors.onSurface),
-                    onChanged: (v) => setState(() => _selectedPickup = v),
-                    items: locations.map((loc) => DropdownMenuItem<PickupLocation>(value: loc, child: Text(loc.name))).toList(),
-                  )),
-                );
-              },
-            );
-          }),
-          CheckboxListTile(
-            title: const Text('Allow buyer to suggest alternative location'),
-            value: _allowBuyerToSuggest,
-            onChanged: (v) => setState(() => _allowBuyerToSuggest = v ?? false),
-            controlAffinity: ListTileControlAffinity.leading, contentPadding: EdgeInsets.zero,
-          ),
-          const SizedBox(height: 24),
-          const SizedBox(height: 48),
-          SizedBox(width: double.infinity, child: ElevatedButton(
-            onPressed: _isSubmitting ? null : () => _handleSubmit(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primary, padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.button)), elevation: 0),
-            child: _isSubmitting
-              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : Text(isSale ? 'List Item for Sale' : 'Post Rental', style: typo.titleMedium.copyWith(color: colors.onPrimary)),
-          )),
-                  const SizedBox(height: 80),
-                ])),
+                ),
               ),
             ),
           ],
@@ -235,65 +459,149 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
     );
   }
 
-  Widget _buildRentalRateRow(BuildContext context, {required String label, required TextEditingController controller,
-    required bool enabled, required bool hasError, required Function(bool?) onChanged}) {
+  Widget _buildRentalRateRow(
+    BuildContext context, {
+    required String label,
+    required TextEditingController controller,
+    required bool enabled,
+    required bool hasError,
+    required Function(bool?) onChanged,
+  }) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    return Row(children: [
-      SizedBox(width: 150, child: CheckboxListTile(
-        value: enabled, onChanged: onChanged,
-        title: Text(label, style: typo.bodyMedium.copyWith(color: colors.onSurface, fontWeight: FontWeight.w500)),
-        controlAffinity: ListTileControlAffinity.leading, contentPadding: EdgeInsets.zero, dense: true, visualDensity: VisualDensity.compact,
-      )),
-      Expanded(child: TextField(
-        controller: controller, enabled: enabled,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        style: typo.bodyLarge.copyWith(color: colors.onSurface),
-        decoration: InputDecoration(
-          prefixText: '\$ ', hintText: enabled ? '' : '—',
-          prefixStyle: typo.bodyLarge.copyWith(color: colors.onSurface, fontWeight: FontWeight.bold),
-          filled: true, fillColor: enabled ? colors.surfaceContainerLow : Colors.grey.shade100, contentPadding: const EdgeInsets.all(12),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
-            borderSide: hasError ? BorderSide(color: colors.error, width: 2) : BorderSide.none),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
-            borderSide: hasError ? BorderSide(color: colors.error, width: 2) : BorderSide.none),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input),
-            borderSide: BorderSide(color: hasError ? colors.error : colors.primary, width: 2)),
-          disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radius.input), borderSide: BorderSide(color: Colors.grey.shade200)),
+    return Row(
+      children: [
+        SizedBox(
+          width: 150,
+          child: CheckboxListTile(
+            value: enabled,
+            onChanged: onChanged,
+            title: Text(
+              label,
+              style: typo.bodyMedium.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            visualDensity: VisualDensity.compact,
+          ),
         ),
-      )),
-    ]);
+        Expanded(
+          child: TextField(
+            controller: controller,
+            enabled: enabled,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: typo.bodyLarge.copyWith(color: colors.onSurface),
+            decoration: InputDecoration(
+              prefixText: '\$ ',
+              hintText: enabled ? '' : '—',
+              prefixStyle: typo.bodyLarge.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
+              filled: true,
+              fillColor:
+                  enabled ? colors.surfaceContainerLow : Colors.grey.shade100,
+              contentPadding: const EdgeInsets.all(12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(radius.input),
+                borderSide:
+                    hasError
+                        ? BorderSide(color: colors.error, width: 2)
+                        : BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(radius.input),
+                borderSide:
+                    hasError
+                        ? BorderSide(color: colors.error, width: 2)
+                        : BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(radius.input),
+                borderSide: BorderSide(
+                  color: hasError ? colors.error : colors.primary,
+                  width: 2,
+                ),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(radius.input),
+                borderSide: BorderSide(color: Colors.grey.shade200),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _handleSubmit(BuildContext context) async {
-    setState(() { _dailyHasError = false; _weeklyHasError = false; _monthlyHasError = false; _depositHasError = false; _rentalRateErrorText = null; });
+    setState(() {
+      _dailyHasError = false;
+      _weeklyHasError = false;
+      _monthlyHasError = false;
+      _depositHasError = false;
+      _rentalRateErrorText = null;
+    });
     final formMode = ref.read(modeProvider);
     final category = ref.read(selectedListingCategoryProvider);
     final isSale = formMode == 'sale';
     final errors = <String>[];
     if (_titleController.text.trim().isEmpty) errors.add('Title is required');
-    if (_descriptionController.text.trim().isEmpty) errors.add('Description is required');
-    if (category == null || category.isEmpty) errors.add('Please select a category');
+    if (_descriptionController.text.trim().isEmpty)
+      errors.add('Description is required');
+    if (category == null || category.isEmpty)
+      errors.add('Please select a category');
     if (isSale) {
       final price = double.tryParse(_priceController.text.trim());
       if (price == null || price <= 0) errors.add('Valid sale price required');
     }
     if (!isSale) {
-      final daily = _dailyEnabled ? double.tryParse(_dailyController.text.trim()) : null;
-      final weekly = _weeklyEnabled ? double.tryParse(_weeklyController.text.trim()) : null;
-      final monthly = _monthlyEnabled ? double.tryParse(_monthlyController.text.trim()) : null;
-      if (_dailyEnabled && (daily == null || daily <= 0)) { setState(() => _dailyHasError = true); errors.add('Daily rate must be greater than 0'); }
-      if (_weeklyEnabled && (weekly == null || weekly <= 0)) { setState(() => _weeklyHasError = true); errors.add('Weekly rate must be greater than 0'); }
-      if (_monthlyEnabled && (monthly == null || monthly <= 0)) { setState(() => _monthlyHasError = true); errors.add('Monthly rate must be greater than 0'); }
-      if (!_dailyEnabled && !_weeklyEnabled && !_monthlyEnabled) { setState(() => _rentalRateErrorText = 'Select at least one rental mode'); errors.add('Select at least one rental mode'); }
+      final daily =
+          _dailyEnabled ? double.tryParse(_dailyController.text.trim()) : null;
+      final weekly =
+          _weeklyEnabled
+              ? double.tryParse(_weeklyController.text.trim())
+              : null;
+      final monthly =
+          _monthlyEnabled
+              ? double.tryParse(_monthlyController.text.trim())
+              : null;
+      if (_dailyEnabled && (daily == null || daily <= 0)) {
+        setState(() => _dailyHasError = true);
+        errors.add('Daily rate must be greater than 0');
+      }
+      if (_weeklyEnabled && (weekly == null || weekly <= 0)) {
+        setState(() => _weeklyHasError = true);
+        errors.add('Weekly rate must be greater than 0');
+      }
+      if (_monthlyEnabled && (monthly == null || monthly <= 0)) {
+        setState(() => _monthlyHasError = true);
+        errors.add('Monthly rate must be greater than 0');
+      }
+      if (!_dailyEnabled && !_weeklyEnabled && !_monthlyEnabled) {
+        setState(
+          () => _rentalRateErrorText = 'Select at least one rental mode',
+        );
+        errors.add('Select at least one rental mode');
+      }
       final depositText = _depositController.text.trim();
       final deposit = double.tryParse(depositText);
-      if (deposit == null || deposit < 0) { setState(() => _depositHasError = true); errors.add('Deposit must be a valid number (0 or greater)'); }
+      if (deposit == null || deposit < 0) {
+        setState(() => _depositHasError = true);
+        errors.add('Deposit must be a valid number (0 or greater)');
+      }
     }
     if (errors.isNotEmpty) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errors.first), backgroundColor: Colors.red)); return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errors.first), backgroundColor: Colors.red),
+      );
+      return;
     }
     setState(() => _isSubmitting = true);
     try {
@@ -301,26 +609,57 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
       if (profile == null) throw StateError('Not logged in');
       final selectedCategory = ref.read(selectedListingCategoryProvider)!;
       double? price, dailyRate, weeklyRate, monthlyRate;
-      if (isSale) { price = double.tryParse(_priceController.text.trim()) ?? 0.0; } else {
-        dailyRate = _dailyEnabled ? double.tryParse(_dailyController.text.trim()) : null;
-        weeklyRate = _weeklyEnabled ? double.tryParse(_weeklyController.text.trim()) : null;
-        monthlyRate = _monthlyEnabled ? double.tryParse(_monthlyController.text.trim()) : null;
+      if (isSale) {
+        price = double.tryParse(_priceController.text.trim()) ?? 0.0;
+      } else {
+        dailyRate =
+            _dailyEnabled
+                ? double.tryParse(_dailyController.text.trim())
+                : null;
+        weeklyRate =
+            _weeklyEnabled
+                ? double.tryParse(_weeklyController.text.trim())
+                : null;
+        monthlyRate =
+            _monthlyEnabled
+                ? double.tryParse(_monthlyController.text.trim())
+                : null;
       }
       final deposit = double.tryParse(_depositController.text.trim()) ?? 0.0;
-      await ref.read(createListingActionProvider.notifier).submit(
-        title: _titleController.text, description: _descriptionController.text, category: selectedCategory,
-        transactionType: isSale ? 'sale' : 'rental', condition: _selectedCondition, schoolId: profile.schoolId,
-        price: price, dailyRate: dailyRate, weeklyRate: weeklyRate, monthlyRate: monthlyRate,
-        depositAmount: deposit, pickupLocationId: _selectedPickup?.id, allowPickupChange: _allowBuyerToSuggest,
-        isPinned: false, pinnedDays: null);
+      await ref
+          .read(createListingActionProvider.notifier)
+          .submit(
+            title: _titleController.text,
+            description: _descriptionController.text,
+            category: selectedCategory,
+            transactionType: isSale ? 'sale' : 'rental',
+            condition: _selectedCondition,
+            schoolId: profile.schoolId,
+            price: price,
+            dailyRate: dailyRate,
+            weeklyRate: weeklyRate,
+            monthlyRate: monthlyRate,
+            depositAmount: deposit,
+            pickupLocationId: _selectedPickup?.id,
+            allowPickupChange: _allowBuyerToSuggest,
+            isPinned: false,
+            pinnedDays: null,
+          );
       if (!context.mounted) return;
       await _showSuccessDialog(context, isSale);
       if (!context.mounted) return;
       context.goNamed(AppRoutes.home);
     } catch (e, stackTrace) {
-      debugPrint('=== LISTING SUBMIT ERROR ==='); debugPrint('Error: $e'); debugPrint(stackTrace.toString());
+      debugPrint('=== LISTING SUBMIT ERROR ===');
+      debugPrint('Error: $e');
+      debugPrint(stackTrace.toString());
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to post: ${e.toString()}'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to post: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -331,25 +670,52 @@ class _CreateListingFormScreenState extends ConsumerState<CreateListingFormScree
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     return showDialog(
-      context: context, barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.dialog)),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.check_circle, color: colors.success, size: 80),
-          const SizedBox(height: 24),
-          Text('Success!', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text(isSale ? 'Your item has been listed for sale.' : 'Your rental listing has been posted.',
-            textAlign: TextAlign.center, style: typo.bodyMedium),
-          const SizedBox(height: 24),
-          SizedBox(width: double.infinity, child: ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: colors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.md))),
-            child: Text('Back to Home', style: TextStyle(color: colors.onPrimary)),
-          )),
-        ]),
-      ),
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius.dialog),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle, color: colors.success, size: 80),
+                const SizedBox(height: 24),
+                Text(
+                  'Success!',
+                  style: typo.headlineSmall.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  isSale
+                      ? 'Your item has been listed for sale.'
+                      : 'Your rental listing has been posted.',
+                  textAlign: TextAlign.center,
+                  style: typo.bodyMedium,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(radius.md),
+                      ),
+                    ),
+                    child: Text(
+                      'Back to Home',
+                      style: TextStyle(color: colors.onPrimary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
     );
   }
 }
@@ -362,8 +728,16 @@ class _CategoryTabBar extends ConsumerWidget {
     final categoriesAsync = ref.watch(mySchoolCategoriesProvider);
 
     return categoriesAsync.when(
-      loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
-      error: (_, __) => const SizedBox(height: 48, child: Center(child: Text('Failed to load categories'))),
+      loading:
+          () => const SizedBox(
+            height: 48,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+      error:
+          (_, __) => const SizedBox(
+            height: 48,
+            child: Center(child: Text('Failed to load categories')),
+          ),
       data: (cats) {
         final slugs = cats.map((c) => c.slug).toList();
         final initialIndex = slugs.indexOf(selectedCategory ?? '');
@@ -374,7 +748,10 @@ class _CategoryTabBar extends ConsumerWidget {
           child: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
-            onTap: (index) => ref.read(selectedListingCategoryProvider.notifier).setCategory(slugs[index]),
+            onTap:
+                (index) => ref
+                    .read(selectedListingCategoryProvider.notifier)
+                    .setCategory(slugs[index]),
             labelColor: colors.primary,
             unselectedLabelColor: colors.onSurfaceVariant,
             indicatorColor: colors.primary,
@@ -391,7 +768,10 @@ class _ConditionTabBar extends ConsumerWidget {
   final String selectedCondition;
   final ValueChanged<String> onChanged;
 
-  const _ConditionTabBar({required this.selectedCondition, required this.onChanged});
+  const _ConditionTabBar({
+    required this.selectedCondition,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -399,14 +779,25 @@ class _ConditionTabBar extends ConsumerWidget {
     final conditionsAsync = ref.watch(mySchoolConditionsProvider);
 
     return conditionsAsync.when(
-      loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
-      error: (_, __) => const SizedBox(height: 48, child: Center(child: Text('Failed to load conditions'))),
+      loading:
+          () => const SizedBox(
+            height: 48,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+      error:
+          (_, __) => const SizedBox(
+            height: 48,
+            child: Center(child: Text('Failed to load conditions')),
+          ),
       data: (conditions) {
-        final initialIndex = conditions.indexWhere((c) => c.slug == selectedCondition);
+        final initialIndex = conditions.indexWhere(
+          (c) => c.slug == selectedCondition,
+        );
 
         return DefaultTabController(
           length: conditions.length,
-          initialIndex: initialIndex != -1 ? initialIndex : 2, // Default to 'Good'
+          initialIndex:
+              initialIndex != -1 ? initialIndex : 2, // Default to 'Good'
           child: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
@@ -422,4 +813,3 @@ class _ConditionTabBar extends ConsumerWidget {
     );
   }
 }
-

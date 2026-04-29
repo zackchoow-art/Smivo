@@ -27,8 +27,7 @@ class _AdminPickupLocationsScreenState
     final radius = context.smivoRadius;
     final schoolsState = ref.watch(adminSchoolControllerProvider);
     final adminCtx = ref.watch(adminContextProvider).valueOrNull;
-    final canWrite =
-        adminCtx?.canWrite(AdminModule.pickupLocations) ?? false;
+    final canWrite = adminCtx?.canWrite(AdminModule.pickupLocations) ?? false;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -57,36 +56,44 @@ class _AdminPickupLocationsScreenState
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: schoolsState.when(
-              data: (schools) => DropdownButtonFormField<String>(
-                initialValue: _selectedSchoolId,
-                decoration: InputDecoration(
-                  labelText: 'Select School',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(radius.sm),
+              data:
+                  (schools) => DropdownButtonFormField<String>(
+                    initialValue: _selectedSchoolId,
+                    decoration: InputDecoration(
+                      labelText: 'Select School',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(radius.sm),
+                      ),
+                      filled: true,
+                      fillColor: colors.surfaceContainerLow,
+                    ),
+                    items:
+                        schools
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s.id,
+                                child: Text(s.name),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (v) => setState(() => _selectedSchoolId = v),
                   ),
-                  filled: true,
-                  fillColor: colors.surfaceContainerLow,
-                ),
-                items: schools
-                    .map((s) =>
-                        DropdownMenuItem(value: s.id, child: Text(s.name)))
-                    .toList(),
-                onChanged: (v) => setState(() => _selectedSchoolId = v),
-              ),
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Error: $e'),
             ),
           ),
           Expanded(
-            child: _selectedSchoolId == null
-                ? Center(
-                    child: Text(
-                      'Select a school to manage its pickup locations.',
-                      style: typo.bodyLarge
-                          .copyWith(color: colors.onSurfaceVariant),
-                    ),
-                  )
-                : _buildList(context, canWrite),
+            child:
+                _selectedSchoolId == null
+                    ? Center(
+                      child: Text(
+                        'Select a school to manage its pickup locations.',
+                        style: typo.bodyLarge.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    )
+                    : _buildList(context, canWrite),
           ),
         ],
       ),
@@ -97,14 +104,16 @@ class _AdminPickupLocationsScreenState
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    final state =
-        ref.watch(adminSchoolPickupLocationsProvider(_selectedSchoolId!));
+    final state = ref.watch(
+      adminSchoolPickupLocationsProvider(_selectedSchoolId!),
+    );
 
     return state.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: Text('Error: $e', style: TextStyle(color: colors.error)),
-      ),
+      error:
+          (e, _) => Center(
+            child: Text('Error: $e', style: TextStyle(color: colors.error)),
+          ),
       data: (locations) {
         if (locations.isEmpty) {
           return Center(
@@ -113,8 +122,9 @@ class _AdminPickupLocationsScreenState
               children: [
                 Text(
                   'No pickup locations.',
-                  style:
-                      typo.bodyLarge.copyWith(color: colors.onSurfaceVariant),
+                  style: typo.bodyLarge.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
@@ -164,31 +174,38 @@ class _AdminPickupLocationsScreenState
                 ),
                 title: Text(
                   loc.name,
-                  style: typo.titleMedium
-                      .copyWith(fontWeight: FontWeight.w700),
+                  style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700),
                 ),
                 subtitle: Text(
                   'Order: ${loc.displayOrder} • ${loc.isActive ? "Active" : "Inactive"}',
-                  style: typo.bodySmall
-                      .copyWith(color: colors.onSurfaceVariant),
+                  style: typo.bodySmall.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
-                trailing: canWrite
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit,
-                                size: 20, color: colors.primary),
-                            onPressed: () => _showDialog(context, loc),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete,
-                                size: 20, color: colors.error),
-                            onPressed: () => _confirmDelete(context, loc),
-                          ),
-                        ],
-                      )
-                    : null,
+                trailing:
+                    canWrite
+                        ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                size: 20,
+                                color: colors.primary,
+                              ),
+                              onPressed: () => _showDialog(context, loc),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: colors.error,
+                              ),
+                              onPressed: () => _confirmDelete(context, loc),
+                            ),
+                          ],
+                        )
+                        : null,
               ),
             );
           },
@@ -200,13 +217,15 @@ class _AdminPickupLocationsScreenState
   void _showDialog(BuildContext context, PickupLocation? location) {
     showDialog(
       context: context,
-      builder: (context) => _PickupLocationDialog(
-        schoolId: _selectedSchoolId!,
-        location: location,
-        onSaved: () => ref.invalidate(
-          adminSchoolPickupLocationsProvider(_selectedSchoolId!),
-        ),
-      ),
+      builder:
+          (context) => _PickupLocationDialog(
+            schoolId: _selectedSchoolId!,
+            location: location,
+            onSaved:
+                () => ref.invalidate(
+                  adminSchoolPickupLocationsProvider(_selectedSchoolId!),
+                ),
+          ),
     );
   }
 
@@ -214,29 +233,30 @@ class _AdminPickupLocationsScreenState
     final colors = context.smivoColors;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Pickup Location'),
-        content: Text('Delete "${loc.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete Pickup Location'),
+            content: Text('Delete "${loc.name}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  await ref
+                      .read(schoolDataRepositoryProvider)
+                      .deletePickupLocation(loc.id);
+                  ref.invalidate(
+                    adminSchoolPickupLocationsProvider(_selectedSchoolId!),
+                  );
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                style: FilledButton.styleFrom(backgroundColor: colors.error),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () async {
-              await ref
-                  .read(schoolDataRepositoryProvider)
-                  .deletePickupLocation(loc.id);
-              ref.invalidate(
-                adminSchoolPickupLocationsProvider(_selectedSchoolId!),
-              );
-              if (ctx.mounted) Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: colors.error),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -257,8 +277,7 @@ class _PickupLocationDialog extends ConsumerStatefulWidget {
       _PickupLocationDialogState();
 }
 
-class _PickupLocationDialogState
-    extends ConsumerState<_PickupLocationDialog> {
+class _PickupLocationDialogState extends ConsumerState<_PickupLocationDialog> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _orderCtrl;
   late bool _isActive;
@@ -294,9 +313,7 @@ class _PickupLocationDialogState
       updatedAt: DateTime.now(),
     );
 
-    await ref
-        .read(schoolDataRepositoryProvider)
-        .upsertPickupLocation(loc);
+    await ref.read(schoolDataRepositoryProvider).upsertPickupLocation(loc);
     widget.onSaved();
     if (mounted) Navigator.of(context).pop();
   }
@@ -316,8 +333,8 @@ class _PickupLocationDialogState
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(labelText: 'Location Name'),
-                validator: (v) =>
-                    v != null && v.trim().isNotEmpty ? null : 'Required',
+                validator:
+                    (v) => v != null && v.trim().isNotEmpty ? null : 'Required',
               ),
               const SizedBox(height: 16),
               TextFormField(

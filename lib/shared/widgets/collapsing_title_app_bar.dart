@@ -50,21 +50,30 @@ class CollapsingTitleAppBar extends StatelessWidget {
               Opacity(
                 opacity: expandedOpacity,
                 child: Padding(
-                  padding: EdgeInsets.only(top: minHeight - 20, left: 24, right: 24),
+                  padding: EdgeInsets.only(
+                    top: minHeight - 20,
+                    left: 24,
+                    right: 24,
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title,
-                          style: typo.headlineLarge.copyWith(
-                              color: colors.onSurface,
-                              fontWeight: FontWeight.w900)),
+                      Text(
+                        title,
+                        style: typo.headlineLarge.copyWith(
+                          color: colors.onSurface,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       Text(
                         subtitle,
                         textAlign: TextAlign.left,
                         style: typo.bodyMedium.copyWith(
-                            color: colors.onSurfaceVariant, height: 1.4),
+                          color: colors.onSurfaceVariant,
+                          height: 1.4,
+                        ),
                       ),
                     ],
                   ),
@@ -78,11 +87,14 @@ class CollapsingTitleAppBar extends StatelessWidget {
                 child: Opacity(
                   opacity: collapsedOpacity,
                   child: Center(
-                    child: Text(title,
-                        style: typo.headlineSmall.copyWith(
-                            color: colors.onSurface,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800)),
+                    child: Text(
+                      title,
+                      style: typo.headlineSmall.copyWith(
+                        color: colors.onSurface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                 ),
               ),

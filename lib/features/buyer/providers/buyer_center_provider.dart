@@ -13,7 +13,7 @@ part 'buyer_center_provider.g.dart';
 Future<List<Order>> buyerOrders(Ref ref) async {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return [];
-  
+
   final allOrders = await ref.watch(allOrdersProvider.future);
   return allOrders.where((o) => o.buyerId == user.id).toList();
 }

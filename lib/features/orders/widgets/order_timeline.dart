@@ -30,12 +30,12 @@ class OrderTimeline extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ...steps.asMap().entries.map(
-              (entry) => _buildTimelineRow(
-                context,
-                entry.value,
-                entry.key == steps.length - 1,
-              ),
-            ),
+          (entry) => _buildTimelineRow(
+            context,
+            entry.value,
+            entry.key == steps.length - 1,
+          ),
+        ),
       ],
     );
   }
@@ -51,25 +51,29 @@ class OrderTimeline extends StatelessWidget {
     final isCancelled = step.isCancelled ?? false;
 
     // NOTE: Determine dot and line color based on completion / cancellation state
-    final Color dotColor = isCancelled
-        ? colors.error
-        : step.isCompleted
+    final Color dotColor =
+        isCancelled
+            ? colors.error
+            : step.isCompleted
             ? colors.primary
             : colors.surfaceContainerHigh;
 
-    final Color dotBorderColor = isCancelled
-        ? colors.error
-        : step.isCompleted
+    final Color dotBorderColor =
+        isCancelled
+            ? colors.error
+            : step.isCompleted
             ? colors.primary
             : colors.outlineVariant;
 
-    final Color lineColor = step.isCompleted
-        ? colors.primary.withValues(alpha: 0.4)
-        : colors.surfaceContainerHigh;
+    final Color lineColor =
+        step.isCompleted
+            ? colors.primary.withValues(alpha: 0.4)
+            : colors.surfaceContainerHigh;
 
-    final Color labelColor = isCancelled
-        ? colors.error
-        : step.isCompleted
+    final Color labelColor =
+        isCancelled
+            ? colors.error
+            : step.isCompleted
             ? colors.onSurface
             : colors.outlineVariant;
 
@@ -82,31 +86,32 @@ class OrderTimeline extends StatelessWidget {
             width: 88,
             child: Padding(
               padding: const EdgeInsets.only(top: 1),
-              child: step.date != null
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          DateFormat('MMM d').format(step.date!.toLocal()),
-                          style: typo.bodySmall.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.7),
-                            fontWeight: FontWeight.w500,
+              child:
+                  step.date != null
+                      ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            DateFormat('MMM d').format(step.date!.toLocal()),
+                            style: typo.bodySmall.copyWith(
+                              color: colors.onSurface.withValues(alpha: 0.7),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        Text(
-                          DateFormat('h:mm a').format(step.date!.toLocal()),
-                          style: typo.labelSmall.copyWith(
-                            color: colors.outlineVariant,
+                          Text(
+                            DateFormat('h:mm a').format(step.date!.toLocal()),
+                            style: typo.labelSmall.copyWith(
+                              color: colors.outlineVariant,
+                            ),
                           ),
+                        ],
+                      )
+                      : Text(
+                        '—',
+                        style: typo.bodySmall.copyWith(
+                          color: colors.outlineVariant,
                         ),
-                      ],
-                    )
-                  : Text(
-                      '—',
-                      style: typo.bodySmall.copyWith(
-                        color: colors.outlineVariant,
                       ),
-                    ),
             ),
           ),
 
@@ -125,24 +130,24 @@ class OrderTimeline extends StatelessWidget {
                     border: Border.all(color: dotBorderColor, width: 2),
                   ),
                   // NOTE: Cancelled dot shows X icon; completed shows check
-                  child: isCancelled
-                      ? const Icon(Icons.close, size: 8, color: Colors.white)
-                      : step.isCompleted
+                  child:
+                      isCancelled
                           ? const Icon(
-                              Icons.check,
-                              size: 8,
-                              color: Colors.white,
-                            )
+                            Icons.close,
+                            size: 8,
+                            color: Colors.white,
+                          )
+                          : step.isCompleted
+                          ? const Icon(
+                            Icons.check,
+                            size: 8,
+                            color: Colors.white,
+                          )
                           : null,
                 ),
                 if (!isLast)
                   Expanded(
-                    child: Center(
-                      child: Container(
-                        width: 2,
-                        color: lineColor,
-                      ),
-                    ),
+                    child: Center(child: Container(width: 2, color: lineColor)),
                   ),
               ],
             ),

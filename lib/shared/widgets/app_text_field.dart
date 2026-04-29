@@ -47,10 +47,7 @@ class AppTextField extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
-                label.toUpperCase(),
-                style: typo.labelUppercase,
-              ),
+              child: Text(label.toUpperCase(), style: typo.labelUppercase),
             ),
             if (headerAction != null) headerAction!,
           ],
@@ -67,15 +64,14 @@ class AppTextField extends StatelessWidget {
           style: typo.bodyMedium,
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: typo.bodyMedium.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
-            prefixIcon: prefixIcon != null 
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 12),
-                  child: prefixIcon,
-                )
-              : null,
+            hintStyle: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+            prefixIcon:
+                prefixIcon != null
+                    ? Padding(
+                      padding: const EdgeInsets.only(left: 16, right: 12),
+                      child: prefixIcon,
+                    )
+                    : null,
             prefixIconConstraints: const BoxConstraints(
               minWidth: 0,
               minHeight: 0,
@@ -102,17 +98,11 @@ class AppTextField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(radius.input),
-              borderSide: BorderSide(
-                color: colors.primary,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: colors.primary, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(radius.input),
-              borderSide: BorderSide(
-                color: colors.error,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: colors.error, width: 1.5),
             ),
           ),
         ),

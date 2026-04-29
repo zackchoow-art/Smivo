@@ -4,7 +4,7 @@ import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 
 /// Admin login screen — placeholder with no real auth.
-/// 
+///
 /// Authentication will be added in a future phase.
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -151,25 +151,28 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           style: FilledButton.styleFrom(
                             backgroundColor: colors.primary,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(radius.button),
+                              borderRadius: BorderRadius.circular(
+                                radius.button,
+                              ),
                             ),
                           ),
-                          child: _isLoading
-                              ? SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: colors.onPrimary,
+                          child:
+                              _isLoading
+                                  ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: colors.onPrimary,
+                                    ),
+                                  )
+                                  : Text(
+                                    'Log In',
+                                    style: typo.labelLarge.copyWith(
+                                      color: colors.onPrimary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                )
-                              : Text(
-                                  'Log In',
-                                  style: typo.labelLarge.copyWith(
-                                    color: colors.onPrimary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
                         ),
                       ),
                     ],

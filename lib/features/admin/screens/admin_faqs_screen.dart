@@ -70,35 +70,36 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
                 Expanded(
                   flex: 2,
                   child: schoolsState.when(
-                    data: (schools) => DropdownButtonFormField<String?>(
-                      initialValue: _selectedSchoolId,
-                      decoration: InputDecoration(
-                        labelText: 'Filter by School',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(radius.sm),
-                        ),
-                        filled: true,
-                        fillColor: colors.surfaceContainerLow,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                      ),
-                      items: [
-                        const DropdownMenuItem<String?>(
-                          value: null,
-                          child: Text('All Schools'),
-                        ),
-                        ...schools.map(
-                          (s) => DropdownMenuItem(
-                            value: s.id,
-                            child: Text(s.name),
+                    data:
+                        (schools) => DropdownButtonFormField<String?>(
+                          initialValue: _selectedSchoolId,
+                          decoration: InputDecoration(
+                            labelText: 'Filter by School',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(radius.sm),
+                            ),
+                            filled: true,
+                            fillColor: colors.surfaceContainerLow,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                           ),
+                          items: [
+                            const DropdownMenuItem<String?>(
+                              value: null,
+                              child: Text('All Schools'),
+                            ),
+                            ...schools.map(
+                              (s) => DropdownMenuItem(
+                                value: s.id,
+                                child: Text(s.name),
+                              ),
+                            ),
+                          ],
+                          onChanged:
+                              (v) => setState(() => _selectedSchoolId = v),
                         ),
-                      ],
-                      onChanged: (v) =>
-                          setState(() => _selectedSchoolId = v),
-                    ),
                     loading: () => const LinearProgressIndicator(),
                     error: (e, _) => Text('Error: $e'),
                   ),
@@ -132,38 +133,48 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
           Expanded(
             child: faqsState.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text('Error: $e',
-                    style: TextStyle(color: colors.error)),
-              ),
+              error:
+                  (e, _) => Center(
+                    child: Text(
+                      'Error: $e',
+                      style: TextStyle(color: colors.error),
+                    ),
+                  ),
               data: (allFaqs) {
                 // Filter by school
                 var faqs = allFaqs;
                 if (_selectedSchoolId != null) {
-                  faqs = faqs
-                      .where((f) =>
-                          f.schoolId == _selectedSchoolId ||
-                          f.schoolId == null)
-                      .toList();
+                  faqs =
+                      faqs
+                          .where(
+                            (f) =>
+                                f.schoolId == _selectedSchoolId ||
+                                f.schoolId == null,
+                          )
+                          .toList();
                 }
 
                 // Filter by search
                 if (_searchQuery.isNotEmpty) {
                   final q = _searchQuery.toLowerCase();
-                  faqs = faqs
-                      .where((f) =>
-                          f.question.toLowerCase().contains(q) ||
-                          f.answer.toLowerCase().contains(q) ||
-                          f.category.toLowerCase().contains(q))
-                      .toList();
+                  faqs =
+                      faqs
+                          .where(
+                            (f) =>
+                                f.question.toLowerCase().contains(q) ||
+                                f.answer.toLowerCase().contains(q) ||
+                                f.category.toLowerCase().contains(q),
+                          )
+                          .toList();
                 }
 
                 if (faqs.isEmpty) {
                   return Center(
                     child: Text(
                       'No FAQs found.',
-                      style: typo.bodyLarge
-                          .copyWith(color: colors.onSurfaceVariant),
+                      style: typo.bodyLarge.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
                     ),
                   );
                 }
@@ -184,8 +195,7 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
                         color: colors.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(radius.sm),
                         border: Border.all(
-                          color: colors.outlineVariant
-                              .withValues(alpha: 0.3),
+                          color: colors.outlineVariant.withValues(alpha: 0.3),
                         ),
                       ),
                       child: ListTile(
@@ -193,8 +203,9 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEA580C)
-                                .withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFFEA580C,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
@@ -205,8 +216,9 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
                         ),
                         title: Text(
                           faq.question,
-                          style: typo.titleMedium
-                              .copyWith(fontWeight: FontWeight.w700),
+                          style: typo.titleMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -226,10 +238,8 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
                                   vertical: 1,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: colors.primary
-                                      .withValues(alpha: 0.1),
-                                  borderRadius:
-                                      BorderRadius.circular(4),
+                                  color: colors.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   'Global',
@@ -242,27 +252,32 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
                             ],
                           ],
                         ),
-                        trailing: canWrite
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit,
+                        trailing:
+                            canWrite
+                                ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.edit,
                                         size: 20,
-                                        color: colors.primary),
-                                    onPressed: () =>
-                                        _showFaqDialog(context, faq),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete,
+                                        color: colors.primary,
+                                      ),
+                                      onPressed:
+                                          () => _showFaqDialog(context, faq),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.delete,
                                         size: 20,
-                                        color: colors.error),
-                                    onPressed: () =>
-                                        _confirmDelete(context, faq),
-                                  ),
-                                ],
-                              )
-                            : null,
+                                        color: colors.error,
+                                      ),
+                                      onPressed:
+                                          () => _confirmDelete(context, faq),
+                                    ),
+                                  ],
+                                )
+                                : null,
                       ),
                     );
                   },
@@ -278,11 +293,12 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
   void _showFaqDialog(BuildContext context, Faq? faq) {
     showDialog(
       context: context,
-      builder: (context) => _FaqDialog(
-        faq: faq,
-        selectedSchoolId: _selectedSchoolId,
-        onSaved: () => ref.invalidate(adminFaqControllerProvider),
-      ),
+      builder:
+          (context) => _FaqDialog(
+            faq: faq,
+            selectedSchoolId: _selectedSchoolId,
+            onSaved: () => ref.invalidate(adminFaqControllerProvider),
+          ),
     );
   }
 
@@ -290,28 +306,27 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
     final colors = context.smivoColors;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete FAQ'),
-        content: Text('Delete "${faq.question}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete FAQ'),
+            content: Text('Delete "${faq.question}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  ref
+                      .read(adminFaqControllerProvider.notifier)
+                      .deleteFaq(faq.id);
+                  Navigator.of(ctx).pop();
+                },
+                style: FilledButton.styleFrom(backgroundColor: colors.error),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () {
-              ref
-                  .read(adminFaqControllerProvider.notifier)
-                  .deleteFaq(faq.id);
-              Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: colors.error,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -321,11 +336,7 @@ class _FaqDialog extends ConsumerStatefulWidget {
   final String? selectedSchoolId;
   final VoidCallback onSaved;
 
-  const _FaqDialog({
-    this.faq,
-    this.selectedSchoolId,
-    required this.onSaved,
-  });
+  const _FaqDialog({this.faq, this.selectedSchoolId, required this.onSaved});
 
   @override
   ConsumerState<_FaqDialog> createState() => _FaqDialogState();
@@ -341,12 +352,9 @@ class _FaqDialogState extends ConsumerState<_FaqDialog> {
   @override
   void initState() {
     super.initState();
-    _categoryCtrl =
-        TextEditingController(text: widget.faq?.category ?? '');
-    _questionCtrl =
-        TextEditingController(text: widget.faq?.question ?? '');
-    _answerCtrl =
-        TextEditingController(text: widget.faq?.answer ?? '');
+    _categoryCtrl = TextEditingController(text: widget.faq?.category ?? '');
+    _questionCtrl = TextEditingController(text: widget.faq?.question ?? '');
+    _answerCtrl = TextEditingController(text: widget.faq?.answer ?? '');
     _orderCtrl = TextEditingController(
       text: widget.faq?.displayOrder.toString() ?? '0',
     );
@@ -402,40 +410,38 @@ class _FaqDialogState extends ConsumerState<_FaqDialog> {
               children: [
                 TextFormField(
                   controller: _categoryCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Category'),
-                  validator: (val) =>
-                      val != null && val.trim().isNotEmpty
-                          ? null
-                          : 'Required',
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  validator:
+                      (val) =>
+                          val != null && val.trim().isNotEmpty
+                              ? null
+                              : 'Required',
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _questionCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Question'),
-                  validator: (val) =>
-                      val != null && val.trim().isNotEmpty
-                          ? null
-                          : 'Required',
+                  decoration: const InputDecoration(labelText: 'Question'),
+                  validator:
+                      (val) =>
+                          val != null && val.trim().isNotEmpty
+                              ? null
+                              : 'Required',
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _answerCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Answer'),
+                  decoration: const InputDecoration(labelText: 'Answer'),
                   maxLines: 4,
-                  validator: (val) =>
-                      val != null && val.trim().isNotEmpty
-                          ? null
-                          : 'Required',
+                  validator:
+                      (val) =>
+                          val != null && val.trim().isNotEmpty
+                              ? null
+                              : 'Required',
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _orderCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Display Order',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Display Order'),
                   keyboardType: TextInputType.number,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {

@@ -38,9 +38,10 @@ class ResponsiveGrid extends StatelessWidget {
         final width = constraints.maxWidth;
         // NOTE: Column count scales with available width so items
         // stay a reasonable size on every device class.
-        final columns = Breakpoints.isDesktop(width)
-            ? desktopColumns
-            : Breakpoints.isTablet(width)
+        final columns =
+            Breakpoints.isDesktop(width)
+                ? desktopColumns
+                : Breakpoints.isTablet(width)
                 ? tabletColumns
                 : mobileColumns;
 
@@ -103,10 +104,7 @@ class SliverResponsiveGrid extends StatelessWidget {
         mainAxisSpacing: mainAxisSpacing,
         childAspectRatio: childAspectRatio,
       ),
-      delegate: SliverChildBuilderDelegate(
-        itemBuilder,
-        childCount: itemCount,
-      ),
+      delegate: SliverChildBuilderDelegate(itemBuilder, childCount: itemCount),
     );
   }
 }

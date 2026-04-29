@@ -16,18 +16,14 @@ class SavedRepository {
   final SupabaseClient _client;
 
   /// Fetches all saved listings for a user.
-  Future<List<SavedListing>> fetchSavedListings(
-    String userId,
-  ) async {
+  Future<List<SavedListing>> fetchSavedListings(String userId) async {
     try {
       final data = await _client
           .from(AppConstants.tableSavedListings)
           .select()
           .eq('user_id', userId)
           .order('created_at', ascending: false);
-      return data
-          .map((json) => SavedListing.fromJson(json))
-          .toList();
+      return data.map((json) => SavedListing.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -55,14 +51,12 @@ class SavedRepository {
     required String listingId,
   }) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableSavedListings)
-          .insert({
-            'user_id': userId,
-            'listing_id': listingId,
-          })
-          .select()
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableSavedListings)
+              .insert({'user_id': userId, 'listing_id': listingId})
+              .select()
+              .single();
       return SavedListing.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -91,12 +85,13 @@ class SavedRepository {
     required String listingId,
   }) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableSavedListings)
-          .select('id')
-          .eq('user_id', userId)
-          .eq('listing_id', listingId)
-          .maybeSingle();
+      final data =
+          await _client
+              .from(AppConstants.tableSavedListings)
+              .select('id')
+              .eq('user_id', userId)
+              .eq('listing_id', listingId)
+              .maybeSingle();
       return data != null;
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

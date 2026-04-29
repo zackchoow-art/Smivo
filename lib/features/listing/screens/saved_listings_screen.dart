@@ -14,7 +14,8 @@ class SavedListingsScreen extends ConsumerStatefulWidget {
   const SavedListingsScreen({super.key});
 
   @override
-  ConsumerState<SavedListingsScreen> createState() => _SavedListingsScreenState();
+  ConsumerState<SavedListingsScreen> createState() =>
+      _SavedListingsScreenState();
 }
 
 class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
@@ -47,12 +48,14 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
                 subtitle: 'Items you have bookmarked for later.',
               ),
               savedAsync.when(
-                loading: () => const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (e, _) => SliverFillRemaining(
-                  child: Center(child: Text('Error: $e')),
-                ),
+                loading:
+                    () => const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                error:
+                    (e, _) => SliverFillRemaining(
+                      child: Center(child: Text('Error: $e')),
+                    ),
                 data: (savedItems) {
                   if (savedItems.isEmpty) {
                     return SliverFillRemaining(
@@ -60,29 +63,39 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.bookmark_outline,
-                                size: 48,
-                                color: colors.onSurface.withValues(alpha: 0.3)),
+                            Icon(
+                              Icons.bookmark_outline,
+                              size: 48,
+                              color: colors.onSurface.withValues(alpha: 0.3),
+                            ),
                             const SizedBox(height: 12),
-                            Text('No saved items yet',
-                                style: typo.bodyMedium
-                                    .copyWith(color: colors.outlineVariant)),
+                            Text(
+                              'No saved items yet',
+                              style: typo.bodyMedium.copyWith(
+                                color: colors.outlineVariant,
+                              ),
+                            ),
                             const SizedBox(height: 8),
-                            Text('Explore the market and save what you like!',
-                                style: typo.bodySmall
-                                    .copyWith(color: colors.outlineVariant)),
+                            Text(
+                              'Explore the market and save what you like!',
+                              style: typo.bodySmall.copyWith(
+                                color: colors.outlineVariant,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     );
                   }
 
-                  final active = savedItems
-                      .where((item) => item.listing?.status == 'active')
-                      .toList();
-                  final inactive = savedItems
-                      .where((item) => item.listing?.status != 'active')
-                      .toList();
+                  final active =
+                      savedItems
+                          .where((item) => item.listing?.status == 'active')
+                          .toList();
+                  final inactive =
+                      savedItems
+                          .where((item) => item.listing?.status != 'active')
+                          .toList();
 
                   return SliverMainAxisGroup(
                     slivers: [
@@ -117,7 +130,7 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
     Color color,
   ) {
     if (items.isEmpty) return [];
-    
+
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -162,46 +175,46 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
             final sw = MediaQuery.of(context).size.width;
             final useConstraint = Breakpoints.isDesktop(sw);
             final maxW = isIkea ? 1280.0 : 960.0;
-            
+
             final sliver = SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: isIkea
-                  ? SliverResponsiveGrid(
-                      itemCount: items.length,
-                      mobileColumns: 2,
-                      tabletColumns: 3,
-                      desktopColumns: 4,
-                      crossAxisSpacing: 24,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.72,
-                      itemBuilder: (context, index) {
-                        return IkeaSavedListingCard(savedListing: items[index]);
-                      },
-                    )
-                  : SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
+              sliver:
+                  isIkea
+                      ? SliverResponsiveGrid(
+                        itemCount: items.length,
+                        mobileColumns: 2,
+                        tabletColumns: 3,
+                        desktopColumns: 4,
+                        crossAxisSpacing: 24,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.72,
+                        itemBuilder: (context, index) {
+                          return IkeaSavedListingCard(
+                            savedListing: items[index],
+                          );
+                        },
+                      )
+                      : SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: SavedListingCard(savedListing: items[index]),
                           );
-                        },
-                        childCount: items.length,
+                        }, childCount: items.length),
                       ),
-                    ),
             );
 
             return useConstraint
                 ? SliverToBoxAdapter(
-                    child: ContentWidthConstraint(
-                      maxWidth: maxW,
-                      child: CustomScrollView(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        slivers: [sliver],
-                      ),
+                  child: ContentWidthConstraint(
+                    maxWidth: maxW,
+                    child: CustomScrollView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      slivers: [sliver],
                     ),
-                  )
+                  ),
+                )
                 : sliver;
           },
         ),

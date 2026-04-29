@@ -15,22 +15,31 @@ class AdminSchoolController extends _$AdminSchoolController {
   Future<void> addSchool(School school, {bool seedDefaults = false}) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final newSchool = await ref.read(schoolRepositoryProvider).createSchool(school);
+      final newSchool = await ref
+          .read(schoolRepositoryProvider)
+          .createSchool(school);
       // Seed default categories, conditions, pickup locations, FAQs
       if (seedDefaults) {
-        await ref.read(schoolDataRepositoryProvider).seedSchoolDefaults(newSchool.id);
+        await ref
+            .read(schoolDataRepositoryProvider)
+            .seedSchoolDefaults(newSchool.id);
       }
       final currentList = state.valueOrNull ?? [];
-      return [...currentList, newSchool]..sort((a, b) => a.name.compareTo(b.name));
+      return [...currentList, newSchool]
+        ..sort((a, b) => a.name.compareTo(b.name));
     });
   }
 
   Future<void> updateSchool(School school) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final updatedSchool = await ref.read(schoolRepositoryProvider).updateSchool(school);
+      final updatedSchool = await ref
+          .read(schoolRepositoryProvider)
+          .updateSchool(school);
       final currentList = state.valueOrNull ?? [];
-      return currentList.map((e) => e.id == updatedSchool.id ? updatedSchool : e).toList()
+      return currentList
+          .map((e) => e.id == updatedSchool.id ? updatedSchool : e)
+          .toList()
         ..sort((a, b) => a.name.compareTo(b.name));
     });
   }

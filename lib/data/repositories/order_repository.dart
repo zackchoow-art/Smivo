@@ -38,17 +38,18 @@ class OrderRepository {
   /// Fetches a single order by [id] with full details.
   Future<Order> fetchOrder(String id) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableOrders)
-          .select('''
+      final data =
+          await _client
+              .from(AppConstants.tableOrders)
+              .select('''
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
             listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url)),
             pickup_location:pickup_locations(*)
           ''')
-          .eq('id', id)
-          .single();
+              .eq('id', id)
+              .single();
       return Order.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -91,10 +92,8 @@ class OrderRepository {
   /// Updates the rental status of an order.
   Future<Order> updateRentalStatus(String id, String rentalStatus) async {
     try {
-      final updateData = <String, dynamic>{
-        'rental_status': rentalStatus,
-      };
-      
+      final updateData = <String, dynamic>{'rental_status': rentalStatus};
+
       // Add timestamps for specific transitions
       if (rentalStatus == 'return_requested') {
         updateData['return_requested_at'] = DateTime.now().toIso8601String();
@@ -103,13 +102,14 @@ class OrderRepository {
       } else if (rentalStatus == 'deposit_refunded') {
         updateData['deposit_refunded_at'] = DateTime.now().toIso8601String();
       }
-      
-      final data = await _client
-          .from(AppConstants.tableOrders)
-          .update(updateData)
-          .eq('id', id)
-          .select()
-          .single();
+
+      final data =
+          await _client
+              .from(AppConstants.tableOrders)
+              .update(updateData)
+              .eq('id', id)
+              .select()
+              .single();
       return Order.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -119,25 +119,27 @@ class OrderRepository {
   /// Creates a new order. Strips nested join fields before insert.
   Future<Order> createOrder(Order order) async {
     try {
-      final orderJson = order.toJson()
-        // Nested join fields — not columns
-        ..remove('buyer')
-        ..remove('seller')
-        ..remove('listing')
-        ..remove('pickup_location')
-        // Database-generated fields — let Postgres assign these
-        ..remove('id')
-        ..remove('created_at')
-        ..remove('updated_at');
+      final orderJson =
+          order.toJson()
+            // Nested join fields — not columns
+            ..remove('buyer')
+            ..remove('seller')
+            ..remove('listing')
+            ..remove('pickup_location')
+            // Database-generated fields — let Postgres assign these
+            ..remove('id')
+            ..remove('created_at')
+            ..remove('updated_at');
 
       // Remove null fields to avoid overwriting defaults
       orderJson.removeWhere((key, value) => value == null);
 
-      final data = await _client
-          .from(AppConstants.tableOrders)
-          .insert(orderJson)
-          .select()
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableOrders)
+              .insert(orderJson)
+              .select()
+              .single();
       return Order.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -145,12 +147,15 @@ class OrderRepository {
   }
 
   /// Accepts an order and marks all other pending orders for the same listing as missed.
-  Future<void> acceptOrderAndRejectOthers(String orderId, String listingId) async {
+  Future<void> acceptOrderAndRejectOthers(
+    String orderId,
+    String listingId,
+  ) async {
     try {
-      await _client.rpc('accept_order_and_reject_others', params: {
-        'p_order_id': orderId,
-        'p_listing_id': listingId,
-      });
+      await _client.rpc(
+        'accept_order_and_reject_others',
+        params: {'p_order_id': orderId, 'p_listing_id': listingId},
+      );
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -159,12 +164,13 @@ class OrderRepository {
   /// Updates an order's status (e.g. 'cancelled').
   Future<Order> updateOrderStatus(String id, String status) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableOrders)
-          .update({'status': status})
-          .eq('id', id)
-          .select()
-          .single();
+      final data =
+          await _client
+              .from(AppConstants.tableOrders)
+              .update({'status': status})
+              .eq('id', id)
+              .select()
+              .single();
       return Order.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -173,9 +179,9 @@ class OrderRepository {
 
   /// Confirms delivery by [byUserRole] ('buyer' or 'seller').
   ///
-  /// If both parties have confirmed after this update, the order 
-  /// status transitions to 'completed'. The database trigger 
-  /// (00006_order_listing_status_sync) then updates the listing 
+  /// If both parties have confirmed after this update, the order
+  /// status transitions to 'completed'. The database trigger
+  /// (00006_order_listing_status_sync) then updates the listing
   /// status for sale orders.
   /// Confirms delivery by [byUserRole] ('buyer' or 'seller').
   ///
@@ -187,9 +193,10 @@ class OrderRepository {
     required String orderType,
   }) async {
     try {
-      final field = byUserRole == 'buyer'
-          ? 'delivery_confirmed_by_buyer'
-          : 'delivery_confirmed_by_seller';
+      final field =
+          byUserRole == 'buyer'
+              ? 'delivery_confirmed_by_buyer'
+              : 'delivery_confirmed_by_seller';
 
       // Step 1: confirm delivery by this role
       await _client
@@ -198,19 +205,24 @@ class OrderRepository {
           .eq('id', orderId);
 
       // Step 2: fetch updated record to check both confirmations
-      final current = await _client
-          .from(AppConstants.tableOrders)
-          .select('delivery_confirmed_by_buyer, delivery_confirmed_by_seller, status')
-          .eq('id', orderId)
-          .single();
+      final current =
+          await _client
+              .from(AppConstants.tableOrders)
+              .select(
+                'delivery_confirmed_by_buyer, delivery_confirmed_by_seller, status',
+              )
+              .eq('id', orderId)
+              .single();
 
-      final bothConfirmed = 
+      final bothConfirmed =
           current['delivery_confirmed_by_buyer'] == true &&
           current['delivery_confirmed_by_seller'] == true;
 
       // Step 3: only complete sale orders automatically.
       // Rental orders stay in 'confirmed' — provider layer activates rental.
-      if (bothConfirmed && current['status'] != 'completed' && orderType == 'sale') {
+      if (bothConfirmed &&
+          current['status'] != 'completed' &&
+          orderType == 'sale') {
         await _client
             .from(AppConstants.tableOrders)
             .update({'status': 'completed'})
@@ -223,7 +235,6 @@ class OrderRepository {
     }
   }
 
-
   /// Finds an existing order by listing and buyer.
   /// Returns null if no active order exists.
   Future<Order?> fetchOrderByListingAndBuyer({
@@ -231,13 +242,14 @@ class OrderRepository {
     required String buyerId,
   }) async {
     try {
-      final data = await _client
-          .from(AppConstants.tableOrders)
-          .select()
-          .eq('listing_id', listingId)
-          .eq('buyer_id', buyerId)
-          .inFilter('status', ['pending', 'confirmed'])
-          .maybeSingle();
+      final data =
+          await _client
+              .from(AppConstants.tableOrders)
+              .select()
+              .eq('listing_id', listingId)
+              .eq('buyer_id', buyerId)
+              .inFilter('status', ['pending', 'confirmed'])
+              .maybeSingle();
       if (data == null) return null;
       return Order.fromJson(data);
     } on PostgrestException catch (e) {
@@ -246,7 +258,10 @@ class OrderRepository {
   }
 
   /// Cancels all other pending orders for a listing when one is accepted.
-  Future<void> cancelOtherPendingOrders(String listingId, String acceptedOrderId) async {
+  Future<void> cancelOtherPendingOrders(
+    String listingId,
+    String acceptedOrderId,
+  ) async {
     try {
       await _client
           .from(AppConstants.tableOrders)
@@ -304,6 +319,30 @@ class OrderRepository {
           .update({'status': 'cancelled'})
           .eq('listing_id', listingId)
           .eq('status', 'pending');
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches the most relevant/latest order for a given listing and buyer.
+  Future<Order?> fetchLatestOrderByListingAndBuyer(
+    String listingId,
+    String buyerId,
+  ) async {
+    try {
+      final data =
+          await _client
+              .from(AppConstants.tableOrders)
+              .select()
+              .eq('listing_id', listingId)
+              .eq('buyer_id', buyerId)
+              .order('created_at', ascending: false)
+              .limit(1)
+              .maybeSingle();
+      if (data == null) return null;
+
+      // Now fetch full order details using the ID
+      return fetchOrder(data['id'] as String);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

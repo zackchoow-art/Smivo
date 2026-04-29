@@ -9,6 +9,9 @@ import 'package:smivo/data/models/message.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/features/orders/providers/orders_provider.dart';
 
 Future<void> showChatPopup(
   BuildContext context, {
@@ -46,14 +49,8 @@ Future<void> showChatPopup(
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       return ScaleTransition(
-        scale: CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutBack,
-        ),
-        child: FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
+        scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+        child: FadeTransition(opacity: animation, child: child),
       );
     },
   );
@@ -102,7 +99,9 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    ref.read(chatMessagesProvider(widget.chatRoomId).notifier).sendMessage(text);
+    ref
+        .read(chatMessagesProvider(widget.chatRoomId).notifier)
+        .sendMessage(text);
     _controller.clear();
 
     // Scroll to bottom
@@ -155,243 +154,304 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
       child: Container(
         width: popupWidth,
         height: MediaQuery.of(context).size.height * 0.75,
-      decoration: BoxDecoration(
-        color: colors.background.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(radius.xl),
-        boxShadow: [
-          BoxShadow(
-            color: colors.shadow,
-            blurRadius: 40,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius.xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Column(
-            children: [
-              // --- Header ---
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: colors.surfaceContainerHigh,
-                      backgroundImage: widget.otherUserAvatar != null && widget.otherUserAvatar!.trim().isNotEmpty
-                          ? NetworkImage(widget.otherUserAvatar!)
-                          : null,
-                      child: widget.otherUserAvatar == null || widget.otherUserAvatar!.trim().isEmpty
-                          ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 28)
-                          : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.otherUserName,
-                            style: typo.titleMedium.copyWith(
-                              color: colors.onSurface,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18,
-                            ),
-                          ),
-                          if (widget.otherUserEmail != null)
-                            Text(
-                              widget.otherUserEmail!,
-                              style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
-                            ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: colors.onSurfaceVariant,
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-              ),
-
-              // --- Item Card ---
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(radius.md),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colors.shadow,
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
+        decoration: BoxDecoration(
+          color: colors.background.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(radius.xl),
+          boxShadow: [
+            BoxShadow(
+              color: colors.shadow,
+              blurRadius: 40,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius.xl),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Column(
+              children: [
+                // --- Header ---
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                   child: Row(
                     children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: colors.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(radius.xs),
-                          image: widget.listingImageUrl != null
-                              ? DecorationImage(
-                                  image: NetworkImage(widget.listingImageUrl!),
-                                  fit: BoxFit.cover,
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: colors.surfaceContainerHigh,
+                        backgroundImage:
+                            widget.otherUserAvatar != null &&
+                                    widget.otherUserAvatar!.trim().isNotEmpty
+                                ? NetworkImage(widget.otherUserAvatar!)
+                                : null,
+                        child:
+                            widget.otherUserAvatar == null ||
+                                    widget.otherUserAvatar!.trim().isEmpty
+                                ? Icon(
+                                  Icons.person,
+                                  color: colors.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  size: 28,
                                 )
-                              : null,
-                        ),
-                        child: widget.listingImageUrl == null
-                            ? const Icon(Icons.image, size: 16)
-                            : null,
+                                : null,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          widget.listingTitle,
-                          style: typo.labelLarge.copyWith(
-                            color: colors.onSurface,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.otherUserName,
+                              style: typo.titleMedium.copyWith(
+                                color: colors.onSurface,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 18,
+                              ),
+                            ),
+                            if (widget.otherUserEmail != null)
+                              Text(
+                                widget.otherUserEmail!,
+                                style: typo.bodySmall.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      Text(
-                        widget.priceLabel ?? '\$${widget.listingPrice.toStringAsFixed(0)}',
-                        style: typo.labelLarge.copyWith(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                        ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: colors.onSurfaceVariant),
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
 
-              // --- Chat Messages Area ---
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  color: colors.background.withValues(alpha: 0.3),
-                  child: messagesAsync.when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (err, _) => Center(child: Text('Error: $err')),
-                    data: (messages) {
-                      if (messages.isEmpty) {
-                        return const Center(child: Text('No messages yet'));
-                      }
-                      
-                      return ListView.builder(
-                        controller: _scrollController,
-                        reverse: true,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final msg = messages[messages.length - 1 - index];
-                          final isMine = msg.senderId == currentUserId;
-                          
-                          if (isMine) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: _buildRightBubble(
-                                msg,
-                                colors.chatBubbleSelf,
-                                colors.chatBubbleTextSelf,
-                                currentUserProfile?.avatarUrl,
-                              ),
+                // --- Item Card ---
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final room =
+                          ref
+                              .watch(chatRoomProvider(widget.chatRoomId))
+                              .valueOrNull;
+                      return GestureDetector(
+                        onTap: () {
+                          if (room == null) return;
+                          final order =
+                              ref
+                                  .read(
+                                    latestOrderByListingAndBuyerProvider(
+                                      listingId: room.listingId,
+                                      buyerId: room.buyerId,
+                                    ),
+                                  )
+                                  .valueOrNull;
+
+                          Navigator.of(context).pop(); // Close popup
+
+                          if (order != null && order.status != 'pending') {
+                            context.pushNamed(
+                              AppRoutes.orderDetail,
+                              pathParameters: {'id': order.id},
+                              extra: order,
                             );
                           } else {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: _buildLeftBubble(
-                                msg,
-                                msg.sender?.avatarUrl ?? widget.otherUserAvatar,
-                                colors.chatBubbleOther,
-                                colors.chatBubbleTextOther,
-                              ),
+                            context.pushNamed(
+                              AppRoutes.listingDetail,
+                              pathParameters: {'id': room.listingId},
                             );
                           }
                         },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(radius.md),
+                            boxShadow: [
+                              BoxShadow(
+                                color: colors.shadow,
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceContainerHigh,
+                                  borderRadius: BorderRadius.circular(
+                                    radius.xs,
+                                  ),
+                                  image:
+                                      widget.listingImageUrl != null
+                                          ? DecorationImage(
+                                            image: NetworkImage(
+                                              widget.listingImageUrl!,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                          : null,
+                                ),
+                                child:
+                                    widget.listingImageUrl == null
+                                        ? const Icon(Icons.image, size: 16)
+                                        : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  widget.listingTitle,
+                                  style: typo.labelLarge.copyWith(
+                                    color: colors.onSurface,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                widget.priceLabel ??
+                                    '\$${widget.listingPrice.toStringAsFixed(0)}',
+                                style: typo.labelLarge.copyWith(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     },
                   ),
                 ),
-              ),
+                const SizedBox(height: 16),
 
-              // --- Bottom Input Area ---
-              Container(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLowest,
+                // --- Chat Messages Area ---
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    color: colors.background.withValues(alpha: 0.3),
+                    child: messagesAsync.when(
+                      loading:
+                          () =>
+                              const Center(child: CircularProgressIndicator()),
+                      error: (err, _) => Center(child: Text('Error: $err')),
+                      data: (messages) {
+                        if (messages.isEmpty) {
+                          return const Center(child: Text('No messages yet'));
+                        }
+
+                        return ListView.builder(
+                          controller: _scrollController,
+                          reverse: true,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) {
+                            final msg = messages[messages.length - 1 - index];
+                            final isMine = msg.senderId == currentUserId;
+
+                            if (isMine) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: _buildRightBubble(
+                                  msg,
+                                  colors.chatBubbleSelf,
+                                  colors.chatBubbleTextSelf,
+                                  currentUserProfile?.avatarUrl,
+                                ),
+                              );
+                            } else {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: _buildLeftBubble(
+                                  msg,
+                                  msg.sender?.avatarUrl ??
+                                      widget.otherUserAvatar,
+                                  colors.chatBubbleOther,
+                                  colors.chatBubbleTextOther,
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ),
                 ),
-                child: Container(
-                  height: 52,
+
+                // --- Bottom Input Area ---
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                   decoration: BoxDecoration(
-                    color: colors.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(radius.md),
+                    color: colors.surfaceContainerLowest,
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _controller,
-                          onSubmitted: (_) => _sendMessage(),
-                          decoration: InputDecoration(
-                            hintText: 'Message ${widget.otherUserName}...',
-                            hintStyle: typo.bodyMedium.copyWith(
-                              color: colors.outlineVariant,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
+                  child: Container(
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: colors.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(radius.md),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            onSubmitted: (_) => _sendMessage(),
+                            decoration: InputDecoration(
+                              hintText: 'Message ${widget.otherUserName}...',
+                              hintStyle: typo.bodyMedium.copyWith(
+                                color: colors.outlineVariant,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: _sendMessage,
-                        child: Container(
-                          margin: const EdgeInsets.all(6),
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: colors.primary,
-                            borderRadius: BorderRadius.circular(radius.md),
-                          ),
-                          child: Icon(
-                            Icons.send_outlined,
-                            color: colors.onPrimary,
-                            size: 20,
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: _sendMessage,
+                          child: Container(
+                            margin: const EdgeInsets.all(6),
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: colors.primary,
+                              borderRadius: BorderRadius.circular(radius.md),
+                            ),
+                            child: Icon(
+                              Icons.send_outlined,
+                              color: colors.onPrimary,
+                              size: 20,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
   }
-
 
   Widget _buildLeftBubble(
     Message msg,
@@ -411,7 +471,10 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
           children: [
             Flexible(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: bgColor,
                   borderRadius: BorderRadius.only(
@@ -421,15 +484,16 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                     bottomLeft: Radius.circular(radius.xs),
                   ),
                 ),
-                child: msg.messageType == 'image' && msg.imageUrl != null
-                    ? _buildImageMessage(msg.imageUrl!)
-                    : Text(
-                        msg.content,
-                        style: typo.bodyMedium.copyWith(
-                          color: textColor,
-                          height: 1.4,
+                child:
+                    msg.messageType == 'image' && msg.imageUrl != null
+                        ? _buildImageMessage(msg.imageUrl!)
+                        : Text(
+                          msg.content,
+                          style: typo.bodyMedium.copyWith(
+                            color: textColor,
+                            height: 1.4,
+                          ),
                         ),
-                      ),
               ),
             ),
             const SizedBox(width: 48),
@@ -469,7 +533,10 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
             const SizedBox(width: 48),
             Flexible(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: bgColor,
                   borderRadius: BorderRadius.only(
@@ -479,15 +546,16 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                     bottomRight: Radius.circular(radius.xs),
                   ),
                 ),
-                child: msg.messageType == 'image' && msg.imageUrl != null
-                    ? _buildImageMessage(msg.imageUrl!)
-                    : Text(
-                        msg.content,
-                        style: typo.bodyMedium.copyWith(
-                          color: textColor,
-                          height: 1.4,
+                child:
+                    msg.messageType == 'image' && msg.imageUrl != null
+                        ? _buildImageMessage(msg.imageUrl!)
+                        : Text(
+                          msg.content,
+                          style: typo.bodyMedium.copyWith(
+                            color: textColor,
+                            height: 1.4,
+                          ),
                         ),
-                      ),
               ),
             ),
           ],
@@ -509,12 +577,9 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
   Widget _buildImageMessage(String url) {
     final radius = context.smivoRadius;
     final colors = context.smivoColors;
-    
+
     return Container(
-      constraints: const BoxConstraints(
-        maxWidth: 200,
-        maxHeight: 300,
-      ),
+      constraints: const BoxConstraints(maxWidth: 200, maxHeight: 300),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius.sm),
         child: Image.network(

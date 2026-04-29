@@ -64,35 +64,50 @@ class StatusResolver {
 
   static String _defaultLabel(String dictType, String key) {
     // Convert snake_case to Title Case
-    return key.split('_').map((w) =>
-      w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}'
-    ).join(' ');
+    return key
+        .split('_')
+        .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
   }
 
   static Color _defaultColor(String dictType, String key) {
     switch (dictType) {
       case 'order_status':
         switch (key) {
-          case 'pending': return const Color(0xFFD97706);
-          case 'confirmed': return const Color(0xFF059669);
-          case 'completed': return const Color(0xFF7C3AED);
-          case 'cancelled': return const Color(0xFFDC2626);
-          case 'missed': return const Color(0xFF6B7280);
+          case 'pending':
+            return const Color(0xFFD97706);
+          case 'confirmed':
+            return const Color(0xFF059669);
+          case 'completed':
+            return const Color(0xFF7C3AED);
+          case 'cancelled':
+            return const Color(0xFFDC2626);
+          case 'missed':
+            return const Color(0xFF6B7280);
         }
       case 'rental_status':
         switch (key) {
-          case 'active': return const Color(0xFF059669);
-          case 'return_requested': return const Color(0xFFD97706);
-          case 'returned': return const Color(0xFF0891B2);
-          case 'deposit_refunded': return const Color(0xFF7C3AED);
+          case 'active':
+            return const Color(0xFF059669);
+          case 'return_requested':
+            return const Color(0xFFD97706);
+          case 'returned':
+            return const Color(0xFF0891B2);
+          case 'deposit_refunded':
+            return const Color(0xFF7C3AED);
         }
       case 'listing_status':
         switch (key) {
-          case 'active': return const Color(0xFF059669);
-          case 'reserved': return const Color(0xFFD97706);
-          case 'sold': return const Color(0xFF6B7280);
-          case 'rented': return const Color(0xFF0891B2);
-          case 'delisted': return const Color(0xFFDC2626);
+          case 'active':
+            return const Color(0xFF059669);
+          case 'reserved':
+            return const Color(0xFFD97706);
+          case 'sold':
+            return const Color(0xFF6B7280);
+          case 'rented':
+            return const Color(0xFF0891B2);
+          case 'delisted':
+            return const Color(0xFFDC2626);
         }
     }
     return const Color(0xFF6B7280);

@@ -6,10 +6,7 @@ import 'package:smivo/data/models/content_report.dart';
 class FlippableReportCard extends StatefulWidget {
   final ContentReport report;
 
-  const FlippableReportCard({
-    super.key,
-    required this.report,
-  });
+  const FlippableReportCard({super.key, required this.report});
 
   @override
   State<FlippableReportCard> createState() => _FlippableReportCardState();
@@ -28,9 +25,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _animation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -55,9 +53,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
       child: AnimatedBuilder(
         animation: _animation,
         builder: (context, child) {
-          final transform = Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..rotateY(_animation.value * pi);
+          final transform =
+              Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(_animation.value * pi);
 
           final isFrontFacing = _animation.value < 0.5;
 
@@ -77,11 +76,13 @@ class _FlippableReportCardState extends State<FlippableReportCard>
     final radius = context.smivoRadius;
 
     final isListingReport = widget.report.listingId != null;
-    final targetName = isListingReport
-        ? (widget.report.listing?.title ?? 'Unknown Listing')
-        : (widget.report.reportedUser?.displayName ?? 'Unknown User');
+    final targetName =
+        isListingReport
+            ? (widget.report.listing?.title ?? 'Unknown Listing')
+            : (widget.report.reportedUser?.displayName ?? 'Unknown User');
 
-    final displayStatus = widget.report.status.substring(0, 1).toUpperCase() +
+    final displayStatus =
+        widget.report.status.substring(0, 1).toUpperCase() +
         widget.report.status.substring(1);
 
     return Container(
@@ -114,25 +115,32 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                     Expanded(
                       child: Text(
                         targetName,
-                        style: typo.titleMedium.copyWith(color: colors.onSurface),
+                        style: typo.titleMedium.copyWith(
+                          color: colors.onSurface,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: widget.report.status == 'pending'
-                            ? colors.errorContainer
-                            : colors.secondaryContainer,
+                        color:
+                            widget.report.status == 'pending'
+                                ? colors.errorContainer
+                                : colors.secondaryContainer,
                         borderRadius: BorderRadius.circular(radius.sm),
                       ),
                       child: Text(
                         displayStatus,
                         style: typo.labelSmall.copyWith(
-                          color: widget.report.status == 'pending'
-                              ? colors.error
-                              : colors.onSecondaryContainer,
+                          color:
+                              widget.report.status == 'pending'
+                                  ? colors.error
+                                  : colors.onSecondaryContainer,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -142,7 +150,9 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                 const SizedBox(height: 8),
                 Text(
                   'Reason: ${widget.report.reason}',
-                  style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+                  style: typo.bodyMedium.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -176,9 +186,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
     final isListingReport = widget.report.listingId != null;
 
     if (isListingReport) {
-      final imageUrl = widget.report.listing?.images.isNotEmpty == true
-          ? widget.report.listing!.images.first.imageUrl
-          : null;
+      final imageUrl =
+          widget.report.listing?.images.isNotEmpty == true
+              ? widget.report.listing!.images.first.imageUrl
+              : null;
       return Container(
         width: 50,
         height: 50,
@@ -187,9 +198,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
           borderRadius: BorderRadius.circular(context.smivoRadius.sm),
         ),
         clipBehavior: Clip.antiAlias,
-        child: imageUrl != null
-            ? Image.network(imageUrl, fit: BoxFit.cover)
-            : Icon(Icons.storefront, color: colors.onSurfaceVariant),
+        child:
+            imageUrl != null
+                ? Image.network(imageUrl, fit: BoxFit.cover)
+                : Icon(Icons.storefront, color: colors.onSurfaceVariant),
       );
     } else {
       final avatarUrl = widget.report.reportedUser?.avatarUrl;
@@ -197,9 +209,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
         radius: 25,
         backgroundColor: colors.surfaceContainer,
         backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-        child: avatarUrl == null
-            ? Icon(Icons.person, color: colors.onSurfaceVariant)
-            : null,
+        child:
+            avatarUrl == null
+                ? Icon(Icons.person, color: colors.onSurfaceVariant)
+                : null,
       );
     }
   }
@@ -221,7 +234,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
         decoration: BoxDecoration(
           color: colors.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(radius.lg),
-          border: Border.all(color: colors.primary.withValues(alpha: 0.5), width: 1.5),
+          border: Border.all(
+            color: colors.primary.withValues(alpha: 0.5),
+            width: 1.5,
+          ),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(

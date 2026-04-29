@@ -71,9 +71,17 @@ List<SchoolCategory> _fallbackCategories() {
 List<SchoolCondition> _fallbackConditions() {
   const fallback = [
     {'slug': 'new', 'name': 'New', 'desc': 'Brand new, never used'},
-    {'slug': 'like_new', 'name': 'Like New', 'desc': 'Barely used, excellent condition'},
+    {
+      'slug': 'like_new',
+      'name': 'Like New',
+      'desc': 'Barely used, excellent condition',
+    },
     {'slug': 'good', 'name': 'Good', 'desc': 'Normal wear and tear'},
-    {'slug': 'fair', 'name': 'Fair', 'desc': 'Visible wear but fully functional'},
+    {
+      'slug': 'fair',
+      'name': 'Fair',
+      'desc': 'Visible wear but fully functional',
+    },
     {'slug': 'poor', 'name': 'Poor', 'desc': 'Heavy wear, may need repair'},
   ];
   return fallback.asMap().entries.map((e) {

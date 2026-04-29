@@ -49,11 +49,12 @@ class FaqRepository {
 
   Future<Faq> createFaq(Faq faq) async {
     try {
-      final response = await _client
-          .from('faqs')
-          .insert(faq.toJson()..remove('id')) // DB auto-generates uuid
-          .select()
-          .single();
+      final response =
+          await _client
+              .from('faqs')
+              .insert(faq.toJson()..remove('id')) // DB auto-generates uuid
+              .select()
+              .single();
       return Faq.fromJson(response);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message);
@@ -64,18 +65,19 @@ class FaqRepository {
 
   Future<Faq> updateFaq(Faq faq) async {
     try {
-      final response = await _client
-          .from('faqs')
-          .update({
-            'category': faq.category,
-            'question': faq.question,
-            'answer': faq.answer,
-            'display_order': faq.displayOrder,
-            'updated_at': DateTime.now().toIso8601String(),
-          })
-          .eq('id', faq.id)
-          .select()
-          .single();
+      final response =
+          await _client
+              .from('faqs')
+              .update({
+                'category': faq.category,
+                'question': faq.question,
+                'answer': faq.answer,
+                'display_order': faq.displayOrder,
+                'updated_at': DateTime.now().toIso8601String(),
+              })
+              .eq('id', faq.id)
+              .select()
+              .single();
       return Faq.fromJson(response);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message);

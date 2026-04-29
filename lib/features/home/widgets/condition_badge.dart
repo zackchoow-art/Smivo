@@ -24,10 +24,7 @@ String _conditionLabel(String condition) {
 }
 
 class ConditionBadge extends StatelessWidget {
-  const ConditionBadge({
-    super.key,
-    required this.condition,
-  });
+  const ConditionBadge({super.key, required this.condition});
 
   final String condition;
 
@@ -37,10 +34,7 @@ class ConditionBadge extends StatelessWidget {
     final typo = context.smivoTypo;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         // NOTE: Uses IKEA yellow (secondaryContainer) as the badge
         // background to match the IKEA design language.

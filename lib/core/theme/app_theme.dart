@@ -98,9 +98,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(radius.input),
           borderSide: BorderSide(color: colors.error),
         ),
-        hintStyle: typo.bodyMedium.copyWith(
-          color: colors.onSurfaceVariant,
-        ),
+        hintStyle: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
       ),
 
       // ── Card ─────────────────────────────────────────────
@@ -109,17 +107,16 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius.card),
-          side: colors.useDividers
-              ? BorderSide(color: colors.outlineVariant)
-              : BorderSide.none,
+          side:
+              colors.useDividers
+                  ? BorderSide(color: colors.outlineVariant)
+                  : BorderSide.none,
         ),
       ),
 
       // ── Divider ──────────────────────────────────────────
       dividerTheme: DividerThemeData(
-        color: colors.useDividers
-            ? colors.dividerColor
-            : Colors.transparent,
+        color: colors.useDividers ? colors.dividerColor : Colors.transparent,
         thickness: colors.useDividers ? 1 : 0,
         space: colors.useDividers ? 1 : 0,
       ),
