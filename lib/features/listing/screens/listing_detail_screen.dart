@@ -21,6 +21,7 @@ import 'package:smivo/data/repositories/order_repository.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/shared/providers/school_data_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:smivo/core/providers/moderation_provider.dart';
 
@@ -1086,13 +1087,39 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   ),
                 ),
               ),
-              // Floating save button and more menu — hidden for own listings
-              if (!isOwnListing)
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 8,
-                  right: 12,
-                  child: Row(
-                    children: [
+              // Floating top-right actions (Share, Save, More)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 12,
+                child: Row(
+                  children: [
+                    // Share Button (Always visible)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colors.surfaceContainerLowest.withValues(
+                          alpha: 0.9,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.shadow,
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.ios_share, color: colors.onSurface),
+                        onPressed: () {
+                          final shareText = isSale
+                              ? 'Check out ${listing.title} for \$${listing.price.toStringAsFixed(0)} on Smivo!\n\nhttps://smivo.io/listing/${listing.id}'
+                              : 'Check out ${listing.title} on Smivo!\n\nhttps://smivo.io/listing/${listing.id}';
+                          Share.share(shareText);
+                        },
+                      ),
+                    ),
+                    if (!isOwnListing) ...[
+                      const SizedBox(width: 8),
                       Consumer(
                         builder: (context, ref, _) {
                           final isSavedAsync = ref.watch(
@@ -1309,9 +1336,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                               ],
                         ),
                       ),
-                    ],
-                  ),
+                    ], // end if (!isOwnListing)
+                  ], // end Row children
                 ),
+              ),
             ],
           );
         },
