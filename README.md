@@ -1,16 +1,48 @@
-# smivo
+# Smivo — Campus Marketplace
 
-A new Flutter project.
+A trusted campus marketplace for college students to buy, sell, and rent used items.
+
+## Repository Structure
+
+```
+smivo/
+├── app/           Flutter mobile + web app (iOS, Android, Web)
+├── admin/         React admin dashboard (Vite + TypeScript)
+├── website/       Static landing page & policies (smivo.io)
+├── supabase/      Database migrations, Edge Functions, scripts
+└── docs/          Internal documentation & assets
+```
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Mobile / Web App (Flutter)
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+cd app
+flutter pub get
+flutter run          # iOS/Android/Chrome
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Admin Dashboard (React)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd admin
+npm install
+npm run dev          # http://localhost:5173
+```
+
+## Deployment
+
+| Target           | Source      | Platform       |
+|------------------|-------------|----------------|
+| smivo.io         | `website/`  | Vercel         |
+| admin.smivo.io   | `admin/`    | Vercel         |
+| App Store        | `app/`      | Xcode → Apple  |
+| Google Play      | `app/`      | Gradle → Google|
+
+## Tech Stack
+
+- **App**: Flutter 3.x + Riverpod + Supabase
+- **Admin**: React + TypeScript + Vite + Supabase JS
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Realtime, Edge Functions)
+- **Hosting**: Vercel (website + admin)
