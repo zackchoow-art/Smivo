@@ -73,12 +73,42 @@ class ModerationRepository {
     }
   }
 
+  /// Checks if a user has already reported a specific target.
+  Future<bool> hasAlreadyReported({
+    required String reporterId,
+    required String reportedUserId,
+    String? listingId,
+    String? chatRoomId,
+  }) async {
+    try {
+      var query = _client
+          .from('content_reports')
+          .select('id')
+          .eq('reporter_id', reporterId)
+          .eq('reported_user_id', reportedUserId);
+
+      if (listingId != null) {
+        query = query.eq('listing_id', listingId);
+      } else if (chatRoomId != null) {
+        query = query.eq('chat_room_id', chatRoomId);
+      } else {
+        query = query.filter('listing_id', 'is', null).filter('chat_room_id', 'is', null);
+      }
+
+      final data = await query.maybeSingle();
+      return data != null;
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Reports objectionable content (user, listing, or chat).
   Future<void> reportContent({
     required String reporterId,
     required String reportedUserId,
     String? listingId,
     String? chatRoomId,
+    String? reasonCategory,
     required String reason,
   }) async {
     try {
@@ -87,9 +117,13 @@ class ModerationRepository {
         'reported_user_id': reportedUserId,
         'listing_id': listingId,
         'chat_room_id': chatRoomId,
+        if (reasonCategory != null) 'reason_category': reasonCategory,
         'reason': reason,
       });
     } on PostgrestException catch (e) {
+      if (e.code == '23505') {
+        throw const DatabaseException('You have already reported this content.', null);
+      }
       throw DatabaseException(e.message, e);
     }
   }

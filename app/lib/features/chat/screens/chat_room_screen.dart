@@ -11,6 +11,8 @@ import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/data/models/message.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
+import 'package:smivo/data/repositories/moderation_repository.dart';
+import 'package:smivo/shared/widgets/report_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
@@ -216,71 +218,62 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 onSelected: (value) async {
                   if (value == 'report') {
-                    final reasonController = TextEditingController();
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (ctx) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                context.smivoRadius.xl,
-                              ),
-                            ),
-                            title: const Text('Report User'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Please describe why this user is objectionable:',
-                                ),
-                                const SizedBox(height: 12),
-                                TextField(
-                                  controller: reasonController,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        context.smivoRadius.input,
-                                      ),
-                                    ),
-                                    hintText: 'Reason...',
-                                  ),
-                                  maxLines: 3,
-                                ),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text(
-                                  'Submit',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
-                          ),
-                    );
-                    if (confirm == true &&
-                        context.mounted &&
-                        reasonController.text.isNotEmpty) {
-                      await ref
-                          .read(moderationActionsProvider.notifier)
-                          .reportContent(
-                            reportedUserId: otherUser.id,
-                            chatRoomId: room.id,
-                            reason: reasonController.text,
+                    // Check if already reported
+                    try {
+                      final repo = ref.read(moderationRepositoryProvider);
+                      final hasReported = await repo.hasAlreadyReported(
+                        reporterId: currentUserId!,
+                        reportedUserId: otherUser.id,
+                        chatRoomId: room.id,
+                      );
+                      
+                      if (hasReported) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('You have already reported this chat.')),
                           );
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Report submitted successfully.'),
-                          ),
-                        );
+                        }
+                        return;
                       }
+                    } catch (e) {
+                      // Ignore error and proceed to dialog
                     }
+
+                    if (!context.mounted) return;
+
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => ReportDialog(
+                        title: 'Report Chat',
+                        onSubmit: (category, reason) async {
+                          try {
+                            await ref
+                                .read(moderationActionsProvider.notifier)
+                                .reportContent(
+                                  reportedUserId: otherUser.id,
+                                  chatRoomId: room.id,
+                                  reasonCategory: category,
+                                  reason: reason,
+                                );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Report submitted successfully.'),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(e.toString().replaceAll('Exception: ', '')),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    );
                   } else if (value == 'block') {
                     final confirm = await showDialog<bool>(
                       context: context,

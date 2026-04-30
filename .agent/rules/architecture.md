@@ -315,9 +315,13 @@ Rental status field (rental_status) is NULL for sale orders.
 
 - All migrations stored in supabase/migrations/
 - Naming: 00NNN_description.sql (sequential numbering)
-- Current range: 00001–00046
-- SQL must be executed manually in Supabase Dashboard or via `supabase db push`
-- Agent creates .sql files; user is responsible for execution
+- Current range: 00001–00047
+- **Migration Runner Script**: Use `supabase/scripts/run_migration.sh` to execute
+  migrations directly against the production database. The script reads
+  `DATABASE_URL` from `.env.db` at repo root, shows a preview, and asks
+  for confirmation before executing.
+- Agents SHOULD execute migrations using the runner script after creating
+  SQL files — do not ask the user to manually run SQL.
 - Migrations may affect both app/ and admin/ — review both before applying
 
 ## Development Commands
@@ -339,3 +343,18 @@ npm install
 npm run dev                 # http://localhost:5173
 npm run build               # Production build (Vercel handles this)
 ```
+
+### Database Migrations
+```bash
+# Execute a migration by file path
+./supabase/scripts/run_migration.sh supabase/migrations/00047_order_placed_listing_id.sql
+
+# Execute a migration by number prefix (auto-finds the file)
+./supabase/scripts/run_migration.sh 00047
+
+# List all available migrations
+./supabase/scripts/run_migration.sh
+```
+The script connects to the production Supabase database via `psql`
+using the `DATABASE_URL` from `.env.db`. It displays a preview of the
+SQL content and requires confirmation (y/N) before executing.

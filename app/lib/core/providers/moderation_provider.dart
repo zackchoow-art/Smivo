@@ -73,6 +73,7 @@ class ModerationActions extends _$ModerationActions {
     required String reportedUserId,
     String? listingId,
     String? chatRoomId,
+    String? reasonCategory,
     required String reason,
   }) async {
     final user = ref.read(authStateProvider).valueOrNull;
@@ -81,11 +82,24 @@ class ModerationActions extends _$ModerationActions {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(moderationRepositoryProvider);
+      
+      final hasReported = await repo.hasAlreadyReported(
+        reporterId: user.id,
+        reportedUserId: reportedUserId,
+        listingId: listingId,
+        chatRoomId: chatRoomId,
+      );
+
+      if (hasReported) {
+        throw Exception('You have already reported this content.');
+      }
+
       await repo.reportContent(
         reporterId: user.id,
         reportedUserId: reportedUserId,
         listingId: listingId,
         chatRoomId: chatRoomId,
+        reasonCategory: reasonCategory,
         reason: reason,
       );
     });

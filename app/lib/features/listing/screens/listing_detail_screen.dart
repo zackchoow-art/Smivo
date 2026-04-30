@@ -24,7 +24,8 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:smivo/core/providers/moderation_provider.dart';
-
+import 'package:smivo/data/repositories/moderation_repository.dart';
+import 'package:smivo/shared/widgets/report_dialog.dart';
 /// Resolves a condition slug to a display label.
 /// Accepts an optional conditions list from DB for dynamic lookup.
 String _conditionLabel(String condition, [List? conditions]) {
@@ -1192,76 +1193,64 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                             }
 
                             if (value == 'report') {
-                              final reasonController = TextEditingController();
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder:
-                                    (ctx) => AlertDialog(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          radius.xl,
-                                        ),
-                                      ),
-                                      title: const Text('Report Listing'),
-                                      content: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Text(
-                                            'Please describe why this listing is objectionable:',
-                                          ),
-                                          const SizedBox(height: 12),
-                                          TextField(
-                                            controller: reasonController,
-                                            decoration: InputDecoration(
-                                              border: OutlineInputBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      radius.input,
-                                                    ),
-                                              ),
-                                              hintText: 'Reason...',
-                                            ),
-                                            maxLines: 3,
-                                          ),
-                                        ],
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed:
-                                              () => Navigator.pop(ctx, false),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          onPressed:
-                                              () => Navigator.pop(ctx, true),
-                                          child: const Text(
-                                            'Submit',
-                                            style: TextStyle(color: Colors.red),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                              );
-                              if (confirm == true &&
-                                  context.mounted &&
-                                  reasonController.text.isNotEmpty) {
-                                await ref
-                                    .read(moderationActionsProvider.notifier)
-                                    .reportContent(
-                                      reportedUserId: listing.sellerId,
-                                      listingId: listing.id,
-                                      reason: reasonController.text,
+                              final currentUserId = user.id;
+                              
+                              // Check if already reported
+                              try {
+                                final repo = ref.read(moderationRepositoryProvider);
+                                final hasReported = await repo.hasAlreadyReported(
+                                  reporterId: currentUserId,
+                                  reportedUserId: listing.sellerId,
+                                  listingId: listing.id,
+                                );
+                                
+                                if (hasReported) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('You have already reported this listing.')),
                                     );
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Report submitted successfully.',
-                                      ),
-                                    ),
-                                  );
+                                  }
+                                  return;
                                 }
+                              } catch (e) {
+                                // Ignore error and proceed to dialog
                               }
+
+                              if (!context.mounted) return;
+
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => ReportDialog(
+                                  title: 'Report Listing',
+                                  onSubmit: (category, reason) async {
+                                    try {
+                                      await ref
+                                          .read(moderationActionsProvider.notifier)
+                                          .reportContent(
+                                            reportedUserId: listing.sellerId,
+                                            listingId: listing.id,
+                                            reasonCategory: category,
+                                            reason: reason,
+                                          );
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Report submitted successfully.'),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(e.toString().replaceAll('Exception: ', '')),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              );
                             } else if (value == 'block') {
                               final confirm = await showDialog<bool>(
                                 context: context,
