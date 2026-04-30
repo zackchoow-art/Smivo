@@ -1,0 +1,150 @@
+/**
+ * Admin Web application-level constants.
+ * Mirrors database table names and API paths defined in 04_ADMIN_WEB_SPEC.md §24.
+ */
+
+// ── Database Table Names ──
+export const TABLES = {
+  // Core multi-tenant
+  // NOTE: In the DB this table is called 'schools', not 'colleges'
+  COLLEGES: 'schools',
+  ADMIN_USERS: 'admin_users',
+  ADMIN_SCHOOL_SCOPES: 'admin_school_scopes',
+
+  // Business tables
+  USER_PROFILES: 'user_profiles',
+  LISTINGS: 'listings',
+  LISTING_IMAGES: 'listing_images',
+  ORDERS: 'orders',
+  CHAT_ROOMS: 'chat_rooms',
+  MESSAGES: 'messages',
+
+  // Admin infrastructure
+  ADMIN_AUDIT_LOGS: 'admin_audit_logs',
+  SYSTEM_SETTINGS: 'system_settings',
+  // NOTE: Uses system_dictionaries from migration 00038
+  SYSTEM_DICTIONARIES: 'system_dictionaries',
+  SENSITIVE_WORDS: 'sensitive_words',
+
+  // Moderation
+  MODERATION_DRAFTS: 'moderation_drafts',
+  LISTING_MODERATION_NOTICES: 'listing_moderation_notices',
+
+  // User governance
+  USER_BANS: 'user_bans',
+  // NOTE: Uses content_reports from migration 00044
+  CONTENT_REPORTS: 'content_reports',
+
+  // Feedback & contribution
+  USER_FEEDBACKS: 'user_feedbacks',
+  CONTRIBUTION_LEDGER: 'contribution_ledger',
+  // NOTE: user_badges not yet created — future migration
+
+  // Push
+  PUSH_JOBS: 'push_jobs',
+  PUSH_TEMPLATES: 'push_templates',
+
+  // Presence
+  USER_HEARTBEATS: 'user_heartbeats',
+  HOURLY_ACTIVE_USERS: 'hourly_active_users',
+} as const;
+
+// ── Admin Roles ──
+export const ADMIN_ROLES = {
+  PLATFORM_SUPER_ADMIN: 'platform_super_admin',
+  PLATFORM_MODERATOR: 'platform_moderator',
+  SCHOOL_ADMIN: 'school_admin',
+} as const;
+
+// ── Moderation Statuses ──
+export const MODERATION_STATUS = {
+  PENDING_REVIEW: 'pending_review',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  AUTO_APPROVED: 'auto_approved',
+  TAKEN_DOWN: 'taken_down',
+} as const;
+
+// ── Moderation Priorities ──
+export const MODERATION_PRIORITY = {
+  URGENT: 'urgent',     // 4h SLA
+  NORMAL: 'normal',     // 24h SLA
+  LOW: 'low',           // 72h SLA
+} as const;
+
+// ── Draft Decisions ──
+export const DRAFT_DECISIONS = {
+  APPROVE: 'approve',
+  REJECT: 'reject',
+  TAKEDOWN: 'takedown',
+  WARN: 'warn',
+  BAN: 'ban',
+} as const;
+
+// ── Feedback Judgments ──
+export const FEEDBACK_JUDGMENTS = {
+  CONFIRMED_BUG: 'confirmed_bug',
+  VALID_SUGGESTION: 'valid_suggestion',
+  DUPLICATE: 'duplicate',
+  INVALID: 'invalid',
+  ACCEPTED_IMPLEMENTED: 'accepted_implemented',
+} as const;
+
+// ── Contribution Points per Judgment ──
+export const CONTRIBUTION_POINTS: Record<string, number> = {
+  confirmed_bug: 10,
+  valid_suggestion: 5,
+  duplicate: 1,
+  invalid: 0,
+  accepted_implemented: 30,
+} as const;
+
+// ── Ban Types ──
+export const BAN_TYPES = {
+  TEMPORARY: 'temporary',
+  PERMANENT: 'permanent',
+} as const;
+
+// ── Push Job Statuses ──
+export const PUSH_STATUS = {
+  DRAFT: 'draft',
+  SCHEDULED: 'scheduled',
+  SENDING: 'sending',
+  SENT: 'sent',
+  FAILED: 'failed',
+  CANCELLED: 'cancelled',
+} as const;
+
+// ── Report Reasons ──
+export const REPORT_REASONS = {
+  SPAM: 'spam',
+  HARASSMENT: 'harassment',
+  SCAM: 'scam',
+  NSFW: 'nsfw',
+  OTHER: 'other',
+} as const;
+
+// ── Sensitive Word Severities ──
+export const SENSITIVE_SEVERITY = {
+  BLOCK: 'block',
+  REVIEW: 'review',
+  MASK: 'mask',
+} as const;
+
+// ── Pagination ──
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;
+
+// ── SLA Durations (hours) ──
+export const SLA_HOURS: Record<string, number> = {
+  urgent: 4,
+  normal: 24,
+  low: 72,
+} as const;
+
+// ── LocalStorage Keys ──
+export const LS_KEYS = {
+  LAST_SCHOOL: 'smivo_admin_last_school',
+  SIDEBAR_COLLAPSED: 'smivo_admin_sidebar_collapsed',
+  DARK_MODE: 'smivo_admin_dark_mode',
+} as const;
