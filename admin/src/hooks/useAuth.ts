@@ -64,6 +64,7 @@ export function useAuth() {
       }
 
       setInitialized(true);
+      setLoading(false);
     };
 
     initAuth();
@@ -93,11 +94,13 @@ export function useAuth() {
     if (data.user) {
       const isAdmin = await checkAdminStatus(data.user.id);
       if (!isAdmin) {
+        setLoading(false);
         await supabase.auth.signOut();
         throw new Error('您没有 Admin 后台访问权限');
       }
     }
 
+    setLoading(false);
     return data;
   }, [setLoading, checkAdminStatus]);
 
