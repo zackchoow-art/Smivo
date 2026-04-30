@@ -23,6 +23,8 @@ import 'package:smivo/features/settings/screens/settings_screen.dart';
 import 'package:smivo/features/settings/screens/system_settings_screen.dart';
 import 'package:smivo/features/settings/screens/blocked_users_screen.dart';
 import 'package:smivo/features/settings/screens/reported_content_screen.dart';
+import 'package:smivo/features/settings/screens/submit_feedback_screen.dart';
+import 'package:smivo/features/settings/screens/my_contributions_screen.dart';
 import 'package:smivo/features/seller/screens/seller_center_screen.dart';
 import 'package:smivo/features/seller/screens/transaction_management_screen.dart';
 import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
@@ -342,6 +344,17 @@ GoRouter router(Ref ref) {
             builder: (context, state) => const ReportedContentScreen(),
           ),
         ],
+      ),
+
+      GoRoute(
+        name: AppRoutes.submitFeedback,
+        path: AppRoutes.submitFeedbackPath,
+        builder: (context, state) => const SubmitFeedbackScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.myContributions,
+        path: AppRoutes.myContributionsPath,
+        builder: (context, state) => const MyContributionsScreen(),
       ),
 
       // ── Admin Login ──────────────────────────────────────────

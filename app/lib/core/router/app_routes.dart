@@ -32,6 +32,11 @@ class AppRoutes {
   static const String buyerCenter = 'buyerCenter';
   static const String transactionManagement = 'transactionManagement';
   static const String notificationCenter = 'notificationCenter';
+  
+  static const String submitFeedback = 'submitFeedback';
+  static const String submitFeedbackPath = '/feedback/submit';
+  static const String myContributions = 'myContributions';
+  static const String myContributionsPath = '/contributions';
   static const String savedListings = 'savedListings';
 
   // ── Route Paths ────────────────────────────────────────────

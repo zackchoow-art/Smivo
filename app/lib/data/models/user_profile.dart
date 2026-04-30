@@ -59,6 +59,11 @@ abstract class UserProfile with _$UserProfile {
     @JsonKey(name: 'buyer_rating_count') @Default(0) int buyerRatingCount,
     @JsonKey(name: 'seller_rating') @Default(0.0) double sellerRating,
     @JsonKey(name: 'seller_rating_count') @Default(0) int sellerRatingCount,
+
+    // -- Community Contribution --
+    @JsonKey(name: 'contribution_score') @Default(0) int contributionScore,
+    @JsonKey(name: 'contribution_level') @Default(1) int contributionLevel,
+    @JsonKey(name: 'last_active_at') DateTime? lastActiveAt,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>
