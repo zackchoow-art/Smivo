@@ -43,6 +43,12 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
   buyerRatingCount: (json['buyer_rating_count'] as num?)?.toInt() ?? 0,
   sellerRating: (json['seller_rating'] as num?)?.toDouble() ?? 0.0,
   sellerRatingCount: (json['seller_rating_count'] as num?)?.toInt() ?? 0,
+  contributionScore: (json['contribution_score'] as num?)?.toInt() ?? 0,
+  contributionLevel: (json['contribution_level'] as num?)?.toInt() ?? 1,
+  lastActiveAt:
+      json['last_active_at'] == null
+          ? null
+          : DateTime.parse(json['last_active_at'] as String),
 );
 
 Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
@@ -72,4 +78,7 @@ Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
       'buyer_rating_count': instance.buyerRatingCount,
       'seller_rating': instance.sellerRating,
       'seller_rating_count': instance.sellerRatingCount,
+      'contribution_score': instance.contributionScore,
+      'contribution_level': instance.contributionLevel,
+      'last_active_at': instance.lastActiveAt?.toIso8601String(),
     };

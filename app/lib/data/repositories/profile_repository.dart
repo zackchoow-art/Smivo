@@ -236,6 +236,33 @@ class ProfileRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  /// Upserts heartbeat for online status tracking.
+  /// Uses ON CONFLICT to keep the table at one row per user.
+  Future<void> sendHeartbeat({
+    required String userId,
+    String? appVersion,
+    String? platform,
+  }) async {
+    await _client.from('user_heartbeats').upsert({
+      'user_id': userId,
+      'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+      'app_version': appVersion,
+      'platform': platform,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, onConflict: 'user_id');
+  }
+
+  /// Fetches last_active_at for a specific user.
+  Future<DateTime?> getLastActiveAt(String userId) async {
+    final data = await _client
+        .from('user_heartbeats')
+        .select('last_seen_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (data == null) return null;
+    return DateTime.tryParse(data['last_seen_at'] as String);
+  }
 }
 
 @riverpod

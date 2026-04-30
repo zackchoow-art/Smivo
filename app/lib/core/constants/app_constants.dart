@@ -20,6 +20,7 @@ class AppConstants {
   static const String tableMessages = 'messages';
   static const String tableOrderEvidence = 'order_evidence';
   static const String tableListingViews = 'listing_views';
+  static const String tableUserHeartbeats = 'user_heartbeats';
 
   // ── Storage Bucket Names ───────────────────────────────────
   static const String bucketListingImages = 'listing-images';

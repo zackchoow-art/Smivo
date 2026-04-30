@@ -13,12 +13,16 @@ import 'package:smivo/features/home/widgets/home_search_bar.dart';
 import 'package:smivo/features/home/widgets/ikea_featured_listing_card.dart';
 import 'package:smivo/features/home/widgets/ikea_grid_listing_card.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/core/providers/heartbeat_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize heartbeat manager (only active when user is logged in)
+    ref.watch(heartbeatManagerProvider);
+    
     final listingsAsync = ref.watch(homeListingsProvider);
     final themeVariant = ref.watch(themeNotifierProvider);
     final colors = context.smivoColors;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/user_profile.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
+import 'package:smivo/shared/widgets/last_active_badge.dart';
 
 class SellerProfileCard extends StatelessWidget {
   const SellerProfileCard({
@@ -49,6 +50,8 @@ class SellerProfileCard extends StatelessWidget {
                   email,
                   style: typo.bodySmall.copyWith(color: colors.outlineVariant),
                 ),
+                const SizedBox(height: 4),
+                LastActiveBadge(lastActiveAt: user.lastActiveAt),
                 const SizedBox(height: 4),
                 UserRatingBadge(user: user, role: 'seller'),
               ],
