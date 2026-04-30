@@ -11,6 +11,7 @@ import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/data/repositories/storage_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
+import 'package:smivo/core/providers/content_filter_provider.dart';
 
 part 'chat_provider.g.dart';
 
@@ -175,6 +176,17 @@ class ChatMessages extends _$ChatMessages {
     if (content.trim().isEmpty) return;
 
     final repository = ref.read(chatRepositoryProvider);
+
+    // Content filter — block message if local sensitive words detected
+    final filter = ref.read(sensitiveWordsProvider).valueOrNull;
+    if (filter != null) {
+      final result = filter.check(content);
+      if (!result.passed) {
+        throw Exception(
+          'Your message contains restricted content: ${result.matchedWords.join(", ")}',
+        );
+      }
+    }
 
     // The realtime listener will receive the message and update state.
     await repository.sendMessage(

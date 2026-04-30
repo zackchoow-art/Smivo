@@ -6,6 +6,7 @@ import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
+import 'package:smivo/core/providers/content_filter_provider.dart';
 
 part 'create_listing_provider.g.dart';
 
@@ -130,6 +131,23 @@ class CreateListingAction extends _$CreateListingAction {
         // deposit is required for rentals but 0 is acceptable (no deposit)
         if (depositAmount == null || depositAmount < 0) {
           throw ArgumentError('Deposit must be a valid number (0 or greater)');
+        }
+      }
+
+      // Content filter — block submission if local sensitive words detected
+      final filter = ref.read(sensitiveWordsProvider).valueOrNull;
+      if (filter != null) {
+        final titleResult = filter.check(title);
+        final descResult = filter.check(description);
+        if (!titleResult.passed || !descResult.passed) {
+          final allMatched = {
+            ...titleResult.matchedWords,
+            ...descResult.matchedWords,
+          };
+          throw ArgumentError(
+            'Your listing contains restricted content and cannot be posted. '
+            'Please revise the following: ${allMatched.join(", ")}',
+          );
         }
       }
 
