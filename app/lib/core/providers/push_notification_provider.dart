@@ -58,10 +58,12 @@ class PushNotificationManager extends _$PushNotificationManager {
 
     final router = ref.read(routerProvider);
 
-    if (type != null && type.startsWith('order_') && orderId != null) {
-      router.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': orderId});
-    } else if (actionUrl != null) {
+    // order_placed has a special route: Transaction Management Offers tab
+    // Other order notifications still go to order detail
+    if (actionUrl != null && actionUrl.isNotEmpty) {
       router.push(actionUrl);
+    } else if (type != null && type.startsWith('order_') && orderId != null) {
+      router.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': orderId});
     }
   }
 
