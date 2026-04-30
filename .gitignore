@@ -50,6 +50,10 @@ app/android/captures/
 app/android/local.properties
 app/android/**/GeneratedPluginRegistrant.java
 
+# ─── Root-level remnants (pre-monorepo) ────────────────
+.dart_tool/
+ios/
+
 # ─── Misc ──────────────────────────────────────────────
 .env.db
 db.sh

@@ -17,25 +17,50 @@ independent of any single school.
 Initial launch: Smith College.
 Expansion model: one school = one isolated community zone.
 
+## Repository Structure
+
+Smivo is organized as a **monorepo** with four sub-projects:
+
+| Directory    | Purpose                          | Tech Stack              |
+|-------------|----------------------------------|-------------------------|
+| `app/`      | Mobile + Web client              | Flutter + Riverpod      |
+| `admin/`    | Admin dashboard (admin.smivo.io) | React + Vite + TypeScript |
+| `website/`  | Landing page (smivo.io)          | Static HTML             |
+| `supabase/` | Shared backend infrastructure    | PostgreSQL + Edge Functions |
+
 ## Target Users
 
 - College students (sellers and buyers/renters)
 - Must register with a valid .edu email address
 - Guest browsing allowed; account required for transactions, chat, and orders
+- Platform administrators (via admin.smivo.io)
 
 ## Platform
 
+### Client App (app/)
 - iOS + Android + Web (Flutter single codebase, all three targets)
 - Minimum OS: iOS 16 / Android 8.0 (API 26)
 - Web: responsive, supports desktop and mobile browser
 - App ID / Bundle ID: com.smivo
 
+### Admin Dashboard (admin/)
+- Web only — desktop-optimized SPA
+- React 19 + Vite 6 + TypeScript
+- Deployed to admin.smivo.io via Vercel (Root Directory = admin/)
+- Uses @supabase/supabase-js to access same Supabase project
+
+### Landing Page (website/)
+- Static HTML pages deployed to smivo.io via Vercel (Root Directory = website/)
+- Contains Universal Links certificate (.well-known/apple-app-site-association)
+- Contains Android App Links (assetlinks.json)
+
 ## Design
 
-- All UI screens are designed in Google Stitch
+- All app UI screens are designed in Google Stitch
 - Always convert Stitch designs to Flutter code using the /stitch command
 - Do not invent layouts or UI components — follow the Stitch designs exactly
-- Stitch design files are located in stitch_* folders at the project root
+- Stitch design files are located in stitch_* folders under app/
+- Admin dashboard follows IKEA-inspired grid-based design system
 
 ## Backend: Supabase
 
@@ -46,6 +71,7 @@ Expansion model: one school = one isolated community zone.
 - Supabase Realtime: live chat messages and order status updates
 - Supabase Edge Functions: server-side logic (email verification, order flow)
 - Push Notifications: OneSignal (Supabase has no built-in FCM)
+- Admin RBAC: admin_roles table + is_platform_sysadmin() SECURITY DEFINER function
 
 ## Database Design Principles
 
@@ -55,9 +81,10 @@ Expansion model: one school = one isolated community zone.
 - Never embed nested objects as JSON unless truly unstructured data
 - All queries go through Supabase client — no raw SQL from Flutter except
   in Edge Functions
-- Migrations are stored in supabase/migrations/ (00001–00032)
+- Migrations are stored in supabase/migrations/ (00001–00046)
+- Admin RPC functions use SECURITY DEFINER to bypass RLS for privileged operations
 
-## Implemented Features (as of v4.0)
+## Implemented Features (as of v4.1)
 
 ### Guest Access
 - Home feed browsable without login
@@ -172,11 +199,12 @@ Expansion model: one school = one isolated community zone.
 - Image messages: inline preview with tap-to-view lightbox
 - Chat history viewable from order detail (collapsible section)
 - Unread message count badge on bottom nav bar
+- Swipe actions: archive, pin, mark as unread
 
 ### Settings
 - Personal info: name, avatar, .edu email (read-only after verify)
-- App settings: notifications on/off
-- Help center
+- App settings: notifications on/off (master + per-category toggles)
+- Help center (FAQ from database)
 - System settings
 - Logout / delete account
 
@@ -186,6 +214,8 @@ Expansion model: one school = one isolated community zone.
 - Unread count badges: bottom nav bar (orders), hub cards, order list red dots
 - Notification types: order_placed, order_accepted, order_cancelled,
   order_completed, rental_extension, rental_reminder
+- Push notifications via OneSignal (iOS APNs configured)
+- Granular per-category notification preferences
 
 ### Rental Period Adjustments
 - Buyer can request extension or shortening of active rentals
@@ -201,6 +231,21 @@ Expansion model: one school = one isolated community zone.
 - Two theme variants: Teal (default) and IKEA
 - All UI components use theme tokens (colors, typography, radius, shadows)
 - Runtime theme switching via Riverpod provider
+
+### Admin (In-App, app/)
+- Admin dashboard accessible to sysadmin users within Flutter app
+- System broadcast notifications
+- UGC content moderation / reporting
+- Listings management
+- FAQ management
+- Test data cleanup (SECURITY DEFINER RPC)
+
+### Admin Dashboard (Web, admin/)
+- Standalone React SPA at admin.smivo.io
+- RBAC-protected via admin_roles table
+- Planned modules: Dashboard, Users, Moderation, Transactions, Operations, Config
+- Heartbeat & Time Bucket system for user activity analytics
+- Status: scaffolded, authentication integration pending
 
 ## Future Features (Phase 2+)
 
@@ -243,7 +288,6 @@ new | like_new | good | fair | poor
 - In-app payment processing (users arrange payment offline or via Venmo/Zelle)
 - Shipping / delivery logistics
 - Push notification deep links (basic notifications only)
-- Admin dashboard
 - Multi-language UI (English only for now)
 - View tracking per user (Views tab shows anonymous counts only)
 - AI listing assistant and AI-powered search (Phase 2+)
