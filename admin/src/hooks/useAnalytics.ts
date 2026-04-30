@@ -11,17 +11,18 @@ export function useAnalytics() {
       // 1. DAU Trend (Last 7 days)
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // NOTE: DB columns are 'hour_start' and 'active_count', not 'hour_bucket'/'distinct_users'
       const { data: dauTrend } = await supabase
         .from(TABLES.HOURLY_ACTIVE_USERS)
-        .select('hour_bucket, distinct_users')
-        .gte('hour_bucket', sevenDaysAgo.toISOString())
-        .order('hour_bucket', { ascending: true });
+        .select('hour_start, active_count')
+        .gte('hour_start', sevenDaysAgo.toISOString())
+        .order('hour_start', { ascending: true });
 
-      // Aggregate hourly data to daily
+      // Aggregate hourly rows to daily max
       const dailyDau: Record<string, number> = {};
       dauTrend?.forEach(row => {
-        const date = row.hour_bucket.split('T')[0];
-        dailyDau[date] = Math.max(dailyDau[date] || 0, row.distinct_users);
+        const date = row.hour_start.split('T')[0];
+        dailyDau[date] = Math.max(dailyDau[date] || 0, row.active_count);
       });
 
       // 2. Listing Category Distribution

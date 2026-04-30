@@ -10,34 +10,34 @@ export function PushHistoryPage() {
 
   const { data, isLoading, error } = usePushJobs(page, { status: statusFilter });
 
-  const getStatusColor = (status: string) => {
+  const getStatusClass = (status: string) => {
     switch (status) {
-      case PUSH_STATUS.DRAFT: return 'bg-gray-100 text-gray-800';
-      case PUSH_STATUS.SCHEDULED: return 'bg-blue-100 text-blue-800';
-      case PUSH_STATUS.SENDING: return 'bg-yellow-100 text-yellow-800';
-      case PUSH_STATUS.SENT: return 'bg-green-100 text-green-800';
-      case PUSH_STATUS.FAILED: return 'bg-red-100 text-red-800';
-      case PUSH_STATUS.CANCELLED: return 'bg-gray-100 text-gray-600';
-      default: return 'bg-gray-100 text-gray-800';
+      case PUSH_STATUS.DRAFT:      return 'ph-badge ph-badge--neutral';
+      case PUSH_STATUS.SCHEDULED:  return 'ph-badge ph-badge--info';
+      case PUSH_STATUS.SENDING:    return 'ph-badge ph-badge--warning';
+      case PUSH_STATUS.SENT:       return 'ph-badge ph-badge--success';
+      case PUSH_STATUS.FAILED:     return 'ph-badge ph-badge--danger';
+      case PUSH_STATUS.CANCELLED:  return 'ph-badge ph-badge--neutral';
+      default:                     return 'ph-badge ph-badge--neutral';
     }
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <Link to="/push" className="text-gray-500 hover:text-gray-900">&larr; Back to Overview</Link>
-          <h1 className="text-2xl font-bold text-gray-900">Push History</h1>
+    <div className="ph-container">
+      <div className="ph-header">
+        <div className="ph-header-left">
+          <Link to="/push" className="ph-btn-back">&larr; Back to Overview</Link>
+          <h1 className="ph-page-title">Push History</h1>
         </div>
-        
-        <div className="flex items-center space-x-4">
-          <select 
-            value={statusFilter} 
+
+        <div className="ph-header-right">
+          <select
+            value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value as any);
               setPage(0);
             }}
-            className="border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            className="ph-filter-select"
           >
             <option value="all">All Statuses</option>
             <option value={PUSH_STATUS.DRAFT}>Draft</option>
@@ -48,65 +48,60 @@ export function PushHistoryPage() {
             <option value={PUSH_STATUS.CANCELLED}>Cancelled</option>
           </select>
 
-          <Link 
-            to="/push/new" 
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700"
-          >
-            Create Push
-          </Link>
+          <Link to="/push/new" className="ph-btn-create">Create Push</Link>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="ph-table-card">
         {isLoading ? (
-          <div className="p-12 text-center text-gray-500">Loading history...</div>
+          <div className="ph-state-msg">Loading history...</div>
         ) : error ? (
-          <div className="p-12 text-center text-red-500">Failed to load push jobs.</div>
+          <div className="ph-state-msg ph-state-error">Failed to load push jobs.</div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="ph-table">
+            <thead className="ph-thead">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title / Content</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audience</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created / Scheduled</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
+                <th className="ph-th">Title / Content</th>
+                <th className="ph-th">Audience</th>
+                <th className="ph-th">Status</th>
+                <th className="ph-th">Created / Scheduled</th>
+                <th className="ph-th ph-th--right">Stats</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {data?.data.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 text-sm">
-                    No push jobs found matching criteria.
-                  </td>
+                  <td colSpan={5} className="ph-td-empty">No push jobs found matching criteria.</td>
                 </tr>
               ) : (
                 data?.data.map((job) => (
-                  <tr key={job.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                      <div className="text-xs text-gray-500 truncate max-w-sm mt-1">{job.body}</div>
+                  <tr key={job.id} className="ph-tr">
+                    <td className="ph-td">
+                      <div className="ph-job-title">{job.title}</div>
+                      <div className="ph-job-body">{job.body}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900 capitalize">{job.audience_type}</span>
+                    <td className="ph-td ph-td--nowrap">
+                      <span className="ph-cell-text">{job.audience_type}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(job.status)}`}>
-                        {job.status}
-                      </span>
+                    <td className="ph-td ph-td--nowrap">
+                      <span className={getStatusClass(job.status)}>{job.status}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="ph-td ph-td--nowrap ph-cell-muted">
                       <div>Created: {new Date(job.created_at).toLocaleDateString()}</div>
-                      {job.scheduled_at && <div className="text-indigo-600">Scheduled: {new Date(job.scheduled_at).toLocaleString()}</div>}
+                      {job.scheduled_at && (
+                        <div className="ph-scheduled-date">
+                          Scheduled: {new Date(job.scheduled_at).toLocaleString()}
+                        </div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                    <td className="ph-td ph-td--right">
                       {job.status === 'sent' || job.status === 'sending' ? (
-                        <div className="space-y-1">
-                          <div className="text-gray-900">Delivered: {job.delivered_count}</div>
-                          <div className="text-green-600">Opened: {job.opened_count}</div>
+                        <div className="ph-stats">
+                          <div className="ph-stat-delivered">Delivered: {job.delivered_count}</div>
+                          <div className="ph-stat-opened">Opened: {job.opened_count}</div>
                         </div>
                       ) : (
-                        <span className="text-gray-400">--</span>
+                        <span className="ph-cell-muted">--</span>
                       )}
                     </td>
                   </tr>
@@ -118,35 +113,79 @@ export function PushHistoryPage() {
 
         {/* Pagination */}
         {data && data.count > DEFAULT_PAGE_SIZE && (
-          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{page * DEFAULT_PAGE_SIZE + 1}</span> to <span className="font-medium">{Math.min((page + 1) * DEFAULT_PAGE_SIZE, data.count)}</span> of <span className="font-medium">{data.count}</span>
-                </p>
-              </div>
-              <div>
-                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm">
-                  <button
-                    onClick={() => setPage(p => Math.max(0, p - 1))}
-                    disabled={page === 0}
-                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setPage(p => p + 1)}
-                    disabled={(page + 1) * DEFAULT_PAGE_SIZE >= data.count}
-                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </nav>
-              </div>
+          <div className="ph-pagination">
+            <p className="ph-pagination-info">
+              Showing <strong>{page * DEFAULT_PAGE_SIZE + 1}</strong> to{' '}
+              <strong>{Math.min((page + 1) * DEFAULT_PAGE_SIZE, data.count)}</strong> of{' '}
+              <strong>{data.count}</strong>
+            </p>
+            <div className="ph-pagination-nav">
+              <button
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="ph-page-btn ph-page-btn--left"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setPage(p => p + 1)}
+                disabled={(page + 1) * DEFAULT_PAGE_SIZE >= data.count}
+                className="ph-page-btn ph-page-btn--right"
+              >
+                Next
+              </button>
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        .ph-container { padding: var(--spacing-page); max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+        .ph-header { display: flex; justify-content: space-between; align-items: center; }
+        .ph-header-left { display: flex; align-items: center; gap: 16px; }
+        .ph-header-right { display: flex; align-items: center; gap: 12px; }
+        .ph-btn-back { color: var(--color-text-secondary); text-decoration: none; font-size: 14px; }
+        .ph-btn-back:hover { color: var(--color-text-primary); }
+        .ph-page-title { font-size: 24px; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+        .ph-filter-select { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 13px; color: var(--color-text-primary); background: var(--color-bg-primary); outline: none; }
+        .ph-filter-select:focus { border-color: var(--color-border-focus); }
+        .ph-btn-create { padding: 8px 16px; background: var(--color-info); color: #fff; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; text-decoration: none; }
+        .ph-btn-create:hover { opacity: 0.88; }
+        .ph-table-card { background: var(--color-bg-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-card); overflow: hidden; }
+        .ph-state-msg { padding: 48px; text-align: center; color: var(--color-text-secondary); font-size: 14px; }
+        .ph-state-error { color: var(--color-danger); }
+        .ph-table { width: 100%; border-collapse: collapse; }
+        .ph-thead { background: var(--color-bg-secondary); }
+        .ph-th { padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border-light); }
+        .ph-th--right { text-align: right; }
+        .ph-tr:hover { background: var(--color-bg-secondary); }
+        .ph-td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--color-border-light); }
+        .ph-td--nowrap { white-space: nowrap; }
+        .ph-td--right { text-align: right; }
+        .ph-td-empty { padding: 48px; text-align: center; font-size: 13px; color: var(--color-text-secondary); }
+        .ph-job-title { font-weight: 500; color: var(--color-text-primary); }
+        .ph-job-body { font-size: 12px; color: var(--color-text-secondary); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 4px; }
+        .ph-cell-text { font-size: 13px; color: var(--color-text-primary); text-transform: capitalize; }
+        .ph-cell-muted { color: var(--color-text-secondary); font-size: 13px; }
+        .ph-scheduled-date { color: var(--color-info); }
+        .ph-stats { display: flex; flex-direction: column; gap: 4px; }
+        .ph-stat-delivered { color: var(--color-text-primary); font-size: 12px; }
+        .ph-stat-opened    { color: var(--color-success); font-size: 12px; }
+        .ph-badge { display: inline-flex; padding: 2px 8px; font-size: 11px; font-weight: 600; border-radius: 999px; }
+        .ph-badge--neutral { background: var(--color-bg-tertiary);    color: var(--color-text-secondary); }
+        .ph-badge--info    { background: var(--color-info-light);     color: var(--color-info); }
+        .ph-badge--warning { background: var(--color-warning-light);  color: var(--color-warning); }
+        .ph-badge--success { background: var(--color-success-light);  color: var(--color-success); }
+        .ph-badge--danger  { background: var(--color-danger-light);   color: var(--color-danger); }
+        .ph-pagination { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--color-border-light); padding: 12px 20px; }
+        .ph-pagination-info { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+        .ph-pagination-nav { display: flex; gap: 4px; }
+        .ph-page-btn { padding: 6px 12px; font-size: 13px; border: 1px solid var(--color-border); background: var(--color-bg-primary); color: var(--color-text-secondary); cursor: pointer; }
+        .ph-page-btn--left  { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+        .ph-page-btn--right { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+        .ph-page-btn:hover:not(:disabled) { background: var(--color-bg-secondary); }
+        .ph-page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      `}</style>
     </div>
   );
 }

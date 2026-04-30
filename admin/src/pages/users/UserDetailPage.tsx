@@ -6,8 +6,8 @@ export function UserDetailPage() {
   const navigate = useNavigate();
   const { data, isLoading, error } = useUserDetail(id);
 
-  if (isLoading) return <div className="p-12 text-center">Loading user details...</div>;
-  if (error || !data) return <div className="p-12 text-center text-red-500">Failed to load user.</div>;
+  if (isLoading) return <div className="ud-state-msg">Loading user details...</div>;
+  if (error || !data) return <div className="ud-state-msg ud-state-error">Failed to load user.</div>;
 
   const { user, listings, orders } = data;
 
@@ -17,88 +17,75 @@ export function UserDetailPage() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center space-x-4 mb-4">
-        <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-gray-900">
-          &larr; Back to Users
-        </button>
-        <h1 className="text-2xl font-bold text-gray-900 flex-1">User Details</h1>
-        <button 
-          onClick={handleBan}
-          className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
-        >
-          Ban User
-        </button>
+    <div className="ud-container">
+      <div className="ud-header">
+        <button onClick={() => navigate(-1)} className="ud-btn-back">&larr; Back to Users</button>
+        <h1 className="ud-page-title">User Details</h1>
+        <button onClick={handleBan} className="ud-btn-ban">Ban User</button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="ud-layout">
         {/* Profile Card */}
-        <div className="bg-white rounded-lg shadow p-6 md:col-span-1 space-y-4">
-          <div className="flex flex-col items-center">
+        <div className="ud-profile-card">
+          <div className="ud-avatar-section">
             {user.avatar_url ? (
-              <img src={user.avatar_url} alt="Avatar" className="w-24 h-24 rounded-full mb-4" />
+              <img src={user.avatar_url} alt="Avatar" className="ud-avatar" />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-3xl font-bold mb-4">
-                {user.email[0].toUpperCase()}
-              </div>
+              <div className="ud-avatar-placeholder">{user.email[0].toUpperCase()}</div>
             )}
-            <h2 className="text-xl font-bold text-gray-900">{user.display_name || 'No Name'}</h2>
-            <p className="text-gray-500 text-sm">{user.email}</p>
+            <h2 className="ud-display-name">{user.display_name || 'No Name'}</h2>
+            <p className="ud-email">{user.email}</p>
           </div>
-          
-          <div className="border-t pt-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-500">School ID</span>
-              <span className="font-medium text-gray-900">{user.college_id}</span>
+          <div className="ud-profile-meta">
+            <div className="ud-meta-row">
+              <span className="ud-meta-label">School ID</span>
+              <span className="ud-meta-value">{user.college_id}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Status</span>
-              <span className="font-medium text-green-600">Active</span>
+            <div className="ud-meta-row">
+              <span className="ud-meta-label">Status</span>
+              <span className="ud-meta-value ud-status-active">Active</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Registered</span>
-              <span className="font-medium text-gray-900">{new Date(user.created_at).toLocaleDateString()}</span>
+            <div className="ud-meta-row">
+              <span className="ud-meta-label">Registered</span>
+              <span className="ud-meta-value">{new Date(user.created_at).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
 
         {/* Stats and Lists */}
-        <div className="md:col-span-2 space-y-6">
-          
-          {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg shadow p-4 text-center">
-              <div className="text-gray-500 text-sm font-medium mb-1">Listings</div>
-              <div className="text-2xl font-bold text-gray-900">{listings.length}</div>
+        <div className="ud-main-col">
+          <div className="ud-stats-grid">
+            <div className="ud-stat-card">
+              <div className="ud-stat-label">Listings</div>
+              <div className="ud-stat-value">{listings.length}</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4 text-center">
-              <div className="text-gray-500 text-sm font-medium mb-1">Orders</div>
-              <div className="text-2xl font-bold text-gray-900">{orders.length}</div>
+            <div className="ud-stat-card">
+              <div className="ud-stat-label">Orders</div>
+              <div className="ud-stat-value">{orders.length}</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4 text-center border-t-4 border-red-500">
-              <div className="text-gray-500 text-sm font-medium mb-1">Reports Against</div>
-              <div className="text-2xl font-bold text-red-600">0</div>
+            <div className="ud-stat-card ud-stat-card--danger">
+              <div className="ud-stat-label">Reports Against</div>
+              <div className="ud-stat-value ud-stat-value--danger">0</div>
             </div>
           </div>
 
-          {/* Recent Listings */}
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Recent Listings</h3>
+          <div className="ud-table-card">
+            <div className="ud-table-header">
+              <h3 className="ud-table-title">Recent Listings</h3>
             </div>
             {listings.length === 0 ? (
-              <div className="p-6 text-center text-gray-500 text-sm">No listings found.</div>
+              <div className="ud-empty-msg">No listings found.</div>
             ) : (
-              <ul className="divide-y divide-gray-200">
+              <ul className="ud-list">
                 {listings.map((l: any) => (
-                  <li key={l.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                  <li key={l.id} className="ud-list-item">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{l.title}</p>
-                      <p className="text-xs text-gray-500">{new Date(l.created_at).toLocaleDateString()}</p>
+                      <p className="ud-item-title">{l.title}</p>
+                      <p className="ud-item-date">{new Date(l.created_at).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <span className="text-sm font-medium text-gray-900">${l.price}</span>
-                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">{l.moderation_status}</span>
+                    <div className="ud-item-meta">
+                      <span className="ud-item-price">${l.price}</span>
+                      <span className="ud-badge">{l.moderation_status}</span>
                     </div>
                   </li>
                 ))}
@@ -106,24 +93,23 @@ export function UserDetailPage() {
             )}
           </div>
 
-          {/* Recent Orders */}
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Recent Orders</h3>
+          <div className="ud-table-card">
+            <div className="ud-table-header">
+              <h3 className="ud-table-title">Recent Orders</h3>
             </div>
             {orders.length === 0 ? (
-              <div className="p-6 text-center text-gray-500 text-sm">No orders found.</div>
+              <div className="ud-empty-msg">No orders found.</div>
             ) : (
-              <ul className="divide-y divide-gray-200">
+              <ul className="ud-list">
                 {orders.map((o: any) => (
-                  <li key={o.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                  <li key={o.id} className="ud-list-item">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Order for: {o.listing?.title || 'Unknown Item'}</p>
-                      <p className="text-xs text-gray-500">{new Date(o.created_at).toLocaleDateString()}</p>
+                      <p className="ud-item-title">Order for: {o.listing?.title || 'Unknown Item'}</p>
+                      <p className="ud-item-date">{new Date(o.created_at).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <span className="text-sm font-medium text-gray-900">${o.total_price}</span>
-                      <span className="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700">{o.status}</span>
+                    <div className="ud-item-meta">
+                      <span className="ud-item-price">${o.total_price}</span>
+                      <span className="ud-badge ud-badge--info">{o.status}</span>
                     </div>
                   </li>
                 ))}
@@ -132,6 +118,52 @@ export function UserDetailPage() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        .ud-container { padding: var(--spacing-page); max-width: 1024px; margin: 0 auto; }
+        .ud-state-msg { padding: 48px; text-align: center; color: var(--color-text-secondary); font-size: 14px; }
+        .ud-state-error { color: var(--color-danger); }
+        .ud-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+        .ud-btn-back { background: none; border: none; cursor: pointer; color: var(--color-text-secondary); font-size: 14px; padding: 0; }
+        .ud-btn-back:hover { color: var(--color-text-primary); }
+        .ud-page-title { font-size: 24px; font-weight: 700; color: var(--color-text-primary); flex: 1; margin: 0; }
+        .ud-btn-ban { padding: 8px 16px; background: var(--color-danger); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; }
+        .ud-btn-ban:hover { opacity: 0.88; }
+        .ud-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+        @media (max-width: 768px) { .ud-layout { grid-template-columns: 1fr; } }
+        .ud-profile-card { background: var(--color-bg-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-card); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+        .ud-avatar-section { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .ud-avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; }
+        .ud-avatar-placeholder { width: 96px; height: 96px; border-radius: 50%; background: var(--color-info-light); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--color-info); }
+        .ud-display-name { font-size: 20px; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+        .ud-email { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+        .ud-profile-meta { border-top: 1px solid var(--color-border-light); padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .ud-meta-row { display: flex; justify-content: space-between; font-size: 13px; }
+        .ud-meta-label { color: var(--color-text-secondary); }
+        .ud-meta-value { font-weight: 500; color: var(--color-text-primary); }
+        .ud-status-active { color: var(--color-success); }
+        .ud-main-col { display: flex; flex-direction: column; gap: 24px; }
+        .ud-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .ud-stat-card { background: var(--color-bg-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-card); padding: 16px; text-align: center; }
+        .ud-stat-card--danger { border-top: 4px solid var(--color-danger); }
+        .ud-stat-label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 4px; }
+        .ud-stat-value { font-size: 24px; font-weight: 700; color: var(--color-text-primary); }
+        .ud-stat-value--danger { color: var(--color-danger); }
+        .ud-table-card { background: var(--color-bg-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-card); overflow: hidden; }
+        .ud-table-header { padding: 16px 24px; border-bottom: 1px solid var(--color-border-light); }
+        .ud-table-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
+        .ud-empty-msg { padding: 24px; text-align: center; font-size: 13px; color: var(--color-text-secondary); }
+        .ud-list { list-style: none; padding: 0; margin: 0; }
+        .ud-list-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--color-border-light); }
+        .ud-list-item:last-child { border-bottom: none; }
+        .ud-list-item:hover { background: var(--color-bg-secondary); }
+        .ud-item-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 2px; }
+        .ud-item-date { font-size: 12px; color: var(--color-text-secondary); margin: 0; }
+        .ud-item-meta { display: flex; align-items: center; gap: 12px; }
+        .ud-item-price { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+        .ud-badge { padding: 2px 8px; font-size: 11px; border-radius: 999px; background: var(--color-bg-tertiary); color: var(--color-text-primary); }
+        .ud-badge--info { background: var(--color-info-light); color: var(--color-info); }
+      `}</style>
     </div>
   );
 }

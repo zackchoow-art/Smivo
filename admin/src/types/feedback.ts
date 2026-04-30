@@ -1,42 +1,62 @@
 /**
  * Feedback and contribution types.
- * Defined in 04_ADMIN_WEB_SPEC.md §13.
+ * NOTE: Field names here must exactly match the `user_feedbacks` table schema.
+ * DB columns: category, description, screenshots, device_info (jsonb),
+ * admin_judgment, admin_notes, contribution_points
  */
 
-export type FeedbackType = 'bug' | 'suggestion' | 'complaint' | 'other';
-export type FeedbackStatus = 'pending' | 'processing' | 'resolved' | 'dismissed';
-export type FeedbackJudgment = 'confirmed_bug' | 'valid_suggestion' | 'duplicate' | 'invalid' | 'accepted_implemented';
+// NOTE: DB enum values for category column (not 'bug' / 'suggestion')
+export type FeedbackCategory = 'bug_report' | 'feature_request' | 'general';
+
+// NOTE: DB enum values for status — 'reviewing' not 'processing', 'closed' not 'dismissed'
+export type FeedbackStatus = 'pending' | 'reviewing' | 'resolved' | 'closed';
+
+export type FeedbackJudgment =
+  | 'confirmed_bug'
+  | 'valid_suggestion'
+  | 'duplicate'
+  | 'invalid'
+  | 'accepted_implemented';
 
 export interface UserFeedback {
   id: string;
   user_id: string;
-  college_id: string;
-  feedback_type: FeedbackType;
-  title: string | null;
-  content: string;
-  screenshot_urls: string[];
 
-  // Auto-captured context
-  app_version: string | null;
-  os_version: string | null;
-  device_model: string | null;
-  current_route: string | null;
-  meta: Record<string, unknown> | null;
+  // NOTE: DB column is 'category', not 'feedback_type'
+  category: FeedbackCategory;
+  title: string | null;
+
+  // NOTE: DB column is 'description', not 'content'
+  description: string;
+
+  // NOTE: DB column is 'screenshots' (text[]), not 'screenshot_urls'
+  screenshots: string[];
+
+  // NOTE: Device/app context is stored as a single jsonb column, not separate columns
+  device_info: Record<string, unknown> | null;
+
+  priority: string | null;
 
   // Processing
   status: FeedbackStatus;
-  judgment: FeedbackJudgment | null;
-  contribution_awarded: number;
-  tags: string[];
-  admin_reply: string | null;
-  admin_note: string | null;
+
+  // NOTE: DB column is 'admin_judgment', not 'judgment'
+  admin_judgment: FeedbackJudgment | null;
+
+  // NOTE: DB column is 'contribution_points', not 'contribution_awarded'
+  contribution_points: number;
+
+  // NOTE: DB column is 'admin_notes', not 'admin_reply'
+  admin_notes: string | null;
+
   resolved_by: string | null;
   resolved_at: string | null;
 
   created_at: string;
+  updated_at: string;
 }
 
-/** Feedback with user info for list display */
+/** Feedback joined with user info — for detail view display */
 export interface FeedbackWithUser extends UserFeedback {
   user_display_name: string | null;
   user_email: string;
@@ -61,7 +81,10 @@ export interface UserBadge {
 }
 
 /** Badge definitions for display */
-export const BADGE_DEFINITIONS: Record<string, { emoji: string; label: string; threshold: number }> = {
+export const BADGE_DEFINITIONS: Record<
+  string,
+  { emoji: string; label: string; threshold: number }
+> = {
   smivo_explorer: { emoji: '🌱', label: 'Smivo 探索者', threshold: 10 },
   bug_hunter: { emoji: '🔧', label: 'Bug 猎人', threshold: 50 },
   smivo_guardian: { emoji: '💎', label: '校园守护者', threshold: 100 },

@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, User, Smartphone, Globe, Code, Tag, Award,  CheckCircle } from 'lucide-react';
+import {
+  ChevronLeft,
+  User,
+  Smartphone,
+  Globe,
+  Code,
+  Tag,
+  Award,
+  CheckCircle,
+} from 'lucide-react';
 import { useFeedback, useResolveFeedback } from '@/hooks/useFeedbacks';
 import { useAuth } from '@/hooks/useAuth';
 import { FEEDBACK_JUDGMENTS, CONTRIBUTION_POINTS } from '@/lib/constants';
@@ -14,7 +23,7 @@ export function FeedbackDetailPage() {
   const resolveMutation = useResolveFeedback();
 
   const [judgment, setJudgment] = useState<FeedbackJudgment>('confirmed_bug');
-  const [adminReply, setAdminReply] = useState('');
+  const [adminNotes, setAdminNotes] = useState('');
 
   if (isLoading) return <div className="loading-state">Loading feedback details...</div>;
   if (error || !feedback) return <div className="error-state">Feedback not found</div>;
@@ -25,11 +34,11 @@ export function FeedbackDetailPage() {
       await resolveMutation.mutateAsync({
         feedbackId: feedback.id,
         judgment,
-        adminReply,
+        adminNotes,
         points: CONTRIBUTION_POINTS[judgment] || 0,
         adminId: admin.user_id,
         userId: feedback.user_id,
-        collegeId: feedback.college_id
+        // NOTE: college_id removed — user_feedbacks table does not have this column
       });
       alert('Feedback resolved successfully');
       navigate('/feedback');
@@ -38,6 +47,9 @@ export function FeedbackDetailPage() {
       alert('Failed to resolve feedback');
     }
   };
+
+  // NOTE: Technical context fields are nested inside device_info jsonb column
+  const deviceInfo = (feedback.device_info ?? {}) as Record<string, string>;
 
   return (
     <div className="detail-container">
@@ -48,7 +60,9 @@ export function FeedbackDetailPage() {
         </button>
         <div className="header-info">
           <h1 className="page-title">{feedback.title || 'User Feedback'}</h1>
-          <span className={`status-tag status-${feedback.status}`}>{feedback.status.toUpperCase()}</span>
+          <span className={`status-tag status-${feedback.status}`}>
+            {feedback.status.toUpperCase()}
+          </span>
         </div>
       </header>
 
@@ -57,12 +71,19 @@ export function FeedbackDetailPage() {
           <section className="feedback-section">
             <h2 className="section-title">Feedback Content</h2>
             <div className="card content-card">
-              <p className="feedback-text">{feedback.content}</p>
-              
-              {feedback.screenshot_urls && feedback.screenshot_urls.length > 0 && (
+              {/* NOTE: DB column is 'description', not 'content' */}
+              <p className="feedback-text">{feedback.description}</p>
+
+              {/* NOTE: DB column is 'screenshots' (text[]), not 'screenshot_urls' */}
+              {feedback.screenshots && feedback.screenshots.length > 0 && (
                 <div className="screenshot-gallery">
-                  {feedback.screenshot_urls.map((url, idx) => (
-                    <img key={idx} src={url} alt={`Screenshot ${idx + 1}`} className="screenshot-img" />
+                  {feedback.screenshots.map((url, idx) => (
+                    <img
+                      key={idx}
+                      src={url}
+                      alt={`Screenshot ${idx + 1}`}
+                      className="screenshot-img"
+                    />
                   ))}
                 </div>
               )}
@@ -76,28 +97,32 @@ export function FeedbackDetailPage() {
                 <div className="meta-icon"><Smartphone size={16} /></div>
                 <div className="meta-info">
                   <span className="meta-label">Device</span>
-                  <span className="meta-value">{feedback.device_model || 'Unknown'} ({feedback.os_version || 'N/A'})</span>
+                  {/* NOTE: Device fields live inside device_info jsonb, not top-level columns */}
+                  <span className="meta-value">
+                    {deviceInfo.device_model || 'Unknown'} ({deviceInfo.os_version || 'N/A'})
+                  </span>
                 </div>
               </div>
               <div className="meta-item">
                 <div className="meta-icon"><Globe size={16} /></div>
                 <div className="meta-info">
                   <span className="meta-label">App Version</span>
-                  <span className="meta-value">{feedback.app_version || 'Unknown'}</span>
+                  <span className="meta-value">{deviceInfo.app_version || 'Unknown'}</span>
                 </div>
               </div>
               <div className="meta-item">
                 <div className="meta-icon"><Code size={16} /></div>
                 <div className="meta-info">
                   <span className="meta-label">Route</span>
-                  <span className="meta-value">{feedback.current_route || '/'}</span>
+                  <span className="meta-value">{deviceInfo.current_route || '/'}</span>
                 </div>
               </div>
               <div className="meta-item">
                 <div className="meta-icon"><Tag size={16} /></div>
                 <div className="meta-info">
                   <span className="meta-label">Type</span>
-                  <span className="meta-value">{feedback.feedback_type.toUpperCase()}</span>
+                  {/* NOTE: DB column is 'category', not 'feedback_type' */}
+                  <span className="meta-value">{feedback.category.toUpperCase()}</span>
                 </div>
               </div>
             </div>
@@ -110,12 +135,18 @@ export function FeedbackDetailPage() {
             <div className="card user-card">
               <div className="user-profile">
                 {feedback.user_avatar_url ? (
-                  <img src={feedback.user_avatar_url} alt="Avatar" className="user-avatar-img" />
+                  <img
+                    src={feedback.user_avatar_url}
+                    alt="Avatar"
+                    className="user-avatar-img"
+                  />
                 ) : (
                   <div className="user-avatar-placeholder"><User size={24} /></div>
                 )}
                 <div className="user-details">
-                  <div className="user-name">{feedback.user_display_name || 'Anonymous User'}</div>
+                  <div className="user-name">
+                    {feedback.user_display_name || 'Anonymous User'}
+                  </div>
                   <div className="user-email">{feedback.user_email}</div>
                 </div>
               </div>
@@ -129,42 +160,51 @@ export function FeedbackDetailPage() {
                 <div className="resolved-info">
                   <div className="judgment-badge">
                     <Award size={16} />
-                    <span>Judgment: {feedback.judgment?.replace('_', ' ').toUpperCase()}</span>
+                    {/* NOTE: DB column is 'admin_judgment', not 'judgment' */}
+                    <span>
+                      Judgment:{' '}
+                      {feedback.admin_judgment?.replace('_', ' ').toUpperCase()}
+                    </span>
                   </div>
-                  <div className="reward-info">Points Awarded: <strong>{feedback.contribution_awarded}</strong></div>
+                  {/* NOTE: DB column is 'contribution_points', not 'contribution_awarded' */}
+                  <div className="reward-info">
+                    Points Awarded: <strong>{feedback.contribution_points}</strong>
+                  </div>
                   <div className="admin-reply-box">
-                    <label>Admin Reply:</label>
-                    <p>{feedback.admin_reply || 'No reply sent.'}</p>
+                    <label>Admin Notes:</label>
+                    {/* NOTE: DB column is 'admin_notes', not 'admin_reply' */}
+                    <p>{feedback.admin_notes || 'No notes.'}</p>
                   </div>
                 </div>
               ) : (
                 <div className="resolution-form">
                   <div className="form-group">
                     <label>Judgment</label>
-                    <select 
-                      value={judgment} 
+                    <select
+                      value={judgment}
                       onChange={(e) => setJudgment(e.target.value as FeedbackJudgment)}
                     >
                       {Object.entries(FEEDBACK_JUDGMENTS).map(([key, value]) => (
                         <option key={key} value={value}>
-                          {value.replace('_', ' ').toUpperCase()} ({CONTRIBUTION_POINTS[value]} pts)
+                          {value.replace('_', ' ').toUpperCase()} (
+                          {CONTRIBUTION_POINTS[value]} pts)
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div className="form-group">
-                    <label>Reply to User</label>
-                    <textarea 
+                    <label>Notes to User</label>
+                    <textarea
                       placeholder="Thank the user and explain your decision..."
-                      value={adminReply}
-                      onChange={(e) => setAdminReply(e.target.value)}
+                      value={adminNotes}
+                      onChange={(e) => setAdminNotes(e.target.value)}
                       rows={5}
                     />
                   </div>
 
-                  <button 
-                    className="submit-btn" 
+                  <button
+                    className="submit-btn"
                     onClick={handleResolve}
                     disabled={resolveMutation.isPending}
                   >
@@ -226,9 +266,9 @@ export function FeedbackDetailPage() {
         }
 
         .status-pending { background: var(--color-warning-light); color: var(--color-warning); }
-        .status-processing { background: var(--color-info-light); color: var(--color-info); }
+        .status-reviewing { background: var(--color-info-light); color: var(--color-info); }
         .status-resolved { background: var(--color-success-light); color: var(--color-success); }
-        .status-dismissed { background: var(--color-bg-tertiary); color: var(--color-text-tertiary); }
+        .status-closed { background: var(--color-bg-tertiary); color: var(--color-text-tertiary); }
 
         .detail-grid {
           display: grid;
@@ -453,4 +493,3 @@ export function FeedbackDetailPage() {
     </div>
   );
 }
-

@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Filter, ChevronLeft, ChevronRight  } from 'lucide-react';
+import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFeedbacks } from '@/hooks/useFeedbacks';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
-import type { FeedbackStatus, FeedbackType } from '@/types/feedback';
+import type { FeedbackStatus, FeedbackCategory } from '@/types/feedback';
 
 export function FeedbackListPage() {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState<FeedbackStatus | ''>('');
-  const [type, setType] = useState<FeedbackType | ''>('');
+  // NOTE: Renamed from 'type' to 'category' — matches DB column name
+  const [category, setCategory] = useState<FeedbackCategory | ''>('');
 
-  const { data, isLoading, error } = useFeedbacks(page, { 
-    status: status || undefined, 
-    type: type || undefined 
+  const { data, isLoading, error } = useFeedbacks(page, {
+    status: status || undefined,
+    category: category || undefined,
   });
 
   const totalPages = data ? Math.ceil(data.totalCount / DEFAULT_PAGE_SIZE) : 0;
@@ -25,21 +26,34 @@ export function FeedbackListPage() {
         <div className="filters-bar">
           <div className="filter-group">
             <Filter size={14} />
-            <select value={type} onChange={(e) => { setType(e.target.value as FeedbackType | ''); setPage(0); }}>
+            {/* NOTE: Option values match DB enum: bug_report / feature_request / general */}
+            <select
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value as FeedbackCategory | '');
+                setPage(0);
+              }}
+            >
               <option value="">All Types</option>
-              <option value="bug">Bug Report</option>
-              <option value="suggestion">Suggestion</option>
-              <option value="complaint">Complaint</option>
-              <option value="other">Other</option>
+              <option value="bug_report">Bug Report</option>
+              <option value="feature_request">Feature Request</option>
+              <option value="general">General</option>
             </select>
           </div>
           <div className="filter-group">
-            <select value={status} onChange={(e) => { setStatus(e.target.value as FeedbackStatus | ''); setPage(0); }}>
+            {/* NOTE: Option values match DB enum: pending / reviewing / resolved / closed */}
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value as FeedbackStatus | '');
+                setPage(0);
+              }}
+            >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
+              <option value="reviewing">Reviewing</option>
               <option value="resolved">Resolved</option>
-              <option value="dismissed">Dismissed</option>
+              <option value="closed">Closed</option>
             </select>
           </div>
         </div>
@@ -64,14 +78,27 @@ export function FeedbackListPage() {
               <tr><td colSpan={4} className="table-empty">No feedback found</td></tr>
             ) : (
               data?.data.map((item) => (
-                <tr key={item.id} onClick={() => navigate(`/feedback/${item.id}`)} className="clickable-row">
+                <tr
+                  key={item.id}
+                  onClick={() => navigate(`/feedback/${item.id}`)}
+                  className="clickable-row"
+                >
                   <td className="content-cell">
                     <div className="feedback-title">{item.title || 'No Title'}</div>
-                    <div className="feedback-preview">{item.content.slice(0, 80)}{item.content.length > 80 ? '...' : ''}</div>
+                    {/* NOTE: DB column is 'description', not 'content' */}
+                    <div className="feedback-preview">
+                      {item.description.slice(0, 80)}
+                      {item.description.length > 80 ? '...' : ''}
+                    </div>
                   </td>
-                  <td><TypeBadge type={item.feedback_type} /></td>
+                  {/* NOTE: DB column is 'category', not 'feedback_type' */}
+                  <td><CategoryBadge category={item.category} /></td>
                   <td><StatusBadge status={item.status} /></td>
-                  <td><span className="time-cell">{new Date(item.created_at).toLocaleString()}</span></td>
+                  <td>
+                    <span className="time-cell">
+                      {new Date(item.created_at).toLocaleString()}
+                    </span>
+                  </td>
                 </tr>
               ))
             )}
@@ -81,14 +108,24 @@ export function FeedbackListPage() {
 
       <footer className="feedback-footer">
         <span className="pagination-info">
-          Showing {page * DEFAULT_PAGE_SIZE + 1} - {Math.min((page + 1) * DEFAULT_PAGE_SIZE, data?.totalCount || 0)} of {data?.totalCount || 0}
+          Showing {page * DEFAULT_PAGE_SIZE + 1} -{' '}
+          {Math.min((page + 1) * DEFAULT_PAGE_SIZE, data?.totalCount || 0)} of{' '}
+          {data?.totalCount || 0}
         </span>
         <div className="pagination-actions">
-          <button className="pagination-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+          <button
+            className="pagination-btn"
+            disabled={page === 0}
+            onClick={() => setPage(p => p - 1)}
+          >
             <ChevronLeft size={18} />
           </button>
           <span className="current-page">Page {page + 1}</span>
-          <button className="pagination-btn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+          <button
+            className="pagination-btn"
+            disabled={page >= totalPages - 1}
+            onClick={() => setPage(p => p + 1)}
+          >
             <ChevronRight size={18} />
           </button>
         </div>
@@ -261,24 +298,38 @@ export function FeedbackListPage() {
   );
 }
 
-function TypeBadge({ type }: { type: FeedbackType }) {
-  const styles: Record<FeedbackType, { bg: string, text: string }> = {
-    bug: { bg: '#fee2e2', text: '#ef4444' },
-    suggestion: { bg: '#dcfce7', text: '#22c55e' },
-    complaint: { bg: '#fef3c7', text: '#f59e0b' },
-    other: { bg: '#f3f4f6', text: '#6b7280' },
+// NOTE: DB category enum values are 'bug_report' | 'feature_request' | 'general'
+function CategoryBadge({ category }: { category: FeedbackCategory }) {
+  const styles: Record<FeedbackCategory, { bg: string; text: string }> = {
+    bug_report: { bg: '#fee2e2', text: '#ef4444' },
+    feature_request: { bg: '#dcfce7', text: '#22c55e' },
+    general: { bg: '#f3f4f6', text: '#6b7280' },
   };
-  const style = styles[type] || styles.other;
-  return <span className="badge" style={{ backgroundColor: style.bg, color: style.text }}>{type}</span>;
+  const style = styles[category] ?? styles.general;
+  const labels: Record<FeedbackCategory, string> = {
+    bug_report: 'Bug',
+    feature_request: 'Feature',
+    general: 'General',
+  };
+  return (
+    <span className="badge" style={{ backgroundColor: style.bg, color: style.text }}>
+      {labels[category] ?? category}
+    </span>
+  );
 }
 
+// NOTE: DB status enum values are 'pending' | 'reviewing' | 'resolved' | 'closed'
 function StatusBadge({ status }: { status: FeedbackStatus }) {
-  const styles: Record<FeedbackStatus, { bg: string, text: string }> = {
+  const styles: Record<FeedbackStatus, { bg: string; text: string }> = {
     pending: { bg: '#fef3c7', text: '#d97706' },
-    processing: { bg: '#e0f2fe', text: '#0284c7' },
+    reviewing: { bg: '#e0f2fe', text: '#0284c7' },
     resolved: { bg: '#dcfce7', text: '#16a34a' },
-    dismissed: { bg: '#f3f4f6', text: '#6b7280' },
+    closed: { bg: '#f3f4f6', text: '#6b7280' },
   };
-  const style = styles[status] || styles.pending;
-  return <span className="badge" style={{ backgroundColor: style.bg, color: style.text }}>{status}</span>;
+  const style = styles[status] ?? styles.pending;
+  return (
+    <span className="badge" style={{ backgroundColor: style.bg, color: style.text }}>
+      {status}
+    </span>
+  );
 }

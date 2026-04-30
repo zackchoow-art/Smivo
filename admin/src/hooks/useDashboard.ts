@@ -28,14 +28,15 @@ export function useDashboard() {
 
       // 4. KPI - Today DAU (distinct_users from hourly_active_users)
       const today = new Date().toISOString().split('T')[0];
+      // NOTE: DB columns are 'hour_start' and 'active_count', not 'hour_bucket'/'distinct_users'
       const { data: dauData } = await supabase
         .from(TABLES.HOURLY_ACTIVE_USERS)
-        .select('distinct_users')
-        .gte('hour_bucket', today)
-        .order('hour_bucket', { ascending: false })
+        .select('active_count')
+        .gte('hour_start', today)
+        .order('hour_start', { ascending: false })
         .limit(1);
       
-      const todayDau = dauData?.[0]?.distinct_users ?? 0;
+      const todayDau = dauData?.[0]?.active_count ?? 0;
 
       // 5. Recent Audit Logs (top 10)
       const { data: recentLogs } = await supabase

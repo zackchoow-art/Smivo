@@ -11,7 +11,8 @@ export function AnalyticsPage() {
 
   const maxDau = Math.max(...dauTrend.map(d => d.count), 1);
   const maxCategory = Math.max(...categoryDist.map(c => c.count), 1);
-  const totalOrders = orderDist.reduce((acc, curr) => acc + curr.count, 0);
+  // NOTE: Guard against division-by-zero when there are no orders yet
+  const totalOrders = orderDist.reduce((acc, curr) => acc + curr.count, 0) || 1;
 
   return (
     <div className="analytics-container">
@@ -27,20 +28,24 @@ export function AnalyticsPage() {
             <TrendingUp size={18} />
             <h2>DAU Trend (Last 7 Days)</h2>
           </div>
-          <div className="chart-container dau-chart">
-            {dauTrend.map((d) => (
-              <div key={d.date} className="bar-group">
-                <div 
-                  className="bar dau-bar" 
-                  style={{ height: `${(d.count / maxDau) * 100}%` }}
-                  title={`${d.date}: ${d.count}`}
-                >
-                  <span className="bar-value">{d.count}</span>
+          {dauTrend.length === 0 ? (
+            <p className="empty-chart">No activity data for the last 7 days.</p>
+          ) : (
+            <div className="chart-container dau-chart">
+              {dauTrend.map((d) => (
+                <div key={d.date} className="bar-group">
+                  <div
+                    className="bar dau-bar"
+                    style={{ height: `${(d.count / maxDau) * 100}%` }}
+                    title={`${d.date}: ${d.count}`}
+                  >
+                    <span className="bar-value">{d.count}</span>
+                  </div>
+                  <span className="bar-label">{d.date.slice(5)}</span>
                 </div>
-                <span className="bar-label">{d.date.slice(5)}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Category Distribution */}
@@ -49,25 +54,29 @@ export function AnalyticsPage() {
             <PieChart size={18} />
             <h2>Listing Categories</h2>
           </div>
-          <div className="dist-list">
-            {categoryDist.sort((a, b) => b.count - a.count).map((c) => (
-              <div key={c.name} className="dist-item">
-                <div className="dist-info">
-                  <span className="dist-name">{c.name}</span>
-                  <span className="dist-count">{c.count} items</span>
+          {categoryDist.length === 0 ? (
+            <p className="empty-chart">No listings yet.</p>
+          ) : (
+            <div className="dist-list">
+              {categoryDist.sort((a, b) => b.count - a.count).map((c) => (
+                <div key={c.name} className="dist-item">
+                  <div className="dist-info">
+                    <span className="dist-name">{c.name}</span>
+                    <span className="dist-count">{c.count} items</span>
+                  </div>
+                  <div className="dist-bar-bg">
+                    <div
+                      className="dist-bar"
+                      style={{
+                        width: `${(c.count / maxCategory) * 100}%`,
+                        backgroundColor: 'var(--color-primary)',
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="dist-bar-bg">
-                  <div 
-                    className="dist-bar" 
-                    style={{ 
-                      width: `${(c.count / maxCategory) * 100}%`,
-                      backgroundColor: 'var(--color-primary)'
-                    }} 
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Order Status Distribution */}
@@ -76,15 +85,21 @@ export function AnalyticsPage() {
             <BarChart3 size={18} />
             <h2>Order Status Breakdown</h2>
           </div>
-          <div className="order-stats-grid">
-            {orderDist.map((o) => (
-              <div key={o.name} className="order-stat-pill">
-                <span className="order-status-name">{o.name}</span>
-                <span className="order-status-value">{o.count}</span>
-                <span className="order-status-percent">{((o.count / totalOrders) * 100).toFixed(1)}%</span>
-              </div>
-            ))}
-          </div>
+          {orderDist.length === 0 ? (
+            <p className="empty-chart">No orders yet.</p>
+          ) : (
+            <div className="order-stats-grid">
+              {orderDist.map((o) => (
+                <div key={o.name} className="order-stat-pill">
+                  <span className="order-status-name">{o.name}</span>
+                  <span className="order-status-value">{o.count}</span>
+                  <span className="order-status-percent">
+                    {((o.count / totalOrders) * 100).toFixed(1)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
 
@@ -96,6 +111,13 @@ export function AnalyticsPage() {
           display: flex;
           flex-direction: column;
           gap: 32px;
+        }
+
+        .empty-chart {
+          text-align: center;
+          padding: 40px 16px;
+          color: var(--color-text-tertiary);
+          font-size: 13px;
         }
 
         .analytics-header {

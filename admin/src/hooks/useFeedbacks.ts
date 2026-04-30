@@ -1,19 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { TABLES, DEFAULT_PAGE_SIZE } from '@/lib/constants';
-import type { 
-  UserFeedback, 
-  FeedbackStatus, 
-  FeedbackType, 
-  FeedbackWithUser, 
-  FeedbackJudgment 
+import type {
+  UserFeedback,
+  FeedbackStatus,
+  FeedbackCategory,
+  FeedbackWithUser,
+  FeedbackJudgment,
 } from '@/types/feedback';
 
 const QUERY_KEY = ['feedbacks'] as const;
 
 export interface FeedbackFilters {
   status?: FeedbackStatus;
-  type?: FeedbackType;
+  // NOTE: Renamed from 'type' to 'category' to match DB column name
+  category?: FeedbackCategory;
 }
 
 export function useFeedbacks(page: number, filters: FeedbackFilters = {}) {
@@ -32,8 +33,9 @@ export function useFeedbacks(page: number, filters: FeedbackFilters = {}) {
       if (filters.status) {
         query = query.eq('status', filters.status);
       }
-      if (filters.type) {
-        query = query.eq('feedback_type', filters.type);
+      // NOTE: DB column is 'category', not 'feedback_type'
+      if (filters.category) {
+        query = query.eq('category', filters.category);
       }
 
       const { data, error, count } = await query;
@@ -50,7 +52,7 @@ export function useFeedbacks(page: number, filters: FeedbackFilters = {}) {
 }
 
 /**
- * Hook for a single feedback item.
+ * Hook for a single feedback item with joined user info.
  */
 export function useFeedback(id: string | undefined) {
   return useQuery({
@@ -81,6 +83,8 @@ export function useFeedback(id: string | undefined) {
 
 /**
  * Mutation for resolving feedback.
+ * NOTE: Uses admin_judgment, admin_notes, contribution_points — actual DB column names.
+ * NOTE: college_id removed — user_feedbacks table does not have this column.
  */
 export function useResolveFeedback() {
   const queryClient = useQueryClient();
@@ -89,30 +93,28 @@ export function useResolveFeedback() {
     mutationFn: async ({
       feedbackId,
       judgment,
-      adminReply,
+      adminNotes,
       points,
       adminId,
       userId,
-      collegeId
     }: {
       feedbackId: string;
       judgment: FeedbackJudgment;
-      adminReply: string;
+      adminNotes: string;
       points: number;
       adminId: string;
       userId: string;
-      collegeId: string;
     }) => {
-      // 1. Update feedback
+      // 1. Update feedback with correct DB column names
       const { error: updateError } = await supabase
         .from(TABLES.USER_FEEDBACKS)
         .update({
           status: 'resolved',
-          judgment,
-          admin_reply: adminReply,
-          contribution_awarded: points,
+          admin_judgment: judgment,      // NOTE: was 'judgment' — DB column is 'admin_judgment'
+          admin_notes: adminNotes,       // NOTE: was 'admin_reply' — DB column is 'admin_notes'
+          contribution_points: points,  // NOTE: was 'contribution_awarded' — DB column is 'contribution_points'
           resolved_by: adminId,
-          resolved_at: new Date().toISOString()
+          resolved_at: new Date().toISOString(),
         })
         .eq('id', feedbackId);
 
@@ -124,13 +126,12 @@ export function useResolveFeedback() {
           .from(TABLES.CONTRIBUTION_LEDGER)
           .insert({
             user_id: userId,
-            college_id: collegeId,
             delta: points,
             reason: `Feedback reward: ${judgment}`,
             source_type: 'feedback',
-            source_id: feedbackId
+            source_id: feedbackId,
           });
-        
+
         if (ledgerError) throw ledgerError;
       }
 
@@ -140,12 +141,14 @@ export function useResolveFeedback() {
         action_type: 'resolve_feedback',
         target_type: 'user_feedback',
         target_id: feedbackId,
-        payload: { judgment, points }
+        payload: { judgment, points },
       });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'detail', variables.feedbackId] });
+      queryClient.invalidateQueries({
+        queryKey: [...QUERY_KEY, 'detail', variables.feedbackId],
+      });
     },
   });
 }

@@ -59,7 +59,8 @@ export function useUserDetail(userId?: string) {
       const { data: listings, error: listingsError } = await supabase
         .from(TABLES.LISTINGS)
         .select('id, title, price, moderation_status, created_at')
-        .eq('user_id', userId)
+        // NOTE: listings table uses 'seller_id' as the owner FK, not 'user_id'
+        .eq('seller_id', userId)
         .order('created_at', { ascending: false })
         .limit(10);
 

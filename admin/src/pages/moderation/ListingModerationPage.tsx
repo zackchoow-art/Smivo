@@ -9,7 +9,7 @@ export function ListingModerationPage() {
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<ModerationStatus | 'all'>('pending_review');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  
+
   const { data, isLoading, error } = useListingsModeration(page, { status: statusFilter });
   const batchModerate = useBatchModerateListings();
   const { admin } = useAuth(); // Assume we get the logged in admin user
@@ -47,39 +47,38 @@ export function ListingModerationPage() {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityClass = (priority: string) => {
     switch (priority) {
-      case MODERATION_PRIORITY.URGENT: return 'bg-red-100 text-red-800 border-red-200';
-      case MODERATION_PRIORITY.NORMAL: return 'bg-blue-100 text-blue-800 border-blue-200';
-      case MODERATION_PRIORITY.LOW: return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800';
+      case MODERATION_PRIORITY.URGENT: return 'lm-badge lm-badge--danger';
+      case MODERATION_PRIORITY.NORMAL: return 'lm-badge lm-badge--info';
+      case MODERATION_PRIORITY.LOW:    return 'lm-badge lm-badge--neutral';
+      default:                          return 'lm-badge lm-badge--neutral';
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusClass = (status: string) => {
     switch (status) {
-      case MODERATION_STATUS.PENDING_REVIEW: return 'bg-yellow-100 text-yellow-800';
-      case MODERATION_STATUS.APPROVED: return 'bg-green-100 text-green-800';
-      case MODERATION_STATUS.REJECTED: return 'bg-red-100 text-red-800';
-      case MODERATION_STATUS.TAKEN_DOWN: return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case MODERATION_STATUS.PENDING_REVIEW: return 'lm-badge lm-badge--warning';
+      case MODERATION_STATUS.APPROVED:       return 'lm-badge lm-badge--success';
+      case MODERATION_STATUS.REJECTED:       return 'lm-badge lm-badge--danger';
+      case MODERATION_STATUS.TAKEN_DOWN:     return 'lm-badge lm-badge--neutral';
+      default:                               return 'lm-badge lm-badge--neutral';
     }
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Listing Moderation</h1>
-        
-        <div className="flex items-center space-x-4">
-          <select 
-            value={statusFilter} 
+    <div className="lm-container">
+      <div className="lm-header">
+        <h1 className="lm-page-title">Listing Moderation</h1>
+        <div className="lm-header-actions">
+          <select
+            value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value as any);
               setPage(0);
               setSelectedIds(new Set());
             }}
-            className="border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            className="lm-filter-select"
           >
             <option value="all">All Statuses</option>
             <option value={MODERATION_STATUS.PENDING_REVIEW}>Pending Review</option>
@@ -91,14 +90,14 @@ export function ListingModerationPage() {
           <button
             onClick={() => handleBatchAction('approve')}
             disabled={selectedIds.size === 0 || batchModerate.isPending}
-            className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium disabled:opacity-50"
+            className="lm-btn lm-btn--success"
           >
             Batch Approve
           </button>
           <button
             onClick={() => handleBatchAction('reject')}
             disabled={selectedIds.size === 0 || batchModerate.isPending}
-            className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium disabled:opacity-50"
+            className="lm-btn lm-btn--danger"
           >
             Batch Reject
           </button>
@@ -106,78 +105,70 @@ export function ListingModerationPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center p-12">Loading listings...</div>
+        <div className="lm-state-msg">Loading listings...</div>
       ) : error ? (
-        <div className="text-red-500 p-4 bg-red-50 rounded-md">Error loading listings.</div>
+        <div className="lm-state-error">Error loading listings.</div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="lm-table-wrap">
+          <table className="lm-table">
+            <thead className="lm-thead">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <input 
-                    type="checkbox" 
+                <th className="lm-th">
+                  <input
+                    type="checkbox"
                     onChange={handleSelectAll}
                     checked={(data?.data?.length ?? 0) > 0 && selectedIds.size === (data?.data?.length ?? 0)}
-                    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seller</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="lm-th">Title</th>
+                <th className="lm-th">Seller</th>
+                <th className="lm-th">Price</th>
+                <th className="lm-th">Status</th>
+                <th className="lm-th">Priority</th>
+                <th className="lm-th">Submitted</th>
+                <th className="lm-th lm-th--right">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {data?.data.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
-                    No listings found.
-                  </td>
+                  <td colSpan={8} className="lm-td-empty">No listings found.</td>
                 </tr>
               ) : (
                 data?.data.map((listing: any) => (
-                  <tr key={listing.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input 
-                        type="checkbox" 
+                  <tr key={listing.id} className="lm-tr">
+                    <td className="lm-td">
+                      <input
+                        type="checkbox"
                         checked={selectedIds.has(listing.id)}
                         onChange={(e) => handleSelectOne(listing.id, e.target.checked)}
-                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900 truncate max-w-xs">{listing.title}</div>
+                    <td className="lm-td">
+                      <div className="lm-cell-title">{listing.title}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
+                    <td className="lm-td">
+                      <div className="lm-seller-cell">
                         {listing.seller?.avatar_url && (
-                          <img className="h-6 w-6 rounded-full mr-2" src={listing.seller.avatar_url} alt="" />
+                          <img className="lm-seller-avatar" src={listing.seller.avatar_url} alt="" />
                         )}
-                        <div className="text-sm text-gray-900">{listing.seller?.display_name || 'Unknown'}</div>
+                        <span className="lm-cell-text">{listing.seller?.display_name || 'Unknown'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${listing.price}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(listing.moderation_status)}`}>
+                    <td className="lm-td lm-cell-muted">${listing.price}</td>
+                    <td className="lm-td">
+                      <span className={getStatusClass(listing.moderation_status)}>
                         {listing.moderation_status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full border ${getPriorityColor(listing.moderation_priority)}`}>
+                    <td className="lm-td">
+                      <span className={getPriorityClass(listing.moderation_priority)}>
                         {listing.moderation_priority}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(listing.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link to={`/moderation/listings/${listing.id}`} className="text-indigo-600 hover:text-indigo-900">
+                    <td className="lm-td lm-cell-muted">{new Date(listing.created_at).toLocaleDateString()}</td>
+                    <td className="lm-td lm-td--right">
+                      <Link to={`/moderation/listings/${listing.id}`} className="lm-review-link">
                         Review
                       </Link>
                     </td>
@@ -191,40 +182,75 @@ export function ListingModerationPage() {
 
       {/* Pagination Controls */}
       {data && data.count > DEFAULT_PAGE_SIZE && (
-        <div className="mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow">
-          <div className="flex flex-1 justify-between sm:hidden">
-            <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</button>
-            <button onClick={() => setPage(p => p + 1)} disabled={(page + 1) * DEFAULT_PAGE_SIZE >= data.count} className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</button>
-          </div>
-          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Showing <span className="font-medium">{page * DEFAULT_PAGE_SIZE + 1}</span> to <span className="font-medium">{Math.min((page + 1) * DEFAULT_PAGE_SIZE, data.count)}</span> of <span className="font-medium">{data.count}</span> results
-              </p>
-            </div>
-            <div>
-              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                <button
-                  onClick={() => setPage(p => Math.max(0, p - 1))}
-                  disabled={page === 0}
-                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                >
-                  <span className="sr-only">Previous</span>
-                  &larr;
-                </button>
-                <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={(page + 1) * DEFAULT_PAGE_SIZE >= data.count}
-                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                >
-                  <span className="sr-only">Next</span>
-                  &rarr;
-                </button>
-              </nav>
-            </div>
+        <div className="lm-pagination">
+          <p className="lm-pagination-info">
+            Showing <strong>{page * DEFAULT_PAGE_SIZE + 1}</strong> to{' '}
+            <strong>{Math.min((page + 1) * DEFAULT_PAGE_SIZE, data.count)}</strong> of{' '}
+            <strong>{data.count}</strong> results
+          </p>
+          <div className="lm-pagination-nav">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="lm-page-btn lm-page-btn--left"
+            >
+              &larr; Previous
+            </button>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={(page + 1) * DEFAULT_PAGE_SIZE >= data.count}
+              className="lm-page-btn lm-page-btn--right"
+            >
+              Next &rarr;
+            </button>
           </div>
         </div>
       )}
+
+      <style>{`
+        .lm-container { padding: var(--spacing-page); max-width: 1280px; margin: 0 auto; }
+        .lm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .lm-page-title { font-size: 24px; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+        .lm-header-actions { display: flex; align-items: center; gap: 12px; }
+        .lm-filter-select { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 13px; color: var(--color-text-primary); background: var(--color-bg-primary); outline: none; }
+        .lm-filter-select:focus { border-color: var(--color-border-focus); }
+        .lm-btn { padding: 8px 16px; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; }
+        .lm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .lm-btn--success { background: var(--color-success); color: #fff; }
+        .lm-btn--danger  { background: var(--color-danger);  color: #fff; }
+        .lm-state-msg { padding: 48px; text-align: center; color: var(--color-text-secondary); font-size: 14px; }
+        .lm-state-error { padding: 16px; background: var(--color-danger-light); color: var(--color-danger); border-radius: var(--radius-sm); font-size: 14px; }
+        .lm-table-wrap { background: var(--color-bg-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-card); overflow: hidden; }
+        .lm-table { width: 100%; border-collapse: collapse; }
+        .lm-thead { background: var(--color-bg-secondary); }
+        .lm-th { padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border-light); }
+        .lm-th--right { text-align: right; }
+        .lm-tr:hover { background: var(--color-bg-secondary); }
+        .lm-td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--color-border-light); white-space: nowrap; }
+        .lm-td--right { text-align: right; }
+        .lm-td-empty { padding: 24px; text-align: center; font-size: 13px; color: var(--color-text-secondary); }
+        .lm-cell-title { font-weight: 500; color: var(--color-text-primary); max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+        .lm-cell-text { color: var(--color-text-primary); }
+        .lm-cell-muted { color: var(--color-text-secondary); }
+        .lm-seller-cell { display: flex; align-items: center; gap: 8px; }
+        .lm-seller-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+        .lm-badge { display: inline-flex; align-items: center; padding: 2px 8px; font-size: 11px; font-weight: 600; border-radius: 999px; white-space: nowrap; }
+        .lm-badge--warning { background: var(--color-warning-light); color: var(--color-warning); }
+        .lm-badge--success { background: var(--color-success-light); color: var(--color-success); }
+        .lm-badge--danger  { background: var(--color-danger-light);  color: var(--color-danger); }
+        .lm-badge--info    { background: var(--color-info-light);    color: var(--color-info); }
+        .lm-badge--neutral { background: var(--color-bg-tertiary);   color: var(--color-text-secondary); }
+        .lm-review-link { color: var(--color-info); font-weight: 500; text-decoration: none; font-size: 13px; }
+        .lm-review-link:hover { text-decoration: underline; }
+        .lm-pagination { margin-top: 16px; display: flex; align-items: center; justify-content: space-between; background: var(--color-bg-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-card); padding: 12px 20px; }
+        .lm-pagination-info { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+        .lm-pagination-nav { display: flex; gap: 4px; }
+        .lm-page-btn { padding: 6px 12px; font-size: 13px; border: 1px solid var(--color-border); background: var(--color-bg-primary); color: var(--color-text-secondary); cursor: pointer; }
+        .lm-page-btn--left  { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+        .lm-page-btn--right { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+        .lm-page-btn:hover:not(:disabled) { background: var(--color-bg-secondary); }
+        .lm-page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      `}</style>
     </div>
   );
 }

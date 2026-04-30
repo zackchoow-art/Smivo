@@ -6,7 +6,8 @@
 export interface AuditLog {
   id: string;
   admin_id: string;
-  action: string;
+  // NOTE: DB column is 'action_type', not 'action'
+  action_type: string;
   target_type: string;
   target_id: string | null;
   college_id: string | null;

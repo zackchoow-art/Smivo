@@ -58,7 +58,7 @@ export function DashboardPage() {
               recentLogs.map((log) => (
                 <div key={log.id} className="log-item">
                   <div className="log-info">
-                    <span className="log-action">{log.action}</span>
+                    <span className="log-action">{log.action_type}</span>
                     <span className="log-target">{log.target_type} {log.target_id?.slice(0, 8)}</span>
                   </div>
                   <span className="log-time">{new Date(log.created_at).toLocaleString()}</span>

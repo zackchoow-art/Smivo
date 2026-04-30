@@ -150,7 +150,7 @@ export function AuditLogPage() {
                       <code className="audit-id">{log.admin_id.slice(0, 8)}</code>
                     </td>
                     <td>
-                      <span className="audit-action-chip">{log.action}</span>
+                      <span className="audit-action-chip">{log.action_type}</span>
                     </td>
                     <td>
                       <span className="audit-target-type">{log.target_type}</span>
