@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreatePushJob } from '@/hooks/usePush';
+import { useCreatePushJob, useSendPushJob } from '@/hooks/usePush';
 import { useAuth } from '@/hooks/useAuth';
 import type { PushAudienceType, PushStatus } from '@/types';
 
@@ -8,6 +8,7 @@ export function PushCreatePage() {
   const navigate = useNavigate();
   const { admin } = useAuth();
   const createMutation = useCreatePushJob();
+  const sendMutation = useSendPushJob();
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -16,7 +17,7 @@ export function PushCreatePage() {
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent, status: PushStatus) => {
+  const handleSubmit = async (e: React.FormEvent, sendNow: boolean) => {
     e.preventDefault();
     if (!title.trim() || !body.trim()) {
       alert('Title and body are required.');
@@ -24,7 +25,8 @@ export function PushCreatePage() {
     }
 
     try {
-      await createMutation.mutateAsync({
+      const status: PushStatus = isScheduled ? 'scheduled' : (sendNow ? 'sending' : 'draft');
+      const job = await createMutation.mutateAsync({
         title,
         body,
         deep_link: deepLink || null,
@@ -37,6 +39,18 @@ export function PushCreatePage() {
         status,
         created_by: admin?.user_id || null,
       });
+
+      // If sending immediately, invoke the Edge Function
+      if (sendNow && !isScheduled) {
+        try {
+          await sendMutation.mutateAsync(job.id);
+          alert('Push notification sent successfully!');
+        } catch (sendErr) {
+          console.error('Send failed:', sendErr);
+          alert('Push job created but send failed. Check Push History for details.');
+        }
+      }
+
       navigate('/push/history');
     } catch (err) {
       console.error('Failed to create push job', err);
@@ -159,19 +173,19 @@ export function PushCreatePage() {
             </button>
             <button
               type="button"
-              onClick={(e) => handleSubmit(e, 'draft')}
-              disabled={createMutation.isPending}
+              onClick={(e) => handleSubmit(e, false)}
+              disabled={createMutation.isPending || sendMutation.isPending}
               className="pc-btn pc-btn--secondary"
             >
               Save as Draft
             </button>
             <button
               type="submit"
-              onClick={(e) => handleSubmit(e, isScheduled ? 'scheduled' : 'draft')}
-              disabled={createMutation.isPending}
+              onClick={(e) => handleSubmit(e, !isScheduled)}
+              disabled={createMutation.isPending || sendMutation.isPending}
               className="pc-btn pc-btn--primary"
             >
-              {isScheduled ? 'Schedule Push' : 'Create & Send Now'}
+              {sendMutation.isPending ? 'Sending...' : isScheduled ? 'Schedule Push' : 'Create & Send Now'}
             </button>
           </div>
 

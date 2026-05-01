@@ -5,6 +5,7 @@
 import { useAuthStore } from '@/stores/auth-store';
 import { useSchoolScopeStore } from '@/stores/school-scope-store';
 import { useAdminRole } from '@/hooks/useAdminRole';
+import { useColleges } from '@/hooks/useColleges';
 import { useAuth } from '@/hooks/useAuth';
 import { GlobalSearch } from '@/components/shared/GlobalSearch';
 import { Bell, LogOut, User } from 'lucide-react';
@@ -13,9 +14,22 @@ import { useState } from 'react';
 export function TopBar() {
   const { admin } = useAuthStore();
   const { currentCollegeId } = useSchoolScopeStore();
-  const { showSchoolSwitcher } = useAdminRole();
+  const { showSchoolSwitcher, isSuperAdmin } = useAdminRole();
   const { logout } = useAuth();
+  const { data: colleges } = useColleges();
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // Resolve school name from the colleges list
+  const currentSchoolName = currentCollegeId
+    ? colleges?.find((c) => c.id === currentCollegeId)?.name ?? 'Loading...'
+    : null;
+
+  // Display label: school name for school admins, "All Platform" for platform view
+  const scopeLabel = currentSchoolName
+    ? `🏫 ${currentSchoolName}`
+    : isSuperAdmin
+      ? '🌐 All Platform'
+      : '🏫 No School Selected';
 
   return (
     <header className="topbar">
@@ -28,10 +42,10 @@ export function TopBar() {
       <GlobalSearch />
 
       <div className="topbar__right">
-        {/* School switcher placeholder — full implementation in Phase 2 */}
+        {/* School scope indicator — shows actual school name */}
         {showSchoolSwitcher && (
           <div className="topbar__school">
-            🏫 {currentCollegeId ? 'School View' : 'Platform View'}
+            {scopeLabel}
           </div>
         )}
 

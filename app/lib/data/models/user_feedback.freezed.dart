@@ -220,7 +220,7 @@ return $default(_that.id,_that.userId,_that.type,_that.title,_that.description,_
 @JsonSerializable()
 
 class _UserFeedback implements UserFeedback {
-  const _UserFeedback({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.type, required this.title, required this.description, @JsonKey(name: 'screenshot_url') this.screenshotUrl, @JsonKey(name: 'device_info') final  Map<String, dynamic>? deviceInfo, this.status = 'pending', @JsonKey(name: 'admin_response') this.adminResponse, @JsonKey(name: 'points_awarded') this.pointsAwarded = 0, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt}): _deviceInfo = deviceInfo;
+  const _UserFeedback({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.type, required this.title, required this.description, @JsonKey(name: 'screenshot_url') this.screenshotUrl, @JsonKey(name: 'device_info') final  Map<String, dynamic>? deviceInfo, this.status = 'submitted', @JsonKey(name: 'admin_response') this.adminResponse, @JsonKey(name: 'points_awarded') this.pointsAwarded = 0, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt}): _deviceInfo = deviceInfo;
   factory _UserFeedback.fromJson(Map<String, dynamic> json) => _$UserFeedbackFromJson(json);
 
 @override final  String id;

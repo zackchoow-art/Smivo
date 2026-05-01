@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { useAuditLogs, type AuditLogFilters } from '@/hooks/useAuditLogs';
 import { AuditDetailDialog } from '@/components/audit/AuditDetailDialog';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
+import { translateAction, translateTarget } from '@/lib/audit-translations';
 import type { AuditLog } from '@/types';
 
 export function AuditLogPage() {
@@ -150,10 +151,10 @@ export function AuditLogPage() {
                       <code className="audit-id">{log.admin_id.slice(0, 8)}</code>
                     </td>
                     <td>
-                      <span className="audit-action-chip">{log.action_type}</span>
+                      <span className="audit-action-chip">{translateAction(log.action_type)}</span>
                     </td>
                     <td>
-                      <span className="audit-target-type">{log.target_type}</span>
+                      <span className="audit-target-type">{translateTarget(log.target_type)}</span>
                       {log.target_id && (
                         <code className="audit-id"> {log.target_id.slice(0, 8)}</code>
                       )}

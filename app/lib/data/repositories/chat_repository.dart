@@ -109,6 +109,26 @@ class ChatRepository {
     }
   }
 
+  /// Fetches messages for a chat room within a specific date range.
+  Future<List<Message>> fetchMessagesInWindow({
+    required String chatRoomId,
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableMessages)
+          .select('*, sender:user_profiles!sender_id(*)')
+          .eq('chat_room_id', chatRoomId)
+          .gte('created_at', start.toIso8601String())
+          .lte('created_at', end.toIso8601String())
+          .order('created_at', ascending: true);
+      return data.map((json) => Message.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Sends a new message in a chat room.
   Future<Message> sendMessage({
     required String chatRoomId,

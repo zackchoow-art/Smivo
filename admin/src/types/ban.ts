@@ -1,16 +1,21 @@
 /**
- * Ban record types — for the ban management page.
- * Defined in 04_ADMIN_WEB_SPEC.md §12.
+ * Ban / Restriction record types — for the ban management page.
+ * Supports granular restriction scopes: chat_mute, listing_ban,
+ * feedback_ban, account_freeze.
  */
 
 export type BanType = 'temporary' | 'permanent';
 export type BanStatus = 'active' | 'expired' | 'lifted';
+
+/** Restriction scopes — each can be applied independently */
+export type RestrictionScope = 'chat_mute' | 'listing_ban' | 'feedback_ban' | 'account_freeze';
 
 export interface UserBan {
   id: string;
   user_id: string;
   college_id: string;
   ban_type: BanType;
+  scope: RestrictionScope;
   reason_code: string;
   reason_detail: string;
   duration_days: number | null;
@@ -32,4 +37,19 @@ export interface BanWithUser extends UserBan {
   user_email: string;
   banned_by_name: string | null;
   status: BanStatus;
+}
+
+/** Summary of active restrictions for a user (used in user list view) */
+export interface UserRestrictionSummary {
+  user_id: string;
+  active_scopes: RestrictionScope[];
+}
+
+/** Metadata for each restriction scope */
+export interface RestrictionScopeMeta {
+  key: RestrictionScope;
+  label: string;
+  description: string;
+  icon: string;
+  color: string;
 }

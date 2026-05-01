@@ -18,6 +18,11 @@ _ContentReport _$ContentReportFromJson(Map<String, dynamic> json) =>
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       resolutionNote: json['resolution_note'] as String?,
+      selectedMessageIds:
+          (json['selected_message_ids'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList(),
+      evidence: json['evidence'] as Map<String, dynamic>?,
       reportedUser:
           json['reported_user'] == null
               ? null
@@ -42,6 +47,8 @@ Map<String, dynamic> _$ContentReportToJson(_ContentReport instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
       'resolution_note': instance.resolutionNote,
+      'selected_message_ids': instance.selectedMessageIds,
+      'evidence': instance.evidence,
       'reported_user': instance.reportedUser,
       'listing': instance.listing,
     };

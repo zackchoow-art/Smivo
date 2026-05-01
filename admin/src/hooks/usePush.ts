@@ -96,3 +96,74 @@ export function useCreatePushJob() {
     },
   });
 }
+
+/**
+ * Sends a push job by calling the broadcast-announcement Edge Function.
+ * Updates the push_jobs record status to 'sent' or 'failed'.
+ */
+export function useSendPushJob() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (jobId: string) => {
+      // 1. Fetch the job to get title/body/audience
+      const { data: job, error: fetchError } = await supabase
+        .from(TABLES.PUSH_JOBS)
+        .select('*')
+        .eq('id', jobId)
+        .single();
+
+      if (fetchError || !job) throw new Error('Push job not found');
+
+      // 2. Mark as sending
+      await supabase
+        .from(TABLES.PUSH_JOBS)
+        .update({ status: 'sending' })
+        .eq('id', jobId);
+
+      // 3. Invoke the broadcast-announcement Edge Function
+      const { data, error: fnError } = await supabase.functions.invoke(
+        'broadcast-announcement',
+        {
+          body: {
+            title: job.title,
+            body: job.body,
+            deep_link: job.deep_link,
+            audience_type: job.audience_type,
+            push_job_id: jobId,
+          },
+        }
+      );
+
+      if (fnError) {
+        // Mark as failed with error details
+        await supabase
+          .from(TABLES.PUSH_JOBS)
+          .update({
+            status: 'failed',
+            failure_breakdown: { error: fnError.message },
+          })
+          .eq('id', jobId);
+        throw fnError;
+      }
+
+      // 4. Mark as sent with delivery stats
+      const now = new Date().toISOString();
+      await supabase
+        .from(TABLES.PUSH_JOBS)
+        .update({
+          status: 'sent',
+          sent_at: now,
+          recipients_count: data?.recipients_count ?? null,
+          delivered_count: data?.delivered_count ?? 0,
+          onesignal_id: data?.onesignal_id ?? null,
+        })
+        .eq('id', jobId);
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEY });
+    },
+  });
+}

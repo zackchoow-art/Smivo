@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, User, ShieldAlert } from 'lucide-react';
 import { useUsers } from '@/hooks/useUsers';
-import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
+import { DEFAULT_PAGE_SIZE, RESTRICTION_SCOPE_META } from '@/lib/constants';
 
 export function UsersPage() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export function UsersPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(0); // Reset to first page on search
+    setPage(0);
   };
 
   return (
@@ -40,45 +40,71 @@ export function UsersPage() {
               <th>User</th>
               <th>Email</th>
               <th>School</th>
+              <th>Restrictions</th>
               <th>Last Active</th>
               <th>Joined</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={5} className="table-loading">Loading users...</td></tr>
+              <tr><td colSpan={6} className="table-loading">Loading users...</td></tr>
             ) : error ? (
-              <tr><td colSpan={5} className="table-error">Error loading users</td></tr>
+              <tr><td colSpan={6} className="table-error">Error loading users</td></tr>
             ) : data?.data.length === 0 ? (
-              <tr><td colSpan={5} className="table-empty">No users found</td></tr>
+              <tr><td colSpan={6} className="table-empty">No users found</td></tr>
             ) : (
-              data?.data.map((user) => (
-                <tr key={user.id} onClick={() => navigate(`/users/${user.id}`)} className="clickable-row">
-                  <td>
-                    <div className="user-cell">
-                      {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="" className="user-avatar" />
+              data?.data.map((user) => {
+                const restrictions: string[] = (user as any).active_restrictions || [];
+                return (
+                  <tr key={user.id} onClick={() => navigate(`/users/${user.id}`)} className="clickable-row">
+                    <td>
+                      <div className="user-cell">
+                        {user.avatar_url ? (
+                          <img src={user.avatar_url} alt="" className="user-avatar" />
+                        ) : (
+                          <div className="user-avatar-placeholder"><User size={14} /></div>
+                        )}
+                        <span className="user-name">{user.display_name || 'Anonymous'}</span>
+                      </div>
+                    </td>
+                    <td><span className="user-email">{user.email}</span></td>
+                    <td><span className="user-college">{(user as any).school || '—'}</span></td>
+                    <td>
+                      {restrictions.length > 0 ? (
+                        <div className="restriction-pills">
+                          {restrictions.map((scope) => {
+                            const meta = RESTRICTION_SCOPE_META[scope];
+                            if (!meta) return null;
+                            return (
+                              <span
+                                key={scope}
+                                className="restriction-pill"
+                                style={{ backgroundColor: meta.bgColor, color: meta.color }}
+                                title={meta.description}
+                              >
+                                {meta.icon} {meta.label}
+                              </span>
+                            );
+                          })}
+                        </div>
                       ) : (
-                        <div className="user-avatar-placeholder"><User size={14} /></div>
+                        <span className="no-restrictions">—</span>
                       )}
-                      <span className="user-name">{user.display_name || 'Anonymous'}</span>
-                    </div>
-                  </td>
-                  <td><span className="user-email">{user.email}</span></td>
-                  <td><span className="user-college">{(user as any).school || '—'}</span></td>
-                  <td>
-                    <span className="user-active">
-                      {user.last_active_at
-                        ? new Date(user.last_active_at).toLocaleString('en-US', {
-                            year: 'numeric', month: 'short', day: 'numeric',
-                            hour: '2-digit', minute: '2-digit',
-                          })
-                        : 'Never'}
-                    </span>
-                  </td>
-                  <td><span className="user-joined">{new Date(user.created_at).toLocaleDateString()}</span></td>
-                </tr>
-              ))
+                    </td>
+                    <td>
+                      <span className="user-active">
+                        {user.last_active_at
+                          ? new Date(user.last_active_at).toLocaleString('en-US', {
+                              year: 'numeric', month: 'short', day: 'numeric',
+                              hour: '2-digit', minute: '2-digit',
+                            })
+                          : 'Never'}
+                      </span>
+                    </td>
+                    <td><span className="user-joined">{new Date(user.created_at).toLocaleDateString()}</span></td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -222,6 +248,28 @@ export function UsersPage() {
 
         .user-college {
           color: var(--color-text-secondary);
+          font-size: 13px;
+        }
+
+        .restriction-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+        }
+
+        .restriction-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        .no-restrictions {
+          color: var(--color-text-tertiary);
           font-size: 13px;
         }
 

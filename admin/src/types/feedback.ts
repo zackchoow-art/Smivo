@@ -11,8 +11,8 @@ export type FeedbackType = 'bug_report' | 'feature_request' | 'general';
 // Kept for backward-compat; FeedbackCategory is an alias of FeedbackType
 export type FeedbackCategory = FeedbackType;
 
-// DB enum values for status
-export type FeedbackStatus = 'pending' | 'reviewing' | 'resolved' | 'closed';
+// DB enum values for status (updated in migration 00051)
+export type FeedbackStatus = 'submitted' | 'read' | 'accepted' | 'high_contribution';
 
 // Internal judgment values stored in admin_response prefix
 export type FeedbackJudgment =
@@ -79,8 +79,8 @@ export const BADGE_DEFINITIONS: Record<
   string,
   { emoji: string; label: string; threshold: number }
 > = {
-  smivo_explorer: { emoji: '🌱', label: 'Smivo 探索者', threshold: 10 },
-  bug_hunter: { emoji: '🔧', label: 'Bug 猎人', threshold: 50 },
-  smivo_guardian: { emoji: '💎', label: '校园守护者', threshold: 100 },
-  smivo_builder: { emoji: '👑', label: 'Smivo 共建者', threshold: 500 },
+  smivo_explorer: { emoji: '🌱', label: 'Smivo Explorer', threshold: 10 },
+  bug_hunter: { emoji: '🔧', label: 'Bug Hunter', threshold: 50 },
+  smivo_guardian: { emoji: '💎', label: 'Campus Guardian', threshold: 100 },
+  smivo_builder: { emoji: '👑', label: 'Smivo Builder', threshold: 500 },
 };

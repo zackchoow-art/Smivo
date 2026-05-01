@@ -41,7 +41,7 @@ export function FeedbackListPage() {
             </select>
           </div>
           <div className="filter-group">
-            {/* NOTE: Option values match DB enum: pending / reviewing / resolved / closed */}
+            {/* NOTE: Option values match DB enum: submitted / read / accepted / high_contribution */}
             <select
               value={status}
               onChange={(e) => {
@@ -50,10 +50,10 @@ export function FeedbackListPage() {
               }}
             >
               <option value="">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="reviewing">Reviewing</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
+              <option value="submitted">Submitted</option>
+              <option value="read">Read</option>
+              <option value="accepted">Accepted</option>
+              <option value="high_contribution">High Contribution</option>
             </select>
           </div>
         </div>
@@ -320,15 +320,15 @@ function CategoryBadge({ category }: { category: FeedbackType }) {
 // NOTE: DB status enum values are 'pending' | 'reviewing' | 'resolved' | 'closed'
 function StatusBadge({ status }: { status: FeedbackStatus }) {
   const styles: Record<FeedbackStatus, { bg: string; text: string }> = {
-    pending: { bg: '#fef3c7', text: '#d97706' },
-    reviewing: { bg: '#e0f2fe', text: '#0284c7' },
-    resolved: { bg: '#dcfce7', text: '#16a34a' },
-    closed: { bg: '#f3f4f6', text: '#6b7280' },
+    submitted: { bg: '#fef3c7', text: '#d97706' },
+    read: { bg: '#e0f2fe', text: '#0284c7' },
+    accepted: { bg: '#dcfce7', text: '#16a34a' },
+    high_contribution: { bg: '#e8f5e9', text: '#2e7d32' },
   };
-  const style = styles[status] ?? styles.pending;
+  const style = styles[status] ?? styles.submitted;
   return (
     <span className="badge" style={{ backgroundColor: style.bg, color: style.text }}>
-      {status}
+      {status.replace('_', ' ')}
     </span>
   );
 }

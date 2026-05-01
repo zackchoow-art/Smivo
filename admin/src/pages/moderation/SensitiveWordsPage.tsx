@@ -141,7 +141,7 @@ export function SensitiveWordsPage() {
             <div className="sw-sync-group">
               <span className="sw-sync-label">Languages</span>
               <label className="sw-sync-check"><input type="checkbox" checked={syncLangs.en} onChange={e => setSyncLangs(p => ({...p, en: e.target.checked}))}/> English (403 words)</label>
-              <label className="sw-sync-check"><input type="checkbox" checked={syncLangs.zh} onChange={e => setSyncLangs(p => ({...p, zh: e.target.checked}))}/> 中文 (319 words)</label>
+              <label className="sw-sync-check"><input type="checkbox" checked={syncLangs.zh} onChange={e => setSyncLangs(p => ({...p, zh: e.target.checked}))}/> Chinese (319 words)</label>
             </div>
             <div className="sw-sync-group">
               <span className="sw-sync-label">Import Mode</span>

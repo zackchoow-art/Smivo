@@ -105,7 +105,7 @@ export function useResolveFeedback() {
       const { error: updateError } = await supabase
         .from(TABLES.USER_FEEDBACKS)
         .update({
-          status: 'resolved',
+          status: 'accepted',             // DB constraint: submitted|read|accepted|high_contribution
           admin_response: adminResponse,   // DB column: admin_response
           points_awarded: points,          // DB column: points_awarded
         })

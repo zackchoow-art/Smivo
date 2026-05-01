@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/content_report.dart';
 
@@ -17,13 +18,14 @@ class _FlippableReportCardState extends State<FlippableReportCard>
   late AnimationController _controller;
   late Animation<double> _animation;
   bool _isFront = true;
+  bool _isExpanded = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 400),
     );
     _animation = Tween<double>(
       begin: 0,
@@ -53,127 +55,190 @@ class _FlippableReportCardState extends State<FlippableReportCard>
       child: AnimatedBuilder(
         animation: _animation,
         builder: (context, child) {
-          final transform =
-              Matrix4.identity()
-                ..setEntry(3, 2, 0.001)
-                ..rotateY(_animation.value * pi);
+          final transform = Matrix4.identity()
+            ..setEntry(3, 2, 0.001)
+            ..rotateY(_animation.value * pi);
 
           final isFrontFacing = _animation.value < 0.5;
 
           return Transform(
             transform: transform,
             alignment: Alignment.center,
-            child: isFrontFacing ? _buildFrontSide() : _buildBackSide(),
+            child: isFrontFacing ? _buildFrontSide(context) : _buildBackSide(context),
           );
         },
       ),
     );
   }
 
-  Widget _buildFrontSide() {
+  Widget _buildFrontSide(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
+    final f = widget.report;
 
-    final isListingReport = widget.report.listingId != null;
-    final targetName =
-        isListingReport
-            ? (widget.report.listing?.title ?? 'Unknown Listing')
-            : (widget.report.reportedUser?.displayName ?? 'Unknown User');
+    final isListingReport = f.listingId != null;
+    final targetName = isListingReport
+        ? (f.listing?.title ?? 'Unknown Listing')
+        : (f.reportedUser?.displayName ?? 'Unknown User');
 
-    final displayStatus =
-        widget.report.status.substring(0, 1).toUpperCase() +
-        widget.report.status.substring(1);
+    final dateStr = DateFormat('MMM d, yyyy HH:mm').format(f.createdAt.toLocal());
+
+    Color statusColor;
+    Color statusBgColor;
+    String statusText;
+
+    switch (f.status) {
+      case 'pending':
+        statusColor = colors.error;
+        statusBgColor = colors.error.withAlpha(20);
+        statusText = 'Pending';
+        break;
+      case 'reviewed':
+        statusColor = colors.primary;
+        statusBgColor = colors.primary.withAlpha(20);
+        statusText = 'Under Review';
+        break;
+      case 'resolved':
+        statusColor = colors.success;
+        statusBgColor = colors.success.withAlpha(20);
+        statusText = 'Action Taken';
+        break;
+      case 'dismissed':
+        statusColor = colors.onSurfaceVariant;
+        statusBgColor = colors.surfaceContainerHighest;
+        statusText = 'Dismissed';
+        break;
+      default:
+        statusColor = colors.onSurfaceVariant;
+        statusBgColor = colors.surfaceContainerHighest;
+        statusText = f.status.toUpperCase();
+    }
+
+    final String reportType = isListingReport ? 'REPORTED LISTING' : 'REPORTED USER';
 
     return Container(
+      constraints: const BoxConstraints(minHeight: 140),
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(radius.lg),
         border: Border.all(color: colors.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(16),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildImageOrAvatar(),
-              const SizedBox(height: 8),
-              Text(
-                widget.report.createdAt.toLocal().toString().split(' ')[0],
-                style: typo.labelSmall.copyWith(color: colors.outline),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        reportType,
+                        style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      targetName,
+                      style: typo.titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusBgColor,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: typo.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    dateStr,
+                    style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
+          const SizedBox(height: 12),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Text(
-                        targetName,
-                        style: typo.titleMedium.copyWith(
-                          color: colors.onSurface,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        'Reason: ${f.reason}',
+                        style: typo.bodyMedium.copyWith(color: colors.onSurface),
+                        maxLines: _isExpanded ? null : 1,
+                        overflow: _isExpanded ? null : TextOverflow.ellipsis,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            widget.report.status == 'pending'
-                                ? colors.errorContainer
-                                : colors.secondaryContainer,
-                        borderRadius: BorderRadius.circular(radius.sm),
-                      ),
-                      child: Text(
-                        displayStatus,
-                        style: typo.labelSmall.copyWith(
-                          color:
-                              widget.report.status == 'pending'
-                                  ? colors.error
-                                  : colors.onSecondaryContainer,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                    if (!_isExpanded && _hasImageOrAvatar()) ...[
+                      const SizedBox(width: 12),
+                      _buildImageOrAvatar(),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Reason: ${widget.report.reason}',
-                  style: typo.bodyMedium.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (widget.report.status != 'pending') ...[
+                if (_isExpanded && _hasImageOrAvatar()) ...[
                   const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Tap to view resolution',
-                          style: typo.bodySmall.copyWith(color: colors.primary),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.flip, size: 14, color: colors.primary),
-                      ],
-                    ),
-                  ),
+                  _buildImageOrAvatar(expanded: true),
                 ],
               ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_isExpanded ? 'Show less' : 'Details', style: typo.labelSmall.copyWith(color: colors.primary)),
+                    Icon(_isExpanded ? Icons.expand_less : Icons.expand_more, color: colors.primary, size: 20),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -181,62 +246,92 @@ class _FlippableReportCardState extends State<FlippableReportCard>
     );
   }
 
-  Widget _buildImageOrAvatar() {
+  bool _hasImageOrAvatar() {
+    if (widget.report.listingId != null) {
+      return widget.report.listing?.images.isNotEmpty == true;
+    }
+    return widget.report.reportedUser?.avatarUrl != null;
+  }
+
+  Widget _buildImageOrAvatar({bool expanded = false}) {
     final colors = context.smivoColors;
     final isListingReport = widget.report.listingId != null;
 
     if (isListingReport) {
-      final imageUrl =
-          widget.report.listing?.images.isNotEmpty == true
-              ? widget.report.listing!.images.first.imageUrl
-              : null;
-      return Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          color: colors.surfaceContainer,
-          borderRadius: BorderRadius.circular(context.smivoRadius.sm),
+      final imageUrl = widget.report.listing?.images.isNotEmpty == true
+          ? widget.report.listing!.images.first.imageUrl
+          : null;
+      if (imageUrl == null) return const SizedBox.shrink();
+
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(context.smivoRadius.sm),
+        child: Image.network(
+          imageUrl,
+          width: expanded ? double.infinity : 40,
+          height: expanded ? 160 : 40,
+          fit: BoxFit.cover,
         ),
-        clipBehavior: Clip.antiAlias,
-        child:
-            imageUrl != null
-                ? Image.network(imageUrl, fit: BoxFit.cover)
-                : Icon(Icons.storefront, color: colors.onSurfaceVariant),
       );
     } else {
       final avatarUrl = widget.report.reportedUser?.avatarUrl;
-      return CircleAvatar(
-        radius: 25,
-        backgroundColor: colors.surfaceContainer,
-        backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-        child:
-            avatarUrl == null
-                ? Icon(Icons.person, color: colors.onSurfaceVariant)
-                : null,
-      );
+      if (avatarUrl == null) return const SizedBox.shrink();
+
+      if (expanded) {
+        return Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: colors.surfaceContainer,
+              backgroundImage: NetworkImage(avatarUrl),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              widget.report.reportedUser?.displayName ?? 'Unknown',
+              style: context.smivoTypo.bodyMedium,
+            ),
+          ],
+        );
+      } else {
+        return CircleAvatar(
+          radius: 20,
+          backgroundColor: colors.surfaceContainer,
+          backgroundImage: NetworkImage(avatarUrl),
+        );
+      }
     }
   }
 
-  Widget _buildBackSide() {
+  Widget _buildBackSide(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
+    final f = widget.report;
 
-    final note = widget.report.resolutionNote;
-    final isPending = widget.report.status == 'pending';
+    final responseDate = DateFormat('MMM d, yyyy HH:mm').format(f.updatedAt.toLocal());
+    final note = f.resolutionNote;
+    final isPending = f.status == 'pending';
 
-    // Wrapping in Transform to correct mirroring caused by rotateY(pi)
+    String statusText;
+    Color statusColor;
+    if (isPending) {
+      statusText = 'Pending';
+      statusColor = colors.error;
+    } else {
+      statusText = 'Reviewed';
+      statusColor = colors.success;
+    }
+
     return Transform(
       transform: Matrix4.rotationY(pi),
       alignment: Alignment.center,
       child: Container(
+        constraints: const BoxConstraints(minHeight: 140),
         width: double.infinity,
         decoration: BoxDecoration(
-          color: colors.surfaceContainerLowest,
+          color: colors.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(radius.lg),
           border: Border.all(
-            color: colors.primary.withValues(alpha: 0.5),
-            width: 1.5,
+            color: colors.outlineVariant.withAlpha(50),
           ),
         ),
         padding: const EdgeInsets.all(16),
@@ -244,16 +339,31 @@ class _FlippableReportCardState extends State<FlippableReportCard>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.gavel, size: 20, color: colors.primary),
-                const SizedBox(width: 8),
-                Text(
-                  'Platform Resolution',
-                  style: typo.titleMedium.copyWith(color: colors.primary),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 12,
+                      backgroundColor: colors.error,
+                      child: const Icon(Icons.shield, size: 14, color: Colors.white),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('Trust & Safety Team', style: typo.labelLarge.copyWith(color: colors.onSurface)),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(statusText, style: typo.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 2),
+                    Text(responseDate, style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant)),
+                  ],
                 ),
               ],
             ),
-            Divider(height: 24, color: colors.outlineVariant),
+            const SizedBox(height: 16),
             if (note != null && note.isNotEmpty) ...[
               Text(
                 note,
@@ -267,6 +377,39 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                 style: typo.bodyMedium.copyWith(
                   color: colors.onSurfaceVariant,
                   fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+            // Since this is a report and not feedback, there are no contribution points shown by default.
+            // But we add the layout structure just in case.
+            if (!isPending) ...[
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: f.status == 'dismissed' ? colors.surfaceContainerHighest : colors.error,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        f.status == 'dismissed' ? Icons.info_outline : Icons.gavel, 
+                        color: f.status == 'dismissed' ? colors.onSurfaceVariant : Colors.white, 
+                        size: 16
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        f.status == 'dismissed' ? 'No violation found' : 'Action Taken',
+                        style: typo.labelSmall.copyWith(
+                          color: f.status == 'dismissed' ? colors.onSurfaceVariant : Colors.white, 
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

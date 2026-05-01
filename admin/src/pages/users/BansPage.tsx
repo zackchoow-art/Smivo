@@ -10,20 +10,22 @@ import {
 } from 'lucide-react';
 import { useBans, useCreateBan, useLiftBan } from '@/hooks/useBans';
 import { useAuth } from '@/hooks/useAuth';
-import { DEFAULT_PAGE_SIZE, BAN_TYPES, TABLES } from '@/lib/constants';
+import { DEFAULT_PAGE_SIZE, BAN_TYPES, RESTRICTION_SCOPE_META, TABLES } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
-import type { BanType, BanStatus } from '@/types/ban';
+import type { BanType, BanStatus, RestrictionScope } from '@/types/ban';
 import type { UserProfile } from '@/types/user-profile';
 
 export function BansPage() {
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState<BanStatus | ''>('active');
   const [type, setType] = useState<BanType | ''>('');
+  const [scopeFilter, setScopeFilter] = useState<RestrictionScope | ''>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, isLoading, error } = useBans(page, {
     status: status || undefined,
-    type: type || undefined
+    type: type || undefined,
+    scope: scopeFilter || undefined,
   });
 
   const liftBanMutation = useLiftBan();
@@ -77,6 +79,17 @@ export function BansPage() {
         </div>
         <div className="filter-group">
           <select 
+            value={scopeFilter} 
+            onChange={(e) => { setScopeFilter(e.target.value as RestrictionScope | ''); setPage(0); }}
+          >
+            <option value="">All Scopes</option>
+            {Object.entries(RESTRICTION_SCOPE_META).map(([key, meta]) => (
+              <option key={key} value={key}>{meta.icon} {meta.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="filter-group">
+          <select 
             value={status} 
             onChange={(e) => { setStatus(e.target.value as BanStatus | ''); setPage(0); }}
           >
@@ -93,6 +106,7 @@ export function BansPage() {
           <thead>
             <tr>
               <th>User</th>
+              <th>Scope</th>
               <th>Type</th>
               <th>Reason</th>
               <th>Status</th>
@@ -103,41 +117,49 @@ export function BansPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={7} className="table-loading">Loading bans...</td></tr>
+              <tr><td colSpan={8} className="table-loading">Loading bans...</td></tr>
             ) : error ? (
-              <tr><td colSpan={7} className="table-error">Error loading bans</td></tr>
+              <tr><td colSpan={8} className="table-error">Error loading bans</td></tr>
             ) : data?.data.length === 0 ? (
-              <tr><td colSpan={7} className="table-empty">No ban records found</td></tr>
+              <tr><td colSpan={8} className="table-empty">No ban records found</td></tr>
             ) : (
-              data?.data.map((item) => (
-                <tr key={item.id}>
-                  <td className="user-cell">
-                    <div className="user-name">{item.user_display_name || 'User'}</div>
-                    <div className="user-email">{item.user_email}</div>
-                  </td>
-                  <td><BanTypeBadge type={item.ban_type} /></td>
-                  <td className="reason-cell">
-                    <div className="reason-code">{item.reason_code}</div>
-                    <div className="reason-detail">{item.reason_detail}</div>
-                  </td>
-                  <td><BanStatusBadge status={item.status} /></td>
-                  <td className="time-cell">
-                    {item.expires_at ? new Date(item.expires_at).toLocaleDateString() : 'Permanent'}
-                  </td>
-                  <td><span className="admin-name">{item.banned_by_name || 'Admin'}</span></td>
-                  <td className="actions-cell">
-                    {item.status === 'active' && (
-                      <button 
-                        className="lift-btn" 
-                        onClick={() => handleLiftBan(item.id)}
-                        disabled={liftBanMutation.isPending}
-                      >
-                        <UserMinus size={14} /> Lift
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))
+              data?.data.map((item) => {
+                const scopeMeta = RESTRICTION_SCOPE_META[item.scope] || { icon: '❓', label: item.scope, color: '#666', bgColor: '#eee' };
+                return (
+                  <tr key={item.id}>
+                    <td className="user-cell">
+                      <div className="user-name">{item.user_display_name || 'User'}</div>
+                      <div className="user-email">{item.user_email}</div>
+                    </td>
+                    <td>
+                      <span className="scope-badge" style={{ backgroundColor: scopeMeta.bgColor, color: scopeMeta.color }}>
+                        {scopeMeta.icon} {scopeMeta.label}
+                      </span>
+                    </td>
+                    <td><BanTypeBadge type={item.ban_type} /></td>
+                    <td className="reason-cell">
+                      <div className="reason-code">{item.reason_code}</div>
+                      <div className="reason-detail">{item.reason_detail}</div>
+                    </td>
+                    <td><BanStatusBadge status={item.status} /></td>
+                    <td className="time-cell">
+                      {item.expires_at ? new Date(item.expires_at).toLocaleDateString() : 'Permanent'}
+                    </td>
+                    <td><span className="admin-name">{item.banned_by_name || 'Admin'}</span></td>
+                    <td className="actions-cell">
+                      {item.status === 'active' && (
+                        <button 
+                          className="lift-btn" 
+                          onClick={() => handleLiftBan(item.id)}
+                          disabled={liftBanMutation.isPending}
+                        >
+                          <UserMinus size={14} /> Lift
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -307,6 +329,17 @@ export function BansPage() {
           text-transform: uppercase;
         }
 
+        .scope-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          padding: 3px 10px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
         .time-cell {
           font-size: 12px;
           color: var(--color-text-secondary);
@@ -400,6 +433,7 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
   const [foundUsers, setFoundUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [banType, setBanType] = useState<BanType>('temporary');
+  const [banScope, setBanScope] = useState<RestrictionScope>('chat_mute');
   const [duration, setDuration] = useState('7');
   const [reasonCode, setReasonCode] = useState('violation_policy');
   const [reasonDetail, setReasonDetail] = useState('');
@@ -432,6 +466,7 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
         userId: selectedUser.id,
         collegeId: selectedUser.college_id,
         banType,
+        scope: banScope,
         reasonCode,
         reasonDetail,
         durationDays: banType === 'temporary' ? parseInt(duration) : null,
@@ -492,9 +527,18 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
                 <button className="change-btn" onClick={() => setSelectedUser(null)}>Change</button>
               </div>
 
+              <div className="form-group">
+                <label>Restriction Scope</label>
+                <select value={banScope} onChange={(e) => setBanScope(e.target.value as RestrictionScope)}>
+                  {Object.entries(RESTRICTION_SCOPE_META).map(([key, meta]) => (
+                    <option key={key} value={key}>{meta.icon} {meta.label} — {meta.description}</option>
+                  ))}
+                </select>
+              </div>
+
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Ban Type</label>
+                  <label>Duration Type</label>
                   <select value={banType} onChange={(e) => setBanType(e.target.value as BanType)}>
                     <option value="temporary">Temporary</option>
                     <option value="permanent">Permanent</option>
@@ -508,8 +552,10 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
                       <option value="1">1 Day</option>
                       <option value="3">3 Days</option>
                       <option value="7">7 Days</option>
+                      <option value="14">14 Days</option>
                       <option value="30">30 Days</option>
                       <option value="90">90 Days</option>
+                      <option value="180">180 Days</option>
                     </select>
                   </div>
                 )}
@@ -522,6 +568,7 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
                   <option value="harassment">Harassment</option>
                   <option value="fraud">Fraud/Scam</option>
                   <option value="spam">Spamming</option>
+                  <option value="abuse">Abuse of Feature</option>
                   <option value="other">Other</option>
                 </select>
               </div>

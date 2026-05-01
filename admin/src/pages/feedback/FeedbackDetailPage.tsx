@@ -149,7 +149,7 @@ export function FeedbackDetailPage() {
           <section className="moderation-section">
             <h2 className="section-title">Action</h2>
             <div className="card action-card">
-              {feedback.status === 'resolved' ? (
+              {(feedback.status === 'accepted' || feedback.status === 'high_contribution') ? (
                 <div className="resolved-info">
                   <div className="judgment-badge">
                     <Award size={16} />
@@ -240,10 +240,10 @@ export function FeedbackDetailPage() {
           letter-spacing: 0.5px;
         }
 
-        .status-pending { background: var(--color-warning-light); color: var(--color-warning); }
-        .status-reviewing { background: var(--color-info-light); color: var(--color-info); }
-        .status-resolved { background: var(--color-success-light); color: var(--color-success); }
-        .status-closed { background: var(--color-bg-tertiary); color: var(--color-text-tertiary); }
+        .status-submitted { background: var(--color-warning-light); color: var(--color-warning); }
+        .status-read { background: var(--color-info-light); color: var(--color-info); }
+        .status-accepted { background: var(--color-success-light); color: var(--color-success); }
+        .status-high_contribution { background: #e8f5e9; color: #2e7d32; }
 
         .detail-grid {
           display: grid;

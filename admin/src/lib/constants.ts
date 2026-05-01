@@ -106,6 +106,53 @@ export const BAN_TYPES = {
   PERMANENT: 'permanent',
 } as const;
 
+// ── Restriction Scopes ──
+// Each scope can be applied independently to a user.
+export const RESTRICTION_SCOPES = {
+  CHAT_MUTE: 'chat_mute',
+  LISTING_BAN: 'listing_ban',
+  FEEDBACK_BAN: 'feedback_ban',
+  ACCOUNT_FREEZE: 'account_freeze',
+} as const;
+
+/** Display metadata for each restriction scope */
+export const RESTRICTION_SCOPE_META: Record<string, {
+  label: string;
+  description: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+}> = {
+  chat_mute: {
+    label: 'Chat Mute',
+    description: 'Cannot send chat messages. Other users see a "muted" notice.',
+    icon: '🔇',
+    color: '#e67700',
+    bgColor: '#fff3cd',
+  },
+  listing_ban: {
+    label: 'Listing Ban',
+    description: 'Cannot create or edit listings.',
+    icon: '🚫',
+    color: '#c92a2a',
+    bgColor: '#ffe3e3',
+  },
+  feedback_ban: {
+    label: 'Feedback Ban',
+    description: 'Cannot submit feedback to prevent abuse.',
+    icon: '📝',
+    color: '#5c7cfa',
+    bgColor: '#dbe4ff',
+  },
+  account_freeze: {
+    label: 'Account Freeze',
+    description: 'Full account suspension. User cannot log in.',
+    icon: '❄️',
+    color: '#495057',
+    bgColor: '#e9ecef',
+  },
+} as const;
+
 // ── Push Job Statuses ──
 export const PUSH_STATUS = {
   DRAFT: 'draft',

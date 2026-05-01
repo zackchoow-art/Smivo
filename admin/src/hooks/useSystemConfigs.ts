@@ -52,7 +52,7 @@ export function useUpdateSystemConfig() {
       // Log to audit log
       await supabase.from(TABLES.ADMIN_AUDIT_LOGS).insert({
         admin_id: adminId,
-        action: 'update_system_config',
+        action_type: 'update_system_config',
         target_type: 'system_config',
         target_id: null,
         payload: { key, old_value: oldValue, new_value: value },

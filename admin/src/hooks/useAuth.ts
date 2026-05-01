@@ -96,7 +96,7 @@ export function useAuth() {
       if (!isAdmin) {
         setLoading(false);
         await supabase.auth.signOut();
-        throw new Error('您没有 Admin 后台访问权限');
+        throw new Error('You do not have access to the Admin panel');
       }
     }
 

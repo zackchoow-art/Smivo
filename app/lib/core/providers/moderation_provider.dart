@@ -75,6 +75,8 @@ class ModerationActions extends _$ModerationActions {
     String? chatRoomId,
     String? reasonCategory,
     required String reason,
+    List<String>? selectedMessageIds,
+    Map<String, dynamic>? evidence,
   }) async {
     final user = ref.read(authStateProvider).value;
     if (user == null) return;
@@ -101,6 +103,8 @@ class ModerationActions extends _$ModerationActions {
         chatRoomId: chatRoomId,
         reasonCategory: reasonCategory,
         reason: reason,
+        selectedMessageIds: selectedMessageIds,
+        evidence: evidence,
       );
     });
   }

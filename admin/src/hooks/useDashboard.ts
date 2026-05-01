@@ -30,7 +30,15 @@ export function useDashboard() {
     queryKey: QUERY_KEY,
     queryFn: async () => {
       // Run all KPI queries in parallel for speed
-      const [userCount, listingCount, activeOrderCount, todayDau] = await Promise.all([
+      const [
+        userCount,
+        listingCount,
+        activeOrderCount,
+        todayDau,
+        pendingReportCount,
+        pendingModerationCount,
+        pendingFeedbackCount,
+      ] = await Promise.all([
         // 1. Total Users
         safeCount(TABLES.USER_PROFILES),
 
@@ -55,9 +63,18 @@ export function useDashboard() {
             return 0;
           }
         })(),
+
+        // 5. Pending chat reports
+        safeCount(TABLES.CONTENT_REPORTS, (q: any) => q.eq('status', 'pending')),
+
+        // 6. Pending listing moderations
+        safeCount(TABLES.LISTINGS, (q: any) => q.eq('moderation_status', 'pending_review')),
+
+        // 7. Pending feedbacks
+        safeCount(TABLES.USER_FEEDBACKS, (q: any) => q.eq('status', 'submitted')),
       ]);
 
-      // 5. Recent Audit Logs (top 10)
+      // 8. Recent Audit Logs (top 10)
       let recentLogs: AuditLog[] = [];
       try {
         const { data, error } = await supabase
@@ -70,24 +87,51 @@ export function useDashboard() {
         // NOTE: Non-critical — show empty logs
       }
 
-      // 6. Pending Review Listings (top 5)
-      let pendingListings: Listing[] = [];
+      // 9. Urgent Pending Listings (oldest 5, potentially near SLA timeout)
+      let urgentListings: Listing[] = [];
       try {
         const { data, error } = await supabase
           .from(TABLES.LISTINGS)
           .select('*')
           .eq('moderation_status', 'pending_review')
-          .order('created_at', { ascending: false })
+          .order('created_at', { ascending: true })  // Oldest first = most urgent
           .limit(5);
-        if (!error && data) pendingListings = data as Listing[];
+        if (!error && data) urgentListings = data as Listing[];
       } catch {
-        // NOTE: Non-critical — show empty list
+        // NOTE: Non-critical
+      }
+
+      // 10. Urgent Chat Reports (oldest pending reports)
+      let urgentReports: any[] = [];
+      try {
+        const { data, error } = await supabase
+          .from(TABLES.CONTENT_REPORTS)
+          .select(`
+            *,
+            reporter:reporter_id(display_name, email),
+            reported:reported_user_id(display_name, email)
+          `)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: true })
+          .limit(5);
+        if (!error && data) urgentReports = data;
+      } catch {
+        // NOTE: Non-critical
       }
 
       return {
-        stats: { userCount, listingCount, activeOrderCount, todayDau },
+        stats: {
+          userCount,
+          listingCount,
+          activeOrderCount,
+          todayDau,
+          pendingReportCount,
+          pendingModerationCount,
+          pendingFeedbackCount,
+        },
         recentLogs,
-        pendingListings,
+        urgentListings,
+        urgentReports,
       };
     },
     // NOTE: Retry once max — don't make user wait 30s on repeated failures

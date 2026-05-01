@@ -109,6 +109,8 @@ class ModerationRepository {
     String? chatRoomId,
     String? reasonCategory,
     required String reason,
+    List<String>? selectedMessageIds,
+    Map<String, dynamic>? evidence,
   }) async {
     try {
       await _client.from('content_reports').insert({
@@ -118,6 +120,8 @@ class ModerationRepository {
         'chat_room_id': chatRoomId,
         if (reasonCategory != null) 'reason_category': reasonCategory,
         'reason': reason,
+        if (selectedMessageIds != null) 'selected_message_ids': selectedMessageIds,
+        if (evidence != null) 'evidence': evidence,
       });
     } on PostgrestException catch (e) {
       if (e.code == '23505') {

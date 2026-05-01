@@ -11,12 +11,13 @@ import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/data/models/message.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
-import 'package:smivo/data/repositories/moderation_repository.dart';
+
 import 'package:smivo/shared/widgets/report_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/data/repositories/chat_repository.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   const ChatRoomScreen({super.key, required this.chatRoomId});
@@ -32,6 +33,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   final _scrollController = ScrollController();
   final _imagePicker = ImagePicker();
   bool _isSending = false;
+  bool _selectionMode = false;
+  final Set<String> _selectedMessageIds = {};
 
   @override
   void initState() {
@@ -138,8 +141,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       appBar: AppBar(
         backgroundColor: colors.surfaceContainerLowest,
         elevation: 0,
-        leading: const BackButton(),
-        title: roomAsync.when(
+        leading: _selectionMode
+            ? IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    _selectionMode = false;
+                    _selectedMessageIds.clear();
+                  });
+                },
+              )
+            : const BackButton(),
+        title: _selectionMode
+            ? Text(
+                '${_selectedMessageIds.length} Selected',
+                style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700),
+              )
+            : roomAsync.when(
           loading: () => const SizedBox(),
           error: (_, __) => const Text('Error'),
           data: (room) {
@@ -208,152 +226,93 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             loading: () => const SizedBox(),
             error: (_, __) => const SizedBox(),
             data: (room) {
+              if (_selectionMode) {
+                return TextButton(
+                  onPressed: _selectedMessageIds.isEmpty
+                      ? null
+                      : () => _handleReportSelection(room),
+                  child: Text(
+                    'Report',
+                    style: typo.labelLarge.copyWith(
+                      color: _selectedMessageIds.isEmpty
+                          ? colors.onSurfaceVariant
+                          : colors.error,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }
               final otherUser =
                   room.buyerId == currentUserId ? room.seller : room.buyer;
               if (otherUser == null) return const SizedBox();
-              return PopupMenuButton<String>(
-                icon: Icon(Icons.more_horiz, color: colors.onSurface),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(context.smivoRadius.md),
-                ),
-                onSelected: (value) async {
-                  if (value == 'report') {
-                    // Check if already reported
+              return IconButton(
+                icon: Icon(Icons.block, color: colors.error),
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder:
+                        (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              context.smivoRadius.xl,
+                            ),
+                          ),
+                          title: const Text('Block User'),
+                          content: const Text(
+                            'Are you sure you want to block this user? You will no longer see their listings.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text(
+                                'Block',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                  );
+                  if (confirm == true) {
+                    if (!context.mounted) return;
+                    final goRouter = GoRouter.of(context);
+                    final scaffoldMessenger = ScaffoldMessenger.of(context);
                     try {
-                      final repo = ref.read(moderationRepositoryProvider);
-                      final hasReported = await repo.hasAlreadyReported(
-                        reporterId: currentUserId!,
-                        reportedUserId: otherUser.id,
-                        chatRoomId: room.id,
+                      await ref
+                          .read(moderationActionsProvider.notifier)
+                          .blockUser(otherUser.id);
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(content: Text('User blocked.')),
                       );
-                      
-                      if (hasReported) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('You have already reported this chat.')),
-                          );
-                        }
-                        return;
+                      if (goRouter.canPop()) {
+                        goRouter.pop();
+                      } else {
+                        goRouter.goNamed(AppRoutes.home);
                       }
                     } catch (e) {
-                      // Ignore error and proceed to dialog
-                    }
-
-                    if (!context.mounted) return;
-
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => ReportDialog(
-                        title: 'Report Chat',
-                        onSubmit: (category, reason) async {
-                          try {
-                            await ref
-                                .read(moderationActionsProvider.notifier)
-                                .reportContent(
-                                  reportedUserId: otherUser.id,
-                                  chatRoomId: room.id,
-                                  reasonCategory: category,
-                                  reason: reason,
-                                );
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Report submitted successfully.'),
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(e.toString().replaceAll('Exception: ', '')),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                      ),
-                    );
-                  } else if (value == 'block') {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (ctx) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                context.smivoRadius.xl,
-                              ),
-                            ),
-                            title: const Text('Block User'),
-                            content: const Text(
-                              'Are you sure you want to block this user? You will no longer see their listings.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text(
-                                  'Block',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
-                          ),
-                    );
-                    if (confirm == true) {
-                      if (!context.mounted) return;
-                      final goRouter = GoRouter.of(context);
-                      final scaffoldMessenger = ScaffoldMessenger.of(context);
-                      try {
-                        await ref
-                            .read(moderationActionsProvider.notifier)
-                            .blockUser(otherUser.id);
-                        scaffoldMessenger.showSnackBar(
-                          const SnackBar(content: Text('User blocked.')),
-                        );
-                        if (goRouter.canPop()) {
-                          goRouter.pop();
-                        } else {
-                          goRouter.goNamed(AppRoutes.home);
-                        }
-                      } catch (e) {
-                        debugPrint('Error blocking user: $e');
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(content: Text('Error blocking user: $e')),
-                        );
-                      }
+                      debugPrint('Error blocking user: $e');
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(content: Text('Error blocking user: $e')),
+                      );
                     }
                   }
                 },
-                itemBuilder:
-                    (context) => [
-                      const PopupMenuItem(
-                        value: 'report',
-                        child: Text('Report User'),
-                      ),
-                      const PopupMenuItem(
-                        value: 'block',
-                        child: Text(
-                          'Block User',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
               );
             },
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          // NOTE: Extract listingId from room data to watch listing
-          // independently. This avoids nested async and prevents
-          // the listing preview from flickering when room refreshes.
-          _buildListingPreview(context, roomAsync),
+      body: SelectionArea(
+        child: Column(
+          children: [
+            // NOTE: Extract listingId from room data to watch listing
+            // independently. This avoids nested async and prevents
+            // the listing preview from flickering when room refreshes.
+            _buildListingPreview(context, roomAsync),
           Expanded(
             child: messagesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -374,7 +333,32 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   itemBuilder: (context, index) {
                     final msg = messages[messages.length - 1 - index];
                     final isMine = msg.senderId == currentUserId;
-                    return _MessageBubble(message: msg, isMine: isMine);
+                    return _MessageBubble(
+                      message: msg,
+                      isMine: isMine,
+                      isSelected: _selectedMessageIds.contains(msg.id),
+                      selectionMode: _selectionMode,
+                      onSelect: (id) {
+                        setState(() {
+                          if (_selectedMessageIds.contains(id)) {
+                            _selectedMessageIds.remove(id);
+                            if (_selectedMessageIds.isEmpty) {
+                              _selectionMode = false;
+                            }
+                          } else {
+                            _selectedMessageIds.add(id);
+                          }
+                        });
+                      },
+                      onLongPress: (id) {
+                        if (!_selectionMode) {
+                          setState(() {
+                            _selectionMode = true;
+                            _selectedMessageIds.add(id);
+                          });
+                        }
+                      },
+                    );
                   },
                 );
                 return isDesktop
@@ -389,8 +373,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               : _buildInputBar(),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// Builds the listing preview bar independently from the room
   /// async state to avoid nested loading flicker.
@@ -558,13 +543,110 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       ),
     );
   }
+
+  Future<void> _handleReportSelection(ChatRoom room) async {
+    final currentUserId = ref.read(authStateProvider).value?.id;
+    final otherUser = room.buyerId == currentUserId ? room.seller : room.buyer;
+    if (otherUser == null || currentUserId == null) return;
+
+    final messages =
+        ref.read(chatMessagesProvider(widget.chatRoomId)).value ?? [];
+    final selectedMessages =
+        messages.where((m) => _selectedMessageIds.contains(m.id)).toList();
+
+    if (selectedMessages.isEmpty) return;
+
+    // Calculate time window: 20 days before earliest, 20 days after latest selected message
+    DateTime earliest = selectedMessages.first.createdAt;
+    DateTime latest = selectedMessages.first.createdAt;
+
+    for (final m in selectedMessages) {
+      if (m.createdAt.isBefore(earliest)) earliest = m.createdAt;
+      if (m.createdAt.isAfter(latest)) latest = m.createdAt;
+    }
+
+    final startWindow = earliest.subtract(const Duration(days: 20));
+    final endWindow = latest.add(const Duration(days: 20));
+
+    // Show report dialog
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => ReportDialog(
+            title: 'Report Chat',
+            onSubmit: (category, reason) async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              try {
+                // Fetch context messages for evidence
+                final repo = ref.read(chatRepositoryProvider);
+                final evidenceMessages = await repo.fetchMessagesInWindow(
+                  chatRoomId: room.id,
+                  start: startWindow,
+                  end: endWindow,
+                );
+
+                final evidenceJson = {
+                  'window_start': startWindow.toIso8601String(),
+                  'window_end': endWindow.toIso8601String(),
+                  'messages': evidenceMessages.map((m) => m.toJson()).toList(),
+                };
+
+                await ref
+                    .read(moderationActionsProvider.notifier)
+                    .reportContent(
+                      reportedUserId: otherUser.id,
+                      chatRoomId: room.id,
+                      reasonCategory: category,
+                      reason: reason,
+                      selectedMessageIds: _selectedMessageIds.toList(),
+                      evidence: evidenceJson,
+                    );
+
+                setState(() {
+                  _selectionMode = false;
+                  _selectedMessageIds.clear();
+                });
+
+                if (context.mounted) {
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Report submitted with evidence.'),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString().replaceAll('Exception: ', '')),
+                    ),
+                  );
+                }
+              }
+            },
+          ),
+    );
+  }
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message, required this.isMine});
+  const _MessageBubble({
+    required this.message,
+    required this.isMine,
+    this.isSelected = false,
+    this.selectionMode = false,
+    this.onSelect,
+    this.onLongPress,
+  });
 
   final Message message;
   final bool isMine;
+  final bool isSelected;
+  final bool selectionMode;
+  final Function(String id)? onSelect;
+  final Function(String id)? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -572,136 +654,153 @@ class _MessageBubble extends StatelessWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment:
-            isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: [
-          const SizedBox(width: 8),
-          Flexible(
-            child: Column(
-              crossAxisAlignment:
-                  isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      message.messageType == 'image'
-                          ? EdgeInsets.zero
-                          : const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                  decoration: BoxDecoration(
-                    color:
-                        isMine ? colors.chatBubbleSelf : colors.chatBubbleOther,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(radius.lg),
-                      topRight: Radius.circular(radius.lg),
-                      bottomLeft: Radius.circular(
-                        isMine ? radius.lg : radius.xs,
-                      ),
-                      bottomRight: Radius.circular(
-                        isMine ? radius.xs : radius.lg,
+    return GestureDetector(
+      onLongPress: () => onLongPress?.call(message.id),
+      onTap: () {
+        if (selectionMode) {
+          onSelect?.call(message.id);
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          mainAxisAlignment:
+              isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+          children: [
+            if (selectionMode) ...[
+              Checkbox(
+                value: isSelected,
+                onChanged: (_) => onSelect?.call(message.id),
+                shape: const CircleBorder(),
+                activeColor: colors.primary,
+              ),
+              const SizedBox(width: 4),
+            ],
+            const SizedBox(width: 8),
+            Flexible(
+              child: Column(
+                crossAxisAlignment:
+                    isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding:
+                        message.messageType == 'image'
+                            ? EdgeInsets.zero
+                            : const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                    decoration: BoxDecoration(
+                      color:
+                          isMine ? colors.chatBubbleSelf : colors.chatBubbleOther,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(radius.lg),
+                        topRight: Radius.circular(radius.lg),
+                        bottomLeft: Radius.circular(
+                          isMine ? radius.lg : radius.xs,
+                        ),
+                        bottomRight: Radius.circular(
+                          isMine ? radius.xs : radius.lg,
+                        ),
                       ),
                     ),
-                  ),
-                  child:
-                      message.messageType == 'image' && message.imageUrl != null
-                          ? GestureDetector(
-                            onTap:
-                                () => showDialog(
-                                  context: context,
-                                  builder:
-                                      (_) => Dialog(
-                                        backgroundColor: Colors.transparent,
-                                        insetPadding: EdgeInsets.zero,
-                                        child: Stack(
-                                          children: [
-                                            InteractiveViewer(
-                                              child: Center(
-                                                child: Image.network(
-                                                  message.imageUrl!,
+                    child:
+                        message.messageType == 'image' && message.imageUrl != null
+                            ? GestureDetector(
+                              onTap:
+                                  () => showDialog(
+                                    context: context,
+                                    builder:
+                                        (_) => Dialog(
+                                          backgroundColor: Colors.transparent,
+                                          insetPadding: EdgeInsets.zero,
+                                          child: Stack(
+                                            children: [
+                                              InteractiveViewer(
+                                                child: Center(
+                                                  child: Image.network(
+                                                    message.imageUrl!,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                            Positioned(
-                                              top: 40,
-                                              right: 20,
-                                              child: IconButton(
-                                                icon: const Icon(
-                                                  Icons.close,
-                                                  color: Colors.white,
-                                                  size: 30,
+                                              Positioned(
+                                                top: 40,
+                                                right: 20,
+                                                child: IconButton(
+                                                  icon: const Icon(
+                                                    Icons.close,
+                                                    color: Colors.white,
+                                                    size: 30,
+                                                  ),
+                                                  onPressed:
+                                                      () =>
+                                                          Navigator.pop(context),
                                                 ),
-                                                onPressed:
-                                                    () =>
-                                                        Navigator.pop(context),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
+                                  ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(radius.card),
+                                child: Image.network(
+                                  message.imageUrl!,
+                                  width: 200,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (_, __, ___) => Container(
+                                        width: 200,
+                                        height: 150,
+                                        color: colors.surfaceContainerHigh,
+                                        child: const Icon(Icons.broken_image),
                                       ),
-                                ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(radius.card),
-                              child: Image.network(
-                                message.imageUrl!,
-                                width: 200,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (_, __, ___) => Container(
+                                  loadingBuilder: (
+                                    context,
+                                    child,
+                                    loadingProgress,
+                                  ) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
                                       width: 200,
                                       height: 150,
                                       color: colors.surfaceContainerHigh,
-                                      child: const Icon(Icons.broken_image),
-                                    ),
-                                loadingBuilder: (
-                                  context,
-                                  child,
-                                  loadingProgress,
-                                ) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    width: 200,
-                                    height: 150,
-                                    color: colors.surfaceContainerHigh,
-                                    child: const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                },
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            )
+                            : Text(
+                              message.content,
+                              style: typo.bodyLarge.copyWith(
+                                color:
+                                    isMine
+                                        ? colors.chatBubbleTextSelf
+                                        : colors.chatBubbleTextOther,
+                                height: 1.4,
                               ),
                             ),
-                          )
-                          : Text(
-                            message.content,
-                            style: typo.bodyLarge.copyWith(
-                              color:
-                                  isMine
-                                      ? colors.chatBubbleTextSelf
-                                      : colors.chatBubbleTextOther,
-                              height: 1.4,
-                            ),
-                          ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
-                  child: Text(
-                    DateFormat(
-                      'yyyy-MM-dd HH:mm',
-                    ).format(message.createdAt.toLocal()),
-                    style: typo.labelSmall.copyWith(
-                      color: colors.outlineVariant,
-                      fontSize: 10,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
+                    child: Text(
+                      DateFormat(
+                        'yyyy-MM-dd HH:mm',
+                      ).format(message.createdAt.toLocal()),
+                      style: typo.labelSmall.copyWith(
+                        color: colors.outlineVariant,
+                        fontSize: 10,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-        ],
+            const SizedBox(width: 8),
+          ],
+        ),
       ),
     );
   }

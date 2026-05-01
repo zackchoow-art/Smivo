@@ -20,8 +20,8 @@ import 'package:smivo/features/settings/screens/help_screen.dart';
 import 'package:smivo/features/settings/screens/notification_settings_screen.dart';
 import 'package:smivo/features/settings/screens/settings_screen.dart';
 import 'package:smivo/features/settings/screens/system_settings_screen.dart';
-import 'package:smivo/features/settings/screens/blocked_users_screen.dart';
-import 'package:smivo/features/settings/screens/reported_content_screen.dart';
+import 'package:smivo/features/settings/screens/trust_and_safety_screen.dart';
+import 'package:smivo/features/settings/screens/my_feedbacks_screen.dart';
 import 'package:smivo/features/settings/screens/submit_feedback_screen.dart';
 import 'package:smivo/features/settings/screens/my_contributions_screen.dart';
 import 'package:smivo/features/seller/screens/seller_center_screen.dart';
@@ -339,23 +339,25 @@ GoRouter router(Ref ref) {
             builder: (context, state) => const HelpScreen(),
           ),
           GoRoute(
-            name: AppRoutes.settingsBlocked,
-            path: AppRoutes.settingsBlockedPath,
-            builder: (context, state) => const BlockedUsersScreen(),
+            name: AppRoutes.settingsTrustAndSafety,
+            path: AppRoutes.settingsTrustAndSafetyPath,
+            builder: (context, state) => const TrustAndSafetyScreen(),
           ),
           GoRoute(
-            name: AppRoutes.settingsReported,
-            path: AppRoutes.settingsReportedPath,
-            builder: (context, state) => const ReportedContentScreen(),
+            name: AppRoutes.myFeedbacks,
+            path: AppRoutes.myFeedbacksPath,
+            builder: (context, state) => const MyFeedbacksScreen(),
+            routes: [
+              GoRoute(
+                name: AppRoutes.submitFeedback,
+                path: AppRoutes.submitFeedbackPath,
+                builder: (context, state) => const SubmitFeedbackScreen(),
+              ),
+            ],
           ),
         ],
       ),
 
-      GoRoute(
-        name: AppRoutes.submitFeedback,
-        path: AppRoutes.submitFeedbackPath,
-        builder: (context, state) => const SubmitFeedbackScreen(),
-      ),
       GoRoute(
         name: AppRoutes.myContributions,
         path: AppRoutes.myContributionsPath,

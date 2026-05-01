@@ -3,6 +3,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/core/providers/theme_provider.dart';
 import 'package:smivo/core/providers/shake_feedback_provider.dart';
+import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smivo/features/settings/widgets/setting_card_container.dart';
@@ -239,7 +240,11 @@ class SystemSettingsScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      if (kDebugBackdoorEnabled) ...[
+                      if (kDebugBackdoorEnabled || 
+                          ref.watch(adminContextProvider).maybeWhen(
+                            data: (ctx) => ctx.isSysadmin,
+                            orElse: () => false,
+                          )) ...[
                         Text(
                           'Developer',
                           style: typo.titleMedium.copyWith(

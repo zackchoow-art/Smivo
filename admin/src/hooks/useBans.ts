@@ -4,7 +4,8 @@ import { TABLES, DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import type { 
   BanWithUser, 
   BanType, 
-  BanStatus 
+  BanStatus,
+  RestrictionScope 
 } from '@/types/ban';
 
 const QUERY_KEY = ['user-bans'] as const;
@@ -12,10 +13,11 @@ const QUERY_KEY = ['user-bans'] as const;
 export interface BanFilters {
   type?: BanType;
   status?: BanStatus;
+  scope?: RestrictionScope;
 }
 
 /**
- * Hook for listing user bans.
+ * Hook for listing user bans with optional scope filtering.
  */
 export function useBans(page: number, filters: BanFilters = {}) {
   return useQuery({
@@ -36,6 +38,10 @@ export function useBans(page: number, filters: BanFilters = {}) {
 
       if (filters.type) {
         query = query.eq('ban_type', filters.type);
+      }
+
+      if (filters.scope) {
+        query = query.eq('scope', filters.scope);
       }
       
       // Status filtering logic (active, expired, lifted)
@@ -74,7 +80,33 @@ export function useBans(page: number, filters: BanFilters = {}) {
 }
 
 /**
- * Mutation for creating a new ban.
+ * Fetch active restrictions for a specific user.
+ * Returns all active (not lifted, not expired) restriction scopes.
+ */
+export function useUserActiveRestrictions(userId?: string) {
+  return useQuery({
+    queryKey: [...QUERY_KEY, 'active', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from(TABLES.USER_BANS)
+        .select('id, scope, ban_type, expires_at, reason_detail, banned_at')
+        .eq('user_id', userId)
+        .is('lifted_at', null)
+        .or(`expires_at.is.null,expires_at.gt.${now}`)
+        .order('scope');
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+}
+
+/**
+ * Mutation for creating a new restriction (ban with scope).
  */
 export function useCreateBan() {
   const queryClient = useQueryClient();
@@ -84,6 +116,7 @@ export function useCreateBan() {
       userId,
       collegeId,
       banType,
+      scope,
       reasonCode,
       reasonDetail,
       durationDays,
@@ -92,6 +125,7 @@ export function useCreateBan() {
       userId: string;
       collegeId: string;
       banType: BanType;
+      scope: RestrictionScope;
       reasonCode: string;
       reasonDetail: string;
       durationDays: number | null;
@@ -112,6 +146,7 @@ export function useCreateBan() {
           user_id: userId,
           college_id: collegeId,
           ban_type: banType,
+          scope,
           reason_code: reasonCode,
           reason_detail: reasonDetail,
           duration_days: durationDays,
@@ -127,22 +162,23 @@ export function useCreateBan() {
       // Log to audit log
       await supabase.from(TABLES.ADMIN_AUDIT_LOGS).insert({
         admin_id: adminId,
-        action: 'create_ban',
+        action: 'create_restriction',
         target_type: 'user',
         target_id: userId,
-        payload: { banType, reasonCode, expiresAt }
+        payload: { banType, scope, reasonCode, expiresAt }
       });
 
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
 }
 
 /**
- * Mutation for lifting a ban.
+ * Mutation for lifting a ban / restriction.
  */
 export function useLiftBan() {
   const queryClient = useQueryClient();
@@ -173,7 +209,7 @@ export function useLiftBan() {
       // Log to audit log
       await supabase.from(TABLES.ADMIN_AUDIT_LOGS).insert({
         admin_id: adminId,
-        action: 'lift_ban',
+        action: 'lift_restriction',
         target_type: 'user_ban',
         target_id: banId,
         payload: { liftReason }
@@ -183,6 +219,7 @@ export function useLiftBan() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
 }

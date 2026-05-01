@@ -89,15 +89,28 @@ export function useDeleteSensitiveWord() {
   });
 }
 
-/** Batch import words from CSV data */
+/** Batch import words — processes in chunks to avoid Supabase payload limits */
 export function useBatchImportWords() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (words: Partial<SensitiveWord>[]) => {
-      const { error } = await supabase
-        .from(TABLES.SENSITIVE_WORDS)
-        .upsert(words, { onConflict: 'word,language' });
-      if (error) throw error;
+      // NOTE: Supabase PostgREST has payload size limits; chunk at 100 rows
+      const CHUNK_SIZE = 100;
+      let imported = 0;
+
+      for (let i = 0; i < words.length; i += CHUNK_SIZE) {
+        const chunk = words.slice(i, i + CHUNK_SIZE);
+        const { error } = await supabase
+          .from(TABLES.SENSITIVE_WORDS)
+          .upsert(chunk, { onConflict: 'word,language', ignoreDuplicates: true });
+        if (error) {
+          console.error(`[SensitiveWords] Chunk ${i}-${i + chunk.length} failed:`, error);
+          throw new Error(`Import failed at batch ${Math.floor(i / CHUNK_SIZE) + 1}: ${error.message}`);
+        }
+        imported += chunk.length;
+      }
+
+      return imported;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });

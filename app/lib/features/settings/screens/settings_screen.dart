@@ -79,11 +79,11 @@ class SettingsScreen extends ConsumerWidget {
                           _buildMenuCard(
                             context,
                             icon: Icons.security_outlined,
-                            title: 'Privacy &\nSafety',
-                            subtitle: 'Blocked users,\nModeration',
+                            title: 'Trust &\nSafety',
+                            subtitle: 'Blocked users,\nReport history',
                             onTap:
                                 () => context.pushNamed(
-                                  AppRoutes.settingsBlocked,
+                                  AppRoutes.settingsTrustAndSafety,
                                 ),
                           ),
                           _buildMenuCard(
@@ -107,16 +107,6 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           _buildMenuCard(
                             context,
-                            icon: Icons.report_problem_outlined,
-                            title: 'Reported\nContent',
-                            subtitle: 'View your report\nhistory',
-                            onTap:
-                                () => context.pushNamed(
-                                  AppRoutes.settingsReported,
-                                ),
-                          ),
-                          _buildMenuCard(
-                            context,
                             icon: Icons.help_outline,
                             title: 'Help',
                             subtitle: 'Support, FAQs,\nContact Us',
@@ -130,7 +120,7 @@ class SettingsScreen extends ConsumerWidget {
                               title: 'Feedback',
                               subtitle: 'Tell us about\nissues',
                               onTap:
-                                  () => context.pushNamed(AppRoutes.submitFeedback),
+                                  () => context.pushNamed(AppRoutes.myFeedbacks),
                             ),
                           if (plazaEnabled)
                             _buildMenuCard(

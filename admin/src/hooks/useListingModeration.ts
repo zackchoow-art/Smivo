@@ -11,8 +11,8 @@ export interface ListingModerationFilters {
 
 /**
  * Fetch paginated listings for moderation, sorted by priority.
- * 优先级排序: urgent (1) > normal (2) > low (3). 可以在 SQL 侧或者 JS 侧处理。
- * 在 Supabase 中，我们可以根据 moderation_priority 字段排序，也可以在客户端处理，但为简单起见，如果仅支持特定过滤则在请求时加上排序。
+ * Priority sorting: urgent (1) > normal (2) > low (3). Can be handled on SQL or JS side.
+ * In Supabase, we can sort by moderation_priority field, or handle it on the client, but for simplicity, we add sorting to the request if specific filtering is supported.
  */
 export function useListingsModeration(page: number, filters?: ListingModerationFilters) {
   return useQuery({
@@ -32,9 +32,9 @@ export function useListingsModeration(page: number, filters?: ListingModerationF
         query = query.eq('moderation_status', filters.status);
       }
 
-      // 为了演示，优先按 moderation_priority 排序，然后按时间倒序。
-      // 因为 priority 是 text，直接排序可能按字母，最好是前端或者特定排序逻辑，
-      // 这里先简单按 created_at 降序。
+      // For demonstration, prioritize sorting by moderation_priority, then by time in descending order.
+      // Since priority is text, direct sorting might be alphabetical; ideally, use specific sorting logic.
+      // Here, we simply sort by created_at descending.
       query = query.order('created_at', { ascending: false });
       query = query.range(from, to);
 

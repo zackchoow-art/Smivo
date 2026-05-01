@@ -15,7 +15,7 @@ _UserFeedback _$UserFeedbackFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String,
       screenshotUrl: json['screenshot_url'] as String?,
       deviceInfo: json['device_info'] as Map<String, dynamic>?,
-      status: json['status'] as String? ?? 'pending',
+      status: json['status'] as String? ?? 'submitted',
       adminResponse: json['admin_response'] as String?,
       pointsAwarded: (json['points_awarded'] as num?)?.toInt() ?? 0,
       createdAt:

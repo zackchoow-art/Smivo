@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,11 +29,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   // Debug mode toggle - allows using whitelisted test emails
   bool _isDebugMode = false;
+  Timer? _debugTimer;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _debugTimer?.cancel();
     super.dispose();
   }
 
@@ -57,6 +60,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _isDebugMode = !_isDebugMode;
       _emailController.clear();
     });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Debug mode ${_isDebugMode ? "enabled" : "disabled"}'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _startDebugTimer() {
+    if (!kDebugBackdoorEnabled) return;
+    _debugTimer?.cancel();
+    _debugTimer = Timer(const Duration(seconds: 5), () {
+      _toggleDebugMode();
+    });
+  }
+
+  void _cancelDebugTimer() {
+    _debugTimer?.cancel();
   }
 
   @override
@@ -105,11 +128,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       // ── Mobile Header Fragment (Simplified Branding) ──────
                       const SizedBox(height: 12),
                       Center(
-                        child: Text(
-                          'Smivo',
-                          style: typo.displayLarge.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: colors.primary,
+                        child: GestureDetector(
+                          onTapDown: (_) => _startDebugTimer(),
+                          onTapUp: (_) => _cancelDebugTimer(),
+                          onTapCancel: _cancelDebugTimer,
+                          child: Text(
+                            'Smivo',
+                            style: typo.displayLarge.copyWith(
+                              fontStyle: FontStyle.italic,
+                              color: colors.primary,
+                            ),
                           ),
                         ),
                       ),
@@ -263,28 +291,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
 
-                              // ── Debug Backdoor Toggle ─────────────────────
-                              if (kDebugBackdoorEnabled) ...[
-                                const SizedBox(height: 16),
-                                TextButton.icon(
-                                  onPressed: _toggleDebugMode,
-                                  icon: Icon(
-                                    _isDebugMode
-                                        ? Icons.bug_report
-                                        : Icons.bug_report_outlined,
-                                    size: 18,
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                  label: Text(
-                                    _isDebugMode
-                                        ? 'Switch to Normal Mode'
-                                        : 'Switch to Debug Mode',
-                                    style: typo.bodySmall.copyWith(
-                                      color: colors.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ),
-                              ],
 
                               const SizedBox(height: 32),
 

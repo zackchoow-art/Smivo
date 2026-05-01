@@ -1,6 +1,8 @@
+import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/user_feedback.dart';
 import 'package:smivo/data/repositories/feedback_repository.dart';
+import 'package:smivo/data/repositories/storage_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 
 part 'feedback_provider.g.dart';
@@ -21,13 +23,14 @@ class MyFeedbacks extends _$MyFeedbacks {
 class SubmitFeedbackAction extends _$SubmitFeedbackAction {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
-
   Future<void> submit({
     required String type,
     required String title,
     required String description,
     String? screenshotUrl,
     Map<String, dynamic>? deviceInfo,
+    Uint8List? imageBytes,
+    String? imageFileName,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -40,7 +43,17 @@ class SubmitFeedbackAction extends _$SubmitFeedbackAction {
       
       final todayCount = await repo.getTodayFeedbackCount(user.id);
       if (todayCount >= 5) {
-        throw StateError('今日提交已达上限');
+        throw StateError('Daily submission limit reached');
+      }
+
+      String? finalScreenshotUrl = screenshotUrl;
+      if (imageBytes != null && imageFileName != null) {
+        final storageRepo = ref.read(storageRepositoryProvider);
+        finalScreenshotUrl = await storageRepo.uploadFeedbackImage(
+          userId: user.id,
+          fileName: '${DateTime.now().millisecondsSinceEpoch}_$imageFileName',
+          fileBytes: imageBytes,
+        );
       }
 
       await repo.submitFeedback(
@@ -48,7 +61,7 @@ class SubmitFeedbackAction extends _$SubmitFeedbackAction {
         type: type,
         title: title,
         description: description,
-        screenshotUrl: screenshotUrl,
+        screenshotUrl: finalScreenshotUrl,
         deviceInfo: deviceInfo,
       );
 

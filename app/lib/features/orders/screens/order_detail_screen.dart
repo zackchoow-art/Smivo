@@ -51,23 +51,25 @@ class OrderDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: orderAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
-        data: (order) {
-          if (order.orderType == 'rental') {
-            return RentalOrderDetailScreen(
+      body: SelectionArea(
+        child: orderAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Center(child: Text('Error: $err')),
+          data: (order) {
+            if (order.orderType == 'rental') {
+              return RentalOrderDetailScreen(
+                order: order,
+                orderId: orderId,
+                currentUserId: currentUserId,
+              );
+            }
+            return SaleOrderDetailScreen(
               order: order,
               orderId: orderId,
               currentUserId: currentUserId,
             );
-          }
-          return SaleOrderDetailScreen(
-            order: order,
-            orderId: orderId,
-            currentUserId: currentUserId,
-          );
-        },
+          },
+        ),
       ),
     );
   }

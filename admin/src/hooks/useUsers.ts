@@ -31,8 +31,37 @@ export function useUsers(page: number, filters: UserFilters = {}) {
 
       if (error) throw error;
 
+      // Fetch active restrictions for all users in this page
+      const userIds = (data ?? []).map((u: any) => u.id);
+      let restrictionMap: Record<string, string[]> = {};
+
+      if (userIds.length > 0) {
+        const now = new Date().toISOString();
+        const { data: bans } = await supabase
+          .from(TABLES.USER_BANS)
+          .select('user_id, scope')
+          .in('user_id', userIds)
+          .is('lifted_at', null)
+          .or(`expires_at.is.null,expires_at.gt.${now}`);
+
+        if (bans) {
+          for (const ban of bans) {
+            if (!restrictionMap[ban.user_id]) {
+              restrictionMap[ban.user_id] = [];
+            }
+            if (!restrictionMap[ban.user_id].includes(ban.scope)) {
+              restrictionMap[ban.user_id].push(ban.scope);
+            }
+          }
+        }
+      }
+
       return {
-        data: (data ?? []).map((u: any) => ({ ...u, school: u.school?.name })) as UserProfile[],
+        data: (data ?? []).map((u: any) => ({
+          ...u,
+          school: u.school?.name,
+          active_restrictions: restrictionMap[u.id] || [],
+        })) as UserProfile[],
         totalCount: count ?? 0,
       };
     },

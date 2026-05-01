@@ -19,6 +19,8 @@ abstract class ContentReport with _$ContentReport {
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
     @JsonKey(name: 'resolution_note') String? resolutionNote,
+    @JsonKey(name: 'selected_message_ids') List<String>? selectedMessageIds,
+    Map<String, dynamic>? evidence,
 
     // Joined data for display
     @JsonKey(name: 'reported_user') UserProfile? reportedUser,

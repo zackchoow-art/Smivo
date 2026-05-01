@@ -189,7 +189,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   ref.invalidate(listingDetailProvider(widget.id));
                   await ref.read(listingDetailProvider(widget.id).future);
                 },
-                child: SingleChildScrollView(
+                child: SelectionArea(
+                  child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1072,7 +1073,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   ),
                 ),
               ),
-              // Fixed floating back button
+            ),
+            // Fixed floating back button
               Positioned(
                 top: MediaQuery.of(context).padding.top + 8,
                 left: 12,

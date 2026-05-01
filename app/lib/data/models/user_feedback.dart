@@ -13,7 +13,7 @@ abstract class UserFeedback with _$UserFeedback {
     required String description,
     @JsonKey(name: 'screenshot_url') String? screenshotUrl,
     @JsonKey(name: 'device_info') Map<String, dynamic>? deviceInfo,
-    @Default('pending') String status,
+    @Default('submitted') String status,
     @JsonKey(name: 'admin_response') String? adminResponse,
     @JsonKey(name: 'points_awarded') @Default(0) int pointsAwarded,
     @JsonKey(name: 'created_at') DateTime? createdAt,

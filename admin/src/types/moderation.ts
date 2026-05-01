@@ -40,9 +40,9 @@ export interface ListingModerationNotice {
 
 /** Violation rules for the reject dialog */
 export const VIOLATION_RULES = [
-  { code: 'incomplete', label: '信息不完整 / Incomplete Information' },
-  { code: 'fake_listing', label: '涉嫌虚假交易 / Suspected Fake Listing' },
-  { code: 'community_violation', label: '违反校园社区规范 / Community Violation' },
-  { code: 'prohibited_item', label: '禁售物品 / Prohibited Item' },
-  { code: 'other', label: '其他 / Other' },
+  { code: 'incomplete', label: 'Incomplete Information' },
+  { code: 'fake_listing', label: 'Suspected Fake Listing' },
+  { code: 'community_violation', label: 'Community Violation' },
+  { code: 'prohibited_item', label: 'Prohibited Item' },
+  { code: 'other', label: 'Other' },
 ] as const;

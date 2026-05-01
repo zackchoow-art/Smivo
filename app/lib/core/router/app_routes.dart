@@ -23,19 +23,20 @@ class AppRoutes {
   static const String profile = 'profile';
   static const String settings = 'settings';
   static const String settingsProfile = 'settingsProfile';
+  static const String settingsTrustAndSafety = 'settingsTrustAndSafety';
   static const String settingsSystem = 'settingsSystem';
   static const String settingsNotifications = 'settingsNotifications';
   static const String settingsHelp = 'settingsHelp';
-  static const String settingsBlocked = 'settingsBlocked';
-  static const String settingsReported = 'settingsReported';
   static const String settingsDebug = 'settingsDebug';
   static const String sellerCenter = 'sellerCenter';
   static const String buyerCenter = 'buyerCenter';
   static const String transactionManagement = 'transactionManagement';
   static const String notificationCenter = 'notificationCenter';
   
+  static const String myFeedbacks = 'myFeedbacks';
+  static const String myFeedbacksPath = 'feedbacks';
   static const String submitFeedback = 'submitFeedback';
-  static const String submitFeedbackPath = '/feedback/submit';
+  static const String submitFeedbackPath = 'submit';
   static const String myContributions = 'myContributions';
   static const String myContributionsPath = '/contributions';
   static const String savedListings = 'savedListings';
@@ -58,11 +59,10 @@ class AppRoutes {
   static const String profilePath = '/profile';
   static const String settingsPath = '/settings';
   static const String settingsProfilePath = 'profile';
+  static const String settingsTrustAndSafetyPath = 'trust-and-safety';
   static const String settingsSystemPath = 'system';
   static const String settingsNotificationsPath = 'notifications';
   static const String settingsHelpPath = 'help';
-  static const String settingsBlockedPath = 'blocked';
-  static const String settingsReportedPath = 'reported';
   static const String settingsDebugPath = 'debug';
   static const String sellerCenterPath = '/seller-center';
   static const String buyerCenterPath = '/buyer-center';
