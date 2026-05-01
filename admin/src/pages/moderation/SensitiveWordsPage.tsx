@@ -1,15 +1,21 @@
 /**
  * Sensitive words library management page.
- * Supports search, multi-filter, add, delete, toggle, and CSV batch import.
+ * Supports search, multi-filter, add, delete, toggle, CSV batch import,
+ * and cloud sync from LDNOOBW (github.com/LDNOOBW).
  */
 import { useState, useRef } from 'react';
-import { Plus, Search, Upload, Trash2, Loader2, ChevronLeft, ChevronRight, ToggleLeft, ToggleRight, Filter, CloudDownload } from 'lucide-react';
-import { useSensitiveWords, useCreateSensitiveWord, useDeleteSensitiveWord, useBatchImportWords, useBatchToggleWords, type SensitiveWordFilters } from '@/hooks/useSensitiveWords';
+import { Plus, Search, Upload, Trash2, Loader2, ChevronLeft, ChevronRight, ToggleLeft, ToggleRight, Filter, CloudDownload, ArrowLeftRight, X } from 'lucide-react';
+import { useSensitiveWords, useCreateSensitiveWord, useDeleteSensitiveWord, useBatchImportWords, useBatchToggleWords, buildCloudSyncPreview, type SensitiveWordFilters, type ImportMode, type CloudSyncPreview } from '@/hooks/useSensitiveWords';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import type { SensitiveWord } from '@/types';
 
 const SEV_COLOR: Record<string, string> = { block: 'var(--color-danger)', warn: 'var(--color-warning)' };
 const CATS = ['general', 'weapons', 'drugs', 'adult', 'hate', 'fraud', 'spam'];
+const MODE_LABELS: Record<ImportMode, { label: string; desc: string }> = {
+  strict: { label: 'Strict', desc: 'All words → block. Maximum safety.' },
+  recommended: { label: 'Recommended', desc: 'Mild words → warn, rest → block.' },
+  relaxed: { label: 'Relaxed', desc: 'Skip mild words entirely, only block severe.' },
+};
 
 export function SensitiveWordsPage() {
   const [page, setPage] = useState(0);
@@ -23,6 +29,15 @@ export function SensitiveWordsPage() {
   const [ns, setNs] = useState<'block'|'warn'>('block');
   const [nl, setNl] = useState<'en'|'zh'>('en');
   const [previewWords, setPreviewWords] = useState<Partial<SensitiveWord>[] | null>(null);
+
+  // Cloud sync state
+  const [showSyncPanel, setShowSyncPanel] = useState(false);
+  const [syncLangs, setSyncLangs] = useState<{ en: boolean; zh: boolean }>({ en: true, zh: true });
+  const [syncMode, setSyncMode] = useState<ImportMode>('recommended');
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncPreview, setSyncPreview] = useState<CloudSyncPreview | null>(null);
+  const [editableWords, setEditableWords] = useState<Partial<SensitiveWord>[]>([]);
+  const [previewSearch, setPreviewSearch] = useState('');
 
   const { data, isLoading } = useSensitiveWords(page, filters);
   const createWord = useCreateSensitiveWord();
@@ -45,9 +60,7 @@ export function SensitiveWordsPage() {
       const [word, cat, sev, lang] = line.split(',').map(s => s.trim());
       return { word: word?.toLowerCase(), category: cat || 'general', severity: (sev === 'warn' ? 'warn' : 'block') as 'block'|'warn', language: (lang === 'zh' ? 'zh' : 'en') as 'en'|'zh', source: 'import' as const, is_active: true };
     }).filter(w => w.word);
-    if (words.length > 0) {
-      setPreviewWords(words);
-    }
+    if (words.length > 0) setPreviewWords(words);
     if (fileRef.current) fileRef.current.value = '';
   };
 
@@ -58,15 +71,45 @@ export function SensitiveWordsPage() {
     setPreviewWords(null);
   };
 
-  const handleSyncFromCloud = async () => {
-    // Mock fetching from a third party API (e.g., GitHub repo or PurgoMalum)
-    const mockCloudWords: Partial<SensitiveWord>[] = [
-      { word: 'scam_url_tracker', category: 'spam', severity: 'block', language: 'en', source: 'api', is_active: true },
-      { word: 'fake_id_card', category: 'fraud', severity: 'warn', language: 'en', source: 'api', is_active: true },
-      { word: 'weapon_parts', category: 'weapons', severity: 'block', language: 'en', source: 'api', is_active: true },
-      { word: 'illegal_substance_v2', category: 'drugs', severity: 'block', language: 'en', source: 'api', is_active: true },
-    ];
-    setPreviewWords(mockCloudWords);
+  const handleSyncFetch = async () => {
+    const langs = [...(syncLangs.en ? ['en' as const] : []), ...(syncLangs.zh ? ['zh' as const] : [])];
+    if (langs.length === 0) { alert('Select at least one language.'); return; }
+    setSyncLoading(true);
+    try {
+      const preview = await buildCloudSyncPreview(langs, syncMode);
+      setSyncPreview(preview);
+      setEditableWords(preview.words);
+      setPreviewSearch('');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to fetch from cloud.');
+    } finally { setSyncLoading(false); }
+  };
+
+  // Preview editing helpers
+  const moveWord = (idx: number) => {
+    setEditableWords(prev => prev.map((w, i) => i === idx ? { ...w, severity: w.severity === 'block' ? 'warn' : 'block' } : w));
+  };
+  const removeWord = (idx: number) => {
+    setEditableWords(prev => prev.filter((_, i) => i !== idx));
+  };
+  const addPreviewWord = (word: string, severity: 'block' | 'warn') => {
+    if (!word.trim()) return;
+    setEditableWords(prev => [{ word: word.trim().toLowerCase(), category: 'general', severity, language: 'en', source: 'api' as const, is_active: true }, ...prev]);
+  };
+
+  const handleSyncConfirm = async () => {
+    if (editableWords.length === 0) return;
+    try {
+      await batchImport.mutateAsync(editableWords);
+      alert(`Imported ${editableWords.length} words.`);
+      setSyncPreview(null);
+      setEditableWords([]);
+      setShowSyncPanel(false);
+    } catch (err) {
+      console.error(err);
+      alert('Import failed.');
+    }
   };
 
   const toggle = (id: string) => { const n = new Set(selected); n.has(id) ? n.delete(id) : n.add(id); setSelected(n); };
@@ -83,10 +126,125 @@ export function SensitiveWordsPage() {
       <div className="sw-hdr"><div><h1 className="sw-t">Sensitive Words</h1><p className="sw-st tabular-nums">{data?.count ?? 0} total</p></div>
         <div className="sw-ha">
           <button className="sw-bo" onClick={() => setShowFilters(!showFilters)}><Filter size={14}/> Filters</button>
-          <button className="sw-bo" onClick={handleSyncFromCloud}><CloudDownload size={14}/> Sync Cloud</button>
+          <button className="sw-bo" onClick={() => { setShowSyncPanel(!showSyncPanel); setSyncPreview(null); }}><CloudDownload size={14}/> Sync Cloud</button>
           <label className="sw-bo"><Upload size={14}/> CSV<input ref={fileRef} type="file" accept=".csv" hidden onChange={handleCSV}/></label>
           <button className="sw-bp" onClick={() => setShowAdd(true)}><Plus size={14}/> Add</button>
         </div></div>
+
+      {/* ── Cloud Sync Panel ── */}
+      {showSyncPanel && (
+        <div className="sw-sync-panel">
+          <h3 className="sw-sync-title">☁️ Cloud Sync — LDNOOBW</h3>
+          <p className="sw-sync-desc">Fetch profanity word lists from <a href="https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words" target="_blank" rel="noreferrer">LDNOOBW</a> (3.3k ⭐, 27 languages, CC BY 4.0)</p>
+
+          <div className="sw-sync-controls">
+            <div className="sw-sync-group">
+              <span className="sw-sync-label">Languages</span>
+              <label className="sw-sync-check"><input type="checkbox" checked={syncLangs.en} onChange={e => setSyncLangs(p => ({...p, en: e.target.checked}))}/> English (403 words)</label>
+              <label className="sw-sync-check"><input type="checkbox" checked={syncLangs.zh} onChange={e => setSyncLangs(p => ({...p, zh: e.target.checked}))}/> 中文 (319 words)</label>
+            </div>
+            <div className="sw-sync-group">
+              <span className="sw-sync-label">Import Mode</span>
+              {(['recommended', 'relaxed', 'strict'] as ImportMode[]).map(m => (
+                <label key={m} className={`sw-sync-mode ${syncMode === m ? 'sw-sync-mode--active' : ''}`}>
+                  <input type="radio" name="mode" checked={syncMode === m} onChange={() => setSyncMode(m)}/>
+                  <strong>{MODE_LABELS[m].label}</strong>
+                  <span>{MODE_LABELS[m].desc}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="sw-sync-actions">
+            <button className="sw-bc" onClick={() => { setShowSyncPanel(false); setSyncPreview(null); }}>Cancel</button>
+            <button className="sw-bs" onClick={handleSyncFetch} disabled={syncLoading}>
+              {syncLoading ? <><Loader2 size={14} className="spin"/> Fetching...</> : 'Fetch & Preview'}
+            </button>
+          </div>
+
+          {/* Sync Preview Results — editable two-column layout */}
+          {syncPreview && (() => {
+            const blockWords = editableWords.map((w, i) => ({ ...w, _idx: i })).filter(w => w.severity === 'block');
+            const warnWords  = editableWords.map((w, i) => ({ ...w, _idx: i })).filter(w => w.severity === 'warn');
+            const q = previewSearch.toLowerCase();
+            const filterFn = (w: Partial<SensitiveWord>) => !q || (w.word ?? '').includes(q);
+            const filteredBlock = blockWords.filter(filterFn);
+            const filteredWarn  = warnWords.filter(filterFn);
+
+            return (
+            <div className="sw-sync-results">
+              {/* Stats row */}
+              <div className="sw-sync-stats">
+                <div className="sw-sync-stat"><span className="sw-sync-stat-val tabular-nums">{syncPreview.stats.totalFetched}</span><span className="sw-sync-stat-lbl">Fetched</span></div>
+                <div className="sw-sync-stat"><span className="sw-sync-stat-val tabular-nums" style={{color:'var(--color-text-tertiary)'}}>{syncPreview.stats.alreadyInDb}</span><span className="sw-sync-stat-lbl">In DB</span></div>
+                <div className="sw-sync-stat"><span className="sw-sync-stat-val tabular-nums" style={{color:'var(--color-danger)'}}>{blockWords.length}</span><span className="sw-sync-stat-lbl">Block</span></div>
+                <div className="sw-sync-stat"><span className="sw-sync-stat-val tabular-nums" style={{color:'var(--color-warning)'}}>{warnWords.length}</span><span className="sw-sync-stat-lbl">Warn</span></div>
+                <div className="sw-sync-stat"><span className="sw-sync-stat-val tabular-nums" style={{color:'var(--color-success)'}}>{editableWords.length}</span><span className="sw-sync-stat-lbl">Total Import</span></div>
+              </div>
+
+              {/* Search + Add */}
+              <div className="sw-prev-toolbar">
+                <div className="sw-fi" style={{flex:1}}><Search size={14}/><input placeholder="Search preview..." value={previewSearch} onChange={e=>setPreviewSearch(e.target.value)} className="sw-fii"/></div>
+                <form className="sw-prev-add" onSubmit={e=>{e.preventDefault();const inp=(e.target as HTMLFormElement).elements.namedItem('newword') as HTMLInputElement;addPreviewWord(inp.value,'block');inp.value='';}}>
+                  <input name="newword" placeholder="Add word..." className="sw-in" style={{padding:'5px 8px',fontSize:12}}/>
+                  <button type="submit" className="sw-bp" style={{padding:'4px 10px',fontSize:12}}>+ Add</button>
+                </form>
+              </div>
+
+              {editableWords.length > 0 ? (
+                <div className="sw-prev-cols">
+                  {/* Block column */}
+                  <div className="sw-prev-col">
+                    <div className="sw-prev-col-hdr sw-prev-col-hdr--block">🚫 Block ({blockWords.length})</div>
+                    <div className="sw-prev-col-list">
+                      {filteredBlock.slice(0, 200).map(w => (
+                        <div key={w._idx} className="sw-prev-word">
+                          <span className="sw-prev-word-txt">{w.word} <span className="sw-prev-lang">{w.language?.toUpperCase()}</span></span>
+                          <div className="sw-prev-word-acts">
+                            <button title="Move to Warn" onClick={()=>moveWord(w._idx)} className="sw-prev-btn sw-prev-btn--move"><ArrowLeftRight size={12}/></button>
+                            <button title="Remove" onClick={()=>removeWord(w._idx)} className="sw-prev-btn sw-prev-btn--del"><X size={12}/></button>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredBlock.length > 200 && <div className="sw-prev-more">+{filteredBlock.length - 200} more</div>}
+                      {filteredBlock.length === 0 && <div className="sw-prev-empty">No matches</div>}
+                    </div>
+                  </div>
+                  {/* Warn column */}
+                  <div className="sw-prev-col">
+                    <div className="sw-prev-col-hdr sw-prev-col-hdr--warn">⚠️ Warn ({warnWords.length})</div>
+                    <div className="sw-prev-col-list">
+                      {filteredWarn.slice(0, 200).map(w => (
+                        <div key={w._idx} className="sw-prev-word">
+                          <span className="sw-prev-word-txt">{w.word} <span className="sw-prev-lang">{w.language?.toUpperCase()}</span></span>
+                          <div className="sw-prev-word-acts">
+                            <button title="Move to Block" onClick={()=>moveWord(w._idx)} className="sw-prev-btn sw-prev-btn--move"><ArrowLeftRight size={12}/></button>
+                            <button title="Remove" onClick={()=>removeWord(w._idx)} className="sw-prev-btn sw-prev-btn--del"><X size={12}/></button>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredWarn.length > 200 && <div className="sw-prev-more">+{filteredWarn.length - 200} more</div>}
+                      {filteredWarn.length === 0 && <div className="sw-prev-empty">No matches</div>}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p style={{textAlign:'center',color:'var(--color-success)',padding:16,fontSize:13}}>✅ Database is already up to date.</p>
+              )}
+
+              {editableWords.length > 0 && (
+                <div className="sw-sync-actions" style={{marginTop:12}}>
+                  <span style={{fontSize:12,color:'var(--color-text-tertiary)'}}>Removed {syncPreview.stats.newWords - editableWords.length} word(s) from original</span>
+                  <button className="sw-bs" onClick={handleSyncConfirm} disabled={batchImport.isPending}>
+                    {batchImport.isPending ? 'Importing...' : `Confirm Import (${editableWords.length})`}
+                  </button>
+                </div>
+              )}
+            </div>
+            );
+          })()}
+        </div>
+      )}
 
       {showFilters && <div className="sw-fl">
         <div className="sw-fi"><Search size={14}/><input placeholder="Search..." value={filters.search??''} onChange={e=>{setFilters({...filters,search:e.target.value});setPage(0);}} className="sw-fii"/></div>
@@ -108,6 +266,7 @@ export function SensitiveWordsPage() {
         <button className="sw-bbn" onClick={()=>batchAct('off')}>Deactivate</button>
         <button className="sw-bbn sw-bbd" onClick={()=>batchAct('del')}>Delete</button></div>}
 
+      {/* CSV preview (reused from before) */}
       {previewWords && (
         <div className="sw-preview">
           <h3>Preview Import ({previewWords.length} words)</h3>
@@ -187,6 +346,48 @@ export function SensitiveWordsPage() {
 .sw-preview-item{font-size:13px;padding:4px 8px;border-bottom:1px solid var(--color-border-light);color:var(--color-text-secondary)}
 .sw-preview-item:last-child{border-bottom:none}
 .sw-preview-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+
+/* Cloud Sync Panel */
+.sw-sync-panel{background:var(--color-bg-primary);border:1px solid var(--color-info);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.sw-sync-title{font-size:16px;font-weight:600;color:var(--color-text-primary);margin:0 0 4px}
+.sw-sync-desc{font-size:12px;color:var(--color-text-tertiary);margin:0 0 16px}
+.sw-sync-desc a{color:var(--color-info);text-decoration:underline}
+.sw-sync-controls{display:flex;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+.sw-sync-group{display:flex;flex-direction:column;gap:8px;min-width:200px}
+.sw-sync-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-tertiary)}
+.sw-sync-check{font-size:13px;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;cursor:pointer}
+.sw-sync-mode{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;color:var(--color-text-secondary);transition:border-color .15s}
+.sw-sync-mode input{display:none}
+.sw-sync-mode strong{font-size:13px;color:var(--color-text-primary)}
+.sw-sync-mode--active{border-color:var(--color-info);background:var(--color-info-light)}
+.sw-sync-actions{display:flex;gap:8px;justify-content:flex-end}
+.sw-sync-results{margin-top:16px;border-top:1px solid var(--color-border-light);padding-top:16px}
+.sw-sync-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.sw-sync-stat{text-align:center;padding:12px;background:var(--color-bg-secondary);border-radius:var(--radius-sm)}
+.sw-sync-stat-val{display:block;font-size:22px;font-weight:700;color:var(--color-text-primary)}
+.sw-sync-stat-lbl{font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em}
+
+/* Two-column editable preview */
+.sw-prev-toolbar{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.sw-prev-add{display:flex;gap:4px;align-items:center}
+.sw-prev-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:768px){.sw-prev-cols{grid-template-columns:1fr}}
+.sw-prev-col{border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden}
+.sw-prev-col-hdr{padding:8px 12px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.sw-prev-col-hdr--block{background:rgba(239,68,68,.08);color:var(--color-danger);border-bottom:2px solid var(--color-danger)}
+.sw-prev-col-hdr--warn{background:rgba(245,158,11,.08);color:var(--color-warning);border-bottom:2px solid var(--color-warning)}
+.sw-prev-col-list{max-height:320px;overflow-y:auto;padding:4px 0}
+.sw-prev-word{display:flex;align-items:center;justify-content:space-between;padding:3px 10px;font-size:12px;border-bottom:1px solid var(--color-border-light)}
+.sw-prev-word:last-child{border-bottom:none}
+.sw-prev-word:hover{background:var(--color-bg-secondary)}
+.sw-prev-word-txt{font-weight:500;color:var(--color-text-primary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sw-prev-lang{font-size:10px;font-weight:700;color:var(--color-text-tertiary);margin-left:4px}
+.sw-prev-word-acts{display:flex;gap:2px;flex-shrink:0}
+.sw-prev-btn{background:none;border:none;cursor:pointer;padding:3px;border-radius:var(--radius-sm);color:var(--color-text-tertiary);display:flex;align-items:center}
+.sw-prev-btn:hover{background:var(--color-bg-tertiary)}
+.sw-prev-btn--move:hover{color:var(--color-info)}
+.sw-prev-btn--del:hover{color:var(--color-danger)}
+.sw-prev-more,.sw-prev-empty{padding:8px 12px;text-align:center;font-size:11px;color:var(--color-text-tertiary);font-style:italic}
       `}</style>
     </div>
   );

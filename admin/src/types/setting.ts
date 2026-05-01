@@ -21,4 +21,11 @@ export const FLAG_KEYS = {
   WISHLIST_CROSS_SCHOOL: 'wishlist.cross_school',
   PLAZA_ENABLED: 'plaza.enabled',
   FEEDBACK_ENABLED: 'feedback.enabled',
+  // Content filter (client-side)
+  CONTENT_FILTER_ENABLED: 'content_filter.enabled',
+  CONTENT_FILTER_WARN_ACTION: 'content_filter.warn_action',
+  CONTENT_FILTER_BLOCK_ACTION: 'content_filter.block_action',
+  // Backend review (server-side)
+  BACKEND_REVIEW_ENABLED: 'backend_review.enabled',
+  BACKEND_REVIEW_MODE: 'backend_review.mode',
 } as const;

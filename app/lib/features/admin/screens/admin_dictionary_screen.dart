@@ -25,7 +25,7 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
     final radius = context.smivoRadius;
     final dictState = ref.watch(adminDictionariesProvider());
     final typesState = ref.watch(adminDictTypesProvider);
-    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final adminCtx = ref.watch(adminContextProvider).value;
     final canWrite = adminCtx?.canWrite(AdminModule.dictionary) ?? false;
 
     return Scaffold(
@@ -383,10 +383,12 @@ class _DictionaryDialogState extends ConsumerState<_DictionaryDialog> {
     Map<String, dynamic>? extra;
     if (_colorCtrl.text.trim().isNotEmpty || _iconCtrl.text.trim().isNotEmpty) {
       extra = {};
-      if (_colorCtrl.text.trim().isNotEmpty)
+      if (_colorCtrl.text.trim().isNotEmpty) {
         extra['color'] = _colorCtrl.text.trim();
-      if (_iconCtrl.text.trim().isNotEmpty)
+      }
+      if (_iconCtrl.text.trim().isNotEmpty) {
         extra['icon'] = _iconCtrl.text.trim();
+      }
     }
 
     final dict = SystemDictionary(

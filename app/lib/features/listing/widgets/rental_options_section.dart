@@ -310,12 +310,13 @@ class _DateRangePicker extends ConsumerWidget {
                         firstDate: startDate.add(const Duration(days: 1)),
                         lastDate: startDate.add(const Duration(days: 365)),
                       );
-                      if (picked != null)
+                      if (picked != null) {
                         ref
                             .read(rentalEndDateProvider.notifier)
                             .setDate(
                               DateTime(picked.year, picked.month, picked.day),
                             );
+                      }
                     },
                   ),
                 ],
@@ -476,12 +477,13 @@ class _StepperConfigurator extends ConsumerWidget {
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
-                      if (picked != null)
+                      if (picked != null) {
                         ref
                             .read(rentalStartDateProvider.notifier)
                             .setDate(
                               DateTime(picked.year, picked.month, picked.day),
                             );
+                      }
                     },
                   ),
                 ],

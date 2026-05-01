@@ -167,7 +167,7 @@ class AdminDashboardScreen extends ConsumerWidget {
             // Danger Zone — only for admin/sysadmin
             Builder(
               builder: (context) {
-                final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+                final adminCtx = ref.watch(adminContextProvider).value;
                 final canWrite =
                     adminCtx?.canWrite(AdminModule.dashboard) ?? false;
                 if (!canWrite) return const SizedBox.shrink();
@@ -284,7 +284,7 @@ class AdminDashboardScreen extends ConsumerWidget {
 
                           // NOTE: Use DB-driven status colors via StatusResolver
                           final resolver =
-                              ref.watch(statusResolverProvider).valueOrNull;
+                              ref.watch(statusResolverProvider).value;
                           final statusColor =
                               resolver?.orderColor(status) ??
                               colors.onSurfaceVariant;

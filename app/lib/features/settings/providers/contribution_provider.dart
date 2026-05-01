@@ -9,7 +9,7 @@ part 'contribution_provider.g.dart';
 class MyContributions extends _$MyContributions {
   @override
   Future<List<ContributionEntry>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
 
     final repo = ref.watch(feedbackRepositoryProvider);

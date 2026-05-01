@@ -37,7 +37,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
   void _handleOrderTap(String orderId, bool hasUnread) {
     if (hasUnread) {
       final notifications =
-          ref.read(notificationListProvider).valueOrNull ?? [];
+          ref.read(notificationListProvider).value ?? [];
       final unreadNotifs = notifications.where(
         (n) => !n.isRead && n.relatedOrderId == orderId,
       );
@@ -53,7 +53,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final listingsAsync = ref.watch(myListingsProvider);
     final ordersAsync = ref.watch(sellerOrdersProvider);
     final notificationsAsync = ref.watch(notificationListProvider);
-    final notifications = notificationsAsync.valueOrNull ?? [];
+    final notifications = notificationsAsync.value ?? [];
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -149,8 +149,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                     false) ||
                                 l.price.toStringAsFixed(2).contains(q);
                           }).toList();
-                  if (activeListings.isEmpty)
+                  if (activeListings.isEmpty) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  }
 
                   final isExpanded =
                       _expandedSections['Active Listings'] ?? true;
@@ -339,8 +340,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                 price.contains(q);
                           }).toList();
 
-                  if (awaitingDelivery.isEmpty)
+                  if (awaitingDelivery.isEmpty) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  }
 
                   final isExpanded =
                       _expandedSections['Awaiting Delivery'] ?? true;
@@ -503,8 +505,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                 price.contains(q);
                           }).toList();
 
-                  if (activeTransactions.isEmpty)
+                  if (activeTransactions.isEmpty) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  }
 
                   final isExpanded =
                       _expandedSections['Active Transactions'] ?? true;
@@ -562,7 +565,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                             final useConstraint = Breakpoints.isDesktop(sw);
                             final maxW = isIkea ? 1280.0 : 960.0;
                             final resolver =
-                                ref.watch(statusResolverProvider).valueOrNull;
+                                ref.watch(statusResolverProvider).value;
                             final sliver = SliverPadding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
@@ -817,10 +820,11 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                     i.subtitle.toLowerCase().contains(q);
                               }).toList();
 
-                      if (filteredHistory.isEmpty)
+                      if (filteredHistory.isEmpty) {
                         return const SliverToBoxAdapter(
                           child: SizedBox.shrink(),
                         );
+                      }
 
                       final isExpanded = _expandedSections['History'] ?? true;
 

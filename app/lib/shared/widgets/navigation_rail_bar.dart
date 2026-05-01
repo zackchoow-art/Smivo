@@ -28,9 +28,9 @@ class NavigationRailBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final totalUnreadAsync = ref.watch(chatTotalUnreadProvider);
-    final totalUnread = totalUnreadAsync.valueOrNull ?? 0;
+    final totalUnread = totalUnreadAsync.value ?? 0;
     final unreadOrderUpdatesAsync = ref.watch(unreadOrderUpdatesCountProvider);
-    final unreadOrderUpdates = unreadOrderUpdatesAsync.valueOrNull ?? 0;
+    final unreadOrderUpdates = unreadOrderUpdatesAsync.value ?? 0;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 

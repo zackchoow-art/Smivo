@@ -26,7 +26,7 @@ class _AdminPickupLocationsScreenState
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final schoolsState = ref.watch(adminSchoolControllerProvider);
-    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final adminCtx = ref.watch(adminContextProvider).value;
     final canWrite = adminCtx?.canWrite(AdminModule.pickupLocations) ?? false;
 
     return Scaffold(

@@ -6,6 +6,6 @@ part 'admin_roles_provider.g.dart';
 
 /// Provides all admin role assignments for the roles management screen.
 @riverpod
-Future<List<AdminRole>> adminRoles(AdminRolesRef ref) async {
+Future<List<AdminRole>> adminRoles(Ref ref) async {
   return ref.watch(adminRoleRepositoryProvider).fetchAllRoles();
 }

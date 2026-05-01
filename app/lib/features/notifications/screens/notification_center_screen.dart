@@ -340,11 +340,13 @@ class _NotificationCenterScreenState
           );
         }
       case 'url':
-        if (notification.actionUrl != null)
+        if (notification.actionUrl != null) {
           launchUrl(Uri.parse(notification.actionUrl!));
+        }
       case 'route':
-        if (notification.actionUrl != null)
+        if (notification.actionUrl != null) {
           context.push(notification.actionUrl!);
+        }
       case 'none':
       default:
         break;

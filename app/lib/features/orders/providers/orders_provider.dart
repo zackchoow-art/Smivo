@@ -37,7 +37,7 @@ class AllOrders extends _$AllOrders {
 
   @override
   Future<List<Order>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
 
     ref.onDispose(() {
@@ -71,7 +71,7 @@ class AllOrders extends _$AllOrders {
 /// Orders filtered by the currently selected tab (buying vs selling).
 @riverpod
 Future<List<Order>> filteredOrders(Ref ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return [];
 
   final tab = ref.watch(selectedOrdersTabProvider);
@@ -127,7 +127,7 @@ class OrderDetail extends _$OrderDetail {
 /// Fetches the latest order for a specific listing and buyer.
 @riverpod
 Future<Order?> latestOrderByListingAndBuyer(
-  LatestOrderByListingAndBuyerRef ref, {
+  Ref ref, {
   required String listingId,
   required String buyerId,
 }) {
@@ -161,7 +161,7 @@ class OrderActions extends _$OrderActions {
   }) async {
     state = const AsyncValue.loading();
     try {
-      final user = ref.read(authStateProvider).valueOrNull;
+      final user = ref.read(authStateProvider).value;
       if (user == null) {
         throw StateError('User must be logged in to place an order');
       }
@@ -260,7 +260,7 @@ class OrderActions extends _$OrderActions {
   Future<void> confirmDelivery(Order order) async {
     state = const AsyncValue.loading();
     try {
-      final user = ref.read(authStateProvider).valueOrNull;
+      final user = ref.read(authStateProvider).value;
       if (user == null) {
         throw StateError('User must be logged in to confirm delivery');
       }
@@ -422,7 +422,7 @@ Future<int> unreadOrderUpdatesCount(Ref ref) async {
 
 @riverpod
 Future<int> unreadBuyerUpdatesCount(Ref ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return 0;
   final notifications = await ref.watch(notificationListProvider.future);
   final allOrdersList = await ref.watch(allOrdersProvider.future);
@@ -442,7 +442,7 @@ Future<int> unreadBuyerUpdatesCount(Ref ref) async {
 
 @riverpod
 Future<int> unreadSellerUpdatesCount(Ref ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return 0;
   final notifications = await ref.watch(notificationListProvider.future);
   final allOrdersList = await ref.watch(allOrdersProvider.future);

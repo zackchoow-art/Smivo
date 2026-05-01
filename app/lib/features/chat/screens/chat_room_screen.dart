@@ -113,13 +113,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   @override
   Widget build(BuildContext context) {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
-    final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
+    final currentUserId = ref.watch(authStateProvider).value?.id;
     final colors = context.smivoColors;
 
     // Re-mark as read whenever new messages arrive while viewing this chat.
     ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
-      final prevLen = previous?.valueOrNull?.length ?? 0;
-      final nextLen = next.valueOrNull?.length ?? 0;
+      final prevLen = previous?.value?.length ?? 0;
+      final nextLen = next.value?.length ?? 0;
       if (nextLen > prevLen) {
         // New message arrived while user is on this screen
         ref.read(chatMessagesProvider(widget.chatRoomId).notifier).markAsRead();
@@ -398,11 +398,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     BuildContext context,
     AsyncValue<ChatRoom> roomAsync,
   ) {
-    final room = roomAsync.valueOrNull;
+    final room = roomAsync.value;
     if (room == null) return const SizedBox.shrink();
 
     final listingAsync = ref.watch(listingDetailProvider(room.listingId));
-    final listing = listingAsync.valueOrNull;
+    final listing = listingAsync.value;
     if (listing == null) return const SizedBox.shrink();
 
     final colors = context.smivoColors;
@@ -417,7 +417,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         buyerId: room.buyerId,
       ),
     );
-    final order = orderAsync.valueOrNull;
+    final order = orderAsync.value;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

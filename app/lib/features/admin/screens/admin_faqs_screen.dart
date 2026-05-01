@@ -27,7 +27,7 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final schoolsState = ref.watch(adminSchoolControllerProvider);
-    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final adminCtx = ref.watch(adminContextProvider).value;
     final canWrite = adminCtx?.canWrite(AdminModule.faqs) ?? false;
 
     // NOTE: When no school is selected, show all FAQs (global view).

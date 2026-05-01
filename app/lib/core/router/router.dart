@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/features/profile/screens/profile_setup_screen.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 
@@ -28,6 +27,7 @@ import 'package:smivo/features/settings/screens/my_contributions_screen.dart';
 import 'package:smivo/features/seller/screens/seller_center_screen.dart';
 import 'package:smivo/features/seller/screens/transaction_management_screen.dart';
 import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
+import 'package:smivo/features/settings/screens/debug_data_screen.dart';
 import 'package:smivo/shared/widgets/app_shell.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
@@ -85,13 +85,13 @@ bool _isPublicRoute(String path) {
 GoRouter router(Ref ref) {
   // Watch auth state to trigger router refreshes automatically
   final authStateValue = ref.watch(authStateProvider);
-  final user = authStateValue.valueOrNull;
+  final user = authStateValue.value;
   final isLoggedIn = user != null;
   final isEmailVerified = user?.emailConfirmedAt != null;
 
   // Watch profile state to handle onboarding redirect
   final profileValue = ref.watch(profileProvider);
-  final profile = profileValue.valueOrNull;
+  final profile = profileValue.value;
   final needsOnboarding = profile != null && profile.displayName == null;
 
   return GoRouter(
@@ -327,6 +327,11 @@ GoRouter router(Ref ref) {
             name: AppRoutes.settingsNotifications,
             path: AppRoutes.settingsNotificationsPath,
             builder: (context, state) => const NotificationSettingsScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.settingsDebug,
+            path: AppRoutes.settingsDebugPath,
+            builder: (context, state) => const DebugDataScreen(),
           ),
           GoRoute(
             name: AppRoutes.settingsHelp,

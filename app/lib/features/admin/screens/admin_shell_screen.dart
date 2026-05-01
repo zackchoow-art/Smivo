@@ -20,7 +20,7 @@ class AdminShellScreen extends ConsumerWidget {
     final typo = context.smivoTypo;
     final isDesktop = MediaQuery.sizeOf(context).width >= 900;
     final currentPath = GoRouterState.of(context).uri.path;
-    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final adminCtx = ref.watch(adminContextProvider).value;
 
     final navItems =
         _buildNavItems(currentPath).where((item) {

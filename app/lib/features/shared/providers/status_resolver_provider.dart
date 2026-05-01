@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/system_dictionary.dart';
 import 'package:smivo/data/repositories/school_data_repository.dart';

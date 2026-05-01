@@ -26,7 +26,7 @@ class CreateListingFormScreen extends ConsumerStatefulWidget {
 
 class _CreateListingFormScreenState
     extends ConsumerState<CreateListingFormScreen> {
-  late ProviderListenable<String> modeProvider;
+  late dynamic modeProvider;
   PickupLocation? _selectedPickup;
   bool _allowBuyerToSuggest = false;
   bool _isSubmitting = false;
@@ -349,10 +349,11 @@ class _CreateListingFormScreenState
                                 (err, _) =>
                                     Text('Failed to load locations: $err'),
                             data: (locations) {
-                              if (locations.isEmpty)
+                              if (locations.isEmpty) {
                                 return const Text(
                                   'No pickup locations available',
                                 );
+                              }
                               return Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -552,10 +553,12 @@ class _CreateListingFormScreenState
     final isSale = formMode == 'sale';
     final errors = <String>[];
     if (_titleController.text.trim().isEmpty) errors.add('Title is required');
-    if (_descriptionController.text.trim().isEmpty)
+    if (_descriptionController.text.trim().isEmpty) {
       errors.add('Description is required');
-    if (category == null || category.isEmpty)
+    }
+    if (category == null || category.isEmpty) {
       errors.add('Please select a category');
+    }
     if (isSale) {
       final price = double.tryParse(_priceController.text.trim());
       if (price == null || price <= 0) errors.add('Valid sale price required');
@@ -605,7 +608,7 @@ class _CreateListingFormScreenState
     }
     setState(() => _isSubmitting = true);
     try {
-      final profile = ref.read(profileProvider).valueOrNull;
+      final profile = ref.read(profileProvider).value;
       if (profile == null) throw StateError('Not logged in');
       final selectedCategory = ref.read(selectedListingCategoryProvider)!;
       double? price, dailyRate, weeklyRate, monthlyRate;

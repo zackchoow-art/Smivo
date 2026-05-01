@@ -11,7 +11,7 @@ part 'moderation_provider.g.dart';
 class BlockedUsers extends _$BlockedUsers {
   @override
   Future<List<String>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
 
     final repo = ref.watch(moderationRepositoryProvider);
@@ -23,7 +23,7 @@ class BlockedUsers extends _$BlockedUsers {
 class BlockedUsersList extends _$BlockedUsersList {
   @override
   Future<List<UserProfile>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
 
     final repo = ref.watch(moderationRepositoryProvider);
@@ -37,7 +37,7 @@ class ModerationActions extends _$ModerationActions {
   FutureOr<void> build() {}
 
   Future<void> blockUser(String blockedUserId) async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     state = const AsyncLoading();
@@ -55,7 +55,7 @@ class ModerationActions extends _$ModerationActions {
   }
 
   Future<void> unblockUser(String blockedUserId) async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     state = const AsyncLoading();
@@ -76,7 +76,7 @@ class ModerationActions extends _$ModerationActions {
     String? reasonCategory,
     required String reason,
   }) async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     state = const AsyncLoading();
@@ -110,7 +110,7 @@ class ModerationActions extends _$ModerationActions {
 class UserReports extends _$UserReports {
   @override
   Future<List<ContentReport>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
 
     final repo = ref.watch(moderationRepositoryProvider);

@@ -18,7 +18,7 @@ part 'push_notification_provider.g.dart';
 class PushNotificationManager extends _$PushNotificationManager {
   @override
   Future<void> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
 
     if (user == null) {
       // NOTE: Logout clears OneSignal identity so pushes stop

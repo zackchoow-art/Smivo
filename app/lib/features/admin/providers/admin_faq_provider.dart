@@ -15,7 +15,7 @@ class AdminFaqController extends _$AdminFaqController {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final newFaq = await ref.read(faqRepositoryProvider).createFaq(faq);
-      final currentList = state.valueOrNull ?? [];
+      final currentList = state.value ?? [];
       return [...currentList, newFaq]
         ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
     });
@@ -25,7 +25,7 @@ class AdminFaqController extends _$AdminFaqController {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final updatedFaq = await ref.read(faqRepositoryProvider).updateFaq(faq);
-      final currentList = state.valueOrNull ?? [];
+      final currentList = state.value ?? [];
       return currentList
           .map((e) => e.id == updatedFaq.id ? updatedFaq : e)
           .toList()
@@ -37,7 +37,7 @@ class AdminFaqController extends _$AdminFaqController {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       await ref.read(faqRepositoryProvider).deleteFaq(id);
-      final currentList = state.valueOrNull ?? [];
+      final currentList = state.value ?? [];
       return currentList.where((e) => e.id != id).toList();
     });
   }

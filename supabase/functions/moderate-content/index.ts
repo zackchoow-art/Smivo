@@ -17,10 +17,18 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const payload = await req.json();
-    const listing = payload.record;
+    const record = payload.record;
+    const table = payload.table;
 
-    if (!listing || payload.type !== 'INSERT') {
-      return new Response(JSON.stringify({ message: 'Ignoring non-insert payload' }), {
+    if (!record || payload.type !== 'INSERT') {
+      return new Response(JSON.stringify({ message: 'Ignoring non-insert payload or empty record' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+
+    if (table !== 'listings' && table !== 'messages') {
+      return new Response(JSON.stringify({ message: `Ignoring unsupported table: ${table}` }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
@@ -38,70 +46,111 @@ serve(async (req) => {
       return config ? config.config_value : null;
     };
 
-    const isEnabled = getConfig('ai_moderation_enabled');
-    if (isEnabled !== true && isEnabled !== 'true') {
-      return new Response(JSON.stringify({ message: 'AI moderation disabled' }), {
+    // 2. Check backend_review.enabled
+    const reviewEnabled = getConfig('backend_review.enabled');
+    if (reviewEnabled !== 'true' && reviewEnabled !== true) {
+      return new Response(JSON.stringify({ message: 'Backend review disabled' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
-    const provider = getConfig('ai_provider') || 'openai';
-    const actionOnHit = getConfig('ai_action_on_hit') || 'flag';
-
-    console.log(`Analyzing listing ${listing.id} with ${provider}...`);
-
+    // 3. Get review mode
+    const mode = getConfig('backend_review.mode') || 'sensitive_words';
+    let wordMatches: string[] = [];
+    let aiFlags: any = {};
     let isViolation = false;
-    let violationReason = '';
 
-    // 2. Perform AI Moderation
-    if (provider === 'openai') {
-      const openAiKey = Deno.env.get('OPENAI_API_KEY');
-      if (!openAiKey) throw new Error('OPENAI_API_KEY is not set');
+    let textToCheck = '';
+    let userId = '';
+    let contentSnapshot = '';
 
-      // Simple text moderation as an example (ideally we would use vision for listing images)
-      const response = await fetch('https://api.openai.com/v1/moderations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openAiKey}`,
-        },
-        body: JSON.stringify({
-          input: `${listing.title}\n\n${listing.description}`,
-        }),
-      });
-      
-      const modData = await response.json();
-      if (modData.results && modData.results[0].flagged) {
-        isViolation = true;
-        violationReason = 'OpenAI Flagged Content';
-      }
-    } else if (provider === 'google') {
-      // Mock Google Vision/Gemini implementation
-      console.log('Google provider selected, using mock validation');
-      isViolation = false;
+    if (table === 'listings') {
+      textToCheck = `${record.title}\n${record.description}`.toLowerCase();
+      userId = record.seller_id;
+      contentSnapshot = `${record.title}\n---\n${record.description}`;
+    } else if (table === 'messages') {
+      textToCheck = `${record.content}`.toLowerCase();
+      userId = record.sender_id;
+      contentSnapshot = record.content;
     }
 
-    // 3. Take action if violation detected
-    if (isViolation) {
-      console.log(`Violation detected for listing ${listing.id}: ${violationReason}`);
+    // 4a. Sensitive words matching
+    if (mode === 'sensitive_words' || mode === 'both') {
+      const { data: words, error: wordsError } = await supabase
+        .from('sensitive_words')
+        .select('word, severity')
+        .eq('is_active', true)
+        .eq('severity', 'block');
       
-      // Update listing status
-      const newStatus = actionOnHit === 'reject' ? 'rejected' : 'flagged';
-      await supabase
-        .from('listings')
-        .update({ moderation_status: newStatus })
-        .eq('id', listing.id);
+      if (!wordsError && words) {
+        wordMatches = words
+          .filter(w => textToCheck.includes(w.word.toLowerCase()))
+          .map(w => w.word);
+        
+        if (wordMatches.length > 0) isViolation = true;
+      }
+    }
 
-      // Create a notification for the user
-      await supabase.from('notifications').insert({
-        user_id: listing.seller_id,
-        type: 'system',
-        title: 'Listing Moderation Alert',
-        body: `Your listing "${listing.title}" has been ${newStatus} due to policy violations.`,
-        data: { listing_id: listing.id, reason: violationReason },
-        read: false
+    // 4b. AI Moderation
+    if (mode === 'ai' || mode === 'both') {
+      const openAiKey = Deno.env.get('OPENAI_API_KEY');
+      if (openAiKey) {
+        const response = await fetch('https://api.openai.com/v1/moderations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openAiKey}`,
+          },
+          body: JSON.stringify({
+            input: textToCheck,
+          }),
+        });
+        
+        const modData = await response.json();
+        if (modData.results && modData.results[0].flagged) {
+          isViolation = true;
+          aiFlags = modData.results[0].categories;
+        }
+      } else {
+        console.warn('OPENAI_API_KEY is not set. Skipping AI moderation.');
+      }
+    }
+
+    // 5. Take action if violation detected
+    if (isViolation) {
+      console.log(`Violation detected for ${table} ${record.id}`);
+      
+      // Insert into moderation_queue
+      await supabase.from('moderation_queue').insert({
+        target_type: table === 'listings' ? 'listing' : 'message',
+        target_id: record.id,
+        user_id: userId,
+        trigger_source: 'auto',
+        review_method: mode,
+        matched_words: wordMatches,
+        ai_flags: aiFlags,
+        content_snapshot: contentSnapshot,
+        status: 'pending',
       });
+
+      if (table === 'listings') {
+        // Mark listing as flagged
+        await supabase
+          .from('listings')
+          .update({ moderation_status: 'flagged' })
+          .eq('id', record.id);
+
+        // Notify seller
+        await supabase.from('notifications').insert({
+          user_id: userId,
+          type: 'system',
+          title: 'Content Under Review',
+          body: `Your listing "${record.title}" is under review.`,
+          data: { listing_id: record.id },
+          read: false
+        });
+      }
     }
 
     return new Response(JSON.stringify({ 

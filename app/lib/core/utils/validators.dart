@@ -109,8 +109,9 @@ class Validators {
 
   /// Validates that [confirm] matches [password].
   static String? confirmPassword(String? password, String? confirm) {
-    if (confirm == null || confirm.isEmpty)
+    if (confirm == null || confirm.isEmpty) {
       return 'Please confirm your password';
+    }
     if (password != confirm) return 'Passwords do not match';
     return null;
   }

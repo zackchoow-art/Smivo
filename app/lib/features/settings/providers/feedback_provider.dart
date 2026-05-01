@@ -9,7 +9,7 @@ part 'feedback_provider.g.dart';
 class MyFeedbacks extends _$MyFeedbacks {
   @override
   Future<List<UserFeedback>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
 
     final repo = ref.watch(feedbackRepositoryProvider);
@@ -31,7 +31,7 @@ class SubmitFeedbackAction extends _$SubmitFeedbackAction {
   }) async {
     state = const AsyncValue.loading();
     try {
-      final user = ref.read(authStateProvider).valueOrNull;
+      final user = ref.read(authStateProvider).value;
       if (user == null) {
         throw StateError('You must be logged in to submit feedback');
       }

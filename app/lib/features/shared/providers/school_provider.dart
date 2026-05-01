@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:smivo/data/models/pickup_location.dart';
@@ -31,7 +30,7 @@ Future<List<PickupLocation>> pickupLocationsForSchool(
 /// user's school. Returns empty list if not logged in.
 @riverpod
 Future<List<PickupLocation>> myPickupLocations(Ref ref) async {
-  final profile = ref.watch(profileProvider).valueOrNull;
+  final profile = ref.watch(profileProvider).value;
   if (profile == null) return [];
 
   final repository = ref.watch(pickupLocationRepositoryProvider);
@@ -42,7 +41,7 @@ Future<List<PickupLocation>> myPickupLocations(Ref ref) async {
 /// Returns null if not logged in.
 @riverpod
 Future<School?> mySchool(Ref ref) async {
-  final profile = ref.watch(profileProvider).valueOrNull;
+  final profile = ref.watch(profileProvider).value;
   if (profile == null) return null;
 
   final repository = ref.watch(schoolRepositoryProvider);

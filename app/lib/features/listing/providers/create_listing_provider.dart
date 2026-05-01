@@ -98,7 +98,7 @@ class CreateListingAction extends _$CreateListingAction {
   }) async {
     state = const AsyncValue.loading();
     try {
-      final user = ref.read(authStateProvider).valueOrNull;
+      final user = ref.read(authStateProvider).value;
       if (user == null) {
         throw StateError('You must be logged in to post a listing');
       }
@@ -134,21 +134,19 @@ class CreateListingAction extends _$CreateListingAction {
         }
       }
 
-      // Content filter — block submission if local sensitive words detected
-      final filter = ref.read(sensitiveWordsProvider).valueOrNull;
-      if (filter != null) {
-        final titleResult = filter.check(title);
-        final descResult = filter.check(description);
-        if (!titleResult.passed || !descResult.passed) {
-          final allMatched = {
-            ...titleResult.matchedWords,
-            ...descResult.matchedWords,
-          };
-          throw ArgumentError(
-            'Your listing contains restricted content and cannot be posted. '
-            'Please revise the following: ${allMatched.join(", ")}',
-          );
-        }
+      // Content filter — apply based on platform configuration
+      final filter = ref.read(sensitiveWordsProvider).value;
+      final config = ref.read(filterConfigStateProvider).value;
+      
+      var finalTitle = title.trim();
+      var finalDescription = description.trim();
+      
+      if (filter != null && config != null) {
+        final titleAction = applyContentFilter(finalTitle, filter, config);
+        final descAction = applyContentFilter(finalDescription, filter, config);
+        finalTitle = titleAction.processedText;
+        finalDescription = descAction.processedText;
+        // Warnings are silently ignored here, the backend moderation queue will catch 'warn' severity items.
       }
 
       // TODO(images): Re-enable this check once image upload
@@ -168,8 +166,8 @@ class CreateListingAction extends _$CreateListingAction {
         schoolId: schoolId,
         pickupLocationId: pickupLocationId,
         allowPickupChange: allowPickupChange,
-        title: title.trim(),
-        description: description.trim(),
+        title: finalTitle,
+        description: finalDescription,
         category: category.toLowerCase(),
         transactionType: transactionType,
         // For rentals, we set price to 0.0 as it's only meaningful for sales.

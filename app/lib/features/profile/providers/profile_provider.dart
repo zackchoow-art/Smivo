@@ -12,7 +12,7 @@ class Profile extends _$Profile {
   @override
   FutureOr<UserProfile?> build() async {
     final authState = ref.watch(authStateProvider);
-    final user = authState.valueOrNull;
+    final user = authState.value;
 
     if (user == null) return null;
 
@@ -33,7 +33,7 @@ class Profile extends _$Profile {
 
   /// Update the current user's display name
   Future<void> updateDisplayName(String name) async {
-    final currentProfile = state.valueOrNull;
+    final currentProfile = state.value;
     if (currentProfile == null) return;
 
     state = const AsyncValue.loading();
@@ -45,7 +45,7 @@ class Profile extends _$Profile {
 
   /// Upload and update the user's avatar
   Future<void> updateAvatar(File file) async {
-    final currentProfile = state.valueOrNull;
+    final currentProfile = state.value;
     if (currentProfile == null) return;
 
     state = const AsyncValue.loading();
@@ -64,7 +64,7 @@ class Profile extends _$Profile {
   /// Uses [uploadAvatarBytes] from the repository which accepts [Uint8List]
   /// instead of [File], making this method safe to call on all platforms.
   Future<void> updateAvatarFromBytes(Uint8List bytes, String fileName) async {
-    final currentProfile = state.valueOrNull;
+    final currentProfile = state.value;
     if (currentProfile == null) return;
 
     state = const AsyncValue.loading();
@@ -83,7 +83,7 @@ class Profile extends _$Profile {
     required String displayName,
     File? avatarFile,
   }) async {
-    final currentProfile = state.valueOrNull;
+    final currentProfile = state.value;
     if (currentProfile == null) return;
 
     state = const AsyncValue.loading();

@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
@@ -69,7 +68,7 @@ Future<Listing> listingDetail(Ref ref, String id) async {
   final listing = await repository.fetchListing(id);
 
   // Fire-and-forget: record this view for analytics
-  final userId = ref.read(authStateProvider).valueOrNull?.id;
+  final userId = ref.read(authStateProvider).value?.id;
   // NOTE: Skip recording if the viewer is the seller (own listing)
   if (userId != listing.sellerId) {
     repository.recordView(listingId: id, viewerId: userId);
@@ -82,7 +81,7 @@ Future<Listing> listingDetail(Ref ref, String id) async {
 /// for this listing. Returns the order if found, null otherwise.
 @riverpod
 Future<Order?> existingBuyerOrder(Ref ref, String listingId) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return null;
 
   final repo = ref.watch(orderRepositoryProvider);

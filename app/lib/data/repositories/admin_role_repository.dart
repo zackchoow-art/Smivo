@@ -128,6 +128,6 @@ class AdminRoleRepository {
 }
 
 @riverpod
-AdminRoleRepository adminRoleRepository(AdminRoleRepositoryRef ref) {
+AdminRoleRepository adminRoleRepository(Ref ref) {
   return AdminRoleRepository(Supabase.instance.client);
 }

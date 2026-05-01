@@ -194,7 +194,7 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
   Widget _buildUserRow(BuildContext context, String role, UserProfile user) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
+    final currentUserId = ref.read(authStateProvider).value?.id;
     // NOTE: Don't show message button for the current user's own row
     final isSelf = user.id == currentUserId;
 
@@ -278,7 +278,7 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
   }
 
   Future<void> _openChat(UserProfile user) async {
-    final currentUserId = ref.read(authStateProvider).valueOrNull?.id;
+    final currentUserId = ref.read(authStateProvider).value?.id;
     if (currentUserId == null) return;
 
     final chatRepo = ref.read(chatRepositoryProvider);
@@ -342,7 +342,7 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
       DateFormat('MMM d, yyyy · h:mm a').format(dt.toLocal());
 
   String _resolveStatusLabel(String status) {
-    final resolver = ref.read(statusResolverProvider).valueOrNull;
+    final resolver = ref.read(statusResolverProvider).value;
     if (resolver != null) return resolver.orderLabel(status);
     // Fallback if resolver not yet loaded
     return status

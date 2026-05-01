@@ -3,12 +3,13 @@ import 'package:smivo/data/models/review_tag.dart';
 import 'package:smivo/data/repositories/review_repository.dart';
 
 import 'package:smivo/data/models/user_review.dart';
+import 'package:smivo/core/providers/content_filter_provider.dart';
 
 part 'order_review_provider.g.dart';
 
 @riverpod
 Future<UserReview?> orderReview(
-  OrderReviewRef ref, {
+  Ref ref, {
   required String orderId,
   required String reviewerId,
 }) {
@@ -18,7 +19,7 @@ Future<UserReview?> orderReview(
 }
 
 @riverpod
-Future<List<ReviewTag>> reviewTags(ReviewTagsRef ref, {required String role}) {
+Future<List<ReviewTag>> reviewTags(Ref ref, {required String role}) {
   return ref.read(reviewRepositoryProvider).fetchTags(role);
 }
 
@@ -38,6 +39,18 @@ class OrderReviewActions extends _$OrderReviewActions {
   }) async {
     state = const AsyncLoading();
     try {
+      String? finalComment = comment?.trim();
+      final currentComment = finalComment;
+      if (currentComment != null && currentComment.isNotEmpty) {
+        final filter = ref.read(sensitiveWordsProvider).value;
+        final config = ref.read(filterConfigStateProvider).value;
+        
+        if (filter != null && config != null) {
+          final action = applyContentFilter(currentComment, filter, config);
+          finalComment = action.processedText;
+        }
+      }
+
       await ref
           .read(reviewRepositoryProvider)
           .submitReview(
@@ -46,7 +59,7 @@ class OrderReviewActions extends _$OrderReviewActions {
             targetUserId: targetUserId,
             role: role,
             rating: rating,
-            comment: comment,
+            comment: finalComment,
             tagIds: tagIds,
           );
       state = const AsyncData(null);

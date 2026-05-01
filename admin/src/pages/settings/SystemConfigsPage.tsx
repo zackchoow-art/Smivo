@@ -17,6 +17,7 @@ export function SystemConfigsPage() {
     await updateConfig.mutateAsync({
       key: config.config_key,
       value: String(newValue),
+      oldValue: config.config_value,
       adminId: admin.user_id,
     });
   };
@@ -26,6 +27,17 @@ export function SystemConfigsPage() {
     await updateConfig.mutateAsync({
       key: config.config_key,
       value: `"${newValue}"`, // We stored string values as JSON strings (e.g. '"openai"') in migration
+      oldValue: config.config_value,
+      adminId: admin.user_id,
+    });
+  };
+
+  const handleChangeRaw = async (config: SystemConfig, newValue: string) => {
+    if (!admin) return;
+    await updateConfig.mutateAsync({
+      key: config.config_key,
+      value: newValue,
+      oldValue: config.config_value,
       adminId: admin.user_id,
     });
   };
@@ -47,11 +59,190 @@ export function SystemConfigsPage() {
   const aiProvider = configs.find(c => c.config_key === 'ai_provider');
   const aiAction = configs.find(c => c.config_key === 'ai_action_on_hit');
 
+  const contentFilterEnabled = configs.find(c => c.config_key === 'content_filter.enabled');
+  const contentFilterWarnAction = configs.find(c => c.config_key === 'content_filter.warn_action');
+  const contentFilterBlockAction = configs.find(c => c.config_key === 'content_filter.block_action');
+  const backendReviewEnabled = configs.find(c => c.config_key === 'backend_review.enabled');
+  const backendReviewMode = configs.find(c => c.config_key === 'backend_review.mode');
+
   return (
     <div className="sc-page">
       <div className="sc-header">
         <h1 className="sc-title">System Configurations</h1>
         <p className="sc-subtitle">Manage global AI settings and moderation rules</p>
+      </div>
+
+      <div className="sc-section">
+        <div className="sc-section-header">
+          <ShieldAlert size={20} color="var(--color-warning)" />
+          <h2>Content Filter Settings</h2>
+        </div>
+        
+        <div className="sc-card-list">
+          {contentFilterEnabled && (
+            <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+              <div className="sc-card-info">
+                <h3>Client-Side Filtering</h3>
+                <p>Enable Content Filter</p>
+              </div>
+              <div className="sc-card-action">
+                <label className="sc-toggle">
+                  <input 
+                    type="checkbox" 
+                    checked={contentFilterEnabled.config_value === 'true' || contentFilterEnabled.config_value === true}
+                    onChange={() => handleToggle(contentFilterEnabled)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span className="sc-slider"></span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {contentFilterWarnAction && (
+            <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+              <div className="sc-card-info">
+                <h3>When Warn words are detected:</h3>
+              </div>
+              <div className="sc-card-action" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="warn_action"
+                    value="show_warning"
+                    checked={contentFilterWarnAction.config_value === 'show_warning'}
+                    onChange={(e) => handleChangeRaw(contentFilterWarnAction, e.target.value)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>Show Warning (allow send)</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="warn_action"
+                    value="silent"
+                    checked={contentFilterWarnAction.config_value === 'silent'}
+                    onChange={(e) => handleChangeRaw(contentFilterWarnAction, e.target.value)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>Silent (no action)</span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {contentFilterBlockAction && (
+            <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+              <div className="sc-card-info">
+                <h3>When Block words are detected:</h3>
+              </div>
+              <div className="sc-card-action" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="block_action"
+                    value="reject"
+                    checked={contentFilterBlockAction.config_value === 'reject'}
+                    onChange={(e) => handleChangeRaw(contentFilterBlockAction, e.target.value)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>Reject (prevent send)</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="block_action"
+                    value="mask"
+                    checked={contentFilterBlockAction.config_value === 'mask'}
+                    onChange={(e) => handleChangeRaw(contentFilterBlockAction, e.target.value)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>Mask (replace with ***)</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="block_action"
+                    value="warn_only"
+                    checked={contentFilterBlockAction.config_value === 'warn_only'}
+                    onChange={(e) => handleChangeRaw(contentFilterBlockAction, e.target.value)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>Warn Only (show warning, allow send)</span>
+                </label>
+              </div>
+            </div>
+          )}
+          
+          {backendReviewEnabled && (
+            <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+              <div className="sc-card-info">
+                <h3>Server-Side Review</h3>
+                <p>Enable Backend Review</p>
+              </div>
+              <div className="sc-card-action">
+                <label className="sc-toggle">
+                  <input 
+                    type="checkbox" 
+                    checked={backendReviewEnabled.config_value === 'true' || backendReviewEnabled.config_value === true}
+                    onChange={() => handleToggle(backendReviewEnabled)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span className="sc-slider"></span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {backendReviewMode && (
+            <div className="sc-card">
+              <div className="sc-card-info">
+                <h3>Review Method:</h3>
+              </div>
+              <div className="sc-card-action" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="backend_review_mode"
+                    value="sensitive_words"
+                    checked={backendReviewMode.config_value === 'sensitive_words'}
+                    onChange={(e) => handleChangeRaw(backendReviewMode, e.target.value)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>Sensitive Words Only</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="backend_review_mode"
+                    value="ai"
+                    checked={backendReviewMode.config_value === 'ai'}
+                    onChange={(e) => handleChangeRaw(backendReviewMode, e.target.value)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>AI Moderation Only</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="backend_review_mode"
+                    value="both"
+                    checked={backendReviewMode.config_value === 'both'}
+                    onChange={(e) => handleChangeRaw(backendReviewMode, e.target.value)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>Both (Words + AI)</span>
+                </label>
+              </div>
+            </div>
+          )}
+          
+          <div className="sc-card" style={{ background: 'var(--color-bg-secondary)' }}>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>
+              ℹ️ Client filtering and server review are independent. Both can be enabled simultaneously.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="sc-section">

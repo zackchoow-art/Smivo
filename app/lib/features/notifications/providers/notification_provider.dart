@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
@@ -18,7 +17,7 @@ class NotificationList extends _$NotificationList {
 
   @override
   Future<List<AppNotification>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
 
     // Cleanup if user logs out or build re-runs
     if (user == null) {
@@ -37,7 +36,7 @@ class NotificationList extends _$NotificationList {
           // Safety check: don't update state if we're disposed or disposing
           if (_isDisposed) return;
 
-          final current = state.valueOrNull ?? [];
+          final current = state.value ?? [];
           if (current.any((n) => n.id == newNotification.id)) return;
           final updated = [newNotification, ...current];
           state = AsyncValue.data(updated);
@@ -77,7 +76,7 @@ class NotificationList extends _$NotificationList {
     await repository.markAsRead(notificationId);
 
     // Update local state optimistically
-    final current = state.valueOrNull ?? [];
+    final current = state.value ?? [];
     final updated =
         current.map((n) {
           if (n.id == notificationId) {
@@ -91,14 +90,14 @@ class NotificationList extends _$NotificationList {
 
   /// Marks all notifications for the current user as read.
   Future<void> markAllAsRead() async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     final repository = ref.read(notificationRepositoryProvider);
     await repository.markAllAsRead(user.id);
 
     // Update local state optimistically
-    final current = state.valueOrNull ?? [];
+    final current = state.value ?? [];
     final updated = current.map((n) => n.copyWith(isRead: true)).toList();
     state = AsyncValue.data(updated);
     _updateAppBadge(updated);
@@ -110,7 +109,7 @@ class NotificationList extends _$NotificationList {
     await repository.deleteNotifications(notificationIds);
 
     // Update local state optimistically
-    final current = state.valueOrNull ?? [];
+    final current = state.value ?? [];
     final updated =
         current.where((n) => !notificationIds.contains(n.id)).toList();
     state = AsyncValue.data(updated);
@@ -119,7 +118,7 @@ class NotificationList extends _$NotificationList {
 
   /// Marks all as read and deletes all notifications.
   Future<void> clearAll() async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     final repository = ref.read(notificationRepositoryProvider);

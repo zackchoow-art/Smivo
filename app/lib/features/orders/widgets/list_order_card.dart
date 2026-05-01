@@ -172,7 +172,7 @@ class ListOrderCard extends ConsumerWidget {
   }
 
   Future<void> _openChat(BuildContext context, WidgetRef ref) async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
     final isBuyer = order.buyerId == user.id;
     final otherProfile = isBuyer ? order.seller : order.buyer;

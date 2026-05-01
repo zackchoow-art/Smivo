@@ -37,8 +37,8 @@ class SettingsScreen extends ConsumerWidget {
     final radius = context.smivoRadius;
 
     final configAsync = ref.watch(_settingsConfigProvider);
-    final feedbackEnabled = configAsync.valueOrNull?['feedback.enabled'] ?? true;
-    final plazaEnabled = configAsync.valueOrNull?['plaza.enabled'] ?? false;
+    final feedbackEnabled = configAsync.value?['feedback.enabled'] ?? true;
+    final plazaEnabled = configAsync.value?['plaza.enabled'] ?? false;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -150,8 +150,9 @@ class SettingsScreen extends ConsumerWidget {
                             return OutlinedButton.icon(
                               onPressed: () async {
                                 await ref.read(authProvider.notifier).logout();
-                                if (context.mounted)
+                                if (context.mounted) {
                                   context.goNamed(AppRoutes.home);
+                                }
                               },
                               icon: Icon(Icons.logout, color: colors.error),
                               label: Text(

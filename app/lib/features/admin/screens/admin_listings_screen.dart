@@ -103,8 +103,9 @@ class _AdminListingsScreenState extends ConsumerState<AdminListingsScreen> {
                 var filtered =
                     listings.where((l) {
                       if (_statusFilter != 'all' &&
-                          l['status'] != _statusFilter)
+                          l['status'] != _statusFilter) {
                         return false;
+                      }
                       if (_searchQuery.isNotEmpty) {
                         final q = _searchQuery.toLowerCase();
                         return (l['title'] ?? '')
@@ -156,7 +157,7 @@ class _AdminListingsScreenState extends ConsumerState<AdminListingsScreen> {
                             final status = l['status'] ?? 'unknown';
                             // NOTE: Use DB-driven listing status colors via StatusResolver
                             final resolver =
-                                ref.watch(statusResolverProvider).valueOrNull;
+                                ref.watch(statusResolverProvider).value;
                             final statusColor =
                                 resolver?.listingColor(status) ??
                                 colors.onSurfaceVariant;

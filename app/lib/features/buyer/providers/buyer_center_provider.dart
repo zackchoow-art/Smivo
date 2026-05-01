@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/order.dart';
 
@@ -11,7 +10,7 @@ part 'buyer_center_provider.g.dart';
 /// Fetches all orders where the current user is the buyer (realtime).
 @riverpod
 Future<List<Order>> buyerOrders(Ref ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return [];
 
   final allOrders = await ref.watch(allOrdersProvider.future);

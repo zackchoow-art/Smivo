@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/saved_listing.dart';
 import 'package:smivo/data/repositories/saved_repository.dart';
@@ -9,7 +8,7 @@ part 'saved_listing_provider.g.dart';
 /// Checks if a specific listing is saved by the current user.
 @riverpod
 Future<bool> isListingSaved(Ref ref, String listingId) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return false;
 
   final repo = ref.watch(savedRepositoryProvider);
@@ -19,7 +18,7 @@ Future<bool> isListingSaved(Ref ref, String listingId) async {
 /// Fetches the current user's saved listings including listing details.
 @riverpod
 Future<List<SavedListing>> mySavedListings(Ref ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return [];
 
   final repo = ref.watch(savedRepositoryProvider);
@@ -36,7 +35,7 @@ class SavedListingActions extends _$SavedListingActions {
   Future<void> toggleSave(String listingId) async {
     state = const AsyncValue.loading();
     try {
-      final user = ref.read(authStateProvider).valueOrNull;
+      final user = ref.read(authStateProvider).value;
       if (user == null) throw StateError('Must be logged in');
 
       final repo = ref.read(savedRepositoryProvider);

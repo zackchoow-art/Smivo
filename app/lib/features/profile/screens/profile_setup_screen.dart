@@ -70,8 +70,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (profile) {
-          if (profile == null)
+          if (profile == null) {
             return const Center(child: Text('No profile found'));
+          }
           _initializeName(profile.email);
           return SafeArea(
             child: Center(

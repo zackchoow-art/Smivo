@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/utils/validators.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/features/shared/providers/system_urls_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
 import 'package:smivo/core/router/app_routes.dart';
 
@@ -85,6 +86,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final systemUrlsState = ref.watch(systemUrlsProvider);
+    final systemUrls = systemUrlsState.value ?? {};
+    
+    final zeroToleranceUrlStr = systemUrls['zero_tolerance'] ?? 'https://smivo.io/safety#zero-tolerance';
+    final termsUrlStr = systemUrls['terms_of_service'] ?? 'https://smivo.io/terms';
+    
     final isLoading = authState.isLoading;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -264,13 +271,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   Expanded(
                                     child: RichText(
                                       text: TextSpan(
-                                        text:
-                                            'I agree to the Terms of Use and acknowledge that there is ',
+                                        text: 'I agree to the ',
                                         style: typo.bodySmall.copyWith(
                                           color: colors.onSurfaceVariant,
                                           height: 1.4,
                                         ),
                                         children: [
+                                          TextSpan(
+                                            text: 'Terms of Service',
+                                            style: typo.bodySmall.copyWith(
+                                              color: colors.primary,
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.4,
+                                              decoration: TextDecoration.underline,
+                                            ),
+                                            recognizer: TapGestureRecognizer()
+                                              ..onTap = () async {
+                                                final url = Uri.parse(termsUrlStr);
+                                                if (await canLaunchUrl(url)) {
+                                                  await launchUrl(url);
+                                                }
+                                              },
+                                          ),
+                                          const TextSpan(text: ' and acknowledge that there is '),
                                           TextSpan(
                                             text:
                                                 'zero tolerance for objectionable content or abusive users',
@@ -285,7 +308,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                                 TapGestureRecognizer()
                                                   ..onTap = () async {
                                                     final url = Uri.parse(
-                                                      'https://zackchoow-art.github.io/Smivo/safety.html',
+                                                      zeroToleranceUrlStr,
                                                     );
                                                     if (await canLaunchUrl(
                                                       url,

@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/listing.dart';
@@ -19,7 +18,7 @@ class MyListings extends _$MyListings {
 
   @override
   Future<List<Listing>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
 
     ref.onDispose(() {
@@ -58,7 +57,7 @@ class MyListings extends _$MyListings {
 /// Fetches all orders where the current user is the seller.
 @riverpod
 Future<List<Order>> sellerOrders(Ref ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return [];
 
   final allOrders = await ref.watch(allOrdersProvider.future);

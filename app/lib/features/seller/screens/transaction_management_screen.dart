@@ -328,7 +328,7 @@ class _ViewsTab extends ConsumerWidget {
                                           final currentUserId =
                                               ref
                                                   .read(authStateProvider)
-                                                  .valueOrNull
+                                                  .value
                                                   ?.id;
                                           if (currentUserId == null) return;
                                           final chatRepo = ref.read(
@@ -347,7 +347,7 @@ class _ViewsTab extends ConsumerWidget {
                                                       listingId,
                                                     ),
                                                   )
-                                                  .valueOrNull;
+                                                  .value;
                                           if (!context.mounted) return;
                                           showChatPopup(
                                             context,
@@ -533,11 +533,12 @@ class _SavesTab extends ConsumerWidget {
                                   final currentUserId =
                                       ref
                                           .read(authStateProvider)
-                                          .valueOrNull
+                                          .value
                                           ?.id;
                                   if (currentUserId == null ||
-                                      save.userId.isEmpty)
+                                      save.userId.isEmpty) {
                                     return;
+                                  }
                                   final chatRepo = ref.read(
                                     chatRepositoryProvider,
                                   );
@@ -552,7 +553,7 @@ class _SavesTab extends ConsumerWidget {
                                           .read(
                                             listingDetailProvider(listingId),
                                           )
-                                          .valueOrNull;
+                                          .value;
                                   if (!context.mounted) return;
                                   showChatPopup(
                                     context,
@@ -697,7 +698,7 @@ class _OffersTab extends ConsumerWidget {
     final isPending = order.status == 'pending';
 
     // NOTE: Use DB-driven status labels and colors via StatusResolver
-    final resolver = ref.watch(statusResolverProvider).valueOrNull;
+    final resolver = ref.watch(statusResolverProvider).value;
     final statusColor =
         resolver?.orderColor(order.status) ?? colors.outlineVariant;
     final statusLabel = resolver?.orderLabel(order.status) ?? order.status;
@@ -829,7 +830,7 @@ class _OffersTab extends ConsumerWidget {
                       label: const Text('Chat'),
                       onPressed: () async {
                         final currentUserId =
-                            ref.read(authStateProvider).valueOrNull?.id;
+                            ref.read(authStateProvider).value?.id;
                         if (currentUserId == null) return;
                         final chatRepo = ref.read(chatRepositoryProvider);
                         final room = await chatRepo.getOrCreateChatRoom(

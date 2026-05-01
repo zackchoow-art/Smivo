@@ -14,7 +14,7 @@ class OrderDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderAsync = ref.watch(orderDetailProvider(orderId));
-    final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
+    final currentUserId = ref.watch(authStateProvider).value?.id;
     final colors = context.smivoColors;
 
     // Listen for global action errors

@@ -209,7 +209,7 @@ class AdminContext {
 /// Used by the admin shell to filter sidebar items and by
 /// individual admin screens to gate write operations.
 @riverpod
-Future<AdminContext> adminContext(AdminContextRef ref) async {
+Future<AdminContext> adminContext(Ref ref) async {
   final repo = ref.watch(adminRoleRepositoryProvider);
 
   final roles = await repo.fetchMyRoles();

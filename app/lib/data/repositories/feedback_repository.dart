@@ -82,6 +82,6 @@ class FeedbackRepository {
 }
 
 @riverpod
-FeedbackRepository feedbackRepository(FeedbackRepositoryRef ref) {
+FeedbackRepository feedbackRepository(Ref ref) {
   return FeedbackRepository(ref.watch(supabaseClientProvider));
 }

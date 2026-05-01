@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/order_evidence.dart';
 import 'package:smivo/data/repositories/order_evidence_repository.dart';
@@ -29,7 +28,7 @@ class EvidenceUploader extends _$EvidenceUploader {
   }) async {
     state = const AsyncValue.loading();
     try {
-      final user = ref.read(authStateProvider).valueOrNull;
+      final user = ref.read(authStateProvider).value;
       if (user == null) throw StateError('Must be logged in');
 
       final repo = ref.read(orderEvidenceRepositoryProvider);

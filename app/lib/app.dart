@@ -82,8 +82,8 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
     ref.watch(pushNotificationManagerProvider);
 
     final router = ref.watch(routerProvider);
-    final themeVariant = ref.watch(themeNotifierProvider);
-    final isShakeFeedbackEnabled = ref.watch(shakeFeedbackNotifierProvider);
+    final themeVariant = ref.watch(themeProvider);
+    final isShakeFeedbackEnabled = ref.watch(shakeFeedbackProvider);
 
     final app = MaterialApp.router(
       title: 'Smivo',
@@ -132,7 +132,7 @@ class _ShakeWrapperState extends ConsumerState<_ShakeWrapper> {
     // Show feedback panel
     BetterFeedback.of(context).show((UserFeedback feedback) async {
       try {
-        final authUser = ref.read(authStateProvider).valueOrNull;
+        final authUser = ref.read(authStateProvider).value;
         if (authUser == null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(

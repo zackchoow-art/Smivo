@@ -12,7 +12,7 @@ class MyContributionsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final userProfile = ref.watch(profileProvider).valueOrNull;
+    final userProfile = ref.watch(profileProvider).value;
     final contributionsAsync = ref.watch(myContributionsProvider);
 
     final score = userProfile?.contributionScore ?? 0;

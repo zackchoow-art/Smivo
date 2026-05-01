@@ -129,8 +129,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
   @override
   Widget build(BuildContext context) {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
-    final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
-    final currentUserProfile = ref.watch(profileProvider).valueOrNull;
+    final currentUserId = ref.watch(authStateProvider).value?.id;
+    final currentUserProfile = ref.watch(profileProvider).value;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -142,8 +142,8 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
 
     // Re-mark as read whenever new messages arrive while viewing this chat.
     ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
-      final prevLen = previous?.valueOrNull?.length ?? 0;
-      final nextLen = next.valueOrNull?.length ?? 0;
+      final prevLen = previous?.value?.length ?? 0;
+      final nextLen = next.value?.length ?? 0;
       if (nextLen > prevLen) {
         ref.read(chatMessagesProvider(widget.chatRoomId).notifier).markAsRead();
       }
@@ -235,7 +235,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                       final room =
                           ref
                               .watch(chatRoomProvider(widget.chatRoomId))
-                              .valueOrNull;
+                              .value;
                       return GestureDetector(
                         onTap: () {
                           if (room == null) return;
@@ -247,7 +247,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                                       buyerId: room.buyerId,
                                     ),
                                   )
-                                  .valueOrNull;
+                                  .value;
 
                           Navigator.of(context).pop(); // Close popup
 

@@ -49,7 +49,7 @@ class HeartbeatManager extends _$HeartbeatManager {
   }
 
   Future<void> _sendHeartbeat() async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     try {

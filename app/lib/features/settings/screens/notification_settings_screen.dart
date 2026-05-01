@@ -59,7 +59,7 @@ class _NotificationSettingsScreenState
       if (!hasPermission && _initialized) {
         final prefs = ref.read(notificationSettingsStateProvider);
         if (prefs.pushNotificationsEnabled) {
-          final user = ref.read(authStateProvider).valueOrNull;
+          final user = ref.read(authStateProvider).value;
           if (user != null) {
             ref
                 .read(notificationSettingsStateProvider.notifier)
@@ -76,7 +76,7 @@ class _NotificationSettingsScreenState
 
   Future<void> _loadPrefs() async {
     if (_initialized) return;
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
     try {
       final profile = await ref
@@ -121,7 +121,7 @@ class _NotificationSettingsScreenState
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     final prefs = ref.watch(notificationSettingsStateProvider);
 
     // Actual push enabled is true ONLY if both system and app preference are true

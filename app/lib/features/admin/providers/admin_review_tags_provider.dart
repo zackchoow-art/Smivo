@@ -11,7 +11,7 @@ class AdminReviewTags extends _$AdminReviewTags {
   }
 
   Future<void> createTag(String name, String type) async {
-    final prev = state.valueOrNull;
+    final prev = state.value;
     try {
       await ref.read(adminRepositoryProvider).createReviewTag(name, type);
       ref.invalidateSelf();
@@ -22,7 +22,7 @@ class AdminReviewTags extends _$AdminReviewTags {
   }
 
   Future<void> deleteTag(String id) async {
-    final prev = state.valueOrNull;
+    final prev = state.value;
     try {
       if (prev != null) {
         state = AsyncData(prev.where((t) => t['id'] != id).toList());

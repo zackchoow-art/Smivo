@@ -109,8 +109,9 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
                 var filtered =
                     orders.where((o) {
                       if (_statusFilter != 'all' &&
-                          o['status'] != _statusFilter)
+                          o['status'] != _statusFilter) {
                         return false;
+                      }
                       if (_searchQuery.isNotEmpty) {
                         final q = _searchQuery.toLowerCase();
                         return (o['listing_title'] ?? '')
@@ -162,7 +163,7 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
                             final status = o['status'] ?? 'unknown';
                             // NOTE: Use DB-driven status colors via StatusResolver
                             final resolver =
-                                ref.watch(statusResolverProvider).valueOrNull;
+                                ref.watch(statusResolverProvider).value;
                             final statusColor =
                                 resolver?.orderColor(status) ??
                                 colors.onSurfaceVariant;

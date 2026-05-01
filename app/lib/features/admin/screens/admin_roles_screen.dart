@@ -24,7 +24,7 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final rolesState = ref.watch(adminRolesProvider);
-    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final adminCtx = ref.watch(adminContextProvider).value;
     final canWrite = adminCtx?.canWrite(AdminModule.roles) ?? false;
 
     return Scaffold(

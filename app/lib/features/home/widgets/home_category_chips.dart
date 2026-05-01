@@ -12,7 +12,7 @@ class HomeCategoryChips extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = ref.watch(selectedCategoryProvider);
-    final themeVariant = ref.watch(themeNotifierProvider);
+    final themeVariant = ref.watch(themeProvider);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;

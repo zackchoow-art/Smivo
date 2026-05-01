@@ -13,9 +13,9 @@ class HomeHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unreadAsync = ref.watch(totalUnreadNotificationsProvider);
-    final unreadCount = unreadAsync.valueOrNull ?? 0;
+    final unreadCount = unreadAsync.value ?? 0;
     final profileAsync = ref.watch(profileProvider);
-    final profile = profileAsync.valueOrNull;
+    final profile = profileAsync.value;
 
     final colors = context.smivoColors;
     final typo = context.smivoTypo;

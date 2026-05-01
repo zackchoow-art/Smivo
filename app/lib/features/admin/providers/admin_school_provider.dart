@@ -24,7 +24,7 @@ class AdminSchoolController extends _$AdminSchoolController {
             .read(schoolDataRepositoryProvider)
             .seedSchoolDefaults(newSchool.id);
       }
-      final currentList = state.valueOrNull ?? [];
+      final currentList = state.value ?? [];
       return [...currentList, newSchool]
         ..sort((a, b) => a.name.compareTo(b.name));
     });
@@ -36,7 +36,7 @@ class AdminSchoolController extends _$AdminSchoolController {
       final updatedSchool = await ref
           .read(schoolRepositoryProvider)
           .updateSchool(school);
-      final currentList = state.valueOrNull ?? [];
+      final currentList = state.value ?? [];
       return currentList
           .map((e) => e.id == updatedSchool.id ? updatedSchool : e)
           .toList()
@@ -48,7 +48,7 @@ class AdminSchoolController extends _$AdminSchoolController {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       await ref.read(schoolRepositoryProvider).deleteSchool(id);
-      final currentList = state.valueOrNull ?? [];
+      final currentList = state.value ?? [];
       return currentList.where((e) => e.id != id).toList();
     });
   }

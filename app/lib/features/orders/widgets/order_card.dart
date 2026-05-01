@@ -23,7 +23,7 @@ class OrderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authUser = ref.watch(authStateProvider).valueOrNull;
+    final authUser = ref.watch(authStateProvider).value;
     final currentUserId = authUser?.id;
 
     return Container(

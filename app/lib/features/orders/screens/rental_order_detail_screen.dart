@@ -340,7 +340,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
 
       final evidenceAsync = ref.watch(orderEvidenceProvider(order.id));
       final deliveryPhotosCount =
-          evidenceAsync.valueOrNull
+          evidenceAsync.value
               ?.where((p) => p.evidenceType == 'delivery')
               .length ??
           0;

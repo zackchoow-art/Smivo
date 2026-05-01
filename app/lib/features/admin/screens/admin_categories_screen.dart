@@ -25,7 +25,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final schoolsState = ref.watch(adminSchoolControllerProvider);
-    final adminCtx = ref.watch(adminContextProvider).valueOrNull;
+    final adminCtx = ref.watch(adminContextProvider).value;
     final canWrite = adminCtx?.canWrite(AdminModule.categories) ?? false;
 
     return Scaffold(

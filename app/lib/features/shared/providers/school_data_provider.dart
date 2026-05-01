@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:smivo/core/constants/app_constants.dart';
@@ -13,7 +12,7 @@ part 'school_data_provider.g.dart';
 /// Falls back to AppConstants.categories if DB returns empty.
 @riverpod
 Future<List<SchoolCategory>> mySchoolCategories(Ref ref) async {
-  final profile = ref.watch(profileProvider).valueOrNull;
+  final profile = ref.watch(profileProvider).value;
   if (profile == null) {
     // Not logged in — return hardcoded fallback as SchoolCategory objects
     return _fallbackCategories();
@@ -35,7 +34,7 @@ Future<List<SchoolCategory>> mySchoolCategories(Ref ref) async {
 /// Falls back to hardcoded list if DB returns empty.
 @riverpod
 Future<List<SchoolCondition>> mySchoolConditions(Ref ref) async {
-  final profile = ref.watch(profileProvider).valueOrNull;
+  final profile = ref.watch(profileProvider).value;
   if (profile == null) return _fallbackConditions();
 
   try {

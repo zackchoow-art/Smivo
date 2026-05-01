@@ -10,7 +10,7 @@ part 'theme_provider.g.dart';
 /// On first launch, defaults to [SmivoThemeVariant.teal]. The selected
 /// variant is saved to SharedPreferences so it survives app restarts.
 ///
-/// Widgets watch this provider via `ref.watch(themeNotifierProvider)`
+/// Widgets watch this provider via `ref.watch(themeProvider)`
 /// and pass the variant to [AppTheme.buildTheme].
 @Riverpod(keepAlive: true)
 class ThemeNotifier extends _$ThemeNotifier {

@@ -24,7 +24,7 @@ class HomeScreen extends ConsumerWidget {
     ref.watch(heartbeatManagerProvider);
     
     final listingsAsync = ref.watch(homeListingsProvider);
-    final themeVariant = ref.watch(themeNotifierProvider);
+    final themeVariant = ref.watch(themeProvider);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 

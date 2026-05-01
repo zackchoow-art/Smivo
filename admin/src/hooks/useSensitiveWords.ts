@@ -117,3 +117,121 @@ export function useBatchToggleWords() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 }
+
+// ── LDNOOBW Cloud Sync ──────────────────────────────────────────────
+
+const LDNOOBW_BASE =
+  'https://raw.githubusercontent.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/master';
+
+export type ImportMode = 'strict' | 'recommended' | 'relaxed';
+
+/**
+ * Common casual words that are too mild to block in a college marketplace.
+ * In 'recommended' mode these become severity=warn; in 'relaxed' mode they are skipped entirely.
+ */
+const MILD_WORDS = new Set([
+  'ass', 'arse', 'bloody', 'boob', 'boobs', 'breasts', 'bugger', 'boner',
+  'crap', 'damn', 'dammit', 'dick', 'douche', 'fart', 'hell', 'hump',
+  'lust', 'pee', 'piss', 'poop', 'porn', 'sex', 'sexy', 'suck', 'tit',
+  'tits', 'wank', 'whore', 'erotic', 'kinky', 'orgasm', 'vagina', 'penis',
+  'testicle', 'testicles', 'butthole', 'butt', 'nude', 'nudes',
+]);
+
+/**
+ * Fetch raw word list from LDNOOBW GitHub for a given language.
+ * Returns plain array of lowercase trimmed words.
+ */
+async function fetchLdnoobwWords(lang: 'en' | 'zh'): Promise<string[]> {
+  const res = await fetch(`${LDNOOBW_BASE}/${lang}`);
+  if (!res.ok) throw new Error(`Failed to fetch LDNOOBW/${lang}: ${res.status}`);
+  const text = await res.text();
+  return text
+    .split('\n')
+    .map((w) => w.trim().toLowerCase())
+    .filter((w) => w.length > 0);
+}
+
+/**
+ * Fetch all existing words in the DB for a given language to compute the diff.
+ * Uses a lightweight select to minimise payload.
+ */
+async function fetchExistingWords(lang?: 'en' | 'zh'): Promise<Set<string>> {
+  let query = supabase
+    .from(TABLES.SENSITIVE_WORDS)
+    .select('word, language');
+  if (lang) query = query.eq('language', lang);
+  const { data } = await query;
+  return new Set((data ?? []).map((r: any) => `${r.language}:${r.word}`));
+}
+
+export interface CloudSyncPreview {
+  /** All words fetched from cloud, ready to import */
+  words: Partial<SensitiveWord>[];
+  /** Stats for the preview panel */
+  stats: {
+    totalFetched: number;
+    alreadyInDb: number;
+    newWords: number;
+    byLanguage: { en: number; zh: number };
+  };
+}
+
+/**
+ * Build a CloudSyncPreview by fetching from LDNOOBW and diffing against the DB.
+ * Does NOT write anything — the caller decides whether to import.
+ */
+export async function buildCloudSyncPreview(
+  languages: ('en' | 'zh')[],
+  mode: ImportMode,
+): Promise<CloudSyncPreview> {
+  // 1. Fetch from cloud (parallel)
+  const fetched: { word: string; lang: 'en' | 'zh' }[] = [];
+  await Promise.all(
+    languages.map(async (lang) => {
+      const words = await fetchLdnoobwWords(lang);
+      words.forEach((w) => fetched.push({ word: w, lang }));
+    }),
+  );
+
+  // 2. Fetch existing from DB
+  const existing = await fetchExistingWords();
+
+  // 3. Apply mode filter and build SensitiveWord objects
+  const result: Partial<SensitiveWord>[] = [];
+  let alreadyInDb = 0;
+
+  for (const { word, lang } of fetched) {
+    const key = `${lang}:${word}`;
+    if (existing.has(key)) {
+      alreadyInDb++;
+      continue;
+    }
+
+    const isMild = MILD_WORDS.has(word);
+
+    // Relaxed mode: skip mild words entirely
+    if (mode === 'relaxed' && isMild) continue;
+
+    result.push({
+      word,
+      category: 'general',
+      severity: mode === 'strict' ? 'block' : isMild ? 'warn' : 'block',
+      language: lang,
+      source: 'api',
+      is_active: true,
+    });
+  }
+
+  const enCount = result.filter((w) => w.language === 'en').length;
+  const zhCount = result.filter((w) => w.language === 'zh').length;
+
+  return {
+    words: result,
+    stats: {
+      totalFetched: fetched.length,
+      alreadyInDb,
+      newWords: result.length,
+      byLanguage: { en: enCount, zh: zhCount },
+    },
+  };
+}

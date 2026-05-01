@@ -55,7 +55,7 @@ class HomeListings extends _$HomeListings {
     final category = ref.watch(selectedCategoryProvider);
     final query = ref.watch(searchQueryProvider);
     final repository = ref.watch(listingRepositoryProvider);
-    final blockedUserIds = ref.watch(blockedUsersProvider).valueOrNull ?? [];
+    final blockedUserIds = ref.watch(blockedUsersProvider).value ?? [];
 
     // Fetch from repository based on current filters.
     if (query.trim().isNotEmpty) {

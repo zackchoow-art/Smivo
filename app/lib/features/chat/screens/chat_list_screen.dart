@@ -80,7 +80,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     final chatRoomsAsync = ref.watch(chatRoomListProvider);
-    final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
+    final currentUserId = ref.watch(authStateProvider).value?.id;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;

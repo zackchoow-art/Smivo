@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -65,7 +64,7 @@ class ChatRoomList extends _$ChatRoomList {
 
   @override
   Future<List<ChatRoom>> build() async {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
 
     // Clean up subscription on dispose
@@ -83,7 +82,7 @@ class ChatRoomList extends _$ChatRoomList {
 
     // Filter out chat rooms where the other participant is blocked
     final blockedUserIds =
-        ref.watch(blockedUsersProvider).valueOrNull ?? <String>[];
+        ref.watch(blockedUsersProvider).value ?? <String>[];
     final blockedSet = blockedUserIds.toSet();
 
     return allRooms.where((room) {
@@ -159,7 +158,7 @@ class ChatMessages extends _$ChatMessages {
       chatRoomId: chatRoomId,
       onMessage: (newMessage) {
         // Append new message to current state
-        final currentMessages = state.valueOrNull ?? [];
+        final currentMessages = state.value ?? [];
         // Avoid duplicates (optimistic update + realtime echo)
         if (currentMessages.any((m) => m.id == newMessage.id)) return;
         state = AsyncValue.data([...currentMessages, newMessage]);
@@ -171,34 +170,35 @@ class ChatMessages extends _$ChatMessages {
 
   /// Sends a message and marks the chat as read for the sender.
   Future<void> sendMessage(String content) async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
     if (content.trim().isEmpty) return;
 
     final repository = ref.read(chatRepositoryProvider);
 
-    // Content filter — block message if local sensitive words detected
-    final filter = ref.read(sensitiveWordsProvider).valueOrNull;
-    if (filter != null) {
-      final result = filter.check(content);
-      if (!result.passed) {
-        throw Exception(
-          'Your message contains restricted content: ${result.matchedWords.join(", ")}',
-        );
-      }
+    // Content filter — apply based on platform configuration
+    final filter = ref.read(sensitiveWordsProvider).value;
+    final config = ref.read(filterConfigStateProvider).value;
+    
+    var processedContent = content.trim();
+    if (filter != null && config != null) {
+      final action = applyContentFilter(processedContent, filter, config);
+      processedContent = action.processedText;
+      // We ignore warnings in chat to avoid interrupting the flow, or we could show a snackbar.
+      // For now, if it's 'reject', applyContentFilter will throw, otherwise we use the masked/original text.
     }
 
     // The realtime listener will receive the message and update state.
     await repository.sendMessage(
       chatRoomId: chatRoomId,
       senderId: user.id,
-      content: content.trim(),
+      content: processedContent,
     );
   }
 
   /// Uploads an image and sends it as a message.
   Future<void> sendImage(Uint8List fileBytes, String fileName) async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     final storageRepo = ref.read(storageRepositoryProvider);
@@ -221,7 +221,7 @@ class ChatMessages extends _$ChatMessages {
 
   /// Marks all messages in this room as read for the current user.
   Future<void> markAsRead() async {
-    final user = ref.read(authStateProvider).valueOrNull;
+    final user = ref.read(authStateProvider).value;
     if (user == null) return;
 
     final repository = ref.read(chatRepositoryProvider);
@@ -238,7 +238,7 @@ class ChatMessages extends _$ChatMessages {
 /// Total unread messages across all chat rooms for the current user.
 @riverpod
 Future<int> chatTotalUnread(Ref ref) async {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   if (user == null) return 0;
 
   final rooms = await ref.watch(chatRoomListProvider.future);
@@ -254,7 +254,7 @@ Future<ChatRoom> chatRoom(Ref ref, String chatRoomId) async {
   // NOTE: Use ref.read (not ref.watch) for cache lookup to avoid
   // re-triggering this provider every time the chat list refreshes.
   // This prevents the AppBar contact info from flickering.
-  final list = ref.read(chatRoomListProvider).valueOrNull;
+  final list = ref.read(chatRoomListProvider).value;
   final cached = list?.firstWhere((r) => r.id == chatRoomId);
   if (cached != null) return cached;
 

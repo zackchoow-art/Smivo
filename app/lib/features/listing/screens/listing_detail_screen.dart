@@ -13,6 +13,7 @@ import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/features/listing/providers/saved_listing_provider.dart';
+import 'package:smivo/features/shared/providers/system_urls_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/data/models/listing.dart';
@@ -169,7 +170,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
         data: (listing) {
           final isSale = listing.transactionType.toLowerCase() == 'sale';
           final seller = listing.seller;
-          final currentUserId = ref.watch(authStateProvider).valueOrNull?.id;
+          final currentUserId = ref.watch(authStateProvider).value?.id;
           final isOwnListing =
               currentUserId != null && currentUserId == listing.sellerId;
           final existingOrder = ref.watch(
@@ -179,7 +180,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           // NOTE: Tag removed per design — no overlay text on images.
           // Load DB conditions for dynamic label resolution
           final conditionsList =
-              ref.watch(mySchoolConditionsProvider).valueOrNull;
+              ref.watch(mySchoolConditionsProvider).value;
 
           return Stack(
             children: [
@@ -500,7 +501,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                   label: isSale ? 'SELLER' : 'LISTED BY',
                                   onMessageTap: () async {
                                     final user =
-                                        ref.read(authStateProvider).valueOrNull;
+                                        ref.read(authStateProvider).value;
                                     if (user == null) {
                                       context.pushNamed(AppRoutes.login);
                                       return;
@@ -528,7 +529,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                       if (!context.mounted) return;
 
                                       // Use existing order info if available
-                                      final order = existingOrder.valueOrNull;
+                                      final order = existingOrder.value;
                                       final price =
                                           order?.totalPrice ?? listing.price;
                                       final priceLabel =
@@ -897,7 +898,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                           final user =
                                               ref
                                                   .read(authStateProvider)
-                                                  .valueOrNull;
+                                                  .value;
                                           if (user == null) {
                                             context.pushNamed(AppRoutes.login);
                                             return;
@@ -1120,13 +1121,20 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           ),
                         ],
                       ),
-                      child: IconButton(
-                        icon: Icon(Icons.ios_share, color: colors.onSurface),
-                        onPressed: () {
-                          final shareText = isSale
-                              ? 'Check out ${listing.title} for \$${listing.price.toStringAsFixed(0)} on Smivo!\n\nhttps://smivo.io/listing/${listing.id}'
-                              : 'Check out ${listing.title} on Smivo!\n\nhttps://smivo.io/listing/${listing.id}';
-                          Share.share(shareText);
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final urls = ref.watch(systemUrlsProvider).value ?? {};
+                          final websiteUrl = urls['website'] ?? 'https://smivo.io';
+                          
+                          return IconButton(
+                            icon: Icon(Icons.ios_share, color: colors.onSurface),
+                            onPressed: () {
+                              final shareText = isSale
+                                  ? 'Check out ${listing.title} for \$${listing.price.toStringAsFixed(0)} on Smivo!\n\n$websiteUrl/listing/${listing.id}'
+                                  : 'Check out ${listing.title} on Smivo!\n\n$websiteUrl/listing/${listing.id}';
+                              Share.share(shareText);
+                            },
+                          );
                         },
                       ),
                     ),
@@ -1137,7 +1145,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           final isSavedAsync = ref.watch(
                             isListingSavedProvider(listing.id),
                           );
-                          final isSaved = isSavedAsync.valueOrNull ?? false;
+                          final isSaved = isSavedAsync.value ?? false;
                           return Container(
                             decoration: BoxDecoration(
                               color: colors.surfaceContainerLowest.withValues(
@@ -1162,7 +1170,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                               ),
                               onPressed: () {
                                 final user =
-                                    ref.read(authStateProvider).valueOrNull;
+                                    ref.read(authStateProvider).value;
                                 if (user == null) {
                                   context.pushNamed(AppRoutes.login);
                                   return;
@@ -1197,7 +1205,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           ),
                           onSelected: (value) async {
                             final user =
-                                ref.read(authStateProvider).valueOrNull;
+                                ref.read(authStateProvider).value;
                             if (user == null) {
                               context.pushNamed(AppRoutes.login);
                               return;

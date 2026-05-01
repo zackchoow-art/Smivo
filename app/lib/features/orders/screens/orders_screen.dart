@@ -15,9 +15,9 @@ class OrdersScreen extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final unreadBuyerCount =
-        ref.watch(unreadBuyerUpdatesCountProvider).valueOrNull ?? 0;
+        ref.watch(unreadBuyerUpdatesCountProvider).value ?? 0;
     final unreadSellerCount =
-        ref.watch(unreadSellerUpdatesCountProvider).valueOrNull ?? 0;
+        ref.watch(unreadSellerUpdatesCountProvider).value ?? 0;
     // NOTE: ContentWidthConstraint centers the hub cards on desktop.
     // On desktop the two cards also switch to a Row for better space use.
     final screenWidth = MediaQuery.of(context).size.width;
