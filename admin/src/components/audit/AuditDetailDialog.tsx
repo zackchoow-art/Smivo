@@ -56,7 +56,7 @@ export function AuditDetailDialog({ log, onClose }: AuditDetailDialogProps) {
           {/* Action */}
           <div className="audit-section">
             <h3 className="audit-section-title">Action</h3>
-            <div className="audit-action-badge">{log.action_type}</div>
+            <div className="audit-action-badge">{log.action}</div>
           </div>
 
           {/* Status Change */}

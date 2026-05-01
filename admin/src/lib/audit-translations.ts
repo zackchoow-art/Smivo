@@ -82,7 +82,8 @@ const TARGET_TRANSLATIONS: Record<string, string> = {
  * Translates an audit log action_type to a human-readable string.
  * Falls back to formatting the raw string if no translation exists.
  */
-export function translateAction(actionType: string): string {
+export function translateAction(actionType: string | null | undefined): string {
+  if (!actionType) return 'Unknown Action';
   if (ACTION_TRANSLATIONS[actionType]) {
     return ACTION_TRANSLATIONS[actionType];
   }
@@ -96,7 +97,8 @@ export function translateAction(actionType: string): string {
 /**
  * Translates a target_type to a human-readable label.
  */
-export function translateTarget(targetType: string): string {
+export function translateTarget(targetType: string | null | undefined): string {
+  if (!targetType) return 'Unknown';
   if (TARGET_TRANSLATIONS[targetType]) {
     return TARGET_TRANSLATIONS[targetType];
   }
@@ -110,14 +112,14 @@ export function translateTarget(targetType: string): string {
  * Builds a full human-readable sentence for an audit log entry.
  */
 export function translateAuditLog(log: {
-  action_type: string;
+  action: string;
   target_type: string;
   target_id: string | null;
   status_before: string | null;
   status_after: string | null;
   payload: Record<string, unknown> | null;
 }): string {
-  const action = translateAction(log.action_type);
+  const action = translateAction(log.action);
   const target = translateTarget(log.target_type);
 
   let sentence = action;
@@ -134,10 +136,10 @@ export function translateAuditLog(log: {
 
   // Add payload details for common actions
   if (log.payload) {
-    if (log.action_type === 'create_restriction' && log.payload.scope) {
+    if (log.action === 'create_restriction' && log.payload.scope) {
       sentence += ` [${log.payload.scope}]`;
     }
-    if (log.action_type === 'send_push' && log.payload.title) {
+    if (log.action === 'send_push' && log.payload.title) {
       sentence += `: "${log.payload.title}"`;
     }
   }

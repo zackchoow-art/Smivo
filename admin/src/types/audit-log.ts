@@ -6,8 +6,8 @@
 export interface AuditLog {
   id: string;
   admin_id: string;
-  // NOTE: DB column is 'action_type', not 'action'
-  action_type: string;
+  // NOTE: DB column is 'action', matching migration 00052
+  action: string;
   target_type: string;
   target_id: string | null;
   college_id: string | null;

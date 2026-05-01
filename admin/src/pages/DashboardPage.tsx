@@ -151,7 +151,7 @@ export function DashboardPage() {
             ) : (
               recentLogs.map((log) => (
                 <div key={log.id} className="dash-log-item">
-                  <div className="dash-log-text">{translateAction(log.action_type)}</div>
+                  <div className="dash-log-text">{translateAction(log.action)}</div>
                   <span className="dash-log-time">
                     {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
                   </span>
