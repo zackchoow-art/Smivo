@@ -25,7 +25,7 @@ export function useListingsModeration(page: number, filters?: ListingModerationF
         .from(TABLES.LISTINGS)
         .select(`
           *,
-          seller:user_profiles!user_id(id, display_name, email, avatar_url)
+          seller:user_profiles!seller_id(id, display_name, email, avatar_url)
         `, { count: 'exact' });
 
       if (filters?.status && filters.status !== 'all') {
@@ -64,7 +64,7 @@ export function useListingModerationDetail(id: string | undefined) {
         .select(`
           *,
           images:listing_images(*),
-          seller:user_profiles!user_id(*)
+          seller:user_profiles!seller_id(*)
         `)
         .eq('id', id)
         .single();
@@ -138,10 +138,10 @@ export function useModerateListing() {
         .from(TABLES.ADMIN_AUDIT_LOGS)
         .insert({
           admin_id: adminId,
-          action: `listing_${action}`,
-          entity_type: 'listing',
-          entity_id: id,
-          details: { reason },
+          action_type: `listing_${action}`,
+          target_type: 'listing',
+          target_id: id,
+          payload: { reason },
         });
 
       if (auditError) {

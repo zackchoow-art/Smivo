@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFeedbacks } from '@/hooks/useFeedbacks';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
-import type { FeedbackStatus, FeedbackCategory } from '@/types/feedback';
+import type { FeedbackStatus, FeedbackType } from '@/types/feedback';
 
 export function FeedbackListPage() {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState<FeedbackStatus | ''>('');
-  // NOTE: Renamed from 'type' to 'category' — matches DB column name
-  const [category, setCategory] = useState<FeedbackCategory | ''>('');
+  // NOTE: DB column is 'type' (not 'category' / 'feedback_type')
+  const [feedbackType, setFeedbackType] = useState<FeedbackType | ''>('');
 
   const { data, isLoading, error } = useFeedbacks(page, {
     status: status || undefined,
-    category: category || undefined,
+    type: feedbackType || undefined,
   });
 
   const totalPages = data ? Math.ceil(data.totalCount / DEFAULT_PAGE_SIZE) : 0;
@@ -28,9 +28,9 @@ export function FeedbackListPage() {
             <Filter size={14} />
             {/* NOTE: Option values match DB enum: bug_report / feature_request / general */}
             <select
-              value={category}
+              value={feedbackType}
               onChange={(e) => {
-                setCategory(e.target.value as FeedbackCategory | '');
+                setFeedbackType(e.target.value as FeedbackType | '');
                 setPage(0);
               }}
             >
@@ -91,8 +91,8 @@ export function FeedbackListPage() {
                       {item.description.length > 80 ? '...' : ''}
                     </div>
                   </td>
-                  {/* NOTE: DB column is 'category', not 'feedback_type' */}
-                  <td><CategoryBadge category={item.category} /></td>
+                  {/* NOTE: DB column is 'type', not 'category' */}
+                  <td><CategoryBadge category={item.type} /></td>
                   <td><StatusBadge status={item.status} /></td>
                   <td>
                     <span className="time-cell">
@@ -298,9 +298,8 @@ export function FeedbackListPage() {
   );
 }
 
-// NOTE: DB category enum values are 'bug_report' | 'feature_request' | 'general'
-function CategoryBadge({ category }: { category: FeedbackCategory }) {
-  const styles: Record<FeedbackCategory, { bg: string; text: string }> = {
+function CategoryBadge({ category }: { category: FeedbackType }) {
+  const styles: Record<FeedbackType, { bg: string; text: string }> = {
     bug_report: { bg: '#fee2e2', text: '#ef4444' },
     feature_request: { bg: '#dcfce7', text: '#22c55e' },
     general: { bg: '#f3f4f6', text: '#6b7280' },

@@ -39,7 +39,7 @@ export function UsersPage() {
             <tr>
               <th>User</th>
               <th>Email</th>
-              <th>College</th>
+              <th>School</th>
               <th>Last Active</th>
               <th>Joined</th>
             </tr>
@@ -65,10 +65,15 @@ export function UsersPage() {
                     </div>
                   </td>
                   <td><span className="user-email">{user.email}</span></td>
-                  <td><span className="user-college">{user.college_id}</span></td>
+                  <td><span className="user-college">{user.school || '—'}</span></td>
                   <td>
                     <span className="user-active">
-                      {user.last_active_at ? new Date(user.last_active_at).toLocaleDateString() : 'Never'}
+                      {user.last_active_at
+                        ? new Date(user.last_active_at).toLocaleString('en-US', {
+                            year: 'numeric', month: 'short', day: 'numeric',
+                            hour: '2-digit', minute: '2-digit',
+                          })
+                        : 'Never'}
                     </span>
                   </td>
                   <td><span className="user-joined">{new Date(user.created_at).toLocaleDateString()}</span></td>

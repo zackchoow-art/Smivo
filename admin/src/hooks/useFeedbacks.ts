@@ -4,17 +4,16 @@ import { TABLES, DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import type {
   UserFeedback,
   FeedbackStatus,
-  FeedbackCategory,
+  FeedbackType,
   FeedbackWithUser,
-  FeedbackJudgment,
 } from '@/types/feedback';
 
 const QUERY_KEY = ['feedbacks'] as const;
 
 export interface FeedbackFilters {
   status?: FeedbackStatus;
-  // NOTE: Renamed from 'type' to 'category' to match DB column name
-  category?: FeedbackCategory;
+  // NOTE: DB column is 'type', not 'category' or 'feedback_type'
+  type?: FeedbackType;
 }
 
 export function useFeedbacks(page: number, filters: FeedbackFilters = {}) {
@@ -33,13 +32,12 @@ export function useFeedbacks(page: number, filters: FeedbackFilters = {}) {
       if (filters.status) {
         query = query.eq('status', filters.status);
       }
-      // NOTE: DB column is 'category', not 'feedback_type'
-      if (filters.category) {
-        query = query.eq('category', filters.category);
+      // NOTE: DB column is 'type', not 'category' / 'feedback_type'
+      if (filters.type) {
+        query = query.eq('type', filters.type);
       }
 
       const { data, error, count } = await query;
-
       if (error) throw error;
 
       return {
@@ -72,9 +70,9 @@ export function useFeedback(id: string | undefined) {
 
       return {
         ...data,
-        user_display_name: data.user?.display_name || null,
-        user_email: data.user?.email || '',
-        user_avatar_url: data.user?.avatar_url || null,
+        user_display_name: (data as any).user?.display_name || null,
+        user_email: (data as any).user?.email || '',
+        user_avatar_url: (data as any).user?.avatar_url || null,
       } as FeedbackWithUser;
     },
     enabled: !!id,
@@ -82,9 +80,9 @@ export function useFeedback(id: string | undefined) {
 }
 
 /**
- * Mutation for resolving feedback.
- * NOTE: Uses admin_judgment, admin_notes, contribution_points — actual DB column names.
- * NOTE: college_id removed — user_feedbacks table does not have this column.
+ * Mutation for responding to/resolving feedback.
+ * NOTE: DB columns are admin_response (text) and points_awarded (int).
+ * There is NO admin_judgment, admin_notes, or contribution_points column.
  */
 export function useResolveFeedback() {
   const queryClient = useQueryClient();
@@ -92,15 +90,13 @@ export function useResolveFeedback() {
   return useMutation({
     mutationFn: async ({
       feedbackId,
-      judgment,
-      adminNotes,
+      adminResponse,
       points,
       adminId,
       userId,
     }: {
       feedbackId: string;
-      judgment: FeedbackJudgment;
-      adminNotes: string;
+      adminResponse: string;
       points: number;
       adminId: string;
       userId: string;
@@ -110,11 +106,8 @@ export function useResolveFeedback() {
         .from(TABLES.USER_FEEDBACKS)
         .update({
           status: 'resolved',
-          admin_judgment: judgment,      // NOTE: was 'judgment' — DB column is 'admin_judgment'
-          admin_notes: adminNotes,       // NOTE: was 'admin_reply' — DB column is 'admin_notes'
-          contribution_points: points,  // NOTE: was 'contribution_awarded' — DB column is 'contribution_points'
-          resolved_by: adminId,
-          resolved_at: new Date().toISOString(),
+          admin_response: adminResponse,   // DB column: admin_response
+          points_awarded: points,          // DB column: points_awarded
         })
         .eq('id', feedbackId);
 
@@ -127,12 +120,15 @@ export function useResolveFeedback() {
           .insert({
             user_id: userId,
             delta: points,
-            reason: `Feedback reward: ${judgment}`,
+            reason: 'Feedback reward',
             source_type: 'feedback',
             source_id: feedbackId,
           });
 
-        if (ledgerError) throw ledgerError;
+        if (ledgerError) {
+          // NOTE: Non-critical — log but don't block
+          console.warn('[useFeedbacks] contribution ledger insert failed:', ledgerError.message);
+        }
       }
 
       // 3. Log to audit log
@@ -141,7 +137,7 @@ export function useResolveFeedback() {
         action_type: 'resolve_feedback',
         target_type: 'user_feedback',
         target_id: feedbackId,
-        payload: { judgment, points },
+        payload: { adminResponse, points },
       });
     },
     onSuccess: (_, variables) => {

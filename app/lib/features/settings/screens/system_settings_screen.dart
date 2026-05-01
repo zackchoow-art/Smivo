@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/core/providers/theme_provider.dart';
+import 'package:smivo/core/providers/shake_feedback_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smivo/features/settings/widgets/setting_card_container.dart';
@@ -169,6 +170,68 @@ class SystemSettingsScreen extends ConsumerWidget {
                               ),
                             ),
                             Icon(Icons.chevron_right, color: colors.onSurface),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Feedback',
+                        style: typo.titleMedium.copyWith(
+                          color: colors.onSurface,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SettingCardContainer(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: colors.surfaceContainerLowest,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.vibration,
+                                color: colors.settingsIcon,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Shake to Report',
+                                    style: typo.bodyLarge.copyWith(
+                                      color: colors.onSurface,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Shake your phone to capture a screenshot and report an issue',
+                                    style: typo.bodySmall.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Consumer(
+                              builder: (context, ref, child) {
+                                final isEnabled = ref.watch(shakeFeedbackNotifierProvider);
+                                return Switch.adaptive(
+                                  value: isEnabled,
+                                  activeColor: colors.primary,
+                                  onChanged: (value) {
+                                    ref.read(shakeFeedbackNotifierProvider.notifier).toggle(value);
+                                  },
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),

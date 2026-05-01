@@ -41,14 +41,7 @@ class UserRatingBadge extends ConsumerWidget {
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: colors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(radius.sm),
-          border: Border.all(
-            color: colors.outlineVariant.withValues(alpha: 0.5),
-          ),
-        ),
+        padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

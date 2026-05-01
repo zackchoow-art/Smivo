@@ -12,8 +12,7 @@ import {
 } from 'lucide-react';
 import { useFeedback, useResolveFeedback } from '@/hooks/useFeedbacks';
 import { useAuth } from '@/hooks/useAuth';
-import { FEEDBACK_JUDGMENTS, CONTRIBUTION_POINTS } from '@/lib/constants';
-import type { FeedbackJudgment } from '@/types/feedback';
+import { CONTRIBUTION_POINTS } from '@/lib/constants';
 
 export function FeedbackDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -22,8 +21,7 @@ export function FeedbackDetailPage() {
   const { data: feedback, isLoading, error } = useFeedback(id);
   const resolveMutation = useResolveFeedback();
 
-  const [judgment, setJudgment] = useState<FeedbackJudgment>('confirmed_bug');
-  const [adminNotes, setAdminNotes] = useState('');
+  const [adminResponse, setAdminResponse] = useState('');
 
   if (isLoading) return <div className="loading-state">Loading feedback details...</div>;
   if (error || !feedback) return <div className="error-state">Feedback not found</div>;
@@ -33,12 +31,10 @@ export function FeedbackDetailPage() {
     try {
       await resolveMutation.mutateAsync({
         feedbackId: feedback.id,
-        judgment,
-        adminNotes,
-        points: CONTRIBUTION_POINTS[judgment] || 0,
+        adminResponse,
+        points: CONTRIBUTION_POINTS?.default ?? 10,
         adminId: admin.user_id,
         userId: feedback.user_id,
-        // NOTE: college_id removed — user_feedbacks table does not have this column
       });
       alert('Feedback resolved successfully');
       navigate('/feedback');
@@ -74,17 +70,14 @@ export function FeedbackDetailPage() {
               {/* NOTE: DB column is 'description', not 'content' */}
               <p className="feedback-text">{feedback.description}</p>
 
-              {/* NOTE: DB column is 'screenshots' (text[]), not 'screenshot_urls' */}
-              {feedback.screenshots && feedback.screenshots.length > 0 && (
+              {/* NOTE: DB column is 'screenshot_url' (single text, not screenshots[]) */}
+              {feedback.screenshot_url && (
                 <div className="screenshot-gallery">
-                  {feedback.screenshots.map((url, idx) => (
-                    <img
-                      key={idx}
-                      src={url}
-                      alt={`Screenshot ${idx + 1}`}
-                      className="screenshot-img"
-                    />
-                  ))}
+                  <img
+                    src={feedback.screenshot_url}
+                    alt="Screenshot"
+                    className="screenshot-img"
+                  />
                 </div>
               )}
             </div>
@@ -121,8 +114,8 @@ export function FeedbackDetailPage() {
                 <div className="meta-icon"><Tag size={16} /></div>
                 <div className="meta-info">
                   <span className="meta-label">Type</span>
-                  {/* NOTE: DB column is 'category', not 'feedback_type' */}
-                  <span className="meta-value">{feedback.category.toUpperCase()}</span>
+                  {/* NOTE: DB column is 'type', not 'category' / 'feedback_type' */}
+                  <span className="meta-value">{feedback.type.toUpperCase()}</span>
                 </div>
               </div>
             </div>
@@ -160,45 +153,27 @@ export function FeedbackDetailPage() {
                 <div className="resolved-info">
                   <div className="judgment-badge">
                     <Award size={16} />
-                    {/* NOTE: DB column is 'admin_judgment', not 'judgment' */}
-                    <span>
-                      Judgment:{' '}
-                      {feedback.admin_judgment?.replace('_', ' ').toUpperCase()}
-                    </span>
+                    {/* NOTE: DB column is 'admin_response', not 'admin_judgment' */}
+                    <span>Response submitted</span>
                   </div>
-                  {/* NOTE: DB column is 'contribution_points', not 'contribution_awarded' */}
+                  {/* NOTE: DB column is 'points_awarded', not 'contribution_points' */}
                   <div className="reward-info">
-                    Points Awarded: <strong>{feedback.contribution_points}</strong>
+                    Points Awarded: <strong>{feedback.points_awarded}</strong>
                   </div>
                   <div className="admin-reply-box">
-                    <label>Admin Notes:</label>
-                    {/* NOTE: DB column is 'admin_notes', not 'admin_reply' */}
-                    <p>{feedback.admin_notes || 'No notes.'}</p>
+                    <label>Admin Response:</label>
+                    {/* NOTE: DB column is 'admin_response' */}
+                    <p>{feedback.admin_response || 'No response recorded.'}</p>
                   </div>
                 </div>
               ) : (
                 <div className="resolution-form">
                   <div className="form-group">
-                    <label>Judgment</label>
-                    <select
-                      value={judgment}
-                      onChange={(e) => setJudgment(e.target.value as FeedbackJudgment)}
-                    >
-                      {Object.entries(FEEDBACK_JUDGMENTS).map(([key, value]) => (
-                        <option key={key} value={value}>
-                          {value.replace('_', ' ').toUpperCase()} (
-                          {CONTRIBUTION_POINTS[value]} pts)
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Notes to User</label>
+                    <label>Admin Response</label>
                     <textarea
-                      placeholder="Thank the user and explain your decision..."
-                      value={adminNotes}
-                      onChange={(e) => setAdminNotes(e.target.value)}
+                      placeholder="Respond to the user, explain your decision..."
+                      value={adminResponse}
+                      onChange={(e) => setAdminResponse(e.target.value)}
                       rows={5}
                     />
                   </div>

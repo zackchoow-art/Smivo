@@ -6,65 +6,92 @@ import type { AuditLog } from '@/types/audit-log';
 
 const QUERY_KEY = ['dashboard-stats'] as const;
 
+/**
+ * Safely run a Supabase query and return fallback on failure.
+ * Prevents a single broken query from blocking the entire dashboard.
+ */
+async function safeCount(table: string, filter?: (q: any) => any): Promise<number> {
+  try {
+    let q = supabase.from(table).select('*', { count: 'exact', head: true });
+    if (filter) q = filter(q);
+    const { count, error } = await q;
+    if (error) {
+      console.warn(`[Dashboard] count query failed for ${table}:`, error.message);
+      return 0;
+    }
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 export function useDashboard() {
   return useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
-      // 1. KPI - Total Users
-      const { count: userCount } = await supabase
-        .from(TABLES.USER_PROFILES)
-        .select('*', { count: 'exact', head: true });
+      // Run all KPI queries in parallel for speed
+      const [userCount, listingCount, activeOrderCount, todayDau] = await Promise.all([
+        // 1. Total Users
+        safeCount(TABLES.USER_PROFILES),
 
-      // 2. KPI - Total Listings
-      const { count: listingCount } = await supabase
-        .from(TABLES.LISTINGS)
-        .select('*', { count: 'exact', head: true });
+        // 2. Total Listings
+        safeCount(TABLES.LISTINGS),
 
-      // 3. KPI - Active Orders (not completed/cancelled)
-      const { count: activeOrderCount } = await supabase
-        .from(TABLES.ORDERS)
-        .select('*', { count: 'exact', head: true })
-        .not('status', 'in', '("completed","cancelled","missed")');
+        // 3. Active Orders (not completed/cancelled/missed)
+        safeCount(TABLES.ORDERS, (q: any) =>
+          q.not('status', 'in', '("completed","cancelled","missed")')
+        ),
 
-      // 4. KPI - Today DAU (distinct_users from hourly_active_users)
-      const today = new Date().toISOString().split('T')[0];
-      // NOTE: DB columns are 'hour_start' and 'active_count', not 'hour_bucket'/'distinct_users'
-      const { data: dauData } = await supabase
-        .from(TABLES.HOURLY_ACTIVE_USERS)
-        .select('active_count')
-        .gte('hour_start', today)
-        .order('hour_start', { ascending: false })
-        .limit(1);
-      
-      const todayDau = dauData?.[0]?.active_count ?? 0;
+        // 4. Today DAU via RPC
+        (async () => {
+          try {
+            const { data, error } = await supabase.rpc('get_today_dau');
+            if (error) {
+              console.warn('[Dashboard] get_today_dau RPC failed:', error.message);
+              return 0;
+            }
+            return typeof data === 'number' ? data : 0;
+          } catch {
+            return 0;
+          }
+        })(),
+      ]);
 
       // 5. Recent Audit Logs (top 10)
-      const { data: recentLogs } = await supabase
-        .from(TABLES.ADMIN_AUDIT_LOGS)
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
+      let recentLogs: AuditLog[] = [];
+      try {
+        const { data, error } = await supabase
+          .from(TABLES.ADMIN_AUDIT_LOGS)
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10);
+        if (!error && data) recentLogs = data as AuditLog[];
+      } catch {
+        // NOTE: Non-critical — show empty logs
+      }
 
       // 6. Pending Review Listings (top 5)
-      const { data: pendingListings } = await supabase
-        .from(TABLES.LISTINGS)
-        .select('*')
-        .eq('moderation_status', 'pending_review')
-        .order('created_at', { ascending: false })
-        .limit(5);
+      let pendingListings: Listing[] = [];
+      try {
+        const { data, error } = await supabase
+          .from(TABLES.LISTINGS)
+          .select('*')
+          .eq('moderation_status', 'pending_review')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        if (!error && data) pendingListings = data as Listing[];
+      } catch {
+        // NOTE: Non-critical — show empty list
+      }
 
       return {
-        stats: {
-          userCount: userCount ?? 0,
-          listingCount: listingCount ?? 0,
-          activeOrderCount: activeOrderCount ?? 0,
-          todayDau,
-        },
-        recentLogs: (recentLogs ?? []) as AuditLog[],
-        pendingListings: (pendingListings ?? []) as Listing[],
+        stats: { userCount, listingCount, activeOrderCount, todayDau },
+        recentLogs,
+        pendingListings,
       };
     },
-    // Refresh every 5 minutes for dashboard freshness
+    // NOTE: Retry once max — don't make user wait 30s on repeated failures
+    retry: 1,
     staleTime: 5 * 60 * 1000,
   });
 }

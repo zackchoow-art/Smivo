@@ -154,97 +154,92 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 ),
                                 const SizedBox(height: 24),
 
-                                // Verification status
-                                Text(
-                                  'Student Verification',
-                                  style: typo.titleMedium.copyWith(
-                                    color: colors.onSurface,
-                                    fontWeight: FontWeight.w800,
+                                // Verified Badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        profile.isVerified
+                                            ? colors.successContainer
+                                            : colors.error.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        profile.isVerified
+                                            ? Icons.verified
+                                            : Icons.warning_amber_rounded,
+                                        color:
+                                            profile.isVerified
+                                                ? colors.success
+                                                : colors.error,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        profile.isVerified
+                                            ? 'Verified'
+                                            : 'Not Verified',
+                                        style: typo.labelSmall.copyWith(
+                                          color:
+                                              profile.isVerified
+                                                  ? colors.success
+                                                  : colors.error,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(height: 8),
+                                // Email
                                 Text(
-                                  'Verify your .edu email to access exclusive\ncampus features.',
-                                  textAlign: TextAlign.center,
-                                  style: typo.bodySmall.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                    height: 1.3,
+                                  profile.email,
+                                  style: typo.bodyMedium.copyWith(
+                                    color: colors.onSurface.withValues(
+                                      alpha: 0.8,
+                                    ),
                                   ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 16),
-
-                                // Email + badge
+                                const SizedBox(height: 24), // empty line
+                                // Ratings and Contributions
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            profile.isVerified
-                                                ? colors.successContainer
-                                                : colors.error.withValues(
-                                                  alpha: 0.1,
-                                                ),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            profile.isVerified
-                                                ? Icons.verified
-                                                : Icons.warning_amber_rounded,
-                                            color:
-                                                profile.isVerified
-                                                    ? colors.success
-                                                    : colors.error,
-                                            size: 16,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            profile.isVerified
-                                                ? 'Verified'
-                                                : 'Not Verified',
-                                            style: typo.labelSmall.copyWith(
-                                              color:
-                                                  profile.isVerified
-                                                      ? colors.success
-                                                      : colors.error,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    UserRatingBadge(
+                                      user: profile,
+                                      role: 'seller',
                                     ),
                                     const SizedBox(width: 8),
-                                    Flexible(
-                                      child: Text(
-                                        profile.email,
-                                        style: typo.bodySmall.copyWith(
-                                          color: colors.onSurface.withValues(
-                                            alpha: 0.8,
-                                          ),
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
                                     UserRatingBadge(
                                       user: profile,
                                       role: 'buyer',
                                     ),
                                     const SizedBox(width: 8),
-                                    UserRatingBadge(
-                                      user: profile,
-                                      role: 'seller',
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.withAlpha(20),
+                                        borderRadius: BorderRadius.circular(radius.sm),
+                                      ),
+                                      child: Text(
+                                        '🎖️ Lv.${profile.contributionLevel} (${profile.contributionScore} pts)',
+                                        style: typo.labelSmall.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -545,6 +540,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             backgroundColor: Colors.green,
           ),
         );
+        context.pop();
       }
     } catch (e) {
       if (context.mounted) {

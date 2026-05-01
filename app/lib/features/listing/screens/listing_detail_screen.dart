@@ -808,14 +808,25 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                     );
                                                     if (confirmed == true &&
                                                         context.mounted) {
-                                                      await ref
-                                                          .read(
-                                                            orderActionsProvider
-                                                                .notifier,
-                                                          )
-                                                          .cancelOrder(
-                                                            order.id,
+                                                      try {
+                                                        await ref
+                                                            .read(
+                                                              orderActionsProvider
+                                                                  .notifier,
+                                                            )
+                                                            .cancelOrder(
+                                                              order.id,
+                                                            );
+                                                        if (context.mounted) {
+                                                          context.pop();
+                                                        }
+                                                      } catch (e) {
+                                                        if (context.mounted) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text('Failed to cancel order: $e')),
                                                           );
+                                                        }
+                                                      }
                                                     }
                                                   },
                                                   style: OutlinedButton.styleFrom(

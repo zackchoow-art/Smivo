@@ -20,6 +20,7 @@ class ImageUploadService {
         source: ImageSource.gallery,
         maxWidth: 1920,
         maxHeight: 1920,
+        imageQuality: 80,
       );
       if (image == null) return null;
       if (!context.mounted) return null;
@@ -46,6 +47,7 @@ class ImageUploadService {
         source: ImageSource.camera,
         maxWidth: 1920,
         maxHeight: 1920,
+        imageQuality: 80,
       );
       if (image == null) return null;
       if (!context.mounted) return null;
@@ -77,6 +79,7 @@ class ImageUploadService {
     final primaryColor = context.smivoColors.primary;
     final croppedFile = await ImageCropper().cropImage(
       sourcePath: sourcePath,
+      compressQuality: 80,
       // NOTE: For avatars, force square aspect ratio.
       // For listing photos, let the user choose freely.
       aspectRatio:

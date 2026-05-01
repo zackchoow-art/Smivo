@@ -93,6 +93,25 @@ class StorageRepository {
       throw AppStorageException(e.message, e);
     }
   }
+
+  /// Uploads a feedback screenshot and returns its public URL.
+  Future<String> uploadFeedbackImage({
+    required String userId,
+    required String fileName,
+    required Uint8List fileBytes,
+  }) async {
+    try {
+      final path = 'feedbacks/$userId/$fileName';
+      await _client.storage
+          .from(AppConstants.bucketOrderFiles)
+          .uploadBinary(path, fileBytes);
+      return _client.storage
+          .from(AppConstants.bucketOrderFiles)
+          .getPublicUrl(path);
+    } on StorageException catch (e) {
+      throw AppStorageException(e.message, e);
+    }
+  }
 }
 
 @riverpod

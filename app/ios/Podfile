@@ -51,6 +51,15 @@ post_install do |installer|
       # NOTE: Align all pods to the project minimum deployment target.
       # Prevents "deployment target lower than minimum" warnings.
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+
+      # NOTE: Fix for "The executable contains an invalid signature" (0xe8008014)
+      # and PhaseScriptExecution failures. Instead of disabling signing, we
+      # ensures Pods are built with the correct settings without blocking scripts.
+      config.build_settings.delete 'CODE_SIGNING_ALLOWED'
+      config.build_settings.delete 'CODE_SIGNING_REQUIRED'
+      
+      # NOTE: Bitcode is deprecated and can cause build failures in modern Xcode.
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
     end
   end
 end

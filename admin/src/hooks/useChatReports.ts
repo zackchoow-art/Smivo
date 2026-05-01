@@ -33,10 +33,10 @@ export function useChatReports(page: number, filters: ChatReportFilters = {}) {
         .from(TABLES.CONTENT_REPORTS)
         .select(`
           *,
-          reporter:reporter_id(display_name, email),
-          reported:reported_user_id(display_name, email)
+          reporter:user_profiles!reporter_id(display_name, email),
+          reported:user_profiles!reported_user_id(display_name, email)
         `, { count: 'exact' })
-        .eq('target_type', 'message')
+        .not('chat_room_id', 'is', null)   // NOTE: chat reports have a chat_room_id
         .range(from, to)
         .order('created_at', { ascending: false });
 
@@ -80,8 +80,8 @@ export function useChatReport(id: string | undefined) {
         .from(TABLES.CONTENT_REPORTS)
         .select(`
           *,
-          reporter:reporter_id(display_name, email),
-          reported:reported_user_id(display_name, email)
+          reporter:user_profiles!reporter_id(display_name, email),
+          reported:user_profiles!reported_user_id(display_name, email)
         `)
         .eq('id', id)
         .single();
@@ -124,11 +124,10 @@ export function useResolveReport() {
       const { data, error } = await supabase
         .from(TABLES.CONTENT_REPORTS)
         .update({
+          // NOTE: content_reports only has: status, resolution_note
+          // resolved_by / resolved_at / resolution columns do NOT exist in DB
           status: resolution === 'dismiss' ? 'dismissed' : 'resolved',
-          resolution,
           resolution_note: note,
-          resolved_by: adminId,
-          resolved_at: new Date().toISOString()
         })
         .eq('id', reportId)
         .select()

@@ -195,7 +195,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                             isCategoryExpanded
                                                 ? Icons.keyboard_arrow_down
                                                 : Icons.keyboard_arrow_right,
-                                            color: colors.primary,
+                                            color: colors.onSurface,
                                             size: 24,
                                           ),
                                           const SizedBox(width: 8),
@@ -204,7 +204,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                               category,
                                               style: typo.headlineSmall
                                                   .copyWith(
-                                                    color: colors.primary,
+                                                    color: colors.onSurface,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                             ),
@@ -215,7 +215,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                               vertical: 2,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: colors.primary.withValues(
+                                              color: colors.onSurface.withValues(
                                                 alpha: 0.1,
                                               ),
                                               borderRadius:
@@ -224,7 +224,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                             child: Text(
                                               categoryFaqs.length.toString(),
                                               style: typo.labelSmall.copyWith(
-                                                color: colors.primary,
+                                                color: colors.onSurface,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
