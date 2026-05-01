@@ -22,6 +22,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Cpu,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -84,6 +85,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       title: 'Configuration',
       items: [
         { path: '/settings/dictionary', label: 'Data Dictionary', icon: <BookOpen size={18} />, visible: perms.canViewDictionary },
+        { path: '/settings/configs', label: 'System Configs', icon: <Cpu size={18} />, visible: perms.canViewDictionary },
         { path: '/settings/feature-flags', label: 'Feature Flags', icon: <ToggleLeft size={18} />, visible: perms.canViewFeatureFlags },
         { path: '/settings/admins', label: 'Admin Management', icon: <UserCog size={18} />, visible: perms.canViewAdminManagement },
         { path: '/settings/colleges', label: 'Schools', icon: <GraduationCap size={18} />, visible: perms.canViewCollegeManagement },

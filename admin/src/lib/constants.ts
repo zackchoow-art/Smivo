@@ -25,6 +25,7 @@ export const TABLES = {
   // NOTE: Uses system_dictionaries from migration 00038
   SYSTEM_DICTIONARIES: 'system_dictionaries',
   SENSITIVE_WORDS: 'sensitive_words',
+  SYSTEM_CONFIGS: 'system_configs',
 
   // Moderation
   MODERATION_DRAFTS: 'moderation_drafts',

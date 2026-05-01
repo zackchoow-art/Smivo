@@ -138,10 +138,10 @@ export function useResolveReport() {
       // Log to audit log
       await supabase.from(TABLES.ADMIN_AUDIT_LOGS).insert({
         admin_id: adminId,
-        action_type: 'resolve_report',
-        target_type: 'content_report',
+        action: 'resolve_report',
+        target_type: 'chat_report',
         target_id: reportId,
-        payload: { resolution, note }
+        payload: { action: resolution, notes: note },
       });
 
       return data;

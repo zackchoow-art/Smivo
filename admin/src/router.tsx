@@ -12,6 +12,7 @@ import { ProfilePage } from '@/pages/settings/ProfilePage';
 import { CollegesPage } from '@/pages/settings/CollegesPage';
 import { DictionaryListPage } from '@/pages/settings/DictionaryListPage';
 import { DictionaryItemsPage } from '@/pages/settings/DictionaryItemsPage';
+import { SystemConfigsPage } from '@/pages/settings/SystemConfigsPage';
 import { AdminsPage } from '@/pages/settings/AdminsPage';
 import { SensitiveWordsPage } from '@/pages/moderation/SensitiveWordsPage';
 import { AuditLogPage } from '@/pages/AuditLogPage';
@@ -70,6 +71,7 @@ export const router = createBrowserRouter([
       // 12-15 System Configuration
       { path: 'settings/dictionary', element: <DictionaryListPage /> },
       { path: 'settings/dictionary/:dictCode', element: <DictionaryItemsPage /> },
+      { path: 'settings/configs', element: <SystemConfigsPage /> },
       { path: 'settings/feature-flags', element: <FeatureFlagsPage /> },
       { path: 'settings/admins', element: <AdminsPage /> },
       { path: 'settings/colleges', element: <CollegesPage /> },

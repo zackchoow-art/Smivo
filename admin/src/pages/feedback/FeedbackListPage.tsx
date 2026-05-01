@@ -305,7 +305,7 @@ function CategoryBadge({ category }: { category: FeedbackType }) {
     general: { bg: '#f3f4f6', text: '#6b7280' },
   };
   const style = styles[category] ?? styles.general;
-  const labels: Record<FeedbackCategory, string> = {
+  const labels: Record<FeedbackType, string> = {
     bug_report: 'Bug',
     feature_request: 'Feature',
     general: 'General',

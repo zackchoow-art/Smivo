@@ -1,5 +1,21 @@
-import { BarChart3, PieChart, TrendingUp } from 'lucide-react';
+import { BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { useAnalytics } from '@/hooks/useAnalytics';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ffc658', '#d0ed57'];
 
 export function AnalyticsPage() {
   const { data, isLoading, error } = useAnalytics();
@@ -8,11 +24,6 @@ export function AnalyticsPage() {
   if (error) return <div className="error-state">Error loading analytics data</div>;
 
   const { dauTrend, categoryDist, orderDist } = data!;
-
-  const maxDau = Math.max(...dauTrend.map(d => d.count), 1);
-  const maxCategory = Math.max(...categoryDist.map(c => c.count), 1);
-  // NOTE: Guard against division-by-zero when there are no orders yet
-  const totalOrders = orderDist.reduce((acc, curr) => acc + curr.count, 0) || 1;
 
   return (
     <div className="analytics-container">
@@ -31,19 +42,25 @@ export function AnalyticsPage() {
           {dauTrend.length === 0 ? (
             <p className="empty-chart">No activity data for the last 7 days.</p>
           ) : (
-            <div className="chart-container dau-chart">
-              {dauTrend.map((d) => (
-                <div key={d.date} className="bar-group">
-                  <div
-                    className="bar dau-bar"
-                    style={{ height: `${(d.count / maxDau) * 100}%` }}
-                    title={`${d.date}: ${d.count}`}
-                  >
-                    <span className="bar-value">{d.count}</span>
-                  </div>
-                  <span className="bar-label">{d.date.slice(5)}</span>
-                </div>
-              ))}
+            <div style={{ width: '100%', height: 250 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dauTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-subtle)" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(v) => v.slice(5)} 
+                    tick={{ fontSize: 12, fill: 'var(--color-text-tertiary)' }} 
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis tick={{ fontSize: 12, fill: 'var(--color-text-tertiary)' }} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: '8px' }}
+                    itemStyle={{ color: 'var(--color-text-primary)', fontSize: '13px' }}
+                  />
+                  <Line type="monotone" dataKey="count" stroke="var(--color-info)" strokeWidth={3} dot={{ r: 4, fill: 'var(--color-bg-primary)', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           )}
         </section>
@@ -51,30 +68,44 @@ export function AnalyticsPage() {
         {/* Category Distribution */}
         <section className="analytics-card">
           <div className="card-header">
-            <PieChart size={18} />
+            <PieChartIcon size={18} />
             <h2>Listing Categories</h2>
           </div>
           {categoryDist.length === 0 ? (
             <p className="empty-chart">No listings yet.</p>
           ) : (
-            <div className="dist-list">
-              {categoryDist.sort((a, b) => b.count - a.count).map((c) => (
-                <div key={c.name} className="dist-item">
-                  <div className="dist-info">
-                    <span className="dist-name">{c.name}</span>
-                    <span className="dist-count">{c.count} items</span>
+            <div style={{ width: '100%', height: 250, display: 'flex', alignItems: 'center' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryDist}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={2}
+                    dataKey="count"
+                    stroke="none"
+                  >
+                    {categoryDist.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: '8px' }}
+                    itemStyle={{ color: 'var(--color-text-primary)', fontSize: '13px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="custom-legend">
+                {categoryDist.sort((a,b) => b.count - a.count).slice(0, 5).map((entry, index) => (
+                  <div key={entry.name} className="legend-item">
+                    <span className="legend-color" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                    <span className="legend-name">{entry.name}</span>
+                    <span className="legend-value">{entry.count}</span>
                   </div>
-                  <div className="dist-bar-bg">
-                    <div
-                      className="dist-bar"
-                      style={{
-                        width: `${(c.count / maxCategory) * 100}%`,
-                        backgroundColor: 'var(--color-primary)',
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </section>
@@ -88,16 +119,20 @@ export function AnalyticsPage() {
           {orderDist.length === 0 ? (
             <p className="empty-chart">No orders yet.</p>
           ) : (
-            <div className="order-stats-grid">
-              {orderDist.map((o) => (
-                <div key={o.name} className="order-stat-pill">
-                  <span className="order-status-name">{o.name}</span>
-                  <span className="order-status-value">{o.count}</span>
-                  <span className="order-status-percent">
-                    {((o.count / totalOrders) * 100).toFixed(1)}%
-                  </span>
-                </div>
-              ))}
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={orderDist} margin={{ top: 20, right: 20, left: -20, bottom: 0 }} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
+                  <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--color-text-tertiary)' }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: 'var(--color-text-primary)' }} axisLine={false} tickLine={false} width={100} />
+                  <Tooltip 
+                    cursor={{ fill: 'var(--color-bg-secondary)' }}
+                    contentStyle={{ backgroundColor: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: '8px' }}
+                    itemStyle={{ color: 'var(--color-text-primary)', fontSize: '13px' }}
+                  />
+                  <Bar dataKey="count" fill="var(--color-success)" radius={[0, 4, 4, 0]} barSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           )}
         </section>
@@ -169,141 +204,35 @@ export function AnalyticsPage() {
           color: var(--color-text-primary);
         }
 
-        /* DAU Chart Styles */
-        .chart-container.dau-chart {
-          height: 200px;
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          padding: 20px 10px 0;
-          border-bottom: 1px solid var(--color-border-subtle);
-        }
-
-        .bar-group {
-          flex: 1;
+        .custom-legend {
           display: flex;
           flex-direction: column;
+          gap: 12px;
+          min-width: 140px;
+        }
+
+        .legend-item {
+          display: flex;
           align-items: center;
           gap: 8px;
-          height: 100%;
-          justify-content: flex-end;
-        }
-
-        .bar {
-          width: 60%;
-          min-width: 20px;
-          max-width: 40px;
-          border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-          position: relative;
-          transition: transform 0.2s;
-        }
-
-        .dau-bar {
-          background: linear-gradient(to top, var(--color-primary), var(--color-info));
-        }
-
-        .bar:hover {
-          transform: scaleY(1.05);
-          filter: brightness(1.1);
-        }
-
-        .bar-value {
-          position: absolute;
-          top: -20px;
-          left: 50%;
-          transform: translateX(-50%);
-          font-size: 11px;
-          font-weight: 600;
-          color: var(--color-text-secondary);
-        }
-
-        .bar-label {
-          font-size: 11px;
-          color: var(--color-text-tertiary);
-          transform: rotate(-45deg);
-          margin-top: 4px;
-        }
-
-        /* Category Distribution Styles */
-        .dist-list {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-
-        .dist-item {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .dist-info {
-          display: flex;
-          justify-content: space-between;
           font-size: 13px;
         }
 
-        .dist-name {
-          font-weight: 500;
-          color: var(--color-text-primary);
+        .legend-color {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+        }
+
+        .legend-name {
+          color: var(--color-text-secondary);
+          flex: 1;
           text-transform: capitalize;
         }
 
-        .dist-count {
-          color: var(--color-text-tertiary);
-        }
-
-        .dist-bar-bg {
-          height: 8px;
-          background: var(--color-bg-tertiary);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-
-        .dist-bar {
-          height: 100%;
-          border-radius: 4px;
-        }
-
-        /* Order Stats Styles */
-        .order-stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-          gap: 16px;
-        }
-
-        .order-stat-pill {
-          background: var(--color-bg-secondary);
-          padding: 16px;
-          border-radius: var(--radius-md);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          text-align: center;
-        }
-
-        .order-status-name {
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--color-text-tertiary);
+        .legend-value {
           font-weight: 600;
-        }
-
-        .order-status-value {
-          font-size: 24px;
-          font-weight: 700;
           color: var(--color-text-primary);
-        }
-
-        .order-status-percent {
-          font-size: 11px;
-          color: var(--color-success);
-          font-weight: 600;
-          background: var(--color-bg-primary);
-          padding: 2px 8px;
-          border-radius: 10px;
         }
 
         @media (max-width: 800px) {

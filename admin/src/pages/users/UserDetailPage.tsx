@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUserDetail } from '@/hooks/useUsers';
-import { useCreateBan } from '@/hooks/useBans';
+import { useCreateBan, useLiftBan } from '@/hooks/useBans';
 import { useAuth } from '@/hooks/useAuth';
 import type { BanType } from '@/types/ban';
 
@@ -9,19 +9,20 @@ export function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data, isLoading, error } = useUserDetail(id);
-
-  if (isLoading) return <div className="ud-state-msg">Loading user details...</div>;
-  if (error || !data) return <div className="ud-state-msg ud-state-error">Failed to load user.</div>;
-
   const { admin } = useAuth();
   const banMutation = useCreateBan();
+  const liftBanMutation = useLiftBan();
 
   const [showBanForm, setShowBanForm] = useState(false);
   const [banType, setBanType] = useState<BanType>('temporary');
   const [banReason, setBanReason] = useState('');
   const [banDuration, setBanDuration] = useState<number>(7);
 
-  const { user, listings, orders } = data;
+  if (isLoading) return <div className="ud-state-msg">Loading user details...</div>;
+  if (error || !data) return <div className="ud-state-msg ud-state-error">Failed to load user.</div>;
+
+  const { user, listings, orders, bans } = data;
+  const activeBan = bans?.[0];
 
   const handleBanSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,17 +46,42 @@ export function UserDetailPage() {
     }
   };
 
+  const handleLiftBan = async () => {
+    if (!admin || !activeBan) return;
+    if (!confirm('Are you sure you want to lift this ban?')) return;
+    const reason = prompt('Reason for lifting ban:');
+    if (!reason) return;
+    
+    try {
+      await liftBanMutation.mutateAsync({
+        banId: activeBan.id,
+        adminId: admin.user_id,
+        liftReason: reason,
+      });
+      alert('Ban lifted successfully');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to lift ban');
+    }
+  };
+
   return (
     <div className="ud-container">
       <div className="ud-header">
         <button onClick={() => navigate(-1)} className="ud-btn-back">&larr; Back to Users</button>
         <h1 className="ud-page-title">User Details</h1>
-        <button onClick={() => setShowBanForm(!showBanForm)} className="ud-btn-ban">
-          {showBanForm ? 'Cancel Ban' : 'Ban User'}
-        </button>
+        {activeBan ? (
+          <button onClick={handleLiftBan} className="ud-btn-ban" style={{ backgroundColor: '#10b981' }}>
+            Lift Ban
+          </button>
+        ) : (
+          <button onClick={() => setShowBanForm(!showBanForm)} className="ud-btn-ban">
+            {showBanForm ? 'Cancel Ban' : 'Ban User'}
+          </button>
+        )}
       </div>
 
-      {showBanForm && (
+      {showBanForm && !activeBan && (
         <div className="ud-ban-form-container">
           <h3 className="ud-table-title">Ban User</h3>
           <form onSubmit={handleBanSubmit} className="ud-ban-form">
@@ -117,7 +143,11 @@ export function UserDetailPage() {
             </div>
             <div className="ud-meta-row">
               <span className="ud-meta-label">Status</span>
-              <span className="ud-meta-value ud-status-active">Active</span>
+              {activeBan ? (
+                <span className="ud-meta-value ud-status-banned" style={{ color: '#ef4444', fontWeight: 600 }}>Banned</span>
+              ) : (
+                <span className="ud-meta-value ud-status-active">Active</span>
+              )}
             </div>
             <div className="ud-meta-row">
               <span className="ud-meta-label">Registered</span>

@@ -127,7 +127,7 @@ export function useCreateBan() {
       // Log to audit log
       await supabase.from(TABLES.ADMIN_AUDIT_LOGS).insert({
         admin_id: adminId,
-        action_type: 'create_ban',
+        action: 'create_ban',
         target_type: 'user',
         target_id: userId,
         payload: { banType, reasonCode, expiresAt }
@@ -173,7 +173,7 @@ export function useLiftBan() {
       // Log to audit log
       await supabase.from(TABLES.ADMIN_AUDIT_LOGS).insert({
         admin_id: adminId,
-        action_type: 'lift_ban',
+        action: 'lift_ban',
         target_type: 'user_ban',
         target_id: banId,
         payload: { liftReason }

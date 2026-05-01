@@ -3,7 +3,7 @@
  * Supports search, multi-filter, add, delete, toggle, and CSV batch import.
  */
 import { useState, useRef } from 'react';
-import { Plus, Search, Upload, Trash2, Loader2, ChevronLeft, ChevronRight, ToggleLeft, ToggleRight, Filter } from 'lucide-react';
+import { Plus, Search, Upload, Trash2, Loader2, ChevronLeft, ChevronRight, ToggleLeft, ToggleRight, Filter, CloudDownload } from 'lucide-react';
 import { useSensitiveWords, useCreateSensitiveWord, useDeleteSensitiveWord, useBatchImportWords, useBatchToggleWords, type SensitiveWordFilters } from '@/hooks/useSensitiveWords';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import type { SensitiveWord } from '@/types';
@@ -58,6 +58,17 @@ export function SensitiveWordsPage() {
     setPreviewWords(null);
   };
 
+  const handleSyncFromCloud = async () => {
+    // Mock fetching from a third party API (e.g., GitHub repo or PurgoMalum)
+    const mockCloudWords: Partial<SensitiveWord>[] = [
+      { word: 'scam_url_tracker', category: 'spam', severity: 'block', language: 'en', source: 'api', is_active: true },
+      { word: 'fake_id_card', category: 'fraud', severity: 'warn', language: 'en', source: 'api', is_active: true },
+      { word: 'weapon_parts', category: 'weapons', severity: 'block', language: 'en', source: 'api', is_active: true },
+      { word: 'illegal_substance_v2', category: 'drugs', severity: 'block', language: 'en', source: 'api', is_active: true },
+    ];
+    setPreviewWords(mockCloudWords);
+  };
+
   const toggle = (id: string) => { const n = new Set(selected); n.has(id) ? n.delete(id) : n.add(id); setSelected(n); };
 
   const batchAct = async (act: 'on'|'off'|'del') => {
@@ -72,6 +83,7 @@ export function SensitiveWordsPage() {
       <div className="sw-hdr"><div><h1 className="sw-t">Sensitive Words</h1><p className="sw-st tabular-nums">{data?.count ?? 0} total</p></div>
         <div className="sw-ha">
           <button className="sw-bo" onClick={() => setShowFilters(!showFilters)}><Filter size={14}/> Filters</button>
+          <button className="sw-bo" onClick={handleSyncFromCloud}><CloudDownload size={14}/> Sync Cloud</button>
           <label className="sw-bo"><Upload size={14}/> CSV<input ref={fileRef} type="file" accept=".csv" hidden onChange={handleCSV}/></label>
           <button className="sw-bp" onClick={() => setShowAdd(true)}><Plus size={14}/> Add</button>
         </div></div>

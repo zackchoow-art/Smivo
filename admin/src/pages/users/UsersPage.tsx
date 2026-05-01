@@ -65,7 +65,7 @@ export function UsersPage() {
                     </div>
                   </td>
                   <td><span className="user-email">{user.email}</span></td>
-                  <td><span className="user-college">{user.school || '—'}</span></td>
+                  <td><span className="user-college">{(user as any).school || '—'}</span></td>
                   <td>
                     <span className="user-active">
                       {user.last_active_at

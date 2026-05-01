@@ -76,10 +76,21 @@ export function useUserDetail(userId?: string) {
 
       if (ordersError) throw ordersError;
 
+      // 4. Fetch active bans (not lifted, not expired)
+      const { data: bans, error: bansError } = await supabase
+        .from(TABLES.USER_BANS)
+        .select('*')
+        .eq('user_id', userId)
+        .is('lifted_at', null)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+
+      if (bansError) throw bansError;
+
       return {
         user: { ...user, school: (user as any).school?.name } as UserProfile,
         listings: listings || [],
         orders: orders || [],
+        bans: bans || [],
       };
     },
     enabled: !!userId,

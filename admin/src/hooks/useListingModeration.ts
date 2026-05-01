@@ -138,7 +138,7 @@ export function useModerateListing() {
         .from(TABLES.ADMIN_AUDIT_LOGS)
         .insert({
           admin_id: adminId,
-          action_type: `listing_${action}`,
+          action: `listing_${action}`,
           target_type: 'listing',
           target_id: id,
           payload: { reason },

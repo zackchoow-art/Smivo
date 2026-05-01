@@ -134,7 +134,7 @@ export function useResolveFeedback() {
       // 3. Log to audit log
       await supabase.from(TABLES.ADMIN_AUDIT_LOGS).insert({
         admin_id: adminId,
-        action_type: 'resolve_feedback',
+        action: 'resolve_feedback',
         target_type: 'user_feedback',
         target_id: feedbackId,
         payload: { adminResponse, points },
