@@ -22,6 +22,7 @@ export function SensitiveWordsPage() {
   const [nc, setNc] = useState('general');
   const [ns, setNs] = useState<'block'|'warn'>('block');
   const [nl, setNl] = useState<'en'|'zh'>('en');
+  const [previewWords, setPreviewWords] = useState<Partial<SensitiveWord>[] | null>(null);
 
   const { data, isLoading } = useSensitiveWords(page, filters);
   const createWord = useCreateSensitiveWord();
@@ -44,8 +45,17 @@ export function SensitiveWordsPage() {
       const [word, cat, sev, lang] = line.split(',').map(s => s.trim());
       return { word: word?.toLowerCase(), category: cat || 'general', severity: (sev === 'warn' ? 'warn' : 'block') as 'block'|'warn', language: (lang === 'zh' ? 'zh' : 'en') as 'en'|'zh', source: 'import' as const, is_active: true };
     }).filter(w => w.word);
-    if (words.length > 0) { await batchImport.mutateAsync(words); alert(`Imported ${words.length} words.`); }
+    if (words.length > 0) {
+      setPreviewWords(words);
+    }
     if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const confirmImport = async () => {
+    if (!previewWords) return;
+    await batchImport.mutateAsync(previewWords);
+    alert(`Imported ${previewWords.length} words.`);
+    setPreviewWords(null);
   };
 
   const toggle = (id: string) => { const n = new Set(selected); n.has(id) ? n.delete(id) : n.add(id); setSelected(n); };
@@ -85,6 +95,26 @@ export function SensitiveWordsPage() {
         <button className="sw-bbn" onClick={()=>batchAct('on')}>Activate</button>
         <button className="sw-bbn" onClick={()=>batchAct('off')}>Deactivate</button>
         <button className="sw-bbn sw-bbd" onClick={()=>batchAct('del')}>Delete</button></div>}
+
+      {previewWords && (
+        <div className="sw-preview">
+          <h3>Preview Import ({previewWords.length} words)</h3>
+          <div className="sw-preview-list">
+            {previewWords.slice(0, 10).map((w, i) => (
+              <div key={i} className="sw-preview-item">
+                <strong>{w.word}</strong> - {w.category} ({w.severity})
+              </div>
+            ))}
+            {previewWords.length > 10 && <div className="sw-preview-item">...and {previewWords.length - 10} more</div>}
+          </div>
+          <div className="sw-preview-acts">
+            <button className="sw-bc" onClick={() => setPreviewWords(null)}>Cancel</button>
+            <button className="sw-bs" onClick={confirmImport} disabled={batchImport.isPending}>
+              {batchImport.isPending ? 'Importing...' : 'Confirm Import'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {isLoading ? <div className="sw-ld"><Loader2 size={20} className="spin"/> Loading...</div> : <div className="sw-tb">
         <div className="sw-r sw-rh"><span/><span>Word</span><span>Category</span><span>Severity</span><span>Lang</span><span>Source</span><span>Status</span><span/></div>
@@ -139,6 +169,12 @@ export function SensitiveWordsPage() {
 .sw-pg button{display:flex;align-items:center;gap:4px;padding:6px 12px;font-size:13px;background:var(--color-bg-primary);border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;color:var(--color-text-secondary)}
 .sw-pg button:disabled{opacity:.4;cursor:not-allowed}
 .spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.sw-preview{background:var(--color-bg-secondary);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;margin-bottom:16px}
+.sw-preview h3{margin:0 0 12px;font-size:14px;color:var(--color-text-primary)}
+.sw-preview-list{max-height:150px;overflow-y:auto;background:var(--color-bg-primary);border-radius:var(--radius-sm);border:1px solid var(--color-border-light);padding:8px}
+.sw-preview-item{font-size:13px;padding:4px 8px;border-bottom:1px solid var(--color-border-light);color:var(--color-text-secondary)}
+.sw-preview-item:last-child{border-bottom:none}
+.sw-preview-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
       `}</style>
     </div>
   );

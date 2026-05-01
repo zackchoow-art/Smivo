@@ -1,5 +1,9 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUserDetail } from '@/hooks/useUsers';
+import { useCreateBan } from '@/hooks/useBans';
+import { useAuth } from '@/hooks/useAuth';
+import type { BanType } from '@/types/ban';
 
 export function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -9,11 +13,36 @@ export function UserDetailPage() {
   if (isLoading) return <div className="ud-state-msg">Loading user details...</div>;
   if (error || !data) return <div className="ud-state-msg ud-state-error">Failed to load user.</div>;
 
+  const { admin } = useAuth();
+  const banMutation = useCreateBan();
+
+  const [showBanForm, setShowBanForm] = useState(false);
+  const [banType, setBanType] = useState<BanType>('temporary');
+  const [banReason, setBanReason] = useState('');
+  const [banDuration, setBanDuration] = useState<number>(7);
+
   const { user, listings, orders } = data;
 
-  const handleBan = () => {
-    // TBD: Integrate with ban mutation / dialog
-    alert(`Ban user dialog for ${user.id} would open here.`);
+  const handleBanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!admin) return;
+    try {
+      await banMutation.mutateAsync({
+        userId: user.id,
+        collegeId: (user as any).school_id || '', // fallback
+        banType,
+        reasonCode: 'manual',
+        reasonDetail: banReason,
+        durationDays: banType === 'temporary' ? banDuration : null,
+        adminId: admin.user_id,
+      });
+      alert('User banned successfully');
+      setShowBanForm(false);
+      setBanReason('');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to ban user');
+    }
   };
 
   return (
@@ -21,8 +50,53 @@ export function UserDetailPage() {
       <div className="ud-header">
         <button onClick={() => navigate(-1)} className="ud-btn-back">&larr; Back to Users</button>
         <h1 className="ud-page-title">User Details</h1>
-        <button onClick={handleBan} className="ud-btn-ban">Ban User</button>
+        <button onClick={() => setShowBanForm(!showBanForm)} className="ud-btn-ban">
+          {showBanForm ? 'Cancel Ban' : 'Ban User'}
+        </button>
       </div>
+
+      {showBanForm && (
+        <div className="ud-ban-form-container">
+          <h3 className="ud-table-title">Ban User</h3>
+          <form onSubmit={handleBanSubmit} className="ud-ban-form">
+            <div className="ud-form-group">
+              <label>Ban Type</label>
+              <select value={banType} onChange={(e) => setBanType(e.target.value as BanType)}>
+                <option value="temporary">Temporary</option>
+                <option value="permanent">Permanent</option>
+              </select>
+            </div>
+            {banType === 'temporary' && (
+              <div className="ud-form-group">
+                <label>Duration (Days)</label>
+                <input 
+                  type="number" 
+                  min="1"
+                  value={banDuration} 
+                  onChange={(e) => setBanDuration(parseInt(e.target.value))} 
+                />
+              </div>
+            )}
+            <div className="ud-form-group">
+              <label>Reason</label>
+              <textarea 
+                required
+                value={banReason} 
+                onChange={(e) => setBanReason(e.target.value)} 
+                placeholder="Explain the reason for the ban..."
+                rows={3}
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="ud-btn-submit"
+              disabled={banMutation.isPending}
+            >
+              {banMutation.isPending ? 'Banning...' : 'Confirm Ban'}
+            </button>
+          </form>
+        </div>
+      )}
 
       <div className="ud-layout">
         {/* Profile Card */}
@@ -38,8 +112,8 @@ export function UserDetailPage() {
           </div>
           <div className="ud-profile-meta">
             <div className="ud-meta-row">
-              <span className="ud-meta-label">School ID</span>
-              <span className="ud-meta-value">{user.college_id}</span>
+              <span className="ud-meta-label">School</span>
+              <span className="ud-meta-value">{(user as any).school || '—'}</span>
             </div>
             <div className="ud-meta-row">
               <span className="ud-meta-label">Status</span>
@@ -163,6 +237,14 @@ export function UserDetailPage() {
         .ud-item-price { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
         .ud-badge { padding: 2px 8px; font-size: 11px; border-radius: 999px; background: var(--color-bg-tertiary); color: var(--color-text-primary); }
         .ud-badge--info { background: var(--color-info-light); color: var(--color-info); }
+
+        .ud-ban-form-container { background: var(--color-warning-light); border: 1px solid var(--color-warning); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; }
+        .ud-ban-form { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+        .ud-form-group { display: flex; flex-direction: column; gap: 8px; }
+        .ud-form-group label { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }
+        .ud-form-group input, .ud-form-group select, .ud-form-group textarea { padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; }
+        .ud-btn-submit { padding: 10px 16px; background: var(--color-danger); color: white; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; align-self: flex-start; }
+        .ud-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
       `}</style>
     </div>
   );

@@ -6,6 +6,14 @@ import { useNavigate } from 'react-router-dom';
 import { BookOpen, ChevronRight, Loader2 } from 'lucide-react';
 import { useDictionaries } from '@/hooks/useDictionary';
 
+const DICT_METADATA: Record<string, { title: string; desc: string }> = {
+  category: { title: 'Product Categories', desc: 'Listing item classifications' },
+  condition: { title: 'Item Conditions', desc: 'New, Used, Fair, etc.' },
+  pickup_location: { title: 'Pickup Locations', desc: 'Pre-approved meeting spots' },
+  review_tag: { title: 'Review Tags', desc: 'Feedback labels for users' },
+  system_url: { title: 'System URLs', desc: 'Global app links and policies' },
+};
+
 export function DictionaryListPage() {
   const { data: groups, isLoading, error } = useDictionaries();
   const navigate = useNavigate();
@@ -37,25 +45,35 @@ export function DictionaryListPage() {
       </div>
 
       <div className="dict-grid">
-        {groups?.map((group) => (
-          <button
-            key={group.dict_type}
-            className="dict-card"
-            onClick={() => navigate(`/settings/dictionary/${group.dict_type}`)}
-          >
-            <div className="dict-card-left">
-              <BookOpen size={18} color="var(--color-info)" />
-              <div>
-                <h3 className="dict-card-type">{group.dict_type}</h3>
-                <p className="dict-card-count tabular-nums">
-                  {group.items.length} entries ·{' '}
-                  {group.items.filter((i) => i.is_active).length} active
-                </p>
+        {groups?.map((group) => {
+          const meta = DICT_METADATA[group.dict_type] || {
+            title: group.dict_type.toUpperCase(),
+            desc: `Items for ${group.dict_type}`,
+          };
+          
+          return (
+            <button
+              key={group.dict_type}
+              className="dict-card"
+              onClick={() => navigate(`/settings/dictionary/${group.dict_type}`)}
+            >
+              <div className="dict-card-left">
+                <div className="dict-icon-bg">
+                  <BookOpen size={20} color="var(--color-info)" />
+                </div>
+                <div>
+                  <h3 className="dict-card-type">{meta.title}</h3>
+                  <p className="dict-card-count">
+                    {meta.desc} &middot; <span className="tabular-nums">
+                      {group.items.length} items ({group.items.filter((i) => i.is_active).length} active)
+                    </span>
+                  </p>
+                </div>
               </div>
-            </div>
-            <ChevronRight size={16} color="var(--color-text-tertiary)" />
-          </button>
-        ))}
+              <ChevronRight size={18} color="var(--color-text-tertiary)" />
+            </button>
+          );
+        })}
       </div>
 
       <style>{`
@@ -92,20 +110,30 @@ export function DictionaryListPage() {
         .dict-card-left {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 16px;
+        }
+
+        .dict-icon-bg {
+          width: 40px;
+          height: 40px;
+          border-radius: var(--radius-sm);
+          background: var(--color-info-light);
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .dict-card-type {
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 600;
           color: var(--color-text-primary);
-          font-family: var(--font-mono);
+          margin: 0 0 4px 0;
         }
 
         .dict-card-count {
-          font-size: 12px;
-          color: var(--color-text-tertiary);
-          margin-top: 2px;
+          font-size: 13px;
+          color: var(--color-text-secondary);
+          margin: 0;
         }
 
         .dict-loading, .dict-error {

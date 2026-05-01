@@ -18,7 +18,7 @@ export function useUsers(page: number, filters: UserFilters = {}) {
 
       let query = supabase
         .from(TABLES.USER_PROFILES)
-        .select('*', { count: 'exact' })
+        .select(`*, school:schools(name)`, { count: 'exact' })
         .range(from, to)
         .order('created_at', { ascending: false });
 
@@ -32,7 +32,7 @@ export function useUsers(page: number, filters: UserFilters = {}) {
       if (error) throw error;
 
       return {
-        data: (data ?? []) as UserProfile[],
+        data: (data ?? []).map((u: any) => ({ ...u, school: u.school?.name })) as UserProfile[],
         totalCount: count ?? 0,
       };
     },
@@ -49,7 +49,7 @@ export function useUserDetail(userId?: string) {
       // 1. Fetch user profile
       const { data: user, error: userError } = await supabase
         .from(TABLES.USER_PROFILES)
-        .select('*')
+        .select(`*, school:schools(name)`)
         .eq('id', userId)
         .single();
 
@@ -77,7 +77,7 @@ export function useUserDetail(userId?: string) {
       if (ordersError) throw ordersError;
 
       return {
-        user: user as UserProfile,
+        user: { ...user, school: (user as any).school?.name } as UserProfile,
         listings: listings || [],
         orders: orders || [],
       };
