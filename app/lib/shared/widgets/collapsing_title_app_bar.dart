@@ -28,6 +28,11 @@ class CollapsingTitleAppBar extends StatelessWidget {
         onPressed: () {
           if (context.canPop()) {
             context.pop();
+          } else {
+            // NOTE: Fallback to home when the navigation stack is empty
+            // (e.g. arrived via goNamed which clears the stack).
+            // This prevents users from being permanently stuck on a screen.
+            context.goNamed('home');
           }
         },
       ),

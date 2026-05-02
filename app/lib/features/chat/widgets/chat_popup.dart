@@ -487,7 +487,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                 child:
                     msg.messageType == 'image' && msg.imageUrl != null
                         ? _buildImageMessage(msg.imageUrl!)
-                        : Text(
+                        : SelectableText(
                           msg.content,
                           style: typo.bodyMedium.copyWith(
                             color: textColor,
@@ -549,7 +549,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                 child:
                     msg.messageType == 'image' && msg.imageUrl != null
                         ? _buildImageMessage(msg.imageUrl!)
-                        : Text(
+                        : SelectableText(
                           msg.content,
                           style: typo.bodyMedium.copyWith(
                             color: textColor,

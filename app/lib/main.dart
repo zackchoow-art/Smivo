@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,12 +25,14 @@ Future<void> main() async {
   );
 
   // Initialize OneSignal for push notifications.
-  final oneSignalAppId = dotenv.env['ONESIGNAL_APP_ID'] ?? '';
-  if (oneSignalAppId.isNotEmpty) {
-    OneSignal.Debug.setLogLevel(
-      OSLogLevel.verbose,
-    ); // TODO: Remove in production
-    OneSignal.initialize(oneSignalAppId);
+  if (!kIsWeb) {
+    final oneSignalAppId = dotenv.env['ONESIGNAL_APP_ID'] ?? '';
+    if (oneSignalAppId.isNotEmpty) {
+      OneSignal.Debug.setLogLevel(
+        OSLogLevel.verbose,
+      ); // TODO: Remove in production
+      OneSignal.initialize(oneSignalAppId);
+    }
   }
 
   runApp(const ProviderScope(child: SmivoApp()));

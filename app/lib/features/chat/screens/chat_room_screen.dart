@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
@@ -35,13 +36,42 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _isSending = false;
   bool _selectionMode = false;
   final Set<String> _selectedMessageIds = {};
+  // Heartbeat timer: refreshes updated_at in user_active_sessions every 90s
+  // to keep the session alive within the Edge Function's 2-minute TTL window.
+  Timer? _sessionHeartbeat;
 
   @override
   void initState() {
     super.initState();
-    // Mark as read after build completes
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(chatMessagesProvider(widget.chatRoomId).notifier).markAsRead();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final userId = ref.read(authStateProvider).value?.id;
+      debugPrint('[Chat] Setting activeChatRoomProvider = ${widget.chatRoomId}');
+      // Update in-memory state for client-side Foreground Listener suppression.
+      ref.read(activeChatRoomProvider.notifier).setActive(widget.chatRoomId);
+      // Update DB for server-side Edge Function suppression.
+      if (userId != null) {
+        _writeActiveSession(userId);
+        // Heartbeat: re-write updated_at every 90s so the 2-min Edge Function
+        // TTL doesn't expire while the user is actively reading the chat room.
+        _sessionHeartbeat = Timer.periodic(
+          const Duration(seconds: 90),
+          (_) => _writeActiveSession(userId),
+        );
+      }
+    });
+  }
+
+  void _writeActiveSession(String userId) {
+    ref.read(chatRepositoryProvider).setActiveSession(
+      userId: userId,
+      chatRoomId: widget.chatRoomId,
+    ).catchError((e) {
+      debugPrint('[Chat] setActiveSession failed (non-critical): $e');
     });
   }
 
@@ -49,25 +79,123 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void dispose() {
     _inputController.dispose();
     _scrollController.dispose();
+    // Stop the heartbeat before clearing — prevents a race where the timer
+    // fires between clearActiveSession and the next push delivery.
+    _sessionHeartbeat?.cancel();
+    debugPrint('[Chat] Clearing activeChatRoomProvider on dispose.');
+    // Clear in-memory state.
+    ref.read(activeChatRoomProvider.notifier).setActive(null);
+    // Clear DB state so Edge Function resumes push delivery immediately.
+    final userId = ref.read(authStateProvider).value?.id;
+    if (userId != null) {
+      ref.read(chatRepositoryProvider).clearActiveSession(userId).catchError((e) {
+        debugPrint('[Chat] clearActiveSession failed (non-critical): $e');
+      });
+    }
     super.dispose();
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  /// Returns the ID of the other party in this chat room.
+  ///
+  /// Reads from the already-loaded chatRoomProvider cache first; falls back
+  /// to an async fetch only when the cache is empty (first load).
+  Future<String?> _getRecipientId() async {
+    final currentUserId = ref.read(authStateProvider).value?.id;
+    if (currentUserId == null) return null;
+    final chatRoom = await ref.read(chatRoomProvider(widget.chatRoomId).future);
+    return chatRoom.buyerId == currentUserId
+        ? chatRoom.sellerId
+        : chatRoom.buyerId;
+  }
+
+  /// Checks eligibility and returns the result map, or null if the check
+  /// could not be performed (recipient ID unknown, network error, etc.).
+  Future<Map<String, bool>?> _checkEligibility() async {
+    final senderId   = ref.read(authStateProvider).value?.id;
+    final recipientId = await _getRecipientId();
+    if (senderId == null || recipientId == null) return null;
+    return ref.read(chatRepositoryProvider).checkChatEligibility(
+      senderId:    senderId,
+      recipientId: recipientId,
+    );
+  }
+
+  void _showBlockedSnackBar() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Message failed: You have been blocked by the recipient'),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showRecipientRestrictedSnackBar({
+    required bool isMuted,
+    required bool isFrozen,
+  }) {
+    if (!mounted) return;
+    final reason = isFrozen ? 'frozen' : 'muted';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Message sent, but the recipient is currently $reason by the platform and may not receive it'),
+        backgroundColor: Colors.orange.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _handleSend() async {
     final text = _inputController.text.trim();
     if (text.isEmpty || _isSending) return;
 
+    // Check eligibility before sending (block status + recipient restrictions).
+    Map<String, bool>? eligibility;
+    try {
+      eligibility = await _checkEligibility();
+    } catch (_) {
+      // NOTE: If the eligibility check fails (e.g. network error), we allow
+      // the send to proceed rather than silently blocking the user.
+    }
+
+    if (eligibility?['isBlockedByRecipient'] == true) {
+      _showBlockedSnackBar();
+      return;
+    }
+
     setState(() => _isSending = true);
     try {
-      await ref
+      final warning = await ref
           .read(chatMessagesProvider(widget.chatRoomId).notifier)
           .sendMessage(text);
       _inputController.clear();
-      // Scroll to bottom after sending
       _scrollToBottom();
+
+      // Show filter warning if the message contained warn-level sensitive words.
+      // The message has already been sent; this is a gentle reminder only.
+      if (warning != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(warning),
+            backgroundColor: Colors.amber.shade800,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
+      // Warn if the recipient has a platform restriction.
+      final isMuted  = eligibility?['recipientIsMuted']  == true;
+      final isFrozen = eligibility?['recipientIsFrozen'] == true;
+      if (isMuted || isFrozen) {
+        _showRecipientRestrictedSnackBar(isMuted: isMuted, isFrozen: isFrozen);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send: ${e.toString()}')),
+          SnackBar(content: Text('Send failed: ${e.toString()}')),
         );
       }
     } finally {
@@ -77,6 +205,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _handlePickImage() async {
     if (_isSending) return;
+
+    // Block check before picking an image — fast-fail before opening gallery.
+    Map<String, bool>? eligibility;
+    try {
+      eligibility = await _checkEligibility();
+    } catch (_) {
+      // Allow on error — same policy as text messages.
+    }
+
+    if (eligibility?['isBlockedByRecipient'] == true) {
+      _showBlockedSnackBar();
+      return;
+    }
 
     final image = await _imagePicker.pickImage(
       source: ImageSource.gallery,
@@ -91,10 +232,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .read(chatMessagesProvider(widget.chatRoomId).notifier)
           .sendImage(bytes, image.name);
       _scrollToBottom();
+
+      final isMuted  = eligibility?['recipientIsMuted']  == true;
+      final isFrozen = eligibility?['recipientIsFrozen'] == true;
+      if (isMuted || isFrozen) {
+        _showRecipientRestrictedSnackBar(isMuted: isMuted, isFrozen: isFrozen);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send image: ${e.toString()}')),
+          SnackBar(content: Text('Image send failed: ${e.toString()}')),
         );
       }
     } finally {
@@ -772,14 +919,17 @@ class _MessageBubble extends StatelessWidget {
                                 ),
                               ),
                             )
-                            : Text(
-                              message.content,
-                              style: typo.bodyLarge.copyWith(
-                                color:
-                                    isMine
-                                        ? colors.chatBubbleTextSelf
-                                        : colors.chatBubbleTextOther,
-                                height: 1.4,
+                            : IgnorePointer(
+                              ignoring: selectionMode,
+                              child: SelectableText(
+                                message.content,
+                                style: typo.bodyLarge.copyWith(
+                                  color:
+                                      isMine
+                                          ? colors.chatBubbleTextSelf
+                                          : colors.chatBubbleTextOther,
+                                  height: 1.4,
+                                ),
                               ),
                             ),
                   ),

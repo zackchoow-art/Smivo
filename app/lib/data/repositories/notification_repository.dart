@@ -20,6 +20,7 @@ class NotificationRepository {
           .from('notifications')
           .select()
           .eq('user_id', userId)
+          .neq('type', 'new_message') // Filter out chat messages
           .order('created_at', ascending: false);
       return data.map((json) => AppNotification.fromJson(json)).toList();
     } on PostgrestException catch (e) {
@@ -46,6 +47,7 @@ class NotificationRepository {
           .from('notifications')
           .update({'is_read': true})
           .eq('user_id', userId)
+          .neq('type', 'new_message') // Only mark relevant notifications
           .eq('is_read', false);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -93,7 +95,9 @@ class NotificationRepository {
           ),
           callback: (payload) {
             final notification = AppNotification.fromJson(payload.newRecord);
-            onNotification(notification);
+            if (notification.type != 'new_message') {
+              onNotification(notification);
+            }
           },
         )
         .subscribe();

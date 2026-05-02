@@ -311,3 +311,65 @@ final class ChatRoomFamily extends $Family
   @override
   String toString() => r'chatRoomProvider';
 }
+
+/// Tracks the ID of the chat room currently being viewed by the user.
+/// This is used to suppress push notifications for the active conversation.
+
+@ProviderFor(ActiveChatRoom)
+final activeChatRoomProvider = ActiveChatRoomProvider._();
+
+/// Tracks the ID of the chat room currently being viewed by the user.
+/// This is used to suppress push notifications for the active conversation.
+final class ActiveChatRoomProvider
+    extends $NotifierProvider<ActiveChatRoom, String?> {
+  /// Tracks the ID of the chat room currently being viewed by the user.
+  /// This is used to suppress push notifications for the active conversation.
+  ActiveChatRoomProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'activeChatRoomProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$activeChatRoomHash();
+
+  @$internal
+  @override
+  ActiveChatRoom create() => ActiveChatRoom();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$activeChatRoomHash() => r'181496c2b4a5b83d0cbe4d9fd446167eea19ad32';
+
+/// Tracks the ID of the chat room currently being viewed by the user.
+/// This is used to suppress push notifications for the active conversation.
+
+abstract class _$ActiveChatRoom extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

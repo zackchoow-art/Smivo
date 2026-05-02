@@ -252,6 +252,7 @@ class ChatRepository {
     }
   }
 
+
   /// Subscribes to changes in chat rooms for [userId].
   Stream<List<ChatRoom>> subscribeToChatRooms(String userId) {
     return _client
@@ -285,7 +286,88 @@ class ChatRepository {
         )
         .subscribe();
   }
+
+  // ── Chat eligibility check ─────────────────────────────────────────────────
+  // Called before every message send to verify:
+  //   1. The recipient has NOT blocked the sender.
+  //   2. The recipient's platform restriction status (muted / frozen).
+  // A single RPC call is used to avoid multiple round-trips.
+
+  /// Checks whether [senderId] can send a message to [recipientId].
+  ///
+  /// Returns a map with keys:
+  ///   - `isBlockedByRecipient`: bool — abort send if true
+  ///   - `recipientIsMuted`: bool   — warn after send if true
+  ///   - `recipientIsFrozen`: bool  — warn after send if true
+  Future<Map<String, bool>> checkChatEligibility({
+    required String senderId,
+    required String recipientId,
+  }) async {
+    try {
+      final result = await _client.rpc(
+        'check_chat_eligibility',
+        params: {
+          'p_sender_id':    senderId,
+          'p_recipient_id': recipientId,
+        },
+      );
+      return {
+        'isBlockedByRecipient': (result['is_blocked_by_recipient'] as bool?) ?? false,
+        'recipientIsMuted':     (result['recipient_is_muted']      as bool?) ?? false,
+        'recipientIsFrozen':    (result['recipient_is_frozen']      as bool?) ?? false,
+      };
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  // ── Active session management ──────────────────────────────────────────────
+  // These methods write to user_active_sessions so the push-notification
+  // Edge Function can suppress pushes while the user is reading a chat room.
+  // upsert is used so only one row per user ever exists.
+
+  /// Records that [userId] is currently viewing [chatRoomId].
+  Future<void> setActiveSession({
+    required String userId,
+    required String chatRoomId,
+  }) async {
+    try {
+      await _client.from('user_active_sessions').upsert(
+        {
+          'user_id': userId,
+          'chat_room_id': chatRoomId,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        },
+        onConflict: 'user_id',
+      );
+    } on PostgrestException catch (e) {
+      // NOTE: Non-critical — if this fails, the user may receive a push
+      // while in the chat room. Log but do not rethrow.
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Clears the active chat room for [userId] (called when leaving the room).
+  ///
+  /// NOTE: Uses update() instead of upsert() because PostgREST may silently
+  /// ignore null values in upsert payloads, leaving the old chat_room_id
+  /// in place and suppressing push notifications after the user has left.
+  Future<void> clearActiveSession(String userId) async {
+    try {
+      await _client
+          .from('user_active_sessions')
+          .update({
+            'chat_room_id': null,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      // NOTE: Non-critical — log but do not rethrow.
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
+
 
 @riverpod
 ChatRepository chatRepository(Ref ref) =>

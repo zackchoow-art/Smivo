@@ -39,7 +39,7 @@ final class NotificationListProvider
   NotificationList create() => NotificationList();
 }
 
-String _$notificationListHash() => r'36278f487547e16d96c9b833fd07b8b7f819df5e';
+String _$notificationListHash() => r'7a2b606b7969a0650fca62621898bac05c49b93f';
 
 /// Fetches the user's notification list and subscribes to new ones
 /// in real-time. Refreshes itself when new notifications arrive.

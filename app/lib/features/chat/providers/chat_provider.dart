@@ -169,23 +169,31 @@ class ChatMessages extends _$ChatMessages {
   }
 
   /// Sends a message and marks the chat as read for the sender.
-  Future<void> sendMessage(String content) async {
+  ///
+  /// Returns the first filter warning message if the content triggered a
+  /// warn-severity sensitive word, or null if no warning was generated.
+  /// The message is always sent regardless of the warning.
+  Future<String?> sendMessage(String content) async {
     final user = ref.read(authStateProvider).value;
-    if (user == null) return;
-    if (content.trim().isEmpty) return;
+    if (user == null) return null;
+    if (content.trim().isEmpty) return null;
 
     final repository = ref.read(chatRepositoryProvider);
 
     // Content filter — apply based on platform configuration
     final filter = ref.read(sensitiveWordsProvider).value;
     final config = ref.read(filterConfigStateProvider).value;
-    
+
     var processedContent = content.trim();
+    String? warningMessage;
     if (filter != null && config != null) {
       final action = applyContentFilter(processedContent, filter, config);
       processedContent = action.processedText;
-      // We ignore warnings in chat to avoid interrupting the flow, or we could show a snackbar.
-      // For now, if it's 'reject', applyContentFilter will throw, otherwise we use the masked/original text.
+      // Surface the first warning to the screen so it can show a SnackBar.
+      // The message was already sent; this is informational only.
+      if (action.warnings.isNotEmpty) {
+        warningMessage = action.warnings.first;
+      }
     }
 
     // The realtime listener will receive the message and update state.
@@ -194,12 +202,16 @@ class ChatMessages extends _$ChatMessages {
       senderId: user.id,
       content: processedContent,
     );
+
+    return warningMessage;
   }
 
   /// Uploads an image and sends it as a message.
-  Future<void> sendImage(Uint8List fileBytes, String fileName) async {
+  ///
+  /// Returns null because image content is not text-filtered.
+  Future<String?> sendImage(Uint8List fileBytes, String fileName) async {
     final user = ref.read(authStateProvider).value;
-    if (user == null) return;
+    if (user == null) return null;
 
     final storageRepo = ref.read(storageRepositoryProvider);
     final chatRepo = ref.read(chatRepositoryProvider);
@@ -217,6 +229,7 @@ class ChatMessages extends _$ChatMessages {
       senderId: user.id,
       imageUrl: imageUrl,
     );
+    return null;
   }
 
   /// Marks all messages in this room as read for the current user.
@@ -260,4 +273,14 @@ Future<ChatRoom> chatRoom(Ref ref, String chatRoomId) async {
 
   final repository = ref.read(chatRepositoryProvider);
   return repository.fetchChatRoom(chatRoomId);
+}
+
+/// Tracks the ID of the chat room currently being viewed by the user.
+/// This is used to suppress push notifications for the active conversation.
+@Riverpod(keepAlive: true)
+class ActiveChatRoom extends _$ActiveChatRoom {
+  @override
+  String? build() => null;
+
+  void setActive(String? roomId) => state = roomId;
 }

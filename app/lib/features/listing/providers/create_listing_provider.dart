@@ -5,10 +5,16 @@ import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
-import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/core/providers/content_filter_provider.dart';
 
 part 'create_listing_provider.g.dart';
+
+class CreateListingResult {
+  final Listing listing;
+  final String? warningMessage;
+
+  CreateListingResult(this.listing, this.warningMessage);
+}
 
 // State for the form mode ('sale' or 'rental')
 @riverpod
@@ -77,9 +83,9 @@ class CreateListingAction extends _$CreateListingAction {
   @override
   AsyncValue<Listing?> build() => const AsyncValue.data(null);
 
-  /// Submits the form. On success returns the created Listing.
+  /// Submits the form. On success returns the created Listing wrapped with any warning.
   /// The current photo paths from ListingPhotos are bundled in.
-  Future<Listing> submit({
+  Future<CreateListingResult> submit({
     required String title,
     required String description,
     required String category,
@@ -137,16 +143,21 @@ class CreateListingAction extends _$CreateListingAction {
       // Content filter — apply based on platform configuration
       final filter = ref.read(sensitiveWordsProvider).value;
       final config = ref.read(filterConfigStateProvider).value;
-      
+
       var finalTitle = title.trim();
       var finalDescription = description.trim();
-      
+      String? warningMessage;
+
       if (filter != null && config != null) {
         final titleAction = applyContentFilter(finalTitle, filter, config);
         final descAction = applyContentFilter(finalDescription, filter, config);
         finalTitle = titleAction.processedText;
         finalDescription = descAction.processedText;
-        // Warnings are silently ignored here, the backend moderation queue will catch 'warn' severity items.
+
+        final allWarnings = [...titleAction.warnings, ...descAction.warnings];
+        if (allWarnings.isNotEmpty) {
+          warningMessage = allWarnings.first;
+        }
       }
 
       // TODO(images): Re-enable this check once image upload
@@ -193,15 +204,16 @@ class CreateListingAction extends _$CreateListingAction {
             photos: photoFiles,
           );
 
-      // Invalidate home listings so the new item appears
-      ref.invalidate(homeListingsProvider);
-
-      // Clear form state for next time
-      ref.read(listingPhotosProvider.notifier).clear();
-      ref.read(selectedListingCategoryProvider.notifier).clear();
+      // NOTE: Guard against auto-disposal racing the async gap.
+      // createListingActionProvider has no watch()-based listeners, so
+      // Riverpod may dispose it the moment control returns to the event loop
+      // after the await. The listing was already written to the database;
+      // all post-creation cleanup is handled by the calling screen to avoid
+      // using ref after potential disposal.
+      if (!ref.mounted) return CreateListingResult(created, warningMessage);
 
       state = AsyncValue.data(created);
-      return created;
+      return CreateListingResult(created, warningMessage);
     } catch (e, st) {
       debugPrint('=== CreateListingAction.submit FAILED ===');
       debugPrint('Error: $e');

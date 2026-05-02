@@ -22,6 +22,10 @@ Future<List<SchoolCategory>> mySchoolCategories(Ref ref) async {
     final repo = ref.watch(schoolDataRepositoryProvider);
     final categories = await repo.fetchCategories(profile.schoolId);
     final active = categories.where((c) => c.isActive).toList();
+    
+    // NOTE: Sort categories by displayOrder ascending as requested.
+    active.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+
     // NOTE: fallback if DB has no data yet (e.g. migration not run)
     if (active.isEmpty) return _fallbackCategories();
     return active;
@@ -41,6 +45,10 @@ Future<List<SchoolCondition>> mySchoolConditions(Ref ref) async {
     final repo = ref.watch(schoolDataRepositoryProvider);
     final conditions = await repo.fetchConditions(profile.schoolId);
     final active = conditions.where((c) => c.isActive).toList();
+
+    // NOTE: Sort conditions by displayOrder (New -> Poor)
+    active.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+
     if (active.isEmpty) return _fallbackConditions();
     return active;
   } catch (_) {
@@ -51,7 +59,7 @@ Future<List<SchoolCondition>> mySchoolConditions(Ref ref) async {
 /// Converts AppConstants.categories into SchoolCategory objects
 /// so consumers have a uniform type regardless of data source.
 List<SchoolCategory> _fallbackCategories() {
-  return AppConstants.categories.asMap().entries.map((e) {
+  final list = AppConstants.categories.asMap().entries.map((e) {
     final slug = e.value;
     return SchoolCategory(
       id: 'fallback_${e.key}',
@@ -64,6 +72,9 @@ List<SchoolCategory> _fallbackCategories() {
       updatedAt: DateTime.now(),
     );
   }).toList();
+  // Sort by displayOrder (which matches the original index in AppConstants.categories)
+  list.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+  return list;
 }
 
 /// Hardcoded fallback for conditions.
@@ -83,7 +94,7 @@ List<SchoolCondition> _fallbackConditions() {
     },
     {'slug': 'poor', 'name': 'Poor', 'desc': 'Heavy wear, may need repair'},
   ];
-  return fallback.asMap().entries.map((e) {
+  final list = fallback.asMap().entries.map((e) {
     final item = e.value;
     return SchoolCondition(
       id: 'fallback_${e.key}',
@@ -97,4 +108,7 @@ List<SchoolCondition> _fallbackConditions() {
       updatedAt: DateTime.now(),
     );
   }).toList();
+  // Already sorted by displayOrder (index), but making it explicit
+  list.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+  return list;
 }

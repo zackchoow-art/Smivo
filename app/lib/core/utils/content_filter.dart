@@ -43,7 +43,8 @@ class ContentFilter {
       final matched = <String>[];
       for (final word in dictionary) {
         final lowerWord = word.toLowerCase();
-        if (lowerWord.contains(' ')) {
+        final isAscii = RegExp(r'^[\x00-\x7F]+$').hasMatch(lowerWord);
+        if (!isAscii || lowerWord.contains(' ')) {
           if (lowerText.contains(lowerWord)) {
             matched.add(word);
           }
@@ -63,7 +64,7 @@ class ContentFilter {
     );
   }
 
-  /// Masks matched block words in the text, e.g. "fuck" -> "f**k"
+  /// Masks matched block words in the text, e.g. "word" -> "****"
   String mask(String text) {
     var result = text;
     // Process longer words first to avoid partial masking of sub-words
@@ -73,7 +74,8 @@ class ContentFilter {
     for (final word in sortedBlockWords) {
       // Find matches using the same word-boundary logic, but case-insensitive
       RegExp pattern;
-      if (word.contains(' ')) {
+      final isAscii = RegExp(r'^[\x00-\x7F]+$').hasMatch(word);
+      if (!isAscii || word.contains(' ')) {
         pattern = RegExp(RegExp.escape(word), caseSensitive: false);
       } else {
         pattern = RegExp(r'\b' + RegExp.escape(word) + r'\b', caseSensitive: false);
@@ -81,13 +83,7 @@ class ContentFilter {
       
       result = result.replaceAllMapped(pattern, (match) {
         final matchedString = match.group(0)!;
-        if (matchedString.length <= 2) {
-          return '*' * matchedString.length;
-        }
-        final firstChar = matchedString[0];
-        final lastChar = matchedString[matchedString.length - 1];
-        final middle = '*' * (matchedString.length - 2);
-        return '$firstChar$middle$lastChar';
+        return '*' * matchedString.length;
       });
     }
     return result;

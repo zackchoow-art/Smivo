@@ -130,7 +130,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   await orderRepo.cancelAllPendingOrders(listing.id);
                   // 3. Navigate back
                   if (context.mounted) {
-                    context.goNamed(AppRoutes.sellerCenter);
+                    // NOTE: Navigate to home (not sellerCenter) so the back
+                    // button always has a valid destination. Using goNamed to
+                    // sellerCenter cleared the nav stack, trapping the user.
+                    context.goNamed(AppRoutes.home);
                   }
                 },
                 style: TextButton.styleFrom(foregroundColor: Colors.red),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
@@ -62,6 +63,8 @@ class NotificationList extends _$NotificationList {
   }
 
   void _updateAppBadge(List<AppNotification> notifications) {
+    if (kIsWeb) return;
+
     final unreadCount = notifications.where((n) => !n.isRead).length;
     if (unreadCount > 0) {
       FlutterAppBadger.updateBadgeCount(unreadCount);

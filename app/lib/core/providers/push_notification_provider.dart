@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:smivo/data/repositories/profile_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/core/router/router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 
@@ -22,12 +23,16 @@ class PushNotificationManager extends _$PushNotificationManager {
 
     if (user == null) {
       // NOTE: Logout clears OneSignal identity so pushes stop
-      OneSignal.logout();
+      if (!kIsWeb) {
+        OneSignal.logout();
+      }
       return;
     }
 
     // Associate Supabase user ID with OneSignal
-    OneSignal.login(user.id);
+    if (!kIsWeb) {
+      OneSignal.login(user.id);
+    }
 
     // Request push permission (iOS shows native dialog once)
     // NOTE: On web/Android this is a no-op or auto-granted
@@ -40,11 +45,47 @@ class PushNotificationManager extends _$PushNotificationManager {
     _storePlayerId(user.id);
 
     // Setup notification opened handler
-    OneSignal.Notifications.addClickListener(_onNotificationClicked);
+    if (!kIsWeb) {
+      OneSignal.Notifications.addClickListener(_onNotificationClicked);
+      OneSignal.Notifications.addForegroundWillDisplayListener(
+        _onForegroundNotification,
+      );
 
-    ref.onDispose(() {
-      OneSignal.Notifications.removeClickListener(_onNotificationClicked);
-    });
+      ref.onDispose(() {
+        OneSignal.Notifications.removeClickListener(_onNotificationClicked);
+        OneSignal.Notifications.removeForegroundWillDisplayListener(
+          _onForegroundNotification,
+        );
+      });
+    }
+  }
+
+  void _onForegroundNotification(OSNotificationWillDisplayEvent event) {
+    // If the notification is for the chat room currently being viewed,
+    // suppress it to avoid distracting the user.
+    final activeRoomId = ref.read(activeChatRoomProvider);
+    final notificationData = event.notification.additionalData;
+
+    debugPrint('[Push] Foreground notification received.');
+    debugPrint('[Push] activeChatRoomProvider = $activeRoomId');
+    debugPrint('[Push] notification data = $notificationData');
+
+    if (notificationData != null) {
+      // NOTE: Use toString() instead of 'as String?' because OneSignal may
+      // deserialize the UUID as a non-String dynamic object on some platforms.
+      final rawValue = notificationData['chat_room_id'];
+      final chatRoomId = rawValue?.toString();
+
+      debugPrint('[Push] parsed chat_room_id = $chatRoomId');
+
+      if (activeRoomId != null && chatRoomId != null && chatRoomId == activeRoomId) {
+        debugPrint('[Push] Suppressing notification — user is in the active chat room.');
+        event.preventDefault();
+        return;
+      }
+    }
+
+    debugPrint('[Push] Notification will be displayed.');
   }
 
   void _onNotificationClicked(OSNotificationClickEvent event) {
@@ -69,6 +110,7 @@ class PushNotificationManager extends _$PushNotificationManager {
 
   Future<void> _storePlayerId(String userId) async {
     try {
+      if (kIsWeb) return;
       // NOTE: OneSignal v5 uses subscription ID instead of player ID
       final subscriptionId = OneSignal.User.pushSubscription.id;
       if (subscriptionId != null && subscriptionId.isNotEmpty) {

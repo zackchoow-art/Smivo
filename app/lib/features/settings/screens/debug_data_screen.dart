@@ -45,15 +45,17 @@ class DebugDataScreen extends ConsumerWidget {
     final key = config['config_key'];
     final currentVal = config['config_value'];
     
-    // Determine if it's a boolean value string
-    if (currentVal != 'true' && currentVal != 'false') return;
+    // Determine if it's a boolean value
+    final isTrue = currentVal == true || currentVal == 'true';
+    final isFalse = currentVal == false || currentVal == 'false';
+    if (!isTrue && !isFalse) return;
 
-    final newVal = currentVal == 'true' ? 'false' : 'true';
+    final newVal = isTrue ? false : true;
     try {
       await client.from('system_configs').update({
         'config_value': newVal,
         'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', config['id']);
+      }).eq('config_key', key);
       
       ref.invalidate(debugDataProvider);
       
@@ -73,11 +75,15 @@ class DebugDataScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    final asyncData = ref.watch(debugDataProvider);
+    debugPrint('DebugDataScreen: build() called');
+    try {
+      final colors = context.smivoColors;
+      final typo = context.smivoTypo;
+      debugPrint('DebugDataScreen: Theme initialized');
+      final asyncData = ref.watch(debugDataProvider);
+      debugPrint('DebugDataScreen: Provider watched, state: ${asyncData.runtimeType}');
 
-    return Scaffold(
+      return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: colors.surface,
@@ -95,69 +101,101 @@ class DebugDataScreen extends ConsumerWidget {
       ),
       body: asyncData.when(
         loading: () => Center(child: CircularProgressIndicator(color: colors.primary)),
-        error: (e, _) => Center(child: Text('Error: $e', style: TextStyle(color: colors.error))),
+        error: (e, stackTrace) => Center(child: SelectableText('Provider Error:\n$e\n$stackTrace', style: TextStyle(color: colors.error))),
         data: (data) {
-          final configs = data['system_configs'] as List<dynamic>;
-          final dictsGrouped = data['system_dictionaries'] as Map<String, List<dynamic>>;
-          final wordsSummary = data['sensitive_words_summary'] as Map<String, int>;
+          try {
+            final configs = data['system_configs'] as List<dynamic>;
+            final dictsGrouped = data['system_dictionaries'] as Map<String, List<dynamic>>;
+            final wordsSummary = data['sensitive_words_summary'] as Map<String, int>;
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _buildSectionHeader('System Configs', typo, colors),
-              ...configs.map((c) {
-                final isBool = c['config_value'] == 'true' || c['config_value'] == 'false';
-                return ListTile(
-                  title: Text(c['config_key'], style: typo.bodyLarge),
-                  subtitle: Text(c['description'] ?? '', style: typo.bodySmall),
-                  trailing: isBool
-                      ? Switch(
-                          value: c['config_value'] == 'true',
-                          onChanged: (_) => _toggleConfig(ref, context, c),
-                          activeColor: colors.primary,
-                        )
-                      : Text(c['config_value'].toString(), style: typo.bodyMedium),
-                );
-              }),
-              const Divider(height: 32),
-              
-              _buildSectionHeader('System Dictionaries', typo, colors),
-              ...dictsGrouped.entries.map((entry) {
-                return ExpansionTile(
-                  title: Text('${entry.key} (${entry.value.length})', style: typo.bodyLarge),
-                  children: entry.value.map((dict) {
-                    return ListTile(
-                      title: Text(dict['dict_key'] ?? dict['dict_value'] ?? 'Unknown', style: typo.bodyMedium),
-                      subtitle: Text(dict['dict_value'] ?? '', style: typo.bodySmall),
-                      trailing: Icon(
-                        dict['is_active'] == true ? Icons.check_circle : Icons.cancel,
-                        color: dict['is_active'] == true ? colors.success : colors.error,
-                        size: 16,
-                      ),
-                    );
-                  }).toList(),
-                );
-              }),
-              const Divider(height: 32),
-
-              _buildSectionHeader('Sensitive Words Summary', typo, colors),
-              if (wordsSummary.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('No sensitive words configured.'),
-                )
-              else
-                ...wordsSummary.entries.map((e) => ListTile(
-                  title: Text(e.key, style: typo.bodyLarge),
-                  trailing: Text('${e.value} words', style: typo.bodyMedium),
-                )),
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _buildSectionHeader('System Configs', typo, colors),
+                ...configs.map<Widget>((c) {
+                  final configMap = c as Map;
+                  final val = configMap['config_value'];
+                  final isBool = val == true || val == false || val == 'true' || val == 'false';
+                  final boolVal = val == true || val == 'true';
+                  
+                  return ListTile(
+                    title: Text(configMap['config_key']?.toString() ?? 'Unknown', style: typo.bodyLarge),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (!isBool) ...[
+                          Text(val?.toString() ?? '', style: typo.bodyMedium.copyWith(color: colors.primary)),
+                          const SizedBox(height: 4),
+                        ],
+                        Text(configMap['description']?.toString() ?? '', style: typo.bodySmall),
+                      ],
+                    ),
+                    trailing: isBool
+                        ? Switch(
+                            value: boolVal,
+                            onChanged: (_) => _toggleConfig(ref, context, Map<String, dynamic>.from(configMap)),
+                            activeThumbColor: colors.primary,
+                            activeTrackColor: colors.primary.withAlpha(100),
+                          )
+                        : null,
+                  );
+                }),
+                const Divider(height: 32),
                 
-              const SizedBox(height: 64),
-            ],
-          );
+                _buildSectionHeader('System Dictionaries', typo, colors),
+                ...dictsGrouped.entries.map<Widget>((entry) {
+                  return ExpansionTile(
+                    title: Text('${entry.key} (${entry.value.length})', style: typo.bodyLarge),
+                    children: entry.value.map<Widget>((dict) {
+                      final dictMap = dict as Map;
+                      return ListTile(
+                        title: Text(dictMap['dict_key']?.toString() ?? dictMap['dict_value']?.toString() ?? 'Unknown', style: typo.bodyMedium),
+                        subtitle: Text(dictMap['dict_value']?.toString() ?? '', style: typo.bodySmall),
+                        trailing: Icon(
+                          dictMap['is_active'] == true ? Icons.check_circle : Icons.cancel,
+                          color: dictMap['is_active'] == true ? colors.success : colors.error,
+                          size: 16,
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }),
+                const Divider(height: 32),
+
+                _buildSectionHeader('Sensitive Words Summary', typo, colors),
+                if (wordsSummary.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('No sensitive words configured.'),
+                  )
+                else
+                  ...wordsSummary.entries.map<Widget>((e) => ListTile(
+                    title: Text(e.key, style: typo.bodyLarge),
+                    trailing: Text('${e.value} words', style: typo.bodyMedium),
+                  )),
+                  
+                const SizedBox(height: 64),
+              ],
+            );
+          } catch (e, stackTrace) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: SelectableText(
+                'UI Build Error:\n$e\n\nStackTrace:\n$stackTrace',
+                style: const TextStyle(color: Colors.red, fontSize: 14),
+              ),
+            );
+          }
         },
       ),
     );
+    } catch (e, st) {
+      debugPrint('CRITICAL ERROR in DebugDataScreen build: $e\n$st');
+      return Scaffold(
+        appBar: AppBar(title: const Text('Fatal Error')),
+        body: Center(child: Text('Fatal Error: $e')),
+      );
+    }
   }
 
   Widget _buildSectionHeader(String title, dynamic typo, dynamic colors) {

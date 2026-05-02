@@ -8,6 +8,7 @@ import 'package:smivo/features/settings/widgets/setting_toggle_row.dart';
 import 'package:smivo/features/settings/widgets/category_notification_row.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:flutter/foundation.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:app_settings/app_settings.dart';
 
@@ -50,6 +51,7 @@ class _NotificationSettingsScreenState
   }
 
   void _checkSystemPushStatus() {
+    if (kIsWeb) return;
     final hasPermission = OneSignal.Notifications.permission;
     if (_systemPushEnabled != hasPermission) {
       setState(() {

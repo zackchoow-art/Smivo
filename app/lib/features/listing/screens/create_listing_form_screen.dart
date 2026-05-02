@@ -12,6 +12,7 @@ import 'package:smivo/features/listing/widgets/custom_text_field.dart';
 import 'package:smivo/features/listing/widgets/photo_picker_section.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/features/home/providers/home_provider.dart';
 
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
@@ -629,7 +630,7 @@ class _CreateListingFormScreenState
                 : null;
       }
       final deposit = double.tryParse(_depositController.text.trim()) ?? 0.0;
-      await ref
+      final result = await ref
           .read(createListingActionProvider.notifier)
           .submit(
             title: _titleController.text,
@@ -648,7 +649,30 @@ class _CreateListingFormScreenState
             isPinned: false,
             pinnedDays: null,
           );
+
+      // Post-creation cleanup — done here (screen level) rather than inside
+      // the provider to avoid using ref after the provider's async gap, which
+      // can cause a "provider disposed" exception even though the listing was
+      // successfully created.
+      if (!mounted) return;
+      ref.invalidate(homeListingsProvider);
+      ref.read(listingPhotosProvider.notifier).clear();
+      ref.read(selectedListingCategoryProvider.notifier).clear();
+
       if (!context.mounted) return;
+      
+      // If content filter generated a warning (mask or warn_only), show it.
+      if (result.warningMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.warningMessage!),
+            backgroundColor: Colors.amber.shade800,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
       await _showSuccessDialog(context, isSale);
       if (!context.mounted) return;
       context.goNamed(AppRoutes.home);

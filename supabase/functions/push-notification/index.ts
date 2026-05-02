@@ -24,21 +24,55 @@ serve(async (req) => {
     const notificationType = record.type;
     const title = record.title;
     const body = record.body;
-    const relatedOrderId = record.related_order_id; 
+    const relatedOrderId = record.related_order_id;
     const actionUrl = record.action_url;
+    // chat_room_id is populated for 'new_message' notifications only.
+    const chatRoomId = record.chat_room_id ?? null;
 
     if (!userId || !notificationType || (!title && !body)) {
       return new Response("Missing required fields (user_id, type, or title/body)", { status: 400 });
     }
 
-    // Initialize Supabase client using Service Role to bypass RLS when querying profiles
+    // Initialize Supabase client using Service Role to bypass RLS
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    // ── Server-side suppression for chat messages ────────────────────────────
+    // If the recipient is currently viewing the exact chat room that generated
+    // this notification, skip the push entirely.
+    //
+    // TTL safety net: only trust session records updated within the last 2
+    // minutes. This handles cases where the client crashed or dispose() failed
+    // to call clearActiveSession, ensuring push delivery eventually resumes.
+    if (notificationType === "new_message" && chatRoomId) {
+      const { data: session } = await supabase
+        .from("user_active_sessions")
+        .select("chat_room_id, updated_at")
+        .eq("user_id", userId)
+        .single();
+
+      if (session?.chat_room_id === chatRoomId) {
+        const sessionAge = Date.now() - new Date(session.updated_at).getTime();
+        const SESSION_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
+        if (sessionAge <= SESSION_TTL_MS) {
+          console.log(
+            `[push] Suppressed: user ${userId} is actively viewing room ${chatRoomId} (session age: ${Math.round(sessionAge / 1000)}s)`,
+          );
+          return new Response("Suppressed: user is currently in this chat room", { status: 200 });
+        } else {
+          console.log(
+            `[push] Stale session detected (age: ${Math.round(sessionAge / 1000)}s) — delivering push.`,
+          );
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     // Fetch user profile and push preferences
     const { data: profile, error } = await supabase
-      .from('user_profiles')
-      .select('onesignal_player_id, push_notifications_enabled, push_messages, push_order_updates')
-      .eq('id', userId)
+      .from("user_profiles")
+      .select("onesignal_player_id, push_notifications_enabled, push_messages, push_order_updates")
+      .eq("id", userId)
       .single();
 
     if (error || !profile) {
@@ -53,11 +87,11 @@ serve(async (req) => {
 
     // Order updates switch check
     const isOrderRelated = [
-      'order_placed',
-      'order_accepted',
-      'order_cancelled',
-      'order_delivered',
-      'order_completed'
+      "order_placed",
+      "order_accepted",
+      "order_cancelled",
+      "order_delivered",
+      "order_completed",
     ].includes(notificationType);
 
     if (isOrderRelated && !profile.push_order_updates) {
@@ -65,7 +99,7 @@ serve(async (req) => {
     }
 
     // Message updates switch check
-    if (notificationType === 'new_message' && !profile.push_messages) {
+    if (notificationType === "new_message" && !profile.push_messages) {
       return new Response("User has message notifications disabled", { status: 200 });
     }
 
@@ -83,8 +117,9 @@ serve(async (req) => {
       data: {
         type: notificationType,
         order_id: relatedOrderId || undefined,
+        chat_room_id: chatRoomId || undefined,
         action_url: actionUrl || undefined,
-      }
+      },
     };
 
     // Call OneSignal REST API
@@ -92,7 +127,7 @@ serve(async (req) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`
+        Authorization: `Basic ${ONESIGNAL_REST_API_KEY}`,
       },
       body: JSON.stringify(oneSignalPayload),
     });
@@ -103,8 +138,8 @@ serve(async (req) => {
       return new Response("Error sending to OneSignal", { status: 500 });
     }
 
+    console.log(`[push] Sent '${notificationType}' push to user ${userId}`);
     return new Response("Notification sent successfully", { status: 200 });
-
   } catch (err) {
     console.error("Edge function error:", err);
     return new Response("Internal Server Error", { status: 500 });

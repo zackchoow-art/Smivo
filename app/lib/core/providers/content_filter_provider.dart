@@ -16,11 +16,15 @@ class FilterConfig {
   final bool enabled;
   final String warnAction;
   final String blockAction;
+  // Custom message shown to the sender when warn-severity words are detected.
+  // Loaded from system_configs key 'content_filter.warn_message'.
+  final String warnMessage;
 
   const FilterConfig({
     required this.enabled,
     required this.warnAction,
     required this.blockAction,
+    required this.warnMessage,
   });
 
   factory FilterConfig.fromJson(Map<String, dynamic> json) {
@@ -40,6 +44,10 @@ class FilterConfig {
       enabled: json['content_filter.enabled'] != null ? parseBool(json['content_filter.enabled']) : true,
       warnAction: json['content_filter.warn_action'] != null ? parseStr(json['content_filter.warn_action']) : 'show_warning',
       blockAction: json['content_filter.block_action'] != null ? parseStr(json['content_filter.block_action']) : 'reject',
+      // Fallback to a safe default if the config key has not been seeded yet.
+      warnMessage: json['content_filter.warn_message'] != null
+          ? parseStr(json['content_filter.warn_message'])
+          : 'Please keep the conversation respectful. Messages with inappropriate language may be reported.',
     );
   }
 
@@ -47,6 +55,7 @@ class FilterConfig {
     'content_filter.enabled': enabled,
     'content_filter.warn_action': warnAction,
     'content_filter.block_action': blockAction,
+    'content_filter.warn_message': warnMessage,
   };
 }
 
@@ -76,15 +85,18 @@ FilterAction applyContentFilter(
         throw Exception('Your content contains restricted words and cannot be submitted.');
       case 'mask':
         processedText = filter.mask(text);
+        warnings.add('Potential violation detected. Some content has been masked.');
         break;
       case 'warn_only':
-        warnings.add('Your content contains inappropriate words. Please be mindful.');
+        warnings.add('Warning: Your content may be reported for inappropriate language.');
         break;
     }
   }
 
+  // Surface the configured warn message to the caller so the UI can
+  // display it as a SnackBar after the message is sent successfully.
   if (result.hasWarn && config.warnAction == 'show_warning') {
-    warnings.add('Your content contains sensitive words. Please be mindful.');
+    warnings.add(config.warnMessage);
   }
 
   return FilterAction(processedText, warnings);
