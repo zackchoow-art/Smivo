@@ -9,6 +9,44 @@ part of 'feedback_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(userFeedbackBan)
+final userFeedbackBanProvider = UserFeedbackBanProvider._();
+
+final class UserFeedbackBanProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DateTime?>,
+          DateTime?,
+          FutureOr<DateTime?>
+        >
+    with $FutureModifier<DateTime?>, $FutureProvider<DateTime?> {
+  UserFeedbackBanProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'userFeedbackBanProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$userFeedbackBanHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DateTime?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DateTime?> create(Ref ref) {
+    return userFeedbackBan(ref);
+  }
+}
+
+String _$userFeedbackBanHash() => r'9c1b422146f1a3e36bf4caacc1d9cac1fab3cdef';
+
 @ProviderFor(MyFeedbacks)
 final myFeedbacksProvider = MyFeedbacksProvider._();
 

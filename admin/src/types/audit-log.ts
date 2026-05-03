@@ -23,4 +23,5 @@ export interface AuditLog {
 export interface AuditLogWithAdmin extends AuditLog {
   admin_name: string | null;
   admin_email: string;
+  admin_avatar?: string | null;
 }

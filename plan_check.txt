@@ -1,0 +1,4 @@
+1. Update messages insert policy to also check account_freeze
+2. Update listings insert/update policy to check listing_ban and account_freeze
+3. Update content_reports insert policy
+4. Update system_feedbacks insert policy

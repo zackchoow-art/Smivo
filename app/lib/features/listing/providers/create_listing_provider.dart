@@ -6,8 +6,16 @@ import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/providers/content_filter_provider.dart';
+import 'package:smivo/data/repositories/profile_repository.dart';
 
 part 'create_listing_provider.g.dart';
+
+@riverpod
+Future<DateTime?> userListingBan(Ref ref) async {
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return null;
+  return ref.watch(profileRepositoryProvider).getActiveBan(user.id, ['listing_ban', 'account_freeze']);
+}
 
 class CreateListingResult {
   final Listing listing;

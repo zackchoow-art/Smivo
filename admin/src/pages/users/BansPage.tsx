@@ -10,10 +10,13 @@ import {
 } from 'lucide-react';
 import { useBans, useCreateBan, useLiftBan } from '@/hooks/useBans';
 import { useAuth } from '@/hooks/useAuth';
+import { UserSummaryPopup } from '@/components/users/UserSummaryPopup';
 import { DEFAULT_PAGE_SIZE, BAN_TYPES, RESTRICTION_SCOPE_META, TABLES } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 import type { BanType, BanStatus, RestrictionScope } from '@/types/ban';
 import type { UserProfile } from '@/types/user-profile';
+import { showToast } from '@/hooks/useToast';
+
 
 export function BansPage() {
   const [page, setPage] = useState(0);
@@ -42,10 +45,10 @@ export function BansPage() {
         liftReason: reason,
         adminId: admin.user_id
       });
-      alert('Ban lifted successfully');
+      showToast('Ban lifted successfully ✅', 'success');
     } catch (err) {
       console.error(err);
-      alert('Failed to lift ban');
+      showToast('Failed to lift ban. Please try again.', 'error', 5000);
     }
   };
 
@@ -428,7 +431,7 @@ export function BansPage() {
 function CreateBanModal({ onClose }: { onClose: () => void }) {
   const { admin } = useAuth();
   const createBanMutation = useCreateBan();
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [foundUsers, setFoundUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -438,6 +441,7 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
   const [reasonCode, setReasonCode] = useState('violation_policy');
   const [reasonDetail, setReasonDetail] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [popupUser, setPopupUser] = useState<string | null>(null);
 
   const searchUsers = async () => {
     if (!searchQuery.trim()) return;
@@ -469,14 +473,14 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
         scope: banScope,
         reasonCode,
         reasonDetail,
-        durationDays: banType === 'temporary' ? parseInt(duration) : null,
+        durationDays: banType === 'temporary' ? parseFloat(duration) : null,
         adminId: admin.user_id
       });
-      alert('User banned successfully');
+      showToast('User banned successfully ✅', 'success');
       onClose();
     } catch (err) {
       console.error(err);
-      alert('Failed to create ban');
+      showToast('Failed to create ban. Please try again.', 'error', 5000);
     }
   };
 
@@ -519,12 +523,23 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
             </div>
           ) : (
             <div className="ban-details-section">
-              <div className="selected-user-card">
+              <div className="selected-user-card" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setPopupUser(selectedUser.id)}>
                 <div className="user-info">
                   <div className="user-name">{selectedUser.display_name}</div>
                   <div className="user-email">{selectedUser.email}</div>
                 </div>
-                <button className="change-btn" onClick={() => setSelectedUser(null)}>Change</button>
+                <button 
+                  className="change-btn" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedUser(null);
+                  }}
+                >
+                  Change
+                </button>
+                {popupUser === selectedUser.id && (
+                  <UserSummaryPopup userId={selectedUser.id} onClose={() => setPopupUser(null)} />
+                )}
               </div>
 
               <div className="form-group">
@@ -550,6 +565,8 @@ function CreateBanModal({ onClose }: { onClose: () => void }) {
                     <label>Duration (Days)</label>
                     <select value={duration} onChange={(e) => setDuration(e.target.value)}>
                       <option value="1">1 Day</option>
+                      <option value="0.000694444">1 Minute (Test)</option>
+                      <option value="0.003472222">5 Minutes (Test)</option>
                       <option value="3">3 Days</option>
                       <option value="7">7 Days</option>
                       <option value="14">14 Days</option>

@@ -107,6 +107,11 @@ export function useUserActiveRestrictions(userId?: string) {
 
 /**
  * Mutation for creating a new restriction (ban with scope).
+ * Uses the apply_restriction RPC which implements the accumulation (stacking) strategy:
+ *   - If an active restriction of the same scope exists, the duration is stacked on top.
+ *   - Otherwise a fresh restriction record is inserted.
+ * After applying, dispatches an in-app + push notification to the user with
+ * smart messaging depending on whether this is a new restriction or an extension.
  */
 export function useCreateBan() {
   const queryClient = useQueryClient();
@@ -131,44 +136,102 @@ export function useCreateBan() {
       durationDays: number | null;
       adminId: string;
     }) => {
-      const bannedAt = new Date().toISOString();
-      let expiresAt: string | null = null;
-      
-      if (banType === 'temporary' && durationDays) {
-        const date = new Date();
-        date.setDate(date.getDate() + durationDays);
-        expiresAt = date.toISOString();
-      }
-
-      const { data, error } = await supabase
-        .from(TABLES.USER_BANS)
-        .insert({
-          user_id: userId,
-          college_id: collegeId,
-          ban_type: banType,
-          scope,
-          reason_code: reasonCode,
-          reason_detail: reasonDetail,
-          duration_days: durationDays,
-          expires_at: expiresAt,
-          banned_by: adminId,
-          banned_at: bannedAt
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Log to audit log
-      await supabase.from(TABLES.ADMIN_AUDIT_LOGS).insert({
-        admin_id: adminId,
-        action: 'create_restriction',
-        target_type: 'user',
-        target_id: userId,
-        payload: { banType, scope, reasonCode, expiresAt }
+      // Call the centralised stacking RPC instead of a raw INSERT.
+      // The RPC handles the accumulation logic and updates audit logs.
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('apply_restriction', {
+        p_user_id:       userId,
+        p_college_id:    collegeId,
+        p_admin_id:      adminId,
+        p_scope:         scope,
+        p_ban_type:      banType,
+        p_duration_days: durationDays,
+        p_reason_code:   reasonCode,
+        p_reason_detail: reasonDetail ?? ''
       });
 
-      return data;
+      if (rpcError) throw rpcError;
+
+      const result = rpcResult as {
+        action: 'created' | 'extended' | 'superseded';
+        ban_id: string;
+        new_expires_at: string | null;
+        prev_expires_at: string | null;
+      };
+
+      // ── Build human-readable notification copy ────────────────────────────
+      const scopeLabel: Record<RestrictionScope, string> = {
+        chat_mute:      'send messages',
+        listing_ban:    'post listings',
+        feedback_ban:   'submit feedback',
+        account_freeze: 'use your account'
+      };
+      const featureLabel = scopeLabel[scope] ?? scope;
+
+      const expiryStr = result.new_expires_at
+        ? new Date(result.new_expires_at).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+          })
+        : null;
+
+      const durationStr = banType === 'permanent'
+        ? 'permanently'
+        : durationDays
+          ? `for ${durationDays} day${durationDays !== 1 ? 's' : ''}`
+          : null;
+
+      let notifTitle: string;
+      let notifBody: string;
+
+      if (result.action === 'superseded') {
+        // A permanent ban is already active — inform of violation without changing times.
+        notifTitle = 'Violation Recorded';
+        notifBody  =
+          `A new violation (${reasonCode}) has been recorded on your account. ` +
+          `Your existing account restriction remains in effect. ` +
+          `Please review our Community Guidelines at smivo.io/safety.`;
+
+      } else if (result.action === 'extended') {
+        // Existing restriction was extended — clearly communicate the new end date.
+        const prevStr = result.prev_expires_at
+          ? new Date(result.prev_expires_at).toLocaleDateString('en-US', {
+              year: 'numeric', month: 'long', day: 'numeric'
+            })
+          : null;
+
+        notifTitle = 'Restriction Extended';
+        notifBody  =
+          `Due to a new violation (${reasonCode}), your ability to ${featureLabel} ` +
+          (durationStr ? `has been extended by ${durationStr}. ` : 'has been extended. ') +
+          (expiryStr
+            ? `Your restriction is now lifted on ${expiryStr}` +
+              (prevStr ? ` (previously ${prevStr})` : '') + '.' 
+            : 'This restriction is now permanent.') +
+          ` If you believe this is an error, contact us at smivo.io/support.`;
+
+      } else {
+        // Fresh restriction — standard notice.
+        notifTitle = 'Account Restriction Applied';
+        notifBody  =
+          `Your ability to ${featureLabel} has been restricted ` +
+          (durationStr ? `${durationStr} ` : '') +
+          `due to a violation of our Community Guidelines (${reasonCode}). ` +
+          (expiryStr
+            ? `This restriction will be lifted on ${expiryStr}. `
+            : 'This restriction is permanent. ') +
+          `If you believe this is an error, please contact us at smivo.io/support.`;
+      }
+
+      // Dispatch in-app notification (triggers push via Supabase webhook).
+      await supabase.rpc('send_moderation_notification', {
+        p_user_id:    userId,
+        p_type:       'restriction_applied',
+        p_title:      notifTitle,
+        p_body:       notifBody,
+        p_action_type: 'route',
+        p_action_url: '/notifications'
+      });
+
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });

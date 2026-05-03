@@ -6,34 +6,35 @@ part of 'content_report.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_ContentReport _$ContentReportFromJson(Map<String, dynamic> json) =>
-    _ContentReport(
-      id: json['id'] as String,
-      reporterId: json['reporter_id'] as String,
-      reportedUserId: json['reported_user_id'] as String,
-      listingId: json['listing_id'] as String?,
-      chatRoomId: json['chat_room_id'] as String?,
-      reason: json['reason'] as String,
-      status: json['status'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-      resolutionNote: json['resolution_note'] as String?,
-      selectedMessageIds:
-          (json['selected_message_ids'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList(),
-      evidence: json['evidence'] as Map<String, dynamic>?,
-      reportedUser:
-          json['reported_user'] == null
-              ? null
-              : UserProfile.fromJson(
-                json['reported_user'] as Map<String, dynamic>,
-              ),
-      listing:
-          json['listing'] == null
-              ? null
-              : Listing.fromJson(json['listing'] as Map<String, dynamic>),
-    );
+_ContentReport _$ContentReportFromJson(
+  Map<String, dynamic> json,
+) => _ContentReport(
+  id: json['id'] as String,
+  reporterId: json['reporter_id'] as String,
+  reportedUserId: json['reported_user_id'] as String,
+  listingId: json['listing_id'] as String?,
+  chatRoomId: json['chat_room_id'] as String?,
+  reason: json['reason'] as String,
+  status: json['status'] as String,
+  createdAt: DateTime.parse(json['created_at'] as String),
+  updatedAt: DateTime.parse(json['updated_at'] as String),
+  resolutionNote: json['resolution_note'] as String?,
+  selectedMessageIds:
+      (json['selected_message_ids'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+  evidence: json['evidence'] as Map<String, dynamic>?,
+  actionTaken: json['action_taken'] as String?,
+  reporterRewardPoints: (json['reporter_reward_points'] as num?)?.toInt() ?? 0,
+  reportedUser:
+      json['reported_user'] == null
+          ? null
+          : UserProfile.fromJson(json['reported_user'] as Map<String, dynamic>),
+  listing:
+      json['listing'] == null
+          ? null
+          : Listing.fromJson(json['listing'] as Map<String, dynamic>),
+);
 
 Map<String, dynamic> _$ContentReportToJson(_ContentReport instance) =>
     <String, dynamic>{
@@ -49,6 +50,8 @@ Map<String, dynamic> _$ContentReportToJson(_ContentReport instance) =>
       'resolution_note': instance.resolutionNote,
       'selected_message_ids': instance.selectedMessageIds,
       'evidence': instance.evidence,
+      'action_taken': instance.actionTaken,
+      'reporter_reward_points': instance.reporterRewardPoints,
       'reported_user': instance.reportedUser,
       'listing': instance.listing,
     };

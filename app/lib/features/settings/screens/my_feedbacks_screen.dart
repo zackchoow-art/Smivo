@@ -16,6 +16,7 @@ class MyFeedbacksScreen extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final feedbacksAsync = ref.watch(myFeedbacksProvider);
+    final feedbackBanAsync = ref.watch(userFeedbackBanProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -61,7 +62,25 @@ class MyFeedbacksScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.pushNamed(AppRoutes.submitFeedback),
+        onPressed: () {
+          final banDate = feedbackBanAsync.value;
+          if (banDate != null) {
+            final isPermanent = banDate.year > 2090;
+            final dateStr = DateFormat('yyyy-MM-dd').format(banDate.toLocal());
+            final msg = isPermanent
+                ? 'Feedback privileges permanently suspended.'
+                : 'Feedback privileges suspended until $dateStr.';
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(msg),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          } else {
+            context.pushNamed(AppRoutes.submitFeedback);
+          }
+        },
         backgroundColor: colors.primary,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('New Feedback', style: TextStyle(color: Colors.white)),
@@ -306,12 +325,32 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
 
     String statusText;
     Color statusColor;
-    if (f.status == 'submitted') {
-      statusText = 'Unread';
-      statusColor = colors.onSurfaceVariant;
-    } else {
-      statusText = 'Replied';
-      statusColor = colors.success;
+    Color statusBgColor;
+    switch (f.status) {
+      case 'submitted':
+        statusText = 'Unread';
+        statusColor = colors.onSurfaceVariant;
+        statusBgColor = colors.surfaceContainerHighest;
+        break;
+      case 'read':
+        statusText = 'Read';
+        statusColor = Colors.blue;
+        statusBgColor = Colors.blue.withAlpha(20);
+        break;
+      case 'accepted':
+        statusText = 'Accepted';
+        statusColor = colors.success;
+        statusBgColor = colors.success.withAlpha(20);
+        break;
+      case 'high_contribution':
+        statusText = 'High Contribution';
+        statusColor = Colors.amber.shade700;
+        statusBgColor = Colors.amber.withAlpha(30);
+        break;
+      default:
+        statusText = f.status.toUpperCase();
+        statusColor = colors.onSurfaceVariant;
+        statusBgColor = colors.surfaceContainerHighest;
     }
 
     return Container(
@@ -343,8 +382,18 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(statusText, style: typo.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 2),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusBgColor,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: typo.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
                   Text(responseDate, style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant)),
                 ],
               ),
@@ -354,7 +403,9 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
           Text(
             f.adminResponse?.isNotEmpty == true
                 ? f.adminResponse!
-                : 'We have received your feedback and are reviewing it.',
+                : (f.status == 'submitted'
+                    ? 'We have received your feedback and are reviewing it.'
+                    : 'Thank you for your feedback.'),
             style: typo.bodyMedium.copyWith(color: colors.onSurface),
           ),
           if (f.pointsAwarded > 0) ...[

@@ -19,6 +19,11 @@ abstract class Message with _$Message {
     @JsonKey(name: 'message_type') @Default('text') String messageType,
     @JsonKey(name: 'image_url') String? imageUrl,
     @JsonKey(name: 'is_read') @Default(false) bool isRead,
+    // NOTE: is_hidden is set by admin via admin_hide_messages RPC when a
+    // message is reported and resolved as violating. Hidden messages are
+    // shown as a placeholder in the UI rather than deleted for audit purposes.
+    @JsonKey(name: 'is_hidden') @Default(false) bool isHidden,
+    @JsonKey(name: 'hidden_reason') String? hiddenReason,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
     // Nested join data
@@ -28,3 +33,4 @@ abstract class Message with _$Message {
   factory Message.fromJson(Map<String, dynamic> json) =>
       _$MessageFromJson(json);
 }
+

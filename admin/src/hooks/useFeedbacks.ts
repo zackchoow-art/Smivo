@@ -50,6 +50,25 @@ export function useFeedbacks(page: number, filters: FeedbackFilters = {}) {
 }
 
 /**
+ * Hook to get all pending (submitted) feedbacks for quick navigation.
+ */
+export function usePendingFeedbacks() {
+  return useQuery({
+    queryKey: [...QUERY_KEY, 'pending'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from(TABLES.USER_FEEDBACKS)
+        .select('id')
+        .eq('status', 'submitted')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as { id: string }[];
+    },
+  });
+}
+
+/**
  * Hook for a single feedback item with joined user info.
  */
 export function useFeedback(id: string | undefined) {
@@ -59,20 +78,27 @@ export function useFeedback(id: string | undefined) {
       if (!id) return null;
       const { data, error } = await supabase
         .from(TABLES.USER_FEEDBACKS)
-        .select(`
-          *,
-          user:user_id(display_name, email, avatar_url)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 
       if (error) throw error;
 
+      let user = null;
+      if (data.user_id) {
+        const { data: userData } = await supabase
+          .from(TABLES.USER_PROFILES)
+          .select('display_name, email, avatar_url')
+          .eq('id', data.user_id)
+          .maybeSingle();
+        user = userData;
+      }
+
       return {
         ...data,
-        user_display_name: (data as any).user?.display_name || null,
-        user_email: (data as any).user?.email || '',
-        user_avatar_url: (data as any).user?.avatar_url || null,
+        user_display_name: user?.display_name || null,
+        user_email: user?.email || '',
+        user_avatar_url: user?.avatar_url || null,
       } as FeedbackWithUser;
     },
     enabled: !!id,
@@ -90,12 +116,14 @@ export function useResolveFeedback() {
   return useMutation({
     mutationFn: async ({
       feedbackId,
+      status,
       adminResponse,
       points,
       adminId,
       userId,
     }: {
       feedbackId: string;
+      status: FeedbackStatus;
       adminResponse: string;
       points: number;
       adminId: string;
@@ -105,7 +133,7 @@ export function useResolveFeedback() {
       const { error: updateError } = await supabase
         .from(TABLES.USER_FEEDBACKS)
         .update({
-          status: 'accepted',             // DB constraint: submitted|read|accepted|high_contribution
+          status: status,                 // DB constraint: submitted|read|accepted|high_contribution
           admin_response: adminResponse,   // DB column: admin_response
           points_awarded: points,          // DB column: points_awarded
         })
@@ -139,6 +167,41 @@ export function useResolveFeedback() {
         target_id: feedbackId,
         payload: { adminResponse, points },
       });
+
+      // 4. Notify the feedback submitter (in-app + email)
+      // NOTE: Only notify if there is a real response and the feedback was
+      // more than just 'read' (i.e. has meaningful admin engagement).
+      if (userId && adminResponse && adminResponse.trim().length > 0) {
+        const statusLabel: Record<string, string> = {
+          read: 'read',
+          accepted: 'accepted',
+          high_contribution: 'highly valued',
+          dismissed: 'reviewed',
+        };
+        const label = statusLabel[status] ?? 'reviewed';
+
+        const pointsText = points > 0 ? ` You earned +${points} contribution points!` : '';
+        const notifBody = `Your feedback has been ${label}. Admin response: ${adminResponse.substring(0, 120)}${adminResponse.length > 120 ? '...' : ''}${pointsText}`;
+
+        const { error: notifErr } = await supabase.rpc('send_moderation_notification', {
+          p_user_id: userId,
+          p_type: 'feedback_responded',
+          p_title: status === 'high_contribution'
+            ? '🌟 Your feedback was highly valued!'
+            : status === 'accepted'
+            ? '✅ Your feedback was accepted'
+            : '💬 Response to your feedback',
+          p_body: notifBody,
+          p_action_type: 'route',
+          p_action_url: '/settings/feedbacks',
+        });
+
+        if (notifErr) {
+          // NOTE: Non-critical — feedback is already resolved, notification failure
+          // should not roll back the resolution.
+          console.warn('[useFeedbacks] Notification send failed:', notifErr.message);
+        }
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -148,3 +211,4 @@ export function useResolveFeedback() {
     },
   });
 }
+

@@ -7,6 +7,7 @@ import { User, Shield, School, Save, Loader2, Check } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 import { supabase } from '@/lib/supabase';
 import { TABLES, ADMIN_ROLES } from '@/lib/constants';
+import { showToast } from '@/hooks/useToast';
 
 const ROLE_LABELS: Record<string, string> = {
   [ADMIN_ROLES.PLATFORM_SUPER_ADMIN]: 'Platform Super Admin',
@@ -43,7 +44,7 @@ export function ProfilePage() {
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error('Failed to update profile:', err);
-      alert('Failed to save. Please try again.');
+      showToast('Failed to save profile. Please try again.', 'error', 5000);
     } finally {
       setSaving(false);
     }

@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Cpu,
+  Trash2,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -49,13 +50,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     {
       title: '',
       items: [
-        { path: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} />, visible: perms.canViewDashboard },
+        { path: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} />, visible: true },
       ],
     },
     {
       title: 'Content',
       items: [
-        { path: '/moderation/listings', label: 'Listing Review', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
+        { path: '/moderation/all-listings', label: 'All Listings', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
+        { path: '/moderation/listings', label: 'Listing Review', icon: <ShieldAlert size={18} />, visible: perms.canViewModeration },
         { path: '/moderation/chat-reports', label: 'Chat Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
         { path: '/moderation/sensitive-words', label: 'Sensitive Words', icon: <ShieldAlert size={18} />, visible: perms.canViewSensitiveWords },
       ],
@@ -87,6 +89,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         { path: '/settings/configs', label: 'Platform Settings', icon: <Cpu size={18} />, visible: perms.canViewDictionary },
         { path: '/settings/admins', label: 'Admin Management', icon: <UserCog size={18} />, visible: perms.canViewAdminManagement },
         { path: '/settings/colleges', label: 'Schools', icon: <GraduationCap size={18} />, visible: perms.canViewCollegeManagement },
+        // NOTE: Cleanup is sysadmin-only and intentionally placed last in config group
+        { path: '/settings/cleanup', label: 'Test Data Cleanup', icon: <Trash2 size={18} />, visible: perms.canViewCleanup },
       ],
     },
     {

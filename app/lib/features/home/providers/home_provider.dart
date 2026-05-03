@@ -4,6 +4,7 @@ import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
+import 'package:smivo/features/profile/providers/profile_provider.dart';
 
 part 'home_provider.g.dart';
 
@@ -56,6 +57,12 @@ class HomeListings extends _$HomeListings {
     final query = ref.watch(searchQueryProvider);
     final repository = ref.watch(listingRepositoryProvider);
     final blockedUserIds = ref.watch(blockedUsersProvider).value ?? [];
+    
+    // Get the current user's school ID to isolate listings by school
+    // If not logged in, profileProvider will be null, and we can either show all or a default school.
+    // For now, if logged in, we strictly filter by their school.
+    final profile = ref.watch(profileProvider).value;
+    final schoolId = profile?.schoolId;
 
     // Fetch from repository based on current filters.
     if (query.trim().isNotEmpty) {
@@ -63,12 +70,14 @@ class HomeListings extends _$HomeListings {
         query.trim(),
         category: category == 'All' ? null : category,
         blockedUserIds: blockedUserIds,
+        schoolId: schoolId,
       );
     } else {
       // Normal feed fetch (all or specific category).
       return repository.fetchListings(
         category: category == 'All' ? null : category,
         blockedUserIds: blockedUserIds,
+        schoolId: schoolId,
       );
     }
   }

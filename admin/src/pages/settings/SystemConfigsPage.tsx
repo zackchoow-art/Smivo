@@ -5,7 +5,7 @@ import { useFeatureFlags, useToggleFlag } from '@/hooks/useFeatureFlags';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { ADMIN_ROLES } from '@/lib/constants';
-import type { SystemSetting } from '@/types';
+
 
 type Tab = 'configs' | 'flags';
 

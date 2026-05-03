@@ -148,6 +148,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
   }
 
+  void _showSenderMutedSnackBar() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('You are currently muted by the platform and cannot send messages'),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Future<void> _handleSend() async {
     final text = _inputController.text.trim();
     if (text.isEmpty || _isSending) return;
@@ -163,6 +174,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     if (eligibility?['isBlockedByRecipient'] == true) {
       _showBlockedSnackBar();
+      return;
+    }
+
+    if (eligibility?['senderIsMuted'] == true) {
+      _showSenderMutedSnackBar();
       return;
     }
 
@@ -216,6 +232,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     if (eligibility?['isBlockedByRecipient'] == true) {
       _showBlockedSnackBar();
+      return;
+    }
+
+    if (eligibility?['senderIsMuted'] == true) {
+      _showSenderMutedSnackBar();
       return;
     }
 
@@ -801,7 +822,45 @@ class _MessageBubble extends StatelessWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
+    // NOTE: Hidden messages are rendered as a greyed-out placeholder.
+    // The actual content is preserved in the DB for admin audit purposes,
+    // but must never be displayed to regular users.
+    if (message.isHidden) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        child: Row(
+          mainAxisAlignment:
+              isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(radius.lg),
+                border: Border.all(color: colors.outlineVariant),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.block, size: 14, color: colors.onSurfaceVariant),
+                  const SizedBox(width: 6),
+                  Text(
+                    'This message has been removed by moderation.',
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return GestureDetector(
+
       onLongPress: () => onLongPress?.call(message.id),
       onTap: () {
         if (selectionMode) {

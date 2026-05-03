@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { TABLES } from '@/lib/constants';
 import type { Listing } from '@/types';
 import type { AuditLog } from '@/types/audit-log';
+import { useSchoolScopeStore } from '@/stores/school-scope-store';
 
 const QUERY_KEY = ['dashboard-stats'] as const;
 
@@ -10,9 +11,9 @@ const QUERY_KEY = ['dashboard-stats'] as const;
  * Safely run a Supabase query and return fallback on failure.
  * Prevents a single broken query from blocking the entire dashboard.
  */
-async function safeCount(table: string, filter?: (q: any) => any): Promise<number> {
+async function safeCount(table: string, filter?: (q: any) => any, selectStr = '*'): Promise<number> {
   try {
-    let q = supabase.from(table).select('*', { count: 'exact', head: true });
+    let q = supabase.from(table).select(selectStr, { count: 'exact', head: true });
     if (filter) q = filter(q);
     const { count, error } = await q;
     if (error) {
@@ -26,8 +27,10 @@ async function safeCount(table: string, filter?: (q: any) => any): Promise<numbe
 }
 
 export function useDashboard() {
+  const currentCollegeId = useSchoolScopeStore((state) => state.currentCollegeId);
+
   return useQuery({
-    queryKey: QUERY_KEY,
+    queryKey: [...QUERY_KEY, currentCollegeId],
     queryFn: async () => {
       // Run all KPI queries in parallel for speed
       const [
@@ -40,15 +43,19 @@ export function useDashboard() {
         pendingFeedbackCount,
       ] = await Promise.all([
         // 1. Total Users
-        safeCount(TABLES.USER_PROFILES),
+        safeCount(TABLES.USER_PROFILES, currentCollegeId ? (q: any) => q.eq('school_id', currentCollegeId) : undefined),
 
         // 2. Total Listings
-        safeCount(TABLES.LISTINGS),
+        safeCount(TABLES.LISTINGS, currentCollegeId ? (q: any) => q.eq('school_id', currentCollegeId) : undefined),
 
         // 3. Active Orders (not completed/cancelled/missed)
-        safeCount(TABLES.ORDERS, (q: any) =>
-          q.not('status', 'in', '("completed","cancelled","missed")')
-        ),
+        safeCount(TABLES.ORDERS, (q: any) => {
+          let query = q.not('status', 'in', '("completed","cancelled","missed")');
+          if (currentCollegeId) {
+             query = query.eq('listing.school_id', currentCollegeId);
+          }
+          return query;
+        }, currentCollegeId ? '*, listing:listings!inner(school_id)' : '*'),
 
         // 4. Today DAU via RPC
         (async () => {
@@ -65,10 +72,18 @@ export function useDashboard() {
         })(),
 
         // 5. Pending chat reports
-        safeCount(TABLES.CONTENT_REPORTS, (q: any) => q.eq('status', 'pending')),
+        safeCount(TABLES.CONTENT_REPORTS, (q: any) => {
+          let query = q.eq('status', 'pending');
+          // No direct way to filter reports by school unless we join
+          return query;
+        }),
 
         // 6. Pending listing moderations
-        safeCount(TABLES.LISTINGS, (q: any) => q.eq('moderation_status', 'pending_review')),
+        safeCount(TABLES.LISTINGS, (q: any) => {
+          let query = q.eq('moderation_status', 'pending_review');
+          if (currentCollegeId) query = query.eq('school_id', currentCollegeId);
+          return query;
+        }),
 
         // 7. Pending feedbacks
         safeCount(TABLES.USER_FEEDBACKS, (q: any) => q.eq('status', 'submitted')),
@@ -90,12 +105,16 @@ export function useDashboard() {
       // 9. Urgent Pending Listings (oldest 5, potentially near SLA timeout)
       let urgentListings: Listing[] = [];
       try {
-        const { data, error } = await supabase
+        let q = supabase
           .from(TABLES.LISTINGS)
           .select('*')
           .eq('moderation_status', 'pending_review')
           .order('created_at', { ascending: true })  // Oldest first = most urgent
           .limit(5);
+        if (currentCollegeId) {
+          q = q.eq('school_id', currentCollegeId);
+        }
+        const { data, error } = await q;
         if (!error && data) urgentListings = data as Listing[];
       } catch {
         // NOTE: Non-critical

@@ -1,9 +1,21 @@
 /**
  * Admin user types — maps to `admin_users` + `admin_school_scopes` tables.
- * Defined in 03_MULTI_TENANT_ARCHITECTURE.md.
+ * admin_users is the single source of truth for both web admin and Flutter app.
+ *
+ * Role hierarchy (5 levels, migration 00068):
+ *   sysadmin           — full control, only one per platform
+ *   platform_admin     — cross-school management (assigned schools via scopes)
+ *   platform_reviewer  — cross-school moderation (assigned schools via scopes)
+ *   school_admin       — management within assigned school(s)
+ *   school_reviewer    — moderation within assigned school(s)
  */
 
-export type AdminRole = 'platform_super_admin' | 'platform_moderator' | 'school_admin';
+export type AdminRole =
+  | 'sysadmin'
+  | 'platform_admin'
+  | 'platform_reviewer'
+  | 'school_admin'
+  | 'school_reviewer';
 
 export interface AdminUser {
   user_id: string;

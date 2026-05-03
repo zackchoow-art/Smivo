@@ -36,10 +36,24 @@ export function useAuth() {
 
       setAdmin(adminData as AdminUser, (scopeData || []) as AdminSchoolScope[]);
 
-      // Auto-set school scope if not already set
+      // NOTE: Always override school scope on auth-check, not just when null.
+      // This prevents cross-admin data leaks when different admins share a browser.
       const store = useSchoolScopeStore.getState();
-      if (!store.currentCollegeId && scopeData && scopeData.length > 0) {
-        store.setCollege(scopeData[0].college_id);
+      const adminScopeData = (scopeData || []) as AdminSchoolScope[];
+      if (adminData.role === 'sysadmin') {
+        // Sysadmin: restore last persisted choice or default to platform view
+        if (!store.currentCollegeId && !store.isPlatformView) {
+          store.setPlatformView();
+        }
+      } else if (adminScopeData.length > 0) {
+        // School-level admin: always lock to their first school (or last valid choice)
+        const validIds = adminScopeData.map((s) => s.college_id);
+        const lastStored = localStorage.getItem('smivo_admin_last_school');
+        if (lastStored && validIds.includes(lastStored)) {
+          store.setCollege(lastStored);
+        } else {
+          store.setCollege(validIds[0]);
+        }
       }
 
       return true;

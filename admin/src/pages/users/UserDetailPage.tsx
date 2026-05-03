@@ -1,21 +1,37 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUserDetail } from '@/hooks/useUsers';
+import { useUserDetail, useUserSummary, useAdminDeleteUser, useUpdateUserSchool } from '@/hooks/useUsers';
 import { useCreateBan, useLiftBan, useUserActiveRestrictions } from '@/hooks/useBans';
 import { useAuth } from '@/hooks/useAuth';
+import { useColleges } from '@/hooks/useColleges';
 import { RESTRICTION_SCOPE_META } from '@/lib/constants';
 import type { BanType, RestrictionScope } from '@/types/ban';
+import { Unlock, Shield, AlertTriangle, Trash2, Edit2, Check, X } from 'lucide-react';
+import { showToast } from '@/hooks/useToast';
+
 
 const ALL_SCOPES: RestrictionScope[] = ['chat_mute', 'listing_ban', 'feedback_ban', 'account_freeze'];
+
+const REASON_SHORTCUTS = [
+  '',
+  'Multiple reports of spam/scam',
+  'Selling prohibited items',
+  'Using abusive language in chat',
+  'Circumventing platform fees',
+  'Evading previous ban',
+  'Violating community guidelines',
+];
 
 export function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data, isLoading, error } = useUserDetail(id);
+  const { data: summary } = useUserSummary(id ?? null);
   const { admin } = useAuth();
   const { data: activeRestrictions, refetch: refetchRestrictions } = useUserActiveRestrictions(id);
-  const banMutation = useCreateBan();
+  const banMutation     = useCreateBan();
   const liftBanMutation = useLiftBan();
+  const deleteMutation  = useAdminDeleteUser();
 
   // State for the "Add Restriction" form
   const [showAddForm, setShowAddForm] = useState(false);
@@ -23,12 +39,15 @@ export function UserDetailPage() {
   const [addType, setAddType] = useState<BanType>('temporary');
   const [addDuration, setAddDuration] = useState(7);
   const [addReason, setAddReason] = useState('');
+  const [shortcutReason, setShortcutReason] = useState('');
   const [addReasonCode, setAddReasonCode] = useState('violation_policy');
 
-  if (isLoading) return <div className="ud-state-msg">Loading user details...</div>;
-  if (error || !data) return <div className="ud-state-msg ud-state-error">Failed to load user.</div>;
-
-  const { user, listings, orders } = data;
+  // State for editing school
+  const [isEditingSchool, setIsEditingSchool] = useState(false);
+  const [editSchoolId, setEditSchoolId] = useState('');
+  
+  const { data: colleges } = useColleges();
+  const updateSchoolMutation = useUpdateUserSchool();
 
   // Build a map of scope -> active restriction record
   const activeMap: Record<string, any> = {};
@@ -40,6 +59,21 @@ export function UserDetailPage() {
 
   const hasAnyRestriction = Object.keys(activeMap).length > 0;
 
+  // Scopes that are not yet active (available for adding)
+  const availableScopes = ALL_SCOPES.filter(s => !activeMap[s]);
+
+  // Keep addScope synced with available options
+  useEffect(() => {
+    if (availableScopes.length > 0 && !availableScopes.includes(addScope)) {
+      setAddScope(availableScopes[0]);
+    }
+  }, [availableScopes, addScope]);
+
+  if (isLoading) return <div className="ud-state-msg">Loading user details...</div>;
+  if (error || !data) return <div className="ud-state-msg ud-state-error">Failed to load user.</div>;
+
+  const { user, listings, orders } = data;
+
   const handleAddRestriction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!admin) return;
@@ -50,16 +84,17 @@ export function UserDetailPage() {
         banType: addType,
         scope: addScope,
         reasonCode: addReasonCode,
-        reasonDetail: addReason,
+        reasonDetail: addReason.trim() || shortcutReason,
         durationDays: addType === 'temporary' ? addDuration : null,
         adminId: admin.user_id,
       });
       setShowAddForm(false);
       setAddReason('');
+      setShortcutReason('');
       refetchRestrictions();
     } catch (err) {
       console.error(err);
-      alert('Failed to add restriction');
+      showToast('Failed to add restriction. Please try again.', 'error', 5000);
     }
   };
 
@@ -77,21 +112,67 @@ export function UserDetailPage() {
       refetchRestrictions();
     } catch (err) {
       console.error(err);
-      alert('Failed to lift restriction');
+      showToast('Failed to lift restriction. Please try again.', 'error', 5000);
     }
   };
 
-  // Scopes that are not yet active (available for adding)
-  const availableScopes = ALL_SCOPES.filter(s => !activeMap[s]);
+  const handleDeleteUser = async () => {
+    if (!user) return;
+    // NOTE: Double-confirm for destructive irreversible action
+    const first = confirm(
+      `⚠️ Delete user "${user.display_name || user.email}"?\n\nThis will permanently delete ALL their data including listings, orders, messages, and chat history. This action CANNOT be undone.`
+    );
+    if (!first) return;
+    const second = confirm(
+      `Final confirmation: permanently delete user ${user.email}?`
+    );
+    if (!second) return;
+
+    try {
+      await deleteMutation.mutateAsync(user.id);
+      showToast(`User ${user.email} deleted successfully.`, 'success');
+      navigate('/users');
+    } catch (err: any) {
+      console.error(err);
+      showToast(err?.message || 'Failed to delete user.', 'error', 6000);
+    }
+  };
+
+  const handleUpdateSchool = async () => {
+    if (!editSchoolId) return;
+    try {
+      await updateSchoolMutation.mutateAsync({ userId: user.id, schoolId: editSchoolId });
+      showToast('User school updated successfully', 'success');
+      setIsEditingSchool(false);
+    } catch (err: any) {
+      console.error(err);
+      showToast(err?.message || 'Failed to update school', 'error');
+    }
+  };
+
+  // availableScopes moved above
 
   return (
     <div className="ud-container">
       <div className="ud-header">
         <button onClick={() => navigate(-1)} className="ud-btn-back">&larr; Back to Users</button>
         <h1 className="ud-page-title">User Details</h1>
-        <button onClick={() => setShowAddForm(!showAddForm)} className="ud-btn-add-restriction">
-          {showAddForm ? 'Cancel' : '+ Add Restriction'}
-        </button>
+        <div className="ud-header-actions">
+          <button onClick={() => setShowAddForm(!showAddForm)} className="ud-btn-add-restriction">
+            {showAddForm ? 'Cancel' : '+ Add Restriction'}
+          </button>
+          {admin?.role === 'sysadmin' && (
+            <button
+              onClick={handleDeleteUser}
+              className="ud-btn-delete-user"
+              disabled={deleteMutation.isPending}
+              title="Permanently delete this user and all their data"
+            >
+              <Trash2 size={14} />
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete User'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Add Restriction Form */}
@@ -124,8 +205,10 @@ export function UserDetailPage() {
               {addType === 'temporary' && (
                 <div className="ud-form-group">
                   <label>Days</label>
-                  <select value={addDuration} onChange={e => setAddDuration(parseInt(e.target.value))}>
+                  <select value={addDuration} onChange={e => setAddDuration(parseFloat(e.target.value))}>
                     <option value={1}>1 Day</option>
+                    <option value={0.000694444}>1 Minute (Test)</option>
+                    <option value={0.003472222}>5 Minutes (Test)</option>
                     <option value={3}>3 Days</option>
                     <option value={7}>7 Days</option>
                     <option value={14}>14 Days</option>
@@ -149,18 +232,27 @@ export function UserDetailPage() {
             </div>
             <div className="ud-form-group">
               <label>Detailed Reason</label>
+              <select 
+                value={shortcutReason} 
+                onChange={e => setShortcutReason(e.target.value)}
+                style={{ marginBottom: '8px' }}
+              >
+                <option value="">-- Or choose a quick reason --</option>
+                {REASON_SHORTCUTS.filter(Boolean).map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
               <textarea
-                required
                 value={addReason}
                 onChange={e => setAddReason(e.target.value)}
-                placeholder="Explain why this restriction is being applied..."
+                placeholder="Or type a custom explanation..."
                 rows={2}
               />
             </div>
             <button
               type="submit"
               className="ud-btn-submit"
-              disabled={banMutation.isPending || availableScopes.length === 0}
+              disabled={banMutation.isPending || availableScopes.length === 0 || (!addReason.trim() && !shortcutReason)}
             >
               {banMutation.isPending ? 'Applying...' : 'Apply Restriction'}
             </button>
@@ -175,16 +267,64 @@ export function UserDetailPage() {
             {user.avatar_url ? (
               <img src={user.avatar_url} alt="Avatar" className="ud-avatar" />
             ) : (
-              <div className="ud-avatar-placeholder">{user.email[0].toUpperCase()}</div>
+              <div className="ud-avatar-placeholder">{user.email?.[0]?.toUpperCase() || '?'}</div>
             )}
             <h2 className="ud-display-name">{user.display_name || 'No Name'}</h2>
-            <p className="ud-email">{user.email}</p>
+            <p className="ud-email">{user.email || 'No email'}</p>
           </div>
           <div className="ud-profile-meta">
             <div className="ud-meta-row">
               <span className="ud-meta-label">School</span>
-              <span className="ud-meta-value">{(user as any).school || '—'}</span>
+              {isEditingSchool ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <select 
+                    value={editSchoolId} 
+                    onChange={e => setEditSchoolId(e.target.value)}
+                    style={{ padding: '4px', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                  >
+                    <option value="" disabled>Select a school...</option>
+                    {colleges?.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <button onClick={handleUpdateSchool} disabled={updateSchoolMutation.isPending} title="Save" style={{ color: 'var(--color-primary)' }}>
+                    <Check size={16} />
+                  </button>
+                  <button onClick={() => setIsEditingSchool(false)} title="Cancel" style={{ color: 'var(--color-text-tertiary)' }}>
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="ud-meta-value">{(user as any).school || '—'}</span>
+                  {/* NOTE: Only sysadmin can reassign a user's school to prevent cross-school tampering */}
+                  {admin?.role === 'sysadmin' && (
+                    <button 
+                      onClick={() => {
+                        setEditSchoolId((user as any).school_id || '');
+                        setIsEditingSchool(true);
+                      }} 
+                      style={{ color: 'var(--color-text-tertiary)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+                      title="Edit School"
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
+            
+            {(user as any).is_admin && (
+              <div className="ud-meta-row">
+                <span className="ud-meta-label">Managed</span>
+                <span className="ud-meta-value">
+                  {((user as any).managed_schools?.length ?? 0) > 0 
+                    ? (user as any).managed_schools.join(', ') 
+                    : 'All Platform / None'}
+                </span>
+              </div>
+            )}
+
             <div className="ud-meta-row">
               <span className="ud-meta-label">Status</span>
               {hasAnyRestriction ? (
@@ -202,6 +342,20 @@ export function UserDetailPage() {
           {/* Active Restrictions Section */}
           <div className="ud-restrictions-section">
             <h4 className="ud-section-label">Active Restrictions</h4>
+            
+            {summary && (
+              <div className="ud-punishment-stats">
+                <div className="ud-punishment-row">
+                  <span className="ud-punishment-label"><Shield size={14} /> Violations (Reported)</span>
+                  <span className="ud-punishment-value">{summary.reportsCount}</span>
+                </div>
+                <div className="ud-punishment-row">
+                  <span className="ud-punishment-label"><AlertTriangle size={14} /> Total Punishments</span>
+                  <span className="ud-punishment-value">{summary.punishmentsCount}</span>
+                </div>
+              </div>
+            )}
+
             {ALL_SCOPES.map(scope => {
               const meta = RESTRICTION_SCOPE_META[scope];
               const active = activeMap[scope];
@@ -229,11 +383,12 @@ export function UserDetailPage() {
                   </div>
                   {active && (
                     <button
-                      className="ud-btn-lift"
+                      className="ud-btn-lift-icon"
+                      title="Cancel Restriction"
                       onClick={() => handleLiftRestriction(active.id, meta.label)}
                       disabled={liftBanMutation.isPending}
                     >
-                      Lift
+                      <Unlock size={16} />
                     </button>
                   )}
                 </div>
@@ -246,6 +401,14 @@ export function UserDetailPage() {
         <div className="ud-main-col">
           <div className="ud-stats-grid">
             <div className="ud-stat-card">
+              <div className="ud-stat-label">Rating</div>
+              <div className="ud-stat-value">{Number((user as any).seller_rating || 0).toFixed(1)}</div>
+            </div>
+            <div className="ud-stat-card">
+              <div className="ud-stat-label">Contribution</div>
+              <div className="ud-stat-value">{(user as any).contribution_score || 0}</div>
+            </div>
+            <div className="ud-stat-card">
               <div className="ud-stat-label">Listings</div>
               <div className="ud-stat-value">{listings.length}</div>
             </div>
@@ -254,7 +417,7 @@ export function UserDetailPage() {
               <div className="ud-stat-value">{orders.length}</div>
             </div>
             <div className="ud-stat-card ud-stat-card--warn">
-              <div className="ud-stat-label">Active Restrictions</div>
+              <div className="ud-stat-label">Restrictions</div>
               <div className="ud-stat-value" style={hasAnyRestriction ? { color: '#ef4444' } : {}}>{Object.keys(activeMap).length}</div>
             </div>
           </div>
@@ -385,6 +548,12 @@ export function UserDetailPage() {
         /* Active Restrictions */
         .ud-restrictions-section { border-top: 1px solid var(--color-border-light); padding-top: 16px; }
         .ud-section-label { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px; }
+        
+        .ud-punishment-stats { display: flex; flex-direction: column; gap: 8px; font-size: 13px; margin-bottom: 16px; background: var(--color-bg-secondary); padding: 12px; border-radius: var(--radius-sm); }
+        .ud-punishment-row { display: flex; justify-content: space-between; align-items: center; color: var(--color-text-secondary); }
+        .ud-punishment-label { display: flex; align-items: center; gap: 6px; }
+        .ud-punishment-value { font-weight: 600; color: var(--color-text-primary); }
+        
         .ud-restriction-row {
           display: flex;
           align-items: center;
@@ -403,22 +572,24 @@ export function UserDetailPage() {
         .ud-restriction-label { font-size: 13px; font-weight: 600; color: var(--color-text-primary); }
         .ud-restriction-detail { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
         .ud-restriction-inactive { color: var(--color-text-tertiary); font-style: italic; }
-        .ud-btn-lift {
-          padding: 4px 10px;
-          font-size: 11px;
-          font-weight: 600;
+        .ud-btn-lift-icon {
+          padding: 6px;
           border-radius: var(--radius-sm);
-          border: 1px solid var(--color-success);
+          border: 1px solid transparent;
           background: transparent;
-          color: var(--color-success);
+          color: var(--color-text-tertiary);
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
         }
-        .ud-btn-lift:hover { background: var(--color-success-light); }
-        .ud-btn-lift:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ud-btn-lift-icon:hover { background: var(--color-success-light); color: var(--color-success); border-color: var(--color-success); }
+        .ud-btn-lift-icon:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Main column */
         .ud-main-col { display: flex; flex-direction: column; gap: 24px; }
-        .ud-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .ud-stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
         .ud-stat-card { background: var(--color-bg-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-card); padding: 16px; text-align: center; }
         .ud-stat-card--warn { border-top: 4px solid var(--color-danger); }
         .ud-stat-label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 4px; }
@@ -439,6 +610,23 @@ export function UserDetailPage() {
         .ud-item-price { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
         .ud-badge { padding: 2px 8px; font-size: 11px; border-radius: 999px; background: var(--color-bg-tertiary); color: var(--color-text-primary); }
         .ud-badge--info { background: var(--color-info-light); color: var(--color-info); }
+
+        /* Header actions group */
+        .ud-header-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+        /* Delete User button — destructive, shown in red */
+        .ud-btn-delete-user {
+          display: flex; align-items: center; gap: 6px;
+          padding: 8px 14px; font-size: 13px; font-weight: 500;
+          border: 1.5px solid var(--color-danger);
+          background: transparent; color: var(--color-danger);
+          border-radius: var(--radius-md); cursor: pointer;
+          transition: all 0.15s; white-space: nowrap;
+        }
+        .ud-btn-delete-user:hover:not(:disabled) {
+          background: var(--color-danger); color: #fff;
+        }
+        .ud-btn-delete-user:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
     </div>
   );

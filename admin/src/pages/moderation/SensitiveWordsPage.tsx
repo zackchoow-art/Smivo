@@ -8,6 +8,7 @@ import { Plus, Search, Upload, Trash2, Loader2, ChevronLeft, ChevronRight, Toggl
 import { useSensitiveWords, useCreateSensitiveWord, useDeleteSensitiveWord, useBatchImportWords, useBatchToggleWords, buildCloudSyncPreview, type SensitiveWordFilters, type ImportMode, type CloudSyncPreview } from '@/hooks/useSensitiveWords';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import type { SensitiveWord } from '@/types';
+import { showToast } from '@/hooks/useToast';
 
 const SEV_COLOR: Record<string, string> = { block: 'var(--color-danger)', warn: 'var(--color-warning)' };
 const CATS = ['general', 'weapons', 'drugs', 'adult', 'hate', 'fraud', 'spam'];
@@ -67,13 +68,13 @@ export function SensitiveWordsPage() {
   const confirmImport = async () => {
     if (!previewWords) return;
     await batchImport.mutateAsync(previewWords);
-    alert(`Imported ${previewWords.length} words.`);
+    showToast(`Imported ${previewWords.length} words successfully ✅`, 'success');
     setPreviewWords(null);
   };
 
   const handleSyncFetch = async () => {
     const langs = [...(syncLangs.en ? ['en' as const] : []), ...(syncLangs.zh ? ['zh' as const] : [])];
-    if (langs.length === 0) { alert('Select at least one language.'); return; }
+    if (langs.length === 0) { showToast('Please select at least one language.', 'warning'); return; }
     setSyncLoading(true);
     try {
       const preview = await buildCloudSyncPreview(langs, syncMode);
@@ -82,7 +83,7 @@ export function SensitiveWordsPage() {
       setPreviewSearch('');
     } catch (err) {
       console.error(err);
-      alert('Failed to fetch from cloud.');
+      showToast('Failed to fetch from cloud. Check your connection.', 'error', 5000);
     } finally { setSyncLoading(false); }
   };
 
@@ -102,13 +103,13 @@ export function SensitiveWordsPage() {
     if (editableWords.length === 0) return;
     try {
       await batchImport.mutateAsync(editableWords);
-      alert(`Imported ${editableWords.length} words.`);
+      showToast(`Successfully imported ${editableWords.length} words ✅`, 'success');
       setSyncPreview(null);
       setEditableWords([]);
       setShowSyncPanel(false);
     } catch (err) {
       console.error(err);
-      alert('Import failed.');
+      showToast('Import failed. Please try again.', 'error', 5000);
     }
   };
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
+  ChevronRight,
   User,
   Smartphone,
   Globe,
@@ -10,37 +11,72 @@ import {
   Award,
   CheckCircle,
 } from 'lucide-react';
-import { useFeedback, useResolveFeedback } from '@/hooks/useFeedbacks';
+import { useFeedback, useResolveFeedback, usePendingFeedbacks } from '@/hooks/useFeedbacks';
+import { useDictItems } from '@/hooks/useDictionary';
 import { useAuth } from '@/hooks/useAuth';
-import { CONTRIBUTION_POINTS } from '@/lib/constants';
+import type { FeedbackStatus } from '@/types/feedback';
+import type { DictItem } from '@/types/dict';
+import { UserSummaryPopup } from '@/components/users/UserSummaryPopup';
+import { showToast } from '@/hooks/useToast';
 
 export function FeedbackDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { admin } = useAuth();
   const { data: feedback, isLoading, error } = useFeedback(id);
+  const { data: pendingFeedbacks } = usePendingFeedbacks();
   const resolveMutation = useResolveFeedback();
 
+  const { data: resolutionTags } = useDictItems('feedback_resolution');
+
   const [adminResponse, setAdminResponse] = useState('');
+  const [popupUser, setPopupUser] = useState<string | null>(null);
+  
+  const [resolutionStatus, setResolutionStatus] = useState<FeedbackStatus>('read');
+  const [giveReward, setGiveReward] = useState(true);
+  const [rewardPoints, setRewardPoints] = useState(10);
+
+  const handleSelectResolution = (tag: DictItem) => {
+    setResolutionStatus(tag.dict_value as FeedbackStatus);
+    const extra = tag.extra as { points?: number, reply?: string } | null;
+    if (extra?.points !== undefined) {
+      setRewardPoints(extra.points);
+    }
+    if (extra?.reply !== undefined) {
+      setAdminResponse(extra.reply);
+    }
+  };
 
   if (isLoading) return <div className="loading-state">Loading feedback details...</div>;
   if (error || !feedback) return <div className="error-state">Feedback not found</div>;
+
+  const currentIndex = pendingFeedbacks ? pendingFeedbacks.findIndex(f => f.id === id) : -1;
+  const hasNext = pendingFeedbacks && currentIndex !== -1 && currentIndex < pendingFeedbacks.length - 1;
+  const hasPrev = pendingFeedbacks && currentIndex > 0;
 
   const handleResolve = async () => {
     if (!admin) return;
     try {
       await resolveMutation.mutateAsync({
         feedbackId: feedback.id,
+        status: resolutionStatus,
         adminResponse,
-        points: CONTRIBUTION_POINTS?.default ?? 10,
+        points: giveReward ? rewardPoints : 0,
         adminId: admin.user_id,
         userId: feedback.user_id,
       });
-      alert('Feedback resolved successfully');
-      navigate('/feedback');
+      showToast('Feedback resolved successfully ✅', 'success');
+      // NOTE: Auto-navigate after 1.5s to next pending feedback or list.
+      setTimeout(() => {
+        if (hasNext && pendingFeedbacks) {
+          navigate(`/feedback/${pendingFeedbacks[currentIndex + 1].id}`);
+        } else {
+          navigate('/feedback');
+        }
+      }, 1500);
     } catch (err) {
       console.error(err);
-      alert('Failed to resolve feedback');
+      showToast('Failed to resolve feedback. Please try again.', 'error', 5000);
     }
   };
 
@@ -125,7 +161,7 @@ export function FeedbackDetailPage() {
         <aside className="sidebar-content">
           <section className="user-section">
             <h2 className="section-title">User Info</h2>
-            <div className="card user-card">
+            <div className="card user-card" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setPopupUser(feedback.user_id)}>
               <div className="user-profile">
                 {feedback.user_avatar_url ? (
                   <img
@@ -143,6 +179,9 @@ export function FeedbackDetailPage() {
                   <div className="user-email">{feedback.user_email}</div>
                 </div>
               </div>
+              {popupUser === feedback.user_id && (
+                <UserSummaryPopup userId={feedback.user_id} onClose={() => setPopupUser(null)} />
+              )}
             </div>
           </section>
 
@@ -169,13 +208,65 @@ export function FeedbackDetailPage() {
               ) : (
                 <div className="resolution-form">
                   <div className="form-group">
+                    <label>Action Tag</label>
+                    <div className="resolution-options" style={{ gridTemplateColumns: `repeat(${Math.max(3, resolutionTags?.length || 3)}, 1fr)` }}>
+                      {resolutionTags?.filter(t => t.is_active).map(tag => (
+                        <button
+                          key={tag.id}
+                          className={`option-btn ${resolutionStatus === tag.dict_value ? 'active' : ''} ${tag.dict_value === 'high_contribution' ? 'high-contrib' : ''}`}
+                          onClick={() => handleSelectResolution(tag)}
+                          title={tag.description || tag.dict_key}
+                        >
+                          <Award size={16} /> {tag.dict_key}
+                        </button>
+                      ))}
+                      {!resolutionTags?.length && (
+                        <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>No resolution tags defined in dictionary.</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
                     <label>Admin Response</label>
                     <textarea
                       placeholder="Respond to the user, explain your decision..."
                       value={adminResponse}
                       onChange={(e) => setAdminResponse(e.target.value)}
-                      rows={5}
+                      rows={4}
                     />
+                  </div>
+
+                  <div className="form-group reward-group">
+                    <label className="reward-label">
+                      <input 
+                        type="checkbox" 
+                        checked={giveReward} 
+                        onChange={(e) => setGiveReward(e.target.checked)} 
+                      />
+                      Reward points for this feedback
+                    </label>
+                    {giveReward && (
+                      <div className="reward-input-container">
+                        <span className="reward-text">Points:</span>
+                        <div className="number-input">
+                          <button 
+                            className="num-btn"
+                            onClick={() => setRewardPoints(Math.max(0, rewardPoints - 10))}
+                          >-</button>
+                          <input 
+                            type="number" 
+                            min={0} 
+                            max={50} 
+                            value={rewardPoints}
+                            readOnly
+                          />
+                          <button 
+                            className="num-btn"
+                            onClick={() => setRewardPoints(Math.min(50, rewardPoints + 10))}
+                          >+</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <button
@@ -188,6 +279,32 @@ export function FeedbackDetailPage() {
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* Next / Prev Navigation */}
+            <div className="record-navigation" style={{ marginTop: 24, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+              <button 
+                className="nav-btn prev-btn" 
+                disabled={!hasPrev}
+                onClick={() => {
+                  if (hasPrev && pendingFeedbacks) {
+                    navigate(`/feedback/${pendingFeedbacks[currentIndex - 1].id}`);
+                  }
+                }}
+              >
+                <ChevronLeft size={16} /> Previous Record
+              </button>
+              <button 
+                className="nav-btn next-btn" 
+                disabled={!hasNext}
+                onClick={() => {
+                  if (hasNext && pendingFeedbacks) {
+                    navigate(`/feedback/${pendingFeedbacks[currentIndex + 1].id}`);
+                  }
+                }}
+              >
+                Next Record <ChevronRight size={16} />
+              </button>
             </div>
           </section>
         </aside>
@@ -464,6 +581,28 @@ export function FeedbackDetailPage() {
           color: var(--color-text-tertiary);
           font-size: 18px;
         }
+
+        .resolution-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .option-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px; border: 1px solid var(--color-border); background: var(--color-bg-primary); border-radius: var(--radius-md); font-size: 12px; font-weight: 600; color: var(--color-text-secondary); cursor: pointer; transition: all 0.2s; }
+        .option-btn:hover { background: var(--color-bg-secondary); }
+        .option-btn.active { border-color: var(--color-info); background: var(--color-info-light); color: var(--color-info); }
+        .option-btn.active.high-contrib { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); }
+        
+        .reward-group { background: var(--color-bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 24px; }
+        .reward-label { display: flex !important; align-items: center; gap: 8px; margin-bottom: 0 !important; cursor: pointer; font-size: 14px !important; color: var(--color-text-primary) !important; font-weight: 600 !important; text-transform: none !important;}
+        .reward-label input { width: 16px; height: 16px; accent-color: var(--color-info); }
+        .reward-input-container { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border-light); }
+        .reward-text { font-size: 13px; color: var(--color-text-secondary); font-weight: 600; }
+        .number-input { display: flex; align-items: center; border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; background: var(--color-bg-primary); }
+        .num-btn { background: none; border: none; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--color-text-secondary); font-weight: bold; transition: background 0.2s; }
+        .num-btn:hover { background: var(--color-bg-secondary); color: var(--color-text-primary); }
+        .number-input input { width: 48px; height: 32px; text-align: center; border: none; border-left: 1px solid var(--color-border); border-right: 1px solid var(--color-border); font-family: inherit; font-size: 14px; background: transparent; outline: none; -moz-appearance: textfield; pointer-events: none; }
+        .number-input input::-webkit-outer-spin-button, .number-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .nav-btn:not(:disabled) { background: var(--color-bg-secondary); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .nav-btn:not(:disabled):hover { background: var(--color-border-light); }
+        .nav-btn:disabled { background: var(--color-bg-tertiary); color: var(--color-text-tertiary); border: 1px solid var(--color-border-light); cursor: not-allowed; }
       `}</style>
     </div>
   );

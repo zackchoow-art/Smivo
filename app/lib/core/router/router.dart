@@ -6,6 +6,7 @@ import 'package:smivo/features/profile/providers/profile_provider.dart';
 
 import 'package:smivo/features/auth/screens/register_screen.dart';
 import 'package:smivo/features/auth/screens/login_screen.dart';
+import 'package:smivo/features/auth/screens/forgot_password_screen.dart';
 import 'package:smivo/features/auth/screens/email_verification_screen.dart';
 import 'package:smivo/features/home/screens/home_screen.dart';
 import 'package:smivo/features/listing/screens/listing_detail_screen.dart';
@@ -53,6 +54,7 @@ part 'router.g.dart';
 const _publicRoutes = {
   AppRoutes.homePath,
   AppRoutes.loginPath,
+  AppRoutes.forgotPasswordPath,
   AppRoutes.registerPath,
   AppRoutes.emailVerificationPath,
 };
@@ -155,6 +157,11 @@ GoRouter router(Ref ref) {
         name: AppRoutes.register,
         path: AppRoutes.registerPath,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.forgotPassword,
+        path: AppRoutes.forgotPasswordPath,
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
         name: AppRoutes.emailVerification,

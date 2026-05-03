@@ -146,6 +146,28 @@ export function useToggleAdminActive() {
   });
 }
 
+/** Remove admin privileges completely */
+export function useRemoveAdmin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId }: { userId: string }) => {
+      const { error } = await supabase
+        .from(TABLES.ADMIN_USERS)
+        .delete()
+        .eq('user_id', userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      // toast.success('Admin privileges revoked'); // toast not defined here
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (error: any) => {
+      console.error('Error revoking admin access:', error);
+      // toast.error(error.message || 'Failed to revoke admin access');
+    },
+  });
+}
+
 /** Update school scopes for an admin */
 export function useUpdateAdminScopes() {
   const queryClient = useQueryClient();

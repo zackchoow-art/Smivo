@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import 'package:smivo/core/exceptions/app_exception.dart';
@@ -261,6 +262,34 @@ class ProfileRepository {
         .maybeSingle();
     if (data == null) return null;
     return DateTime.tryParse(data['last_seen_at'] as String);
+  }
+
+  /// Checks if the user currently has an active ban within the given scopes.
+  /// Returns the expiration date of the ban if active, otherwise null.
+  Future<DateTime?> getActiveBan(String userId, List<String> scopes) async {
+    try {
+      final now = DateTime.now().toUtc().toIso8601String();
+      final data = await _client
+          .from('user_bans')
+          .select('expires_at')
+          .eq('user_id', userId)
+          .inFilter('scope', scopes)
+          .isFilter('lifted_at', null)
+          .or('expires_at.is.null,expires_at.gt.$now')
+          .order('banned_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (data == null) return null;
+      if (data['expires_at'] == null) {
+        // Permanent ban, return a far future date to represent 'permanent'
+        return DateTime(2099, 12, 31);
+      }
+      return DateTime.tryParse(data['expires_at'] as String);
+    } catch (e) {
+      debugPrint('Failed to check listing ban: $e');
+      return null;
+    }
   }
 }
 

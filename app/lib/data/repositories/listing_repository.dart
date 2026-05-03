@@ -39,6 +39,7 @@ class ListingRepository {
   Future<List<Listing>> fetchListings({
     String? category,
     List<String>? blockedUserIds,
+    String? schoolId,
   }) async {
     try {
       var query = _client
@@ -46,7 +47,11 @@ class ListingRepository {
           // NOTE: listing_images rows are returned as a nested array;
           // Listing.fromJson handles them via the 'images' key alias.
           .select('*, images:listing_images(*)')
-          .eq('status', AppConstants.listingActive);
+          .eq('status', AppConstants.listingActive)
+          // NOTE: Exclude listings that have been rejected or taken down by admin.
+          // moderation_status can be: auto_approved, pending_review, approved, rejected, taken_down.
+          // We only show listings NOT in rejected/taken_down state.
+          .not('moderation_status', 'in', '("rejected","taken_down")');
 
       if (category != null) {
         // NOTE: DB CHECK constraint uses lowercase values; always
@@ -56,6 +61,10 @@ class ListingRepository {
 
       if (blockedUserIds != null && blockedUserIds.isNotEmpty) {
         query = query.not('seller_id', 'in', blockedUserIds);
+      }
+
+      if (schoolId != null) {
+        query = query.eq('school_id', schoolId);
       }
 
       final data = await query.order('created_at', ascending: false);
@@ -93,6 +102,7 @@ class ListingRepository {
     String query, {
     String? category,
     List<String>? blockedUserIds,
+    String? schoolId,
   }) async {
     try {
       var dbQuery = _client
@@ -100,7 +110,10 @@ class ListingRepository {
           .select(
             '*, images:listing_images(*), seller:user_profiles!seller_id(*)',
           )
-          .eq('status', AppConstants.listingActive);
+          .eq('status', AppConstants.listingActive)
+          // NOTE: Same moderation_status filter as fetchListings —
+          // rejected/taken_down items must never appear in search results.
+          .not('moderation_status', 'in', '("rejected","taken_down")');
 
       if (category != null) {
         dbQuery = dbQuery.eq('category', category.toLowerCase());
@@ -108,6 +121,10 @@ class ListingRepository {
 
       if (blockedUserIds != null && blockedUserIds.isNotEmpty) {
         dbQuery = dbQuery.not('seller_id', 'in', blockedUserIds);
+      }
+
+      if (schoolId != null) {
+        dbQuery = dbQuery.eq('school_id', schoolId);
       }
 
       final data = await dbQuery.order('created_at', ascending: false);
@@ -311,6 +328,9 @@ class ListingRepository {
       // NOTE: DB insert failed. Clean up orphaned Storage objects so
       // the bucket does not accumulate unreachable files.
       await _deleteUploadedPhotos(uploadedPaths);
+      if (e.message.contains('row-level security policy')) {
+        throw DatabaseException('Action denied. Your account may be restricted.', e);
+      }
       throw DatabaseException(e.message, e);
     } on StorageException catch (e) {
       // NOTE: Upload failed mid-loop. Only successfully uploaded files
@@ -338,6 +358,9 @@ class ListingRepository {
               .single();
       return Listing.fromJson(data);
     } on PostgrestException catch (e) {
+      if (e.message.contains('row-level security policy')) {
+        throw DatabaseException('Action denied. Your account may be restricted.', e);
+      }
       throw DatabaseException(e.message, e);
     }
   }

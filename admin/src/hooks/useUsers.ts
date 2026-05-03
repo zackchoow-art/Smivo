@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { TABLES, DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import type { UserProfile } from '@/types/user-profile';
@@ -7,20 +7,54 @@ const QUERY_KEY = ['users'] as const;
 
 export interface UserFilters {
   search?: string;
+  schoolId?: string;
+  status?: string; // 'all' | 'restricted'
+  punished?: string; // 'all' | 'yes'
 }
 
 export function useUsers(page: number, filters: UserFilters = {}) {
   return useQuery({
     queryKey: [...QUERY_KEY, page, filters],
     queryFn: async () => {
+      let userIdsToInclude: string[] | null = null;
+
+      // Filter by restriction/punishment status first if needed
+      if (filters.status === 'restricted' || filters.punished === 'yes') {
+        let banQuery = supabase.from(TABLES.USER_BANS).select('user_id');
+        
+        if (filters.status === 'restricted') {
+          const now = new Date().toISOString();
+          banQuery = banQuery.is('lifted_at', null).or(`expires_at.is.null,expires_at.gt.${now}`);
+        }
+        
+        const { data: bans } = await banQuery;
+        if (bans) {
+          userIdsToInclude = Array.from(new Set(bans.map((b: any) => b.user_id)));
+        } else {
+          userIdsToInclude = [];
+        }
+      }
+
+      if (userIdsToInclude !== null && userIdsToInclude.length === 0) {
+        return { data: [], totalCount: 0 };
+      }
+
       const from = page * DEFAULT_PAGE_SIZE;
       const to = from + DEFAULT_PAGE_SIZE - 1;
 
       let query = supabase
         .from(TABLES.USER_PROFILES)
-        .select(`*, school:schools(name)`, { count: 'exact' })
+        .select(`*, school_obj:school_id(name), admin:admin_users(role, scopes:admin_school_scopes(school:schools(name)))`, { count: 'exact' })
         .range(from, to)
         .order('created_at', { ascending: false });
+
+      if (userIdsToInclude !== null) {
+        query = query.in('id', userIdsToInclude);
+      }
+
+      if (filters.schoolId && filters.schoolId !== 'all') {
+        query = query.eq('school_id', filters.schoolId);
+      }
 
       if (filters.search) {
         // Search in display_name or email
@@ -59,7 +93,8 @@ export function useUsers(page: number, filters: UserFilters = {}) {
       return {
         data: (data ?? []).map((u: any) => ({
           ...u,
-          school: u.school?.name,
+          school: u.school_obj?.name || u.school,
+          managed_schools: u.admin?.[0]?.scopes?.map((s: any) => s.school?.name).filter(Boolean) || [],
           active_restrictions: restrictionMap[u.id] || [],
         })) as UserProfile[],
         totalCount: count ?? 0,
@@ -78,7 +113,7 @@ export function useUserDetail(userId?: string) {
       // 1. Fetch user profile
       const { data: user, error: userError } = await supabase
         .from(TABLES.USER_PROFILES)
-        .select(`*, school:schools(name)`)
+        .select(`*, school_obj:school_id(name), admin:admin_users(role, scopes:admin_school_scopes(school:schools(name)))`)
         .eq('id', userId)
         .single();
 
@@ -116,12 +151,152 @@ export function useUserDetail(userId?: string) {
       if (bansError) throw bansError;
 
       return {
-        user: { ...user, school: (user as any).school?.name } as UserProfile,
+        user: { 
+          ...user, 
+          school: (user as any).school_obj?.name || user.school,
+          managed_schools: (user as any).admin?.[0]?.scopes?.map((s: any) => s.school?.name).filter(Boolean) || []
+        } as UserProfile,
         listings: listings || [],
         orders: orders || [],
         bans: bans || [],
       };
     },
     enabled: !!userId,
+  });
+}
+
+export function useUserSummary(userId: string | null) {
+  return useQuery({
+    queryKey: ['user-summary', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      
+      const now = new Date().toISOString();
+
+      const [
+        profileRes,
+        reportsRes,
+        bansRes,
+        activeBansRes,
+        listingsRes,
+        purchasesRes,
+        recentActivityRes
+      ] = await Promise.all([
+        supabase.from('user_profiles').select('*').eq('id', userId).single(),
+        supabase.from('content_reports').select('id', { count: 'exact', head: true }).eq('reported_user_id', userId).in('status', ['resolved']),
+        supabase.from('user_bans').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('user_bans').select('scope, expires_at').eq('user_id', userId).is('lifted_at', null).or(`expires_at.is.null,expires_at.gt.${now}`),
+        supabase.from('listings').select('id', { count: 'exact', head: true }).eq('seller_id', userId),
+        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('buyer_id', userId),
+        supabase.from('orders').select('*, listing:listings(title, price)').or(`buyer_id.eq.${userId},seller_id.eq.${userId}`).order('created_at', { ascending: false }).limit(10)
+      ]);
+
+      return {
+        profile: profileRes.data,
+        reportsCount: reportsRes.count || 0,
+        punishmentsCount: bansRes.count || 0,
+        activeBans: activeBansRes.data || [],
+        listingsCount: listingsRes.count || 0,
+        purchasesCount: purchasesRes.count || 0,
+        recentActivity: recentActivityRes.data || []
+      };
+    },
+    enabled: !!userId,
+  });
+}
+
+/**
+ * Hard-deletes a user and all their associated data via the
+ * admin_delete_user(p_user_id) SECURITY DEFINER RPC (migration 00078).
+ *
+ * NOTE: This bypasses the Supabase dashboard which fails due to
+ * orders.listing_id ON DELETE RESTRICT blocking cascade from listings.
+ * Only callable by users with is_admin = true.
+ */
+export function useAdminDeleteUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.rpc('admin_delete_user', {
+        p_user_id: userId,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+}
+
+export interface CreateAdminUserParams {
+  email: string;
+  displayName: string;
+  password?: string;
+  role: string;
+  schoolId: string;
+}
+
+export function useCreateAdminUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: CreateAdminUserParams) => {
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: params.email,
+          displayName: params.displayName,
+          password: params.password || 'password123',
+          role: params.role,
+          schoolId: params.schoolId,
+        }
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+}
+
+export function useUpdateUserSchool() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userId, schoolId }: { userId: string; schoolId: string }) => {
+      // Step 1: Look up the school name so we can sync both fields
+      const { data: schoolData, error: schoolErr } = await supabase
+        .from(TABLES.COLLEGES)
+        .select('name')
+        .eq('id', schoolId)
+        .single();
+
+      if (schoolErr) throw schoolErr;
+
+      // NOTE: user_profiles has two school fields:
+      //   school_id — FK to colleges table (used for data isolation and filtering)
+      //   school     — legacy text field used by the Flutter app for display
+      // Both must be kept in sync whenever a user's school is changed.
+      const { data, error } = await supabase
+        .from(TABLES.USER_PROFILES)
+        .update({
+          school_id: schoolId,
+          school: schoolData.name,
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'detail', userId] });
+      queryClient.invalidateQueries({ queryKey: ['user-summary', userId] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
   });
 }

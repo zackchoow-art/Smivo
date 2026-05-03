@@ -7,13 +7,14 @@ import { Search, ChevronLeft, ChevronRight, Filter, Loader2 } from 'lucide-react
 import { format } from 'date-fns';
 import { useAuditLogs, type AuditLogFilters } from '@/hooks/useAuditLogs';
 import { AuditDetailDialog } from '@/components/audit/AuditDetailDialog';
+import { AuditTargetSummary } from '@/components/audit/AuditTargetSummary';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
-import { translateAction, translateTarget } from '@/lib/audit-translations';
-import type { AuditLog } from '@/types';
+import { translateAction } from '@/lib/audit-translations';
+import type { AuditLogWithAdmin } from '@/types';
 
 export function AuditLogPage() {
   const [page, setPage] = useState(0);
-  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLogWithAdmin | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<AuditLogFilters>({});
   const [filterDraft, setFilterDraft] = useState<AuditLogFilters>({});
@@ -148,16 +149,29 @@ export function AuditLogPage() {
                       {format(new Date(log.created_at), 'MM-dd HH:mm')}
                     </td>
                     <td>
-                      <code className="audit-id">{log.admin_id.slice(0, 8)}</code>
+                      <div className="audit-admin-cell">
+                        {log.admin_avatar ? (
+                          <img src={log.admin_avatar} alt="Admin" className="audit-admin-avatar" />
+                        ) : (
+                          <div className="audit-admin-avatar-placeholder">
+                            {log.admin_name ? log.admin_name.charAt(0).toUpperCase() : 'A'}
+                          </div>
+                        )}
+                        <div className="audit-admin-info">
+                          <span className="audit-admin-name">{log.admin_name || 'System Admin'}</span>
+                          <code className="audit-id">{log.admin_id.slice(0, 8)}</code>
+                        </div>
+                      </div>
                     </td>
                     <td>
                       <span className="audit-action-chip">{translateAction(log.action)}</span>
                     </td>
                     <td>
-                      <span className="audit-target-type">{translateTarget(log.target_type)}</span>
-                      {log.target_id && (
-                        <code className="audit-id"> {log.target_id.slice(0, 8)}</code>
-                      )}
+                      <AuditTargetSummary 
+                        targetType={log.target_type} 
+                        targetId={log.target_id} 
+                        payload={log.payload} 
+                      />
                     </td>
                     <td>
                       {log.status_before || log.status_after ? (
@@ -466,6 +480,109 @@ export function AuditLogPage() {
 
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+
+        /* Admin Cell Styles */
+        .audit-admin-cell {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .audit-admin-avatar {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 1px solid var(--color-border);
+        }
+        .audit-admin-avatar-placeholder {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: var(--color-info);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 12px;
+        }
+        .audit-admin-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .audit-admin-name {
+          font-weight: 600;
+          color: var(--color-text-primary);
+          font-size: 13px;
+        }
+
+        /* Target Card Styles */
+        .audit-target-card {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          max-width: 250px;
+        }
+        .target-icon {
+          width: 28px;
+          height: 28px;
+          border-radius: var(--radius-sm);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          flex-shrink: 0;
+        }
+        .target-avatar, .target-thumb {
+          width: 28px;
+          height: 28px;
+          border-radius: var(--radius-sm);
+          object-fit: cover;
+          border: 1px solid var(--color-border);
+          flex-shrink: 0;
+        }
+        .target-avatar {
+          border-radius: 50%;
+        }
+        .target-info {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        .target-type {
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--color-text-tertiary);
+          text-transform: uppercase;
+        }
+        .target-title {
+          font-weight: 500;
+          color: var(--color-text-primary);
+          font-size: 13px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .target-subtitle {
+          font-size: 11px;
+          color: var(--color-text-tertiary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .bg-info { background: var(--color-info); }
+        .bg-success { background: var(--color-success); }
+        .bg-danger { background: var(--color-danger); }
+        .bg-warning { background: var(--color-warning); color: #000; }
+        .bg-gray { background: var(--color-text-tertiary); }
+        .text-muted { color: var(--color-text-tertiary); }
+        .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: .5; }
         }
       `}</style>
     </div>

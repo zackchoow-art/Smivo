@@ -30,6 +30,9 @@ class FeedbackRepository {
         if (deviceInfo != null) 'device_info': deviceInfo,
       });
     } on PostgrestException catch (e) {
+      if (e.message.contains('row-level security policy')) {
+        throw DatabaseException('Action denied. Your account may be restricted.', e);
+      }
       throw DatabaseException(e.message, e);
     }
   }

@@ -2,7 +2,19 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useListingModerationDetail, useModerateListing } from '@/hooks/useListingModeration';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserSummary } from '@/hooks/useUsers';
 import { MODERATION_STATUS } from '@/lib/constants';
+import { UserSummaryPopup } from '@/components/users/UserSummaryPopup';
+import { showToast } from '@/hooks/useToast';
+
+const REJECT_PRESETS = [
+  'Inappropriate content',
+  'Prohibited item',
+  'Spam or misleading',
+  'Wrong category',
+  'Not college-related',
+  'Counterfeit or fake'
+];
 
 export function ListingModerationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -11,10 +23,15 @@ export function ListingModerationDetailPage() {
 
   const { data: listing, isLoading, error } = useListingModerationDetail(id);
   const moderateMutation = useModerateListing();
+  
+  const { data: sellerSummary } = useUserSummary(listing?.seller?.id || null);
 
   const [rejectReason, setRejectReason] = useState('');
+  const [selectedPreset, setSelectedPreset] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [popupUser, setPopupUser] = useState<string | null>(null);
+  const [showActivity, setShowActivity] = useState(false);
 
   const handleAction = async (action: 'approve' | 'reject' | 'takedown') => {
     if (!admin || !listing) return;
@@ -24,23 +41,36 @@ export function ListingModerationDetailPage() {
       return;
     }
 
-    if (action === 'reject' && showRejectForm && !rejectReason.trim()) {
-      alert('Please provide a rejection reason');
+    if (action === 'reject' && showRejectForm && !rejectReason.trim() && !selectedPreset) {
+      showToast('Please select a preset reason or provide a custom reason before submitting.', 'warning');
       return;
     }
 
     try {
+      const finalReason = action === 'reject' 
+        ? [selectedPreset, rejectReason.trim()].filter(Boolean).join(' - ') 
+        : undefined;
+
       await moderateMutation.mutateAsync({
         id: listing.id,
         action,
-        reason: action === 'reject' ? rejectReason : undefined,
+        reason: finalReason,
         adminId: admin?.user_id ?? ""
       });
-      // Option 1: navigate back to list
-      navigate('/moderation/listings');
-      // Option 2: stay on page and show success msg
+      
+      showToast(`Listing successfully ${action}ed.`, 'success');
+      
+      if (listing.next_id) {
+        navigate(`/moderation/listings/${listing.next_id}`);
+        setShowRejectForm(false);
+        setRejectReason('');
+        setSelectedPreset('');
+      } else {
+        navigate('/moderation/listings');
+      }
     } catch (err) {
       console.error('Moderation action failed', err);
+      showToast('Failed to perform moderation action', 'error');
     }
   };
 
@@ -111,7 +141,13 @@ export function ListingModerationDetailPage() {
           <div className="lmd-sidebar-card">
             <h3 className="lmd-sidebar-title">Seller Profile</h3>
             {listing.seller ? (
-              <div className="lmd-seller-section">
+              <div 
+                className="lmd-seller-section" 
+                style={{ position: 'relative', cursor: 'pointer' }}
+                onClick={() => {
+                  if (listing.seller?.id) setPopupUser(listing.seller.id);
+                }}
+              >
                 <div className="lmd-seller-identity">
                   {listing.seller.avatar_url ? (
                     <img src={listing.seller.avatar_url} alt="" className="lmd-seller-avatar" />
@@ -129,21 +165,83 @@ export function ListingModerationDetailPage() {
                 <div className="lmd-seller-stats">
                   <div className="lmd-seller-stat">
                     <div className="lmd-seller-stat-label">Listings</div>
-                    <div className="lmd-seller-stat-value">—</div>
+                    <div className="lmd-seller-stat-value">{sellerSummary?.listingsCount ?? '—'}</div>
                   </div>
                   <div className="lmd-seller-stat">
                     <div className="lmd-seller-stat-label">Orders</div>
-                    <div className="lmd-seller-stat-value">—</div>
+                    <div className="lmd-seller-stat-value">{sellerSummary?.purchasesCount ?? '—'}</div>
                   </div>
                   <div className="lmd-seller-stat">
                     <div className="lmd-seller-stat-label">Reports</div>
-                    <div className="lmd-seller-stat-value lmd-seller-stat-value--danger">—</div>
+                    <div className={`lmd-seller-stat-value ${sellerSummary && sellerSummary.reportsCount > 0 ? 'lmd-seller-stat-value--danger' : ''}`}>
+                      {sellerSummary?.reportsCount ?? '—'}
+                    </div>
                   </div>
                   <div className="lmd-seller-stat">
                     <div className="lmd-seller-stat-label">Bans</div>
-                    <div className="lmd-seller-stat-value lmd-seller-stat-value--danger">—</div>
+                    <div className={`lmd-seller-stat-value ${sellerSummary && sellerSummary.punishmentsCount > 0 ? 'lmd-seller-stat-value--danger' : ''}`}>
+                      {sellerSummary?.punishmentsCount ?? '—'}
+                    </div>
                   </div>
                 </div>
+                
+                {sellerSummary?.activeBans && sellerSummary.activeBans.length > 0 && (
+                  <div className="lmd-active-bans" style={{ marginTop: '12px', padding: '12px', background: 'var(--color-danger-light)', borderRadius: 'var(--radius-sm)' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-danger)', marginBottom: '8px' }}>Active Restrictions</div>
+                    {sellerSummary.activeBans.map((ban, i) => (
+                      <div key={i} style={{ fontSize: '13px', color: 'var(--color-danger)', display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ textTransform: 'capitalize' }}>{ban.scope.replace('_', ' ')}</span>
+                        <span>{ban.expires_at ? new Date(ban.expires_at).toLocaleDateString() : 'Permanent'}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {sellerSummary && (
+                  <div className="lmd-activity-section" style={{ marginTop: '8px' }}>
+                    <button 
+                      className="lmd-btn lmd-btn--cancel"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowActivity(!showActivity);
+                      }}
+                      style={{ width: '100%', fontSize: '13px', padding: '8px' }}
+                    >
+                      {showActivity ? 'Hide Recent Activity' : 'View Recent Activity'}
+                    </button>
+
+                    {showActivity && (
+                      <div className="lmd-activity-list" onClick={(e) => e.stopPropagation()}>
+                        {sellerSummary.recentActivity.length === 0 ? (
+                          <div className="lmd-empty-activity">No recent activity found.</div>
+                        ) : (
+                          sellerSummary.recentActivity.map((activity: any) => {
+                            const isBuyer = activity.buyer_id === listing.seller?.id;
+                            const roleLabel = isBuyer ? 'Bought' : 'Sold';
+                            return (
+                              <div key={activity.id} className="lmd-activity-item">
+                                <div className="lmd-activity-header">
+                                  <span className={`lmd-role-badge ${isBuyer ? 'buyer' : 'seller'}`}>{roleLabel}</span>
+                                  <span className="lmd-activity-date">{new Date(activity.created_at).toLocaleDateString()}</span>
+                                </div>
+                                <div className="lmd-activity-title">{activity.listing?.title || 'Unknown Item'}</div>
+                                <div className="lmd-activity-status">
+                                  <span>Status: {activity.status}</span>
+                                  <span style={{ fontWeight: 'bold' }}>${Number(activity.total_price).toFixed(2)}</span>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {popupUser === listing.seller.id && (
+                  <UserSummaryPopup userId={listing.seller.id} onClose={() => {
+                    setPopupUser(null);
+                  }} />
+                )}
               </div>
             ) : (
               <div className="lmd-missing-msg">Seller info missing</div>
@@ -156,10 +254,21 @@ export function ListingModerationDetailPage() {
             {showRejectForm ? (
               <div className="lmd-action-group">
                 <label className="lmd-form-label">Reason for Rejection</label>
+                <div className="lmd-presets">
+                  {REJECT_PRESETS.map(preset => (
+                    <button
+                      key={preset}
+                      className={`lmd-preset-tag ${selectedPreset === preset ? 'lmd-preset-tag--active' : ''}`}
+                      onClick={() => setSelectedPreset(preset === selectedPreset ? '' : preset)}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
                 <textarea
                   rows={3}
                   className="lmd-textarea"
-                  placeholder="Explain why this listing is rejected..."
+                  placeholder="Additional details (optional if preset selected)..."
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                 />
@@ -172,7 +281,11 @@ export function ListingModerationDetailPage() {
                     Confirm Reject
                   </button>
                   <button
-                    onClick={() => setShowRejectForm(false)}
+                    onClick={() => {
+                      setShowRejectForm(false);
+                      setRejectReason('');
+                      setSelectedPreset('');
+                    }}
                     className="lmd-btn lmd-btn--cancel"
                   >
                     Cancel
@@ -208,6 +321,25 @@ export function ListingModerationDetailPage() {
                 )}
               </div>
             )}
+            
+            <div className="lmd-nav-actions" style={{ display: 'flex', gap: '8px', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--color-border-light)' }}>
+              <button
+                className="lmd-btn lmd-btn--cancel"
+                disabled={!listing.prev_id}
+                onClick={() => listing.prev_id && navigate(`/moderation/listings/${listing.prev_id}`)}
+                style={{ flex: 1, padding: '8px' }}
+              >
+                &larr; Prev
+              </button>
+              <button
+                className="lmd-btn lmd-btn--cancel"
+                disabled={!listing.next_id}
+                onClick={() => listing.next_id && navigate(`/moderation/listings/${listing.next_id}`)}
+                style={{ flex: 1, padding: '8px' }}
+              >
+                Next &rarr;
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -261,6 +393,10 @@ export function ListingModerationDetailPage() {
         /* Action panel */
         .lmd-action-group { display: flex; flex-direction: column; gap: 10px; }
         .lmd-form-label { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+        .lmd-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+        .lmd-preset-tag { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-bg-secondary); font-size: 12px; color: var(--color-text-secondary); cursor: pointer; transition: all 0.2s; }
+        .lmd-preset-tag:hover { background: var(--color-border); }
+        .lmd-preset-tag--active { background: var(--color-info-light); border-color: var(--color-info); color: var(--color-info); }
         .lmd-textarea { width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 8px; font-size: 13px; resize: vertical; box-sizing: border-box; }
         .lmd-textarea:focus { outline: none; border-color: var(--color-border-focus); }
         .lmd-confirm-row { display: flex; gap: 8px; }
@@ -274,6 +410,18 @@ export function ListingModerationDetailPage() {
         .lmd-btn--takedown:hover:not(:disabled) { opacity: 0.88; }
         .lmd-btn--reject-confirm { background: var(--color-danger); color: #fff; flex: 1; }
         .lmd-btn--cancel        { background: var(--color-bg-tertiary); color: var(--color-text-primary); padding: 10px 12px; width: auto; }
+
+        /* Activity List */
+        .lmd-activity-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-height: 250px; overflow-y: auto; }
+        .lmd-empty-activity { font-size: 13px; color: var(--color-text-tertiary); text-align: center; padding: 12px 0; }
+        .lmd-activity-item { padding: 12px; background: var(--color-bg-secondary); border-radius: var(--radius-sm); font-size: 13px; }
+        .lmd-activity-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .lmd-role-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .lmd-role-badge.buyer { background: #dbeafe; color: #1e3a8a; }
+        .lmd-role-badge.seller { background: #dcfce7; color: #166534; }
+        .lmd-activity-date { color: var(--color-text-tertiary); font-size: 12px; }
+        .lmd-activity-title { font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lmd-activity-status { color: var(--color-text-secondary); text-transform: capitalize; display: flex; justify-content: space-between; }
       `}</style>
     </div>
   );

@@ -121,3 +121,20 @@ class UserReports extends _$UserReports {
     return repo.getReportsByReporter(user.id);
   }
 }
+
+/// Provides a list of moderation actions (warn/restrict) that were applied
+/// to the current user as the *reported* party.
+///
+/// NOTE: Dismissed reports are filtered out by the RLS policy, so this list
+/// only contains records the user genuinely needs to be aware of.
+@riverpod
+class UserPenalties extends _$UserPenalties {
+  @override
+  Future<List<ContentReport>> build() async {
+    final user = ref.watch(authStateProvider).value;
+    if (user == null) return [];
+
+    final repo = ref.watch(moderationRepositoryProvider);
+    return repo.getReportPenaltiesAgainstUser(user.id);
+  }
+}

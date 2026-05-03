@@ -8,6 +8,7 @@ class AppRoutes {
   // ── Route Names ────────────────────────────────────────────
   static const String splash = 'splash';
   static const String login = 'login';
+  static const String forgotPassword = 'forgotPassword';
   static const String register = 'register';
   static const String emailVerification = 'email-verification';
   static const String profileSetup = 'profileSetup';
@@ -44,6 +45,7 @@ class AppRoutes {
   // ── Route Paths ────────────────────────────────────────────
   static const String splashPath = '/';
   static const String loginPath = '/login';
+  static const String forgotPasswordPath = '/forgot-password';
   static const String registerPath = '/register';
   static const String emailVerificationPath = '/verify-email';
   static const String profileSetupPath = '/profile-setup';

@@ -14,6 +14,8 @@ _Message _$MessageFromJson(Map<String, dynamic> json) => _Message(
   messageType: json['message_type'] as String? ?? 'text',
   imageUrl: json['image_url'] as String?,
   isRead: json['is_read'] as bool? ?? false,
+  isHidden: json['is_hidden'] as bool? ?? false,
+  hiddenReason: json['hidden_reason'] as String?,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
   sender:
@@ -30,6 +32,8 @@ Map<String, dynamic> _$MessageToJson(_Message instance) => <String, dynamic>{
   'message_type': instance.messageType,
   'image_url': instance.imageUrl,
   'is_read': instance.isRead,
+  'is_hidden': instance.isHidden,
+  'hidden_reason': instance.hiddenReason,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
   'sender': instance.sender,

@@ -186,3 +186,70 @@ abstract class _$UserReports extends $AsyncNotifier<List<ContentReport>> {
     element.handleCreate(ref, build);
   }
 }
+
+/// Provides a list of moderation actions (warn/restrict) that were applied
+/// to the current user as the *reported* party.
+///
+/// NOTE: Dismissed reports are filtered out by the RLS policy, so this list
+/// only contains records the user genuinely needs to be aware of.
+
+@ProviderFor(UserPenalties)
+final userPenaltiesProvider = UserPenaltiesProvider._();
+
+/// Provides a list of moderation actions (warn/restrict) that were applied
+/// to the current user as the *reported* party.
+///
+/// NOTE: Dismissed reports are filtered out by the RLS policy, so this list
+/// only contains records the user genuinely needs to be aware of.
+final class UserPenaltiesProvider
+    extends $AsyncNotifierProvider<UserPenalties, List<ContentReport>> {
+  /// Provides a list of moderation actions (warn/restrict) that were applied
+  /// to the current user as the *reported* party.
+  ///
+  /// NOTE: Dismissed reports are filtered out by the RLS policy, so this list
+  /// only contains records the user genuinely needs to be aware of.
+  UserPenaltiesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'userPenaltiesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$userPenaltiesHash();
+
+  @$internal
+  @override
+  UserPenalties create() => UserPenalties();
+}
+
+String _$userPenaltiesHash() => r'5e05051401f8c85de743d8a6be1c57850fa395e1';
+
+/// Provides a list of moderation actions (warn/restrict) that were applied
+/// to the current user as the *reported* party.
+///
+/// NOTE: Dismissed reports are filtered out by the RLS policy, so this list
+/// only contains records the user genuinely needs to be aware of.
+
+abstract class _$UserPenalties extends $AsyncNotifier<List<ContentReport>> {
+  FutureOr<List<ContentReport>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<ContentReport>>, List<ContentReport>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<ContentReport>>, List<ContentReport>>,
+              AsyncValue<List<ContentReport>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

@@ -2,11 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { TABLES, DEFAULT_PAGE_SIZE, MODERATION_STATUS } from '@/lib/constants';
 import type { ListingWithDetails, ModerationStatus } from '@/types';
+import { useSchoolScopeStore } from '@/stores/school-scope-store';
 
 const LISTINGS_QUERY_KEY = ['listings'] as const;
 
 export interface ListingModerationFilters {
   status?: ModerationStatus | 'all';
+}
+
+export interface AllListingsFilters {
+  dateSort?: 'newest' | 'oldest';
+  categoryId?: string | 'all';
 }
 
 /**
@@ -15,8 +21,10 @@ export interface ListingModerationFilters {
  * In Supabase, we can sort by moderation_priority field, or handle it on the client, but for simplicity, we add sorting to the request if specific filtering is supported.
  */
 export function useListingsModeration(page: number, filters?: ListingModerationFilters) {
+  const currentCollegeId = useSchoolScopeStore((state) => state.currentCollegeId);
+
   return useQuery({
-    queryKey: [...LISTINGS_QUERY_KEY, 'list', page, filters],
+    queryKey: [...LISTINGS_QUERY_KEY, 'list', page, filters, currentCollegeId],
     queryFn: async () => {
       const from = page * DEFAULT_PAGE_SIZE;
       const to = from + DEFAULT_PAGE_SIZE - 1;
@@ -28,14 +36,17 @@ export function useListingsModeration(page: number, filters?: ListingModerationF
           seller:user_profiles!seller_id(id, display_name, email, avatar_url)
         `, { count: 'exact' });
 
+      // NOTE: Filter by school scope — non-sysadmin admins only see their school's listings
+      if (currentCollegeId) {
+        query = query.eq('school_id', currentCollegeId);
+      }
+
       if (filters?.status && filters.status !== 'all') {
         query = query.eq('moderation_status', filters.status);
       }
 
-      // For demonstration, prioritize sorting by moderation_priority, then by time in descending order.
-      // Since priority is text, direct sorting might be alphabetical; ideally, use specific sorting logic.
-      // Here, we simply sort by created_at descending.
-      query = query.order('created_at', { ascending: false });
+      // Sorted by intercepted time (created_at), oldest first.
+      query = query.order('created_at', { ascending: true });
       query = query.range(from, to);
 
       const { data, error, count } = await query;
@@ -70,7 +81,36 @@ export function useListingModerationDetail(id: string | undefined) {
         .single();
         
       if (error) throw error;
-      return data as ListingWithDetails;
+      
+      const mapped = data as ListingWithDetails;
+      
+      try {
+        // Find next/prev within the pending_review queue
+        const { data: nextData } = await supabase
+          .from(TABLES.LISTINGS)
+          .select('id')
+          .eq('moderation_status', MODERATION_STATUS.PENDING_REVIEW)
+          .lt('created_at', data.created_at)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const { data: prevData } = await supabase
+          .from(TABLES.LISTINGS)
+          .select('id')
+          .eq('moderation_status', MODERATION_STATUS.PENDING_REVIEW)
+          .gt('created_at', data.created_at)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        mapped.next_id = nextData?.id;
+        mapped.prev_id = prevData?.id;
+      } catch (e) {
+        console.error('Failed to fetch prev/next listing ids', e);
+      }
+
+      return mapped;
     },
     enabled: !!id,
   });
@@ -158,29 +198,135 @@ export function useModerateListing() {
 
 /**
  * Mutation to batch approve or reject listings.
+ * NOTE: When rejecting, we also set status = 'inactive' so the listing is
+ * immediately hidden from the app home feed (which filters by status='active').
+ * moderation_status='rejected' provides the admin-level audit trail.
  */
 export function useBatchModerateListings() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ ids, action, adminId }: { ids: string[], action: 'approve' | 'reject', adminId: string }) => {
-      const targetStatus = action === 'approve' ? MODERATION_STATUS.APPROVED : MODERATION_STATUS.REJECTED;
-      
+      const targetModerationStatus = action === 'approve' ? MODERATION_STATUS.APPROVED : MODERATION_STATUS.REJECTED;
+
+      // NOTE: When rejecting, we must also deactivate the listing.
+      // The listings.status CHECK constraint only allows: active, inactive, reserved, sold, rented.
+      // 'rejected' is NOT a valid status — that lives in moderation_status.
+      const updatePayload: Record<string, any> = {
+        moderation_status: targetModerationStatus,
+        moderated_by: adminId,
+        moderated_at: new Date().toISOString(),
+      };
+
+      if (action === 'reject') {
+        // IMPORTANT: Set status to inactive so the listing disappears from
+        // the app home feed immediately, regardless of client-side filter version.
+        updatePayload.status = 'inactive';
+      }
+
       const { error } = await supabase
         .from(TABLES.LISTINGS)
-        .update({
-          moderation_status: targetStatus,
-          moderated_by: adminId,
-          moderated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .in('id', ids);
 
       if (error) throw error;
-      
-      // We skip drafting individual drafts/logs here for simplicity, but in a real app
-      // you'd batch insert those as well.
-      
+
+      // Batch audit log insert for all affected listings
+      const auditRows = ids.map((listingId) => ({
+        admin_id: adminId,
+        action: `listing_${action}`,
+        target_type: 'listing',
+        target_id: listingId,
+        payload: { batch: true, action },
+      }));
+
+      const { error: auditError } = await supabase
+        .from(TABLES.ADMIN_AUDIT_LOGS)
+        .insert(auditRows);
+
+      if (auditError) {
+        console.error('[useBatchModerateListings] audit log failed:', auditError);
+      }
+
       return ids;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: LISTINGS_QUERY_KEY });
+    },
+  });
+}
+
+/**
+ * Fetch all listings for the All Listings page.
+ */
+export function useAllListings(page: number, filters?: AllListingsFilters) {
+  const currentCollegeId = useSchoolScopeStore((state) => state.currentCollegeId);
+
+  return useQuery({
+    queryKey: [...LISTINGS_QUERY_KEY, 'all-listings', page, filters, currentCollegeId],
+    queryFn: async () => {
+      const from = page * DEFAULT_PAGE_SIZE;
+      const to = from + DEFAULT_PAGE_SIZE - 1;
+      
+      let query = supabase
+        .from(TABLES.LISTINGS)
+        .select(`
+          *,
+          seller:user_profiles!seller_id(id, display_name, email, avatar_url)
+        `, { count: 'exact' });
+
+      // NOTE: Filter by school scope — non-sysadmin admins only see their school's listings
+      if (currentCollegeId) {
+        query = query.eq('school_id', currentCollegeId);
+      }
+
+      if (filters?.categoryId && filters.categoryId !== 'all') {
+        query = query.eq('category_id', filters.categoryId);
+      }
+
+      query = query.order('created_at', { ascending: filters?.dateSort === 'oldest' });
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      
+      return { 
+        data: (data ?? []) as any[], 
+        count: count ?? 0 
+      };
+    },
+  });
+}
+
+/**
+ * Simulate an AI review by tagging a listing and sending it to the System Queue.
+ */
+export function useSimulateAIReview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      listingId,
+      trigger,
+      action,
+      priority
+    }: {
+      listingId: string;
+      trigger: string;
+      action: string;
+      priority: string;
+    }) => {
+      const { error } = await supabase
+        .from(TABLES.LISTINGS)
+        .update({
+          moderation_status: MODERATION_STATUS.PENDING_REVIEW,
+          moderation_trigger: trigger,
+          moderation_note: `[AI SIMULATION] Recommendation: ${action}`,
+          moderation_priority: priority
+        })
+        .eq('id', listingId);
+
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LISTINGS_QUERY_KEY });

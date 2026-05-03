@@ -23,11 +23,14 @@ import { UsersPage } from '@/pages/users/UsersPage';
 import { UserDetailPage } from '@/pages/users/UserDetailPage';
 import { FeedbackListPage } from '@/pages/feedback/FeedbackListPage';
 import { FeedbackDetailPage } from '@/pages/feedback/FeedbackDetailPage';
+import { AllListingsPage } from '@/pages/moderation/AllListingsPage';
 import { ListingModerationPage } from '@/pages/moderation/ListingModerationPage';
 import { ListingModerationDetailPage } from '@/pages/moderation/ListingModerationDetailPage';
+import { ListingReportDetailPage } from '@/pages/moderation/ListingReportDetailPage';
 import { PushOverviewPage } from '@/pages/push/PushOverviewPage';
 import { PushCreatePage } from '@/pages/push/PushCreatePage';
 import { PushHistoryPage } from '@/pages/push/PushHistoryPage';
+import { TestDataCleanupPage } from '@/pages/settings/TestDataCleanupPage';
 
 export const router = createBrowserRouter([
   // Public routes
@@ -47,8 +50,10 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <DashboardPage /> },
 
       // 02-05 Content Moderation
+      { path: 'moderation/all-listings', element: <AllListingsPage /> },
       { path: 'moderation/listings', element: <ListingModerationPage /> },
       { path: 'moderation/listings/:id', element: <ListingModerationDetailPage /> },
+      { path: 'moderation/listing-reports/:id', element: <ListingReportDetailPage /> },
       { path: 'moderation/chat-reports', element: <ChatReportsPage /> },
       { path: 'moderation/chat-reports/:id', element: <ChatReportDetailPage /> },
       { path: 'moderation/sensitive-words', element: <SensitiveWordsPage /> },
@@ -76,6 +81,7 @@ export const router = createBrowserRouter([
       { path: 'settings/admins', element: <AdminsPage /> },
       { path: 'settings/colleges', element: <CollegesPage /> },
       { path: 'settings/profile', element: <ProfilePage /> },
+      { path: 'settings/cleanup', element: <TestDataCleanupPage /> },
 
       // 16 Audit Log
       { path: 'audit-log', element: <AuditLogPage /> },

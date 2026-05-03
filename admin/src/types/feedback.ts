@@ -6,7 +6,7 @@
  */
 
 // DB enum values for the `type` column
-export type FeedbackType = 'bug_report' | 'feature_request' | 'general';
+export type FeedbackType = 'bug' | 'improvement' | 'feature_request' | 'other';
 
 // Kept for backward-compat; FeedbackCategory is an alias of FeedbackType
 export type FeedbackCategory = FeedbackType;

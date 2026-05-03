@@ -18,7 +18,10 @@ const collegeSchema = z.object({
   primary_color: z.string().nullable().optional(),
   website_url: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
-  student_count: z.number().int().positive().nullable().optional(),
+  student_count: z.preprocess((val) => {
+    if (val === '' || val === null || val === undefined || Number.isNaN(val)) return null;
+    return Number(val);
+  }, z.number().int().positive().nullable().optional()),
   address: z.string().nullable().optional(),
   city: z.string().nullable().optional(),
   state: z.string().nullable().optional(),
@@ -113,7 +116,7 @@ export function CollegeDialog({ college, onClose, onSubmit, isSubmitting }: Coll
             {/* Slug */}
             <div className="cdialog-field">
               <label>Slug *</label>
-              <input {...register('slug')} placeholder="smith" disabled={isEditing} />
+              <input {...register('slug')} placeholder="smith" readOnly={isEditing} className={isEditing ? 'readonly' : ''} />
               {errors.slug && <span className="cdialog-error">{errors.slug.message}</span>}
             </div>
 
@@ -279,7 +282,8 @@ export function CollegeDialog({ college, onClose, onSubmit, isSubmitting }: Coll
           border-color: var(--color-border-focus);
         }
 
-        .cdialog-field input:disabled {
+        .cdialog-field input:disabled,
+        .cdialog-field input.readonly {
           opacity: 0.5;
           cursor: not-allowed;
         }

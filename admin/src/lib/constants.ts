@@ -50,12 +50,28 @@ export const TABLES = {
   HOURLY_ACTIVE_USERS: 'hourly_active_users',
 } as const;
 
-// ── Admin Roles ──
+// ── Admin Roles (5-level hierarchy, migration 00067) ──
 export const ADMIN_ROLES = {
-  PLATFORM_SUPER_ADMIN: 'platform_super_admin',
-  PLATFORM_MODERATOR: 'platform_moderator',
-  SCHOOL_ADMIN: 'school_admin',
+  // Platform scope — cross-school
+  SYSADMIN:           'sysadmin',           // Only one; full control
+  PLATFORM_ADMIN:     'platform_admin',     // Read/write across all schools
+  PLATFORM_REVIEWER:  'platform_reviewer',  // Read-only across all schools
+  // School scope — per-school only
+  SCHOOL_ADMIN:       'school_admin',       // Read/write within their school(s)
+  SCHOOL_REVIEWER:    'school_reviewer',    // Read-only within their school(s)
+  // Legacy aliases (keep for backward compat with older code)
+  PLATFORM_SUPER_ADMIN: 'sysadmin',
+  PLATFORM_MODERATOR:   'platform_admin',
 } as const;
+
+/** Human-readable label for each admin role */
+export const ADMIN_ROLE_LABELS: Record<string, string> = {
+  sysadmin:           'Super Admin',
+  platform_admin:     'Platform Admin',
+  platform_reviewer:  'Platform Reviewer',
+  school_admin:       'School Admin',
+  school_reviewer:    'School Reviewer',
+};
 
 // ── Moderation Statuses ──
 export const MODERATION_STATUS = {

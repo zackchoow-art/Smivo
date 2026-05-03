@@ -127,6 +127,9 @@ class ModerationRepository {
       if (e.code == '23505') {
         throw const DatabaseException('You have already reported this content.', null);
       }
+      if (e.message.contains('row-level security policy')) {
+        throw DatabaseException('Action denied. Your account may be restricted.', e);
+      }
       throw DatabaseException(e.message, e);
     }
   }
@@ -140,6 +143,28 @@ class ModerationRepository {
             '*, reported_user:user_profiles!content_reports_reported_user_id_fkey(*), listing:listings(*, images:listing_images(*))',
           )
           .eq('reporter_id', reporterId)
+          .order('created_at', ascending: false);
+      return data.map((json) => ContentReport.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches reports where the current user was penalised (warn or restrict).
+  ///
+  /// The RLS policy on content_reports only returns rows where:
+  ///   status = 'resolved' AND action_taken IN ('warn', 'restrict')
+  /// so dismissed reports are never exposed to the reported user.
+  Future<List<ContentReport>> getReportPenaltiesAgainstUser(
+    String userId,
+  ) async {
+    try {
+      final data = await _client
+          .from('content_reports')
+          .select(
+            '*, listing:listings(*, images:listing_images(*))',
+          )
+          .eq('reported_user_id', userId)
           .order('created_at', ascending: false);
       return data.map((json) => ContentReport.fromJson(json)).toList();
     } on PostgrestException catch (e) {

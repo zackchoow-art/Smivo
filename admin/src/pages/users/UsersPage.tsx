@@ -1,15 +1,27 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronLeft, ChevronRight, User, ShieldAlert } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { useUsers } from '@/hooks/useUsers';
+import { useSchoolScopeStore } from '@/stores/school-scope-store';
+
 import { DEFAULT_PAGE_SIZE, RESTRICTION_SCOPE_META } from '@/lib/constants';
 
 export function UsersPage() {
   const navigate = useNavigate();
+  const currentCollegeId = useSchoolScopeStore((state) => state.currentCollegeId);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   
-  const { data, isLoading, error } = useUsers(page, { search });
+  // Filters
+  const [status, setStatus] = useState('all');
+  const [punished, setPunished] = useState('all');
+  
+  const { data, isLoading, error } = useUsers(page, { 
+    search, 
+    schoolId: currentCollegeId || 'all', 
+    status, 
+    punished 
+  });
 
   const totalPages = data ? Math.ceil(data.totalCount / DEFAULT_PAGE_SIZE) : 0;
 
@@ -18,19 +30,44 @@ export function UsersPage() {
     setPage(0);
   };
 
+  const handleFilterChange = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
+    setter(value);
+    setPage(0);
+  };
+
   return (
     <div className="users-container">
       <header className="users-header">
-        <h1 className="page-title">Users</h1>
-        <form className="search-box" onSubmit={handleSearch}>
-          <Search size={18} />
-          <input 
-            type="text" 
-            placeholder="Search by name or email..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </form>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 className="page-title">Users</h1>
+        </div>
+        <div className="users-filters" style={{ marginTop: '16px' }}>
+          <div className="filter-group">
+            <label>Status</label>
+            <select value={status} onChange={(e) => handleFilterChange(setStatus, e.target.value)}>
+              <option value="all">All Statuses</option>
+              <option value="restricted">Restricted Currently</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>History</label>
+            <select value={punished} onChange={(e) => handleFilterChange(setPunished, e.target.value)}>
+              <option value="all">All Users</option>
+              <option value="yes">Has Past Punishments</option>
+            </select>
+          </div>
+
+          <form className="search-box" onSubmit={handleSearch}>
+            <Search size={18} />
+            <input 
+              type="text" 
+              placeholder="Search by name or email..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </form>
+        </div>
       </header>
 
       <div className="users-table-wrapper">
@@ -68,7 +105,14 @@ export function UsersPage() {
                       </div>
                     </td>
                     <td><span className="user-email">{user.email}</span></td>
-                    <td><span className="user-college">{(user as any).school || '—'}</span></td>
+                    <td>
+                      <span className="user-college">{(user as any).school || '—'}</span>
+                      {(user as any).is_admin && ((user as any).managed_schools?.length > 0) && (
+                         <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
+                           Managed: {(user as any).managed_schools.join(', ')}
+                         </div>
+                      )}
+                    </td>
                     <td>
                       {restrictions.length > 0 ? (
                         <div className="restriction-pills">
@@ -155,6 +199,40 @@ export function UsersPage() {
           color: var(--color-text-primary);
         }
 
+        .users-filters {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .filter-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .filter-group label {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--color-text-secondary);
+        }
+
+        .filter-group select {
+          padding: 8px 12px;
+          border: 1px solid var(--color-border-subtle);
+          border-radius: var(--radius-md);
+          background: var(--color-bg-primary);
+          color: var(--color-text-primary);
+          font-size: 13px;
+          outline: none;
+          cursor: pointer;
+          transition: border-color 0.2s;
+        }
+
+        .filter-group select:focus {
+          border-color: var(--color-primary);
+        }
+
         .search-box {
           display: flex;
           align-items: center;
@@ -163,7 +241,7 @@ export function UsersPage() {
           border: 1px solid var(--color-border-subtle);
           border-radius: var(--radius-md);
           padding: 8px 14px;
-          min-width: 300px;
+          min-width: 250px;
           color: var(--color-text-tertiary);
           transition: border-color 0.2s;
         }
@@ -325,6 +403,7 @@ export function UsersPage() {
           color: var(--color-text-primary);
         }
       `}</style>
+      
     </div>
   );
 }

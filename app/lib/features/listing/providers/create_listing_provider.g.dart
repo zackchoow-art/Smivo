@@ -9,6 +9,44 @@ part of 'create_listing_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(userListingBan)
+final userListingBanProvider = UserListingBanProvider._();
+
+final class UserListingBanProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DateTime?>,
+          DateTime?,
+          FutureOr<DateTime?>
+        >
+    with $FutureModifier<DateTime?>, $FutureProvider<DateTime?> {
+  UserListingBanProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'userListingBanProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$userListingBanHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DateTime?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DateTime?> create(Ref ref) {
+    return userListingBan(ref);
+  }
+}
+
+String _$userListingBanHash() => r'10efa7d7732e2e7cf82473c601ed9a9d2bbcac47';
+
 @ProviderFor(ListingFormMode)
 final listingFormModeProvider = ListingFormModeFamily._();
 
@@ -256,7 +294,7 @@ final class CreateListingActionProvider
 }
 
 String _$createListingActionHash() =>
-    r'a3e1a0ddbb358b789479515a43bfdb1053262829';
+    r'abc29cd9f55c070440566162f3f79e16739705a2';
 
 /// Handles the async submission of the create listing form.
 ///

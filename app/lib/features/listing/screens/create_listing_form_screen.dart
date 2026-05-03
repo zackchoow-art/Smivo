@@ -93,7 +93,83 @@ class _CreateListingFormScreenState
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = Breakpoints.isDesktop(screenWidth);
 
-    return Scaffold(
+    final banAsync = ref.watch(userListingBanProvider);
+
+    return banAsync.when(
+      loading: () => Scaffold(
+        backgroundColor: colors.surfaceContainerLowest,
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, __) => Scaffold(
+        backgroundColor: colors.surfaceContainerLowest,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Failed to check account status'),
+              TextButton(
+                onPressed: () => context.pop(),
+                child: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      data: (banExpiration) {
+        if (banExpiration != null) {
+          final isPermanent = banExpiration.year == 2099;
+          final dateStr = isPermanent 
+              ? 'Permanently' 
+              : '${banExpiration.year}-${banExpiration.month.toString().padLeft(2, '0')}-${banExpiration.day.toString().padLeft(2, '0')}';
+              
+          return Scaffold(
+            backgroundColor: colors.surfaceContainerLowest,
+            body: GestureDetector(
+              onTap: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.goNamed(AppRoutes.home);
+                }
+              },
+              behavior: HitTestBehavior.opaque,
+              child: SafeArea(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.block, size: 64, color: colors.error),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Listing Privileges Suspended',
+                          style: typo.headlineSmall.copyWith(fontWeight: FontWeight.bold, color: colors.onSurface),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          isPermanent 
+                              ? 'Your account has been permanently restricted from creating listings due to violations of our community guidelines.' 
+                              : 'Your ability to create listings has been temporarily suspended.\n\nRestriction lifts on: $dateStr',
+                          style: typo.bodyLarge.copyWith(color: colors.onSurfaceVariant),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 48),
+                        Text(
+                          'Tap anywhere to go back',
+                          style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
       body: SafeArea(
         top: false,
@@ -459,6 +535,8 @@ class _CreateListingFormScreenState
         ),
       ),
     );
+      },
+    );
   }
 
   Widget _buildRentalRateRow(
@@ -752,6 +830,8 @@ class _CategoryTabBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = ref.watch(selectedListingCategoryProvider);
     final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
     final categoriesAsync = ref.watch(mySchoolCategoriesProvider);
 
     return categoriesAsync.when(
@@ -766,24 +846,35 @@ class _CategoryTabBar extends ConsumerWidget {
             child: Center(child: Text('Failed to load categories')),
           ),
       data: (cats) {
-        final slugs = cats.map((c) => c.slug).toList();
-        final initialIndex = slugs.indexOf(selectedCategory ?? '');
-
-        return DefaultTabController(
-          length: slugs.length,
-          initialIndex: initialIndex != -1 ? initialIndex : 0,
-          child: TabBar(
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            onTap:
-                (index) => ref
-                    .read(selectedListingCategoryProvider.notifier)
-                    .setCategory(slugs[index]),
-            labelColor: colors.primary,
-            unselectedLabelColor: colors.onSurfaceVariant,
-            indicatorColor: colors.primary,
-            dividerColor: Colors.transparent,
-            tabs: cats.map((c) => Tab(text: c.name)).toList(),
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: cats.map((c) {
+              final isSelected = selectedCategory == c.slug;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: ChoiceChip(
+                  label: Text(c.name),
+                  selected: isSelected,
+                  selectedColor: colors.primary,
+                  backgroundColor: colors.surfaceContainerLow,
+                  labelStyle: typo.bodyMedium.copyWith(
+                    color: isSelected ? colors.onPrimary : colors.onSurface,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  showCheckmark: false,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(radius.input),
+                    side: BorderSide.none,
+                  ),
+                  onSelected: (selected) {
+                    if (selected) {
+                      ref.read(selectedListingCategoryProvider.notifier).setCategory(c.slug);
+                    }
+                  },
+                ),
+              );
+            }).toList(),
           ),
         );
       },

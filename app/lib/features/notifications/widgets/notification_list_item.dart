@@ -107,23 +107,36 @@ class NotificationListItem extends StatelessWidget {
   }
 
   IconData get _iconData => switch (notification.type) {
-    'order_placed' => Icons.shopping_bag_outlined,
-    'order_accepted' => Icons.check_circle_outline,
-    'order_cancelled' => Icons.cancel_outlined,
-    'order_delivered' => Icons.local_shipping_outlined,
-    'order_completed' => Icons.celebration_outlined,
-    'system' => Icons.campaign_outlined,
-    _ => Icons.notifications_outlined,
+    'order_placed'           => Icons.shopping_bag_outlined,
+    'order_accepted'         => Icons.check_circle_outline,
+    'order_cancelled'        => Icons.cancel_outlined,
+    'order_delivered'        => Icons.local_shipping_outlined,
+    'order_completed'        => Icons.celebration_outlined,
+    'system'                 => Icons.campaign_outlined,
+    // NOTE: Moderation notification types added with migration 00071.
+    // These are sent when admin resolves reports or responds to feedback.
+    'report_resolved'        => Icons.verified_user_outlined,
+    'report_dismissed'       => Icons.info_outline,
+    'moderation_warned'      => Icons.warning_amber_outlined,
+    'moderation_restricted'  => Icons.block_outlined,
+    'feedback_responded'     => Icons.mark_email_read_outlined,
+    _                        => Icons.notifications_outlined,
   };
 
   Color _iconBgColor(SmivoColors colors) => switch (notification.type) {
-    'order_placed' => colors.primary,
-    'order_accepted' => colors.success,
-    'order_cancelled' => colors.error,
-    'order_delivered' => colors.warning,
-    'order_completed' => colors.statusPending,
-    'system' => colors.outlineVariant,
-    _ => colors.outlineVariant,
+    'order_placed'           => colors.primary,
+    'order_accepted'         => colors.success,
+    'order_cancelled'        => colors.error,
+    'order_delivered'        => colors.warning,
+    'order_completed'        => colors.statusPending,
+    'system'                 => colors.outlineVariant,
+    // NOTE: Moderation notification types — use distinct semantic colors.
+    'report_resolved'        => colors.success,
+    'report_dismissed'       => colors.outlineVariant,
+    'moderation_warned'      => colors.warning,
+    'moderation_restricted'  => colors.error,
+    'feedback_responded'     => colors.primary,
+    _                        => colors.outlineVariant,
   };
 
   String _formatTimeAgo(DateTime dateTime) {

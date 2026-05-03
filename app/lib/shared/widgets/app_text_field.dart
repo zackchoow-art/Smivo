@@ -4,7 +4,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
-    required this.label,
+    this.label,
     this.hintText,
     this.controller,
     this.obscureText = false,
@@ -19,7 +19,7 @@ class AppTextField extends StatelessWidget {
     this.enabled = true,
   });
 
-  final String label;
+  final String? label;
   final String? hintText;
   final TextEditingController? controller;
   final bool obscureText;
@@ -42,17 +42,22 @@ class AppTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(label.toUpperCase(), style: typo.labelUppercase),
-            ),
-            if (headerAction != null) headerAction!,
-          ],
-        ),
-        const SizedBox(height: 8),
+        if (label != null || headerAction != null)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (label != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(label!.toUpperCase(), style: typo.labelUppercase),
+                )
+              else
+                const SizedBox.shrink(),
+              if (headerAction != null) headerAction!,
+            ],
+          ),
+        if (label != null || headerAction != null)
+          const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           initialValue: initialValue,

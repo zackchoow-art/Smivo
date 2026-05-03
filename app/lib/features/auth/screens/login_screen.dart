@@ -11,8 +11,10 @@ import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/utils/validators.dart';
+import 'package:smivo/data/models/school.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/shared/providers/system_urls_provider.dart';
+import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -26,6 +28,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  School? _selectedSchool;
 
   // Debug mode toggle - allows using whitelisted test emails
   bool _isDebugMode = false;
@@ -45,10 +49,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final emailValue = _emailController.text.trim();
     final password = _passwordController.text;
 
+    if (!_isDebugMode && _selectedSchool == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select a school first'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
     if (_isDebugMode) {
       await ref.read(authProvider.notifier).loginDebug(emailValue, password);
     } else {
-      await ref.read(authProvider.notifier).login(emailValue, password);
+      await ref.read(authProvider.notifier).login(emailValue, _selectedSchool!.emailDomain, password);
     }
 
     // NOTE: Navigation is handled reactively by router.dart watching authStateProvider.
@@ -85,6 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final activeSchoolsAsync = ref.watch(activeSchoolsProvider);
     final systemUrlsState = ref.watch(systemUrlsProvider);
     final systemUrls = systemUrlsState.value ?? {};
     
@@ -112,21 +127,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = Breakpoints.isDesktop(constraints.maxWidth);
 
             Widget body = SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 38),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Center(
                 child: ContentWidthConstraint(
                   maxWidth: 420,
                   child: Column(
                     children: [
                       // ── Mobile Header Fragment (Simplified Branding) ──────
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       Center(
                         child: GestureDetector(
                           onTapDown: (_) => _startDebugTimer(),
@@ -137,11 +152,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             style: typo.displayLarge.copyWith(
                               fontStyle: FontStyle.italic,
                               color: colors.primary,
+                              fontSize: 48,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 12),
 
                       // ── Main Card ────────────────────────────────────────
                       Container(
@@ -156,7 +172,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ],
                         ),
-                        padding: const EdgeInsets.all(32),
+                        padding: const EdgeInsets.all(24),
                         child: Form(
                           key: _formKey,
                           child: Column(
@@ -166,27 +182,78 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               Text(
                                 'Welcome back.',
                                 textAlign: TextAlign.center,
-                                style: typo.headlineLarge,
+                                style: typo.headlineLarge.copyWith(fontSize: 26),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 6),
                               Text(
-                                'Sign in to access your university\'s exclusive hub.',
+                                'Only valid university emails (.edu) are accepted to ensure a safe campus environment.',
                                 textAlign: TextAlign.center,
-                                style: typo.bodyLarge,
+                                style: typo.bodyMedium,
                               ),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 24),
+
+                              // ── School Selector ─────────────────────────────
+                              if (!_isDebugMode) ...[
+                                activeSchoolsAsync.when(
+                                  data: (schools) {
+                                    if (schools.isEmpty) {
+                                      return const Text('No schools available.');
+                                    }
+                                    
+                                    // Set default if null
+                                    if (_selectedSchool == null) {
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        if (mounted) setState(() => _selectedSchool = schools.first);
+                                      });
+                                    }
+
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          child: Text('SELECT SCHOOL', style: typo.labelUppercase),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        DropdownButtonFormField<School>(
+                                          value: _selectedSchool ?? schools.first,
+                                          items: schools.map((s) => DropdownMenuItem(
+                                            value: s,
+                                            child: Text(s.name, style: typo.bodyMedium),
+                                          )).toList(),
+                                          onChanged: (val) {
+                                            if (val != null) {
+                                              setState(() => _selectedSchool = val);
+                                            }
+                                          },
+                                          decoration: InputDecoration(
+                                            filled: true,
+                                            fillColor: colors.surfaceContainerLow,
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(radius.input),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                          ),
+                                          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.onSurfaceVariant),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  loading: () => const Center(child: CircularProgressIndicator()),
+                                  error: (err, st) => Text('Error loading schools: $err'),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
 
                               // ── Email Field ───────────────────────────────
                               AppTextField(
-                                label:
-                                    _isDebugMode
-                                        ? 'Test Email'
-                                        : 'University Username',
+                                label: _isDebugMode ? 'Test Email' : null,
                                 hintText:
                                     _isDebugMode
                                         ? 'test@smivo.dev'
                                         : 'username',
-                                suffixText: _isDebugMode ? null : '@smith.edu',
+                                suffixText: _isDebugMode ? null : (_selectedSchool != null ? '@${_selectedSchool!.emailDomain}' : '@edu'),
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 validator:
@@ -194,11 +261,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         ? Validators.eduEmail
                                         : Validators.emailPrefix,
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 16),
 
                               // ── Password Field ────────────────────────────
                               AppTextField(
-                                label: 'Password',
                                 hintText: '••••••••',
                                 controller: _passwordController,
                                 obscureText: true,
@@ -207,9 +273,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   size: 16,
                                   color: colors.onSurfaceVariant,
                                 ),
-                                headerAction: GestureDetector(
+                              ),
+                              const SizedBox(height: 12),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: GestureDetector(
                                   onTap: () {
-                                    // TODO: Implement Forgot Password flow
+                                    context.pushNamed(AppRoutes.forgotPassword);
                                   },
                                   child: Text(
                                     'Forgot Password?',
@@ -220,11 +290,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 16),
 
                               // ── Sign In Button ────────────────────────────
                               Container(
-                                height: 60,
+                                height: 56,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(
@@ -291,8 +361,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
 
-
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 24),
 
                               // ── Divider ───────────────────────────────────
                               Stack(
@@ -313,13 +382,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                                     ),
                                   ),
-                                ],
+                              ],
                               ),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 20),
 
                               // ── Join Button ───────────────────────────────
                               SizedBox(
-                                height: 60,
+                                height: 56,
                                 width: double.infinity,
                                 child: OutlinedButton(
                                   onPressed:
@@ -356,7 +425,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 24),
 
                               // ── Footer ────────────────────────────────────
                               Text.rich(

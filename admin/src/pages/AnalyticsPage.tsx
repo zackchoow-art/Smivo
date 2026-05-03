@@ -3,20 +3,18 @@ import { BarChart3, PieChart as PieChartIcon, TrendingUp, Package, ShoppingCart,
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
-import { useAnalytics, type TimeRange, RANGE_DAYS } from '@/hooks/useAnalytics';
+import { useAnalytics, type TimeRange } from '@/hooks/useAnalytics';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ffc658', '#d0ed57'];
 
@@ -34,7 +32,7 @@ export function AnalyticsPage() {
   if (isLoading) return <div className="an-state">Loading analytics...</div>;
   if (error) return <div className="an-state an-error">Error loading analytics data</div>;
 
-  const { dauTrend, listingsTrend, ordersTrend, categoryDist, orderDist, kpis } = data!;
+  const { dauTrend, listingsTrend, categoryDist, orderDist, kpis } = data!;
 
   return (
     <div className="an-page">

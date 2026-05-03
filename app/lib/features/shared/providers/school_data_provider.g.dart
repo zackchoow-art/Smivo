@@ -56,7 +56,7 @@ final class MySchoolCategoriesProvider
 }
 
 String _$mySchoolCategoriesHash() =>
-    r'7b61dc22be7765d17d23c6c957d3e0d2f32beab5';
+    r'18210e355ac7b32ba3e8bd3fb68b92d7f6eb3511';
 
 /// Fetches active conditions for the current user's school.
 /// Falls back to hardcoded list if DB returns empty.
@@ -106,4 +106,4 @@ final class MySchoolConditionsProvider
 }
 
 String _$mySchoolConditionsHash() =>
-    r'552fab091f64a456e00007cadc9c965e0c9cac7c';
+    r'fdbdb652066868987afe2c1f4909fd4a513fe3e5';

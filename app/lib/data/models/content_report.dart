@@ -22,6 +22,13 @@ abstract class ContentReport with _$ContentReport {
     @JsonKey(name: 'selected_message_ids') List<String>? selectedMessageIds,
     Map<String, dynamic>? evidence,
 
+    // NOTE: Outcome fields written by admin when resolving (migration 00072).
+    // action_taken = 'warn'/'restrict' -> penalty applied to reported user.
+    // action_taken = null -> dismissed or not yet resolved.
+    @JsonKey(name: 'action_taken') String? actionTaken,
+    // Points awarded to the reporter for a valid report.
+    @JsonKey(name: 'reporter_reward_points') @Default(0) int reporterRewardPoints,
+
     // Joined data for display
     @JsonKey(name: 'reported_user') UserProfile? reportedUser,
     Listing? listing,

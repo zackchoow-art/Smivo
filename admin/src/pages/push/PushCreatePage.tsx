@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCreatePushJob, useSendPushJob } from '@/hooks/usePush';
 import { useAuth } from '@/hooks/useAuth';
 import type { PushAudienceType, PushStatus } from '@/types';
+import { showToast } from '@/hooks/useToast';
 
 export function PushCreatePage() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export function PushCreatePage() {
   const handleSubmit = async (e: React.FormEvent, sendNow: boolean) => {
     e.preventDefault();
     if (!title.trim() || !body.trim()) {
-      alert('Title and body are required.');
+      showToast('Title and body are required.', 'warning');
       return;
     }
 
@@ -44,17 +45,19 @@ export function PushCreatePage() {
       if (sendNow && !isScheduled) {
         try {
           await sendMutation.mutateAsync(job.id);
-          alert('Push notification sent successfully!');
+          showToast('Push notification sent successfully! ✅', 'success');
+          navigate('/push');
+          return;
         } catch (sendErr) {
           console.error('Send failed:', sendErr);
-          alert('Push job created but send failed. Check Push History for details.');
+          showToast('Push job created but send failed. Check Push History for details.', 'warning', 6000);
         }
       }
 
       navigate('/push/history');
     } catch (err) {
       console.error('Failed to create push job', err);
-      alert('Failed to create push job.');
+      showToast('Failed to create push job. Please try again.', 'error', 5000);
     }
   };
 

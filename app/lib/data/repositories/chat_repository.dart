@@ -148,6 +148,9 @@ class ChatRepository {
               .single();
       return Message.fromJson(data);
     } on PostgrestException catch (e) {
+      if (e.message.contains('row-level security policy')) {
+        throw DatabaseException('Action denied. Your account may be restricted.', e);
+      }
       throw DatabaseException(e.message, e);
     }
   }
@@ -173,6 +176,9 @@ class ChatRepository {
               .single();
       return Message.fromJson(data);
     } on PostgrestException catch (e) {
+      if (e.message.contains('row-level security policy')) {
+        throw DatabaseException('Action denied. Your account may be restricted.', e);
+      }
       throw DatabaseException(e.message, e);
     }
   }
@@ -315,6 +321,7 @@ class ChatRepository {
         'isBlockedByRecipient': (result['is_blocked_by_recipient'] as bool?) ?? false,
         'recipientIsMuted':     (result['recipient_is_muted']      as bool?) ?? false,
         'recipientIsFrozen':    (result['recipient_is_frozen']      as bool?) ?? false,
+        'senderIsMuted':        (result['sender_is_muted']         as bool?) ?? false,
       };
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

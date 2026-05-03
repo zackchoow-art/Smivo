@@ -12,24 +12,22 @@ import { Bell, LogOut, User } from 'lucide-react';
 import { useState } from 'react';
 
 export function TopBar() {
-  const { admin } = useAuthStore();
-  const { currentCollegeId } = useSchoolScopeStore();
+  const { admin, scopes } = useAuthStore();
+  const { currentCollegeId, setCollege, setPlatformView } = useSchoolScopeStore();
   const { showSchoolSwitcher, isSuperAdmin } = useAdminRole();
   const { logout } = useAuth();
   const { data: colleges } = useColleges();
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Resolve school name from the colleges list
-  const currentSchoolName = currentCollegeId
-    ? colleges?.find((c) => c.id === currentCollegeId)?.name ?? 'Loading...'
-    : null;
+  // Determine available schools based on admin scopes
+  const availableSchools = isSuperAdmin
+    ? colleges || []
+    : colleges?.filter((c) => scopes.some((s) => s.college_id === c.id)) || [];
 
-  // Display label: school name for school admins, "All Platform" for platform view
-  const scopeLabel = currentSchoolName
-    ? `🏫 ${currentSchoolName}`
-    : isSuperAdmin
-      ? '🌐 All Platform'
-      : '🏫 No School Selected';
+  // If not super admin and no current college is selected (shouldn't happen, but fallback), select first available
+  if (!isSuperAdmin && !currentCollegeId && availableSchools.length > 0) {
+    setCollege(availableSchools[0].id);
+  }
 
   return (
     <header className="topbar">
@@ -42,11 +40,33 @@ export function TopBar() {
       <GlobalSearch />
 
       <div className="topbar__right">
-        {/* School scope indicator — shows actual school name */}
-        {showSchoolSwitcher && (
-          <div className="topbar__school">
-            {scopeLabel}
+        {/* School scope indicator — always visible for non-sysadmin, or sysadmin with scope */}
+        {availableSchools.length === 1 && !isSuperAdmin && (
+          // Single school: show static label only
+          <div className="topbar__school-badge">
+            🏫 {availableSchools[0].name}
           </div>
+        )}
+        {(availableSchools.length > 1 || isSuperAdmin) && availableSchools.length > 0 && (
+          // Multiple schools or sysadmin: show dropdown
+          <select
+            className="topbar__school-select"
+            value={currentCollegeId || ''}
+            onChange={(e) => {
+              if (e.target.value === '') {
+                setPlatformView();
+              } else {
+                setCollege(e.target.value);
+              }
+            }}
+          >
+            {isSuperAdmin && <option value="">🌐 All Platform</option>}
+            {availableSchools.map((s) => (
+              <option key={s.id} value={s.id}>
+                🏫 {s.name}
+              </option>
+            ))}
+          </select>
         )}
 
         {/* Alert bell */}
@@ -111,13 +131,30 @@ export function TopBar() {
           gap: 12px;
         }
 
-        .topbar__school {
+        .topbar__school-select {
           font-size: 13px;
-          padding: 6px 12px;
-          background: var(--color-bg-tertiary);
+          padding: 6px 30px 6px 12px;
+          background: var(--color-bg-tertiary) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat right 10px center;
+          border: 1px solid var(--color-border-light);
           border-radius: var(--radius-md);
           cursor: pointer;
           color: var(--color-text-secondary);
+          appearance: none;
+          outline: none;
+        }
+
+        .topbar__school-select:hover {
+          background-color: var(--color-bg-secondary);
+        }
+
+        .topbar__school-badge {
+          font-size: 13px;
+          padding: 5px 12px;
+          background: var(--color-bg-tertiary);
+          border: 1px solid var(--color-border-light);
+          border-radius: var(--radius-md);
+          color: var(--color-text-secondary);
+          white-space: nowrap;
         }
 
         .topbar__icon-btn {

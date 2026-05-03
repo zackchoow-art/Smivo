@@ -67,4 +67,6 @@ export interface ListingWithDetails extends Listing {
     ban_count: number;
     risk_level: string;
   };
+  prev_id?: string;
+  next_id?: string;
 }

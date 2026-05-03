@@ -10,8 +10,10 @@ import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/utils/validators.dart';
+import 'package:smivo/data/models/school.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/shared/providers/system_urls_provider.dart';
+import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
 import 'package:smivo/core/router/app_routes.dart';
 
@@ -27,6 +29,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  School? _selectedSchool;
 
   bool _agreedToEula = false;
 
@@ -64,6 +68,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
+    if (!_isDebugMode && _selectedSchool == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select a school first'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
     final emailValue = _emailController.text.trim();
@@ -72,7 +86,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (_isDebugMode) {
       await ref.read(authProvider.notifier).signUpDebug(emailValue, password);
     } else {
-      await ref.read(authProvider.notifier).signUp(emailValue, password);
+      await ref.read(authProvider.notifier).signUp(emailValue, _selectedSchool!.emailDomain, password);
     }
 
     // Navigation is reactive via router.dart watching authStateProvider.
@@ -109,6 +123,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final activeSchoolsAsync = ref.watch(activeSchoolsProvider);
     final systemUrlsState = ref.watch(systemUrlsProvider);
     final systemUrls = systemUrlsState.value ?? {};
     
@@ -140,7 +155,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         // We navigate manually because Supabase doesn't issue a session immediately
         // for unverified emails, so router.dart won't pick it up automatically yet.
         final emailPrefix = _emailController.text.trim();
-        final fullEmail = _isDebugMode ? emailPrefix : '$emailPrefix@smith.edu';
+        final fullEmail = _isDebugMode ? emailPrefix : '$emailPrefix@${_selectedSchool!.emailDomain}';
         // GoRouter redirect doesn't trigger, so we manually go to verification screen.
         context.goNamed(
           AppRoutes.emailVerification,
@@ -224,6 +239,60 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                               const SizedBox(height: 32),
 
+                              // ── School Selector ─────────────────────────────
+                              if (!_isDebugMode) ...[
+                                activeSchoolsAsync.when(
+                                  data: (schools) {
+                                    if (schools.isEmpty) {
+                                      return const Text('No schools available.');
+                                    }
+                                    
+                                    // Set default if null
+                                    if (_selectedSchool == null) {
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        if (mounted) setState(() => _selectedSchool = schools.first);
+                                      });
+                                    }
+
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          child: Text('SELECT SCHOOL', style: typo.labelUppercase),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        DropdownButtonFormField<School>(
+                                          value: _selectedSchool ?? schools.first,
+                                          items: schools.map((s) => DropdownMenuItem(
+                                            value: s,
+                                            child: Text(s.name, style: typo.bodyMedium),
+                                          )).toList(),
+                                          onChanged: (val) {
+                                            if (val != null) {
+                                              setState(() => _selectedSchool = val);
+                                            }
+                                          },
+                                          decoration: InputDecoration(
+                                            filled: true,
+                                            fillColor: colors.surfaceContainerLow,
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(radius.input),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                          ),
+                                          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.onSurfaceVariant),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  loading: () => const Center(child: CircularProgressIndicator()),
+                                  error: (err, st) => Text('Error loading schools: $err'),
+                                ),
+                                const SizedBox(height: 24),
+                              ],
+
                               // ── Email Field ───────────────────────────────
                               AppTextField(
                                 label:
@@ -234,7 +303,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     _isDebugMode
                                         ? 'test@smivo.dev'
                                         : 'username',
-                                suffixText: _isDebugMode ? null : '@smith.edu',
+                                suffixText: _isDebugMode ? null : (_selectedSchool != null ? '@${_selectedSchool!.emailDomain}' : '@edu'),
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 validator:

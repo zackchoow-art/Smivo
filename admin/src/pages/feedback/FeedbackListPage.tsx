@@ -26,7 +26,7 @@ export function FeedbackListPage() {
         <div className="filters-bar">
           <div className="filter-group">
             <Filter size={14} />
-            {/* NOTE: Option values match DB enum: bug_report / feature_request / general */}
+            {/* NOTE: Option values match DB enum: bug / improvement / feature_request / other */}
             <select
               value={feedbackType}
               onChange={(e) => {
@@ -35,9 +35,10 @@ export function FeedbackListPage() {
               }}
             >
               <option value="">All Types</option>
-              <option value="bug_report">Bug Report</option>
+              <option value="bug">Bug Report</option>
+              <option value="improvement">Improvement</option>
               <option value="feature_request">Feature Request</option>
-              <option value="general">General</option>
+              <option value="other">Other</option>
             </select>
           </div>
           <div className="filter-group">
@@ -300,15 +301,17 @@ export function FeedbackListPage() {
 
 function CategoryBadge({ category }: { category: FeedbackType }) {
   const styles: Record<FeedbackType, { bg: string; text: string }> = {
-    bug_report: { bg: '#fee2e2', text: '#ef4444' },
+    bug: { bg: '#fee2e2', text: '#ef4444' },
+    improvement: { bg: '#e0e7ff', text: '#4f46e5' },
     feature_request: { bg: '#dcfce7', text: '#22c55e' },
-    general: { bg: '#f3f4f6', text: '#6b7280' },
+    other: { bg: '#f3f4f6', text: '#6b7280' },
   };
-  const style = styles[category] ?? styles.general;
+  const style = styles[category] ?? styles.other;
   const labels: Record<FeedbackType, string> = {
-    bug_report: 'Bug',
+    bug: 'Bug',
+    improvement: 'Improvement',
     feature_request: 'Feature',
-    general: 'General',
+    other: 'Other',
   };
   return (
     <span className="badge" style={{ backgroundColor: style.bg, color: style.text }}>

@@ -4,6 +4,13 @@ import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/utils/validators.dart';
 import 'package:smivo/data/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+import 'package:smivo/features/chat/providers/chat_provider.dart';
+import 'package:smivo/features/home/providers/home_provider.dart';
+import 'package:smivo/features/listing/providers/saved_listing_provider.dart';
+import 'package:smivo/features/notifications/providers/notification_provider.dart';
+import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/features/profile/providers/profile_provider.dart';
+import 'package:smivo/features/seller/providers/seller_center_provider.dart';
 
 part 'auth_provider.g.dart';
 
@@ -59,11 +66,11 @@ class Auth extends _$Auth {
 
   /// Normal Sign-Up using campus email prefix.
   ///
-  /// Appends "@smith.edu" automatically.
-  Future<void> signUp(String prefix, String password) async {
+  /// Appends the provided [domain] automatically.
+  Future<void> signUp(String prefix, String domain, String password) async {
     state = const AsyncValue.loading();
     try {
-      final fullEmail = "${prefix.trim()}@smith.edu";
+      final fullEmail = "${prefix.trim()}@$domain";
 
       // Use Validators to get specific password error messages
       final passwordError = Validators.password(password);
@@ -109,11 +116,11 @@ class Auth extends _$Auth {
 
   /// Normal Login using campus email prefix.
   ///
-  /// Appends "@smith.edu" automatically.
-  Future<void> login(String prefix, String password) async {
+  /// Appends the provided [domain] automatically.
+  Future<void> login(String prefix, String domain, String password) async {
     state = const AsyncValue.loading();
     try {
-      final fullEmail = "${prefix.trim()}@smith.edu";
+      final fullEmail = "${prefix.trim()}@$domain";
       await ref
           .read(authRepositoryProvider)
           .signIn(email: fullEmail, password: password);
@@ -154,6 +161,16 @@ class Auth extends _$Auth {
     state = const AsyncValue.loading();
     try {
       await ref.read(authRepositoryProvider).signOut();
+      
+      // Invalidate user-specific state to prevent data leakage across accounts
+      ref.invalidate(profileProvider);
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(chatRoomListProvider);
+      ref.invalidate(notificationListProvider);
+      ref.invalidate(mySavedListingsProvider);
+      ref.invalidate(myListingsProvider);
+      ref.invalidate(homeListingsProvider);
+      
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(_mapError(e, st), st);
@@ -179,6 +196,18 @@ class Auth extends _$Auth {
     state = const AsyncValue.loading();
     try {
       await ref.read(authRepositoryProvider).resendVerification(email);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(_mapError(e, st), st);
+    }
+  }
+
+  /// Sends a password reset email.
+  Future<void> resetPassword(String prefix, String domain) async {
+    state = const AsyncValue.loading();
+    try {
+      final fullEmail = "${prefix.trim()}@$domain";
+      await ref.read(authRepositoryProvider).resetPasswordForEmail(fullEmail);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(_mapError(e, st), st);

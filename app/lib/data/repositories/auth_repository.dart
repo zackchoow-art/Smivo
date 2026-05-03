@@ -34,6 +34,15 @@ class AuthRepository {
     }
   }
 
+  /// Sends a password reset email to the given [email].
+  Future<void> resetPasswordForEmail(String email) async {
+    try {
+      await _client.auth.resetPasswordForEmail(email);
+    } on AuthApiException catch (e) {
+      throw AuthException(e.message, e);
+    }
+  }
+
   /// Signs in with email and password.
   Future<void> signIn({required String email, required String password}) async {
     try {

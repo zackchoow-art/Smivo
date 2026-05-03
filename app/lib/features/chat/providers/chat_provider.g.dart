@@ -132,7 +132,7 @@ final class ChatMessagesProvider
   }
 }
 
-String _$chatMessagesHash() => r'9ed3fafad3efaf9a867a07531f1abdf9f730e36b';
+String _$chatMessagesHash() => r'279ed715be8280af24470d7b521daff9c69d4488';
 
 /// Manages messages for a single chat room with realtime updates.
 ///

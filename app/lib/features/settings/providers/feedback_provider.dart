@@ -4,8 +4,16 @@ import 'package:smivo/data/models/user_feedback.dart';
 import 'package:smivo/data/repositories/feedback_repository.dart';
 import 'package:smivo/data/repositories/storage_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/data/repositories/profile_repository.dart';
 
 part 'feedback_provider.g.dart';
+
+@riverpod
+Future<DateTime?> userFeedbackBan(Ref ref) async {
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return null;
+  return ref.watch(profileRepositoryProvider).getActiveBan(user.id, ['feedback_ban', 'account_freeze']);
+}
 
 @riverpod
 class MyFeedbacks extends _$MyFeedbacks {
