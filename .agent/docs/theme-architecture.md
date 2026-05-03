@@ -5,7 +5,7 @@
 
 ## Overview
 
-Smivo supports runtime theme switching between two visual variants: **Teal** (rounded, bright) and **IKEA Flat** (sharp corners, deep blue + yellow). The entire design system is built on Flutter's `ThemeExtension` mechanism, with four custom extension classes injected into `ThemeData`.
+Smivo supports runtime theme switching between two visual variants: **Teal** (rounded, bright) and **Flat** (sharp corners, deep blue + yellow). The entire design system is built on Flutter's `ThemeExtension` mechanism, with four custom extension classes injected into `ThemeData`.
 
 ---
 

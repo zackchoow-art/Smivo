@@ -46,8 +46,14 @@ class ListingPhotos extends _$ListingPhotos {
   Future<void> addPhoto(BuildContext context) async {
     if (state.length >= 5) return;
 
+    final source = await ImageUploadService.showSourcePicker(context);
+    if (source == null) return;
+    if (!context.mounted) return;
+
     final service = ImageUploadService();
-    final xFile = await service.pickAndCropImage(context);
+    final xFile = source == ImageSource.camera
+        ? await service.takePhotoAndCrop(context)
+        : await service.pickAndCropImage(context);
 
     if (xFile != null) {
       state = [...state, xFile];

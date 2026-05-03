@@ -59,6 +59,18 @@ class Profile extends _$Profile {
     });
   }
 
+  /// Update the user's avatar from a URL (e.g. Open Peeps)
+  Future<void> updateAvatarUrl(String url) async {
+    final currentProfile = state.value;
+    if (currentProfile == null) return;
+
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final updated = currentProfile.copyWith(avatarUrl: url);
+      return ref.read(profileRepositoryProvider).updateProfile(updated);
+    });
+  }
+
   /// Upload and update the user's avatar from raw bytes (Web-compatible).
   ///
   /// Uses [uploadAvatarBytes] from the repository which accepts [Uint8List]

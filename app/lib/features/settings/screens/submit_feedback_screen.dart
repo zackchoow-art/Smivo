@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/settings/providers/feedback_provider.dart';
 
 class SubmitFeedbackScreen extends ConsumerStatefulWidget {
@@ -28,8 +29,12 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
   }
 
   Future<void> _pickImage() async {
+    final source = await ImageUploadService.showSourcePicker(context);
+    if (source == null) return;
+    if (!mounted) return;
+
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final XFile? image = await picker.pickImage(source: source, imageQuality: 70);
     if (image != null) {
       setState(() {
         _selectedImage = image;

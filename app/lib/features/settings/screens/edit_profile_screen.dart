@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,8 @@ import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:smivo/features/settings/widgets/avatar_customization_dialog.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
@@ -232,7 +235,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.orange.withAlpha(20),
-                                          borderRadius: BorderRadius.circular(radius.sm),
+                                          borderRadius: BorderRadius.circular(
+                                            radius.sm,
+                                          ),
                                         ),
                                         child: Text(
                                           '🎖️ Lv.${profile.contributionLevel} (${profile.contributionScore} pts)',
@@ -268,26 +273,63 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildFieldLabel(context, 'Display Name'),
-                                  TextFormField(
-                                    controller: _displayNameController,
-                                    style: typo.bodyLarge.copyWith(
-                                      color: colors.onSurface,
-                                    ),
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: colors.settingsIconBg,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          radius.card,
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Display Name',
+                                        style: typo.bodyMedium.copyWith(
+                                          color: colors.onSurface,
+                                          fontWeight: FontWeight.w700,
                                         ),
-                                        borderSide: BorderSide.none,
                                       ),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 16,
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: _displayNameController,
+                                          style: typo.bodyLarge.copyWith(
+                                            color: colors.onSurface,
+                                          ),
+                                          decoration: InputDecoration(
+                                            filled: true,
+                                            fillColor: colors.settingsIconBg,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    radius.card,
+                                                  ),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: 12,
+                                                ),
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 8),
+                                      _isSaving
+                                          ? const Padding(
+                                            padding: EdgeInsets.all(12),
+                                            child: SizedBox(
+                                              height: 24,
+                                              width: 24,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            ),
+                                          )
+                                          : IconButton(
+                                            icon: const Icon(
+                                              Icons.check_circle,
+                                            ),
+                                            color: colors.primary,
+                                            iconSize: 32,
+                                            onPressed: () => _save(context),
+                                          ),
+                                    ],
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -296,81 +338,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                       color: colors.onSurfaceVariant,
                                       height: 1.3,
                                     ),
-                                  ),
-                                  const SizedBox(height: 32),
-                                  Divider(color: colors.dividerColor),
-                                  const SizedBox(height: 24),
-
-                                  // Cancel / Save buttons
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: OutlinedButton(
-                                          onPressed: () => context.pop(),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 16,
-                                            ),
-                                            side: BorderSide(
-                                              color: colors.dividerColor,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(
-                                                radius.md,
-                                              ),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'Cancel',
-                                            style: typo.labelLarge.copyWith(
-                                              color: colors.settingsIcon,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          onPressed:
-                                              _isSaving
-                                                  ? null
-                                                  : () => _save(context),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: colors.primary,
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 16,
-                                            ),
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(
-                                                radius.md,
-                                              ),
-                                            ),
-                                          ),
-                                          child:
-                                              _isSaving
-                                                  ? SizedBox(
-                                                    height: 20,
-                                                    width: 20,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          strokeWidth: 2,
-                                                          color: colors.onPrimary,
-                                                        ),
-                                                  )
-                                                  : Text(
-                                                    'Save',
-                                                    style: typo.labelLarge
-                                                        .copyWith(
-                                                          color: colors.onPrimary,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                        ),
-                                                  ),
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                 ],
                               ),
@@ -386,7 +353,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                         context: context,
                                         builder:
                                             (dialogContext) => AlertDialog(
-                                              title: const Text('Delete Account'),
+                                              title: const Text(
+                                                'Delete Account',
+                                              ),
                                               content: const Text(
                                                 'This action is permanent and cannot be undone. '
                                                 'All your listings, orders, messages, and profile data will be deleted.',
@@ -401,7 +370,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                                 ),
                                                 TextButton(
                                                   onPressed: () async {
-                                                    Navigator.pop(dialogContext);
+                                                    Navigator.pop(
+                                                      dialogContext,
+                                                    );
                                                     await ref
                                                         .read(
                                                           authProvider.notifier,
@@ -414,7 +385,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                                     }
                                                   },
                                                   style: TextButton.styleFrom(
-                                                    foregroundColor: colors.error,
+                                                    foregroundColor:
+                                                        colors.error,
                                                   ),
                                                   child: const Text('Delete'),
                                                 ),
@@ -450,115 +422,136 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildFieldLabel(BuildContext context, String label) {
+  /// Pick an avatar image, crop it, then upload via bytes, or generate via Open Peeps.
+  Future<void> _pickAvatar(BuildContext context) async {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        label,
-        style: typo.bodyMedium.copyWith(
-          color: colors.onSurface,
-          fontWeight: FontWeight.w700,
+
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: colors.surfaceContainerLowest,
+      builder:
+          (ctx) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!kIsWeb)
+                    ListTile(
+                      leading: Icon(Icons.camera_alt, color: colors.primary),
+                      title: Text('Take a Photo', style: typo.bodyLarge),
+                      onTap: () => Navigator.pop(ctx, 'camera'),
+                    ),
+                  ListTile(
+                    leading: Icon(Icons.photo_library, color: colors.primary),
+                    title: Text('Choose from Gallery', style: typo.bodyLarge),
+                    onTap: () => Navigator.pop(ctx, 'gallery'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.face, color: colors.primary),
+                    title: Text('Customize Avatar', style: typo.bodyLarge),
+                    onTap: () => Navigator.pop(ctx, 'customize'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+
+    if (result == null) return;
+    if (!context.mounted) return;
+
+    if (result == 'camera' || result == 'gallery') {
+      XFile? xFile;
+      if (result == 'camera') {
+        xFile = await ImageUploadService().takePhotoAndCrop(
+          context,
+          isAvatar: true,
+        );
+      } else {
+        xFile = await ImageUploadService().pickAndCropImage(
+          context,
+          isAvatar: true,
+        );
+      }
+      if (xFile == null) return;
+      if (!context.mounted) return;
+
+      final bytes = await xFile.readAsBytes();
+      final fileName = xFile.name;
+
+      try {
+        await ref
+            .read(profileProvider.notifier)
+            .updateAvatarFromBytes(bytes, fileName);
+        _showSuccess('Avatar updated');
+      } catch (e) {
+        _showError('Failed to update avatar: $e');
+      }
+    } else if (result == 'customize') {
+      final seed = DateTime.now().millisecondsSinceEpoch.toString();
+      final url = await showDialog<String>(
+        context: context,
+        builder: (context) => AvatarCustomizationDialog(initialSeed: seed),
+      );
+      if (url != null) {
+        try {
+          await ref.read(profileProvider.notifier).updateAvatarUrl(url);
+          _showSuccess('Avatar updated');
+        } catch (e) {
+          _showError('Failed to update avatar: $e');
+        }
+      }
+    }
+  }
+
+  void _showSuccess(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(message),
+          ],
         ),
+        backgroundColor: Colors.green,
       ),
     );
   }
 
-  /// Pick an avatar image, crop it, then upload via bytes.
-  Future<void> _pickAvatar(BuildContext context) async {
-    final xFile = await ImageUploadService().pickAndCropImage(
-      context,
-      isAvatar: true,
-    );
-    if (xFile == null) return;
+  void _showError(String message) {
     if (!mounted) return;
-
-    final bytes = await xFile.readAsBytes();
-    final fileName = xFile.name;
-
-    try {
-      await ref
-          .read(profileProvider.notifier)
-          .updateAvatarFromBytes(bytes, fileName);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Avatar updated'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(child: Text('Failed to update avatar: $e')),
-              ],
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   /// Save the display name to Supabase.
   Future<void> _save(BuildContext context) async {
     final newName = _displayNameController.text.trim();
     if (newName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Display name cannot be empty.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showError('Display name cannot be empty.');
       return;
     }
 
     setState(() => _isSaving = true);
     try {
       await ref.read(profileProvider.notifier).updateDisplayName(newName);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Profile updated'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
-        context.pop();
-      }
+      _showSuccess('Profile updated');
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(child: Text('Failed to save: $e')),
-              ],
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _showError('Failed to save: $e');
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);

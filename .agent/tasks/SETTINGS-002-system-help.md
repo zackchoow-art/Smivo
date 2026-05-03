@@ -23,7 +23,7 @@
 - 删除对应的 `ref.watch` 引用
 
 ### 保留的内容
-- App Theme 切换器（Teal / IKEA Flat）✅
+- App Theme 切换器（Teal / Flat）✅
 - Language 占位卡片 ✅
 
 ### settings_provider.dart 清理
@@ -37,7 +37,7 @@
 标题: System Settings
 
 Display 区域:
-  - App Theme 切换器 (Teal / IKEA Flat)
+  - App Theme 切换器 (Teal / Flat)
   - Language 占位 (English US)
 ```
 

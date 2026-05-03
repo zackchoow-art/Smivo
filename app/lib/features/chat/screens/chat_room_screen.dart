@@ -5,6 +5,7 @@ import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/data/models/chat_room.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -240,8 +241,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       return;
     }
 
+    final source = await ImageUploadService.showSourcePicker(context);
+    if (source == null) return;
+    if (!mounted) return;
+
     final image = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       imageQuality: 70,
     );
     if (image == null) return;

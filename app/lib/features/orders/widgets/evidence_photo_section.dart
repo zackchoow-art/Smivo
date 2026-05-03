@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/orders/providers/order_evidence_provider.dart';
 
 class EvidencePhotoSection extends ConsumerWidget {
@@ -104,12 +105,13 @@ class EvidencePhotoSection extends ConsumerWidget {
   }
 
   Future<void> _pickAndUpload(BuildContext context, WidgetRef ref) async {
-    final picker = ImagePicker();
+    final source = await ImageUploadService.showSourcePicker(context);
+    if (source == null) return;
+    if (!context.mounted) return;
 
-    // NOTE: On Web, ImageSource.camera is not supported.
-    // Use gallery (file picker) which works on all platforms.
+    final picker = ImagePicker();
     final picked = await picker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       maxWidth: 1024,
       maxHeight: 1024,
       imageQuality: 80,

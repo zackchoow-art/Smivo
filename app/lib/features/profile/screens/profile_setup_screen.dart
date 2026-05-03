@@ -4,6 +4,7 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
 
@@ -34,9 +35,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _pickImage() async {
+    final source = await ImageUploadService.showSourcePicker(context);
+    if (source == null) return;
+    if (!mounted) return;
+
     final picker = ImagePicker();
     final image = await picker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       imageQuality: 70,
       maxWidth: 512,
     );

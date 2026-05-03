@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -114,5 +115,37 @@ class ImageUploadService {
       return XFile(croppedFile.path);
     }
     return null;
+  }
+
+  /// Shows a bottom sheet to select image source (Camera or Gallery).
+  static Future<ImageSource?> showSourcePicker(BuildContext context) async {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+
+    return await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: colors.surfaceContainerLowest,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!kIsWeb)
+                ListTile(
+                  leading: Icon(Icons.camera_alt, color: colors.primary),
+                  title: Text('Take a Photo', style: typo.bodyLarge),
+                  onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                ),
+              ListTile(
+                leading: Icon(Icons.photo_library, color: colors.primary),
+                title: Text('Choose from Gallery', style: typo.bodyLarge),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

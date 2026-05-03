@@ -109,7 +109,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                                         ),
                                         ButtonSegment(
                                           value: SmivoThemeVariant.ikea,
-                                          label: Text('IKEA Flat'),
+                                          label: Text('Flat'),
                                           icon: Icon(
                                             Icons.square_outlined,
                                             size: 16,
