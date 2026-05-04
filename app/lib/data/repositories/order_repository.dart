@@ -226,6 +226,7 @@ class OrderRepository {
           .from(AppConstants.tableOrders)
           .update({
             'delivery_confirmed_by_buyer': true,
+            'delivery_confirmed_by_seller': true,
             'status': 'completed',
           })
           .eq('id', orderId);

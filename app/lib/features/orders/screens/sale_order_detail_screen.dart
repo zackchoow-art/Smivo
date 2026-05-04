@@ -333,7 +333,12 @@ class SaleOrderDetailScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         _infoRow(
           context,
-          'Buyer Pickup',
+          'Buyer',
+          isConfirmed ? '✓ Confirmed' : 'Waiting',
+        ),
+        _infoRow(
+          context,
+          'Seller',
           isConfirmed ? '✓ Confirmed' : 'Waiting',
         ),
       ],
