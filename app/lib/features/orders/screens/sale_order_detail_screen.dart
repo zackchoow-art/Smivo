@@ -530,9 +530,9 @@ class SaleOrderDetailScreen extends ConsumerWidget {
   }
 
   bool _canUploadEvidence(Order order, bool isBuyer, bool isSeller) {
-    if (!isBuyer && !isSeller) return false;
-    return order.status == 'confirmed' &&
-        !(order.deliveryConfirmedByBuyer) &&
-        !(order.deliveryConfirmedBySeller);
+    if (order.status != 'confirmed') return false;
+    if (isBuyer) return !order.deliveryConfirmedByBuyer;
+    if (isSeller) return !order.deliveryConfirmedBySeller;
+    return false;
   }
 }

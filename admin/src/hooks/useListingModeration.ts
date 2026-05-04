@@ -158,6 +158,21 @@ export function useModerateListing() {
 
       if (updateError) throw updateError;
 
+      // 1.5. Update associated images to 'rejected' if listing is rejected/takedown
+      if (action === 'reject' || action === 'takedown') {
+        const { error: imageError } = await supabase
+          .from(TABLES.LISTING_IMAGES)
+          .update({
+            moderation_status: 'rejected',
+            moderation_reasons: reason || 'Manual Admin Action'
+          })
+          .eq('listing_id', id);
+
+        if (imageError) {
+          console.error('Failed to update listing images status', imageError);
+        }
+      }
+
       // 2. Insert into moderation_drafts
       const { error: draftError } = await supabase
         .from(TABLES.MODERATION_DRAFTS)

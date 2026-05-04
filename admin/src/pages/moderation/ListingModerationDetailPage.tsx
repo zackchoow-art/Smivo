@@ -32,6 +32,7 @@ export function ListingModerationDetailPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [popupUser, setPopupUser] = useState<string | null>(null);
   const [showActivity, setShowActivity] = useState(false);
+  const [isBlurred, setIsBlurred] = useState(true);
 
   const handleAction = async (action: 'approve' | 'reject' | 'takedown') => {
     if (!admin || !listing) return;
@@ -96,8 +97,18 @@ export function ListingModerationDetailPage() {
                   <img
                     src={listing.images[activeImageIndex].image_url}
                     alt={`Listing image ${activeImageIndex + 1}`}
-                    className="lmd-image"
+                    className={`lmd-image ${isBlurred ? 'lmd-image--blurred' : ''}`}
                   />
+                  
+                  <button 
+                    className={`lmd-blur-toggle ${!isBlurred ? 'active' : ''}`}
+                    onClick={() => setIsBlurred(!isBlurred)}
+                    title={isBlurred ? "Show original image" : "Blur image"}
+                  >
+                    {isBlurred ? <Eye size={18} /> : <Bot size={18} />}
+                    <span>{isBlurred ? 'Reveal Content' : 'Hide Content'}</span>
+                  </button>
+
                   {listing.images.length > 1 && (
                     <div className="lmd-dot-nav">
                       {listing.images.map((img, idx) => (
@@ -359,9 +370,33 @@ export function ListingModerationDetailPage() {
         /* Main content card */
         .lmd-main-col { display: flex; flex-direction: column; gap: 24px; }
         .lmd-content-card { background: var(--color-bg-primary); border-radius: var(--radius-md); box-shadow: var(--shadow-card); overflow: hidden; }
-        .lmd-image-wrap { background: var(--color-bg-secondary); aspect-ratio: 16/9; position: relative; display: flex; align-items: center; justify-content: center; }
-        .lmd-image { max-height: 100%; object-fit: contain; }
-        .lmd-dot-nav { position: absolute; bottom: 16px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; }
+        .lmd-image-wrap { background: var(--color-bg-secondary); aspect-ratio: 16/9; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .lmd-image { max-height: 100%; object-fit: contain; transition: filter 0.3s ease; }
+        .lmd-image--blurred { filter: blur(20px); }
+        
+        .lmd-blur-toggle {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
+          color: #fff;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 500;
+          z-index: 10;
+          transition: all 0.2s;
+        }
+        .lmd-blur-toggle:hover { background: rgba(0, 0, 0, 0.8); }
+        .lmd-blur-toggle.active { background: var(--color-info); border-color: transparent; }
+        
+        .lmd-dot-nav { position: absolute; bottom: 16px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; z-index: 5; }
         .lmd-dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: var(--color-border); cursor: pointer; padding: 0; }
         .lmd-dot--active { background: var(--color-info); }
         .lmd-no-image { color: var(--color-text-tertiary); font-size: 14px; }
