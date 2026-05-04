@@ -12,7 +12,6 @@ import 'package:smivo/features/home/widgets/home_header.dart';
 import 'package:smivo/features/home/widgets/home_search_bar.dart';
 import 'package:smivo/features/home/widgets/ikea_featured_listing_card.dart';
 import 'package:smivo/features/home/widgets/ikea_grid_listing_card.dart';
-import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/providers/heartbeat_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -33,85 +32,95 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isDesktop = Breakpoints.isDesktop(constraints.maxWidth);
-
-            final content = RefreshIndicator(
-              onRefresh: () async {
-                try {
-                  ref.invalidate(homeListingsProvider);
-                  await ref.read(homeListingsProvider.future);
-                } catch (e) {
-                  // Silently handle error here, the AsyncValue.error will
-                  // be caught by ref.watch(homeListingsProvider) and show in UI.
-                }
-              },
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                  const SliverToBoxAdapter(child: HomeHeader()),
-                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
-                  SliverPersistentHeader(
-                    pinned: true,
-                    delegate: _StickySearchBarDelegate(
-                      backgroundColor: colors.background,
+              final contentWidth = 800.0;
+              final screenWidth = constraints.maxWidth;
+              // Calculate horizontal padding to constrain content to max 800px
+              final paddingX = screenWidth > contentWidth
+                  ? (screenWidth - contentWidth) / 2
+                  : 0.0;
+              
+              final content = RefreshIndicator(
+                onRefresh: () async {
+                  try {
+                    ref.invalidate(homeListingsProvider);
+                    await ref.read(homeListingsProvider.future);
+                  } catch (e) {
+                    // Ignore errors, UI will handle
+                  }
+                },
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(horizontal: paddingX),
+                      sliver: const SliverToBoxAdapter(child: HomeHeader()),
                     ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
-                  const SliverToBoxAdapter(child: HomeCategoryChips()),
-                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                  listingsAsync.when(
-                    loading:
-                        () => const SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(child: CircularProgressIndicator()),
+                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(horizontal: paddingX),
+                      sliver: SliverPersistentHeader(
+                        pinned: true,
+                        delegate: _StickySearchBarDelegate(
+                          backgroundColor: colors.background,
                         ),
-                    error:
-                        (error, stack) => SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Text(
-                              'Error loading listings',
-                              style: typo.bodyMedium.copyWith(
-                                color: colors.error,
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                    // Category chips stay full width
+                    const SliverToBoxAdapter(child: HomeCategoryChips()),
+                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(horizontal: paddingX),
+                      sliver: listingsAsync.when(
+                        loading:
+                            () => const SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+                        error:
+                            (error, stack) => SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: Text(
+                                  'Error loading listings',
+                                  style: typo.bodyMedium.copyWith(
+                                    color: colors.error,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                    data: (listings) {
-                      if (listings.isEmpty) {
-                        return SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Text(
-                              'No listings found.',
-                              style: typo.bodyLarge,
-                            ),
-                          ),
-                        );
-                      }
+                        data: (listings) {
+                          if (listings.isEmpty) {
+                            return SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: Text(
+                                  'No listings found.',
+                                  style: typo.bodyLarge,
+                                ),
+                              ),
+                            );
+                          }
 
-                      if (themeVariant == SmivoThemeVariant.ikea) {
-                        return _buildIkeaLayout(context, listings);
-                      }
+                          if (themeVariant == SmivoThemeVariant.ikea) {
+                            return _buildIkeaLayout(context, listings);
+                          }
 
-                      return _buildTealLayout(listings);
-                    },
-                  ),
-                ],
-              ),
-            );
+                          return _buildTealLayout(listings);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
 
-            if (isDesktop) {
-              return ContentWidthConstraint(maxWidth: 1280, child: content);
-            }
-
-            return content;
-          },
+              return content;
+            },
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   /// Teal theme: original single-column layout, but responsive on tablet/desktop.
   /// First 4 = FeaturedListingCard, rest = CompactListingCard.
@@ -149,7 +158,7 @@ class HomeScreen extends ConsumerWidget {
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
+                    padding: const EdgeInsets.only(bottom: 32),
                     child: FeaturedListingCard(listing: listings[index]),
                   ),
                   childCount: featuredCount,
@@ -173,9 +182,9 @@ class HomeScreen extends ConsumerWidget {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          mainAxisExtent: 100,
+                          mainAxisExtent: 120,
                           crossAxisSpacing: 24,
-                          mainAxisSpacing: 32,
+                          mainAxisSpacing: 48,
                         ),
                     delegate: SliverChildBuilderDelegate(
                       (context, index) =>
@@ -188,7 +197,7 @@ class HomeScreen extends ConsumerWidget {
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => Padding(
-                      padding: const EdgeInsets.only(bottom: 32),
+                      padding: const EdgeInsets.only(bottom: 48),
                       child: CompactListingCard(listing: compactItems[index]),
                     ),
                     childCount: compactItems.length,
@@ -225,8 +234,8 @@ class HomeScreen extends ConsumerWidget {
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 24,
-                    mainAxisSpacing: 32,
-                    childAspectRatio: 0.95,
+                    mainAxisSpacing: 48,
+                    childAspectRatio: 0.85,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) =>
@@ -239,7 +248,7 @@ class HomeScreen extends ConsumerWidget {
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
+                    padding: const EdgeInsets.only(bottom: 48),
                     child: IkeaFeaturedListingCard(listing: listings[index]),
                   ),
                   childCount: featuredCount,

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smivo/core/constants/debug_constants.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
@@ -24,15 +26,47 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   School? _selectedSchool;
 
+  // Debug mode toggle
+  bool _isDebugMode = false;
+  Timer? _debugTimer;
+
   @override
   void dispose() {
     _emailController.dispose();
+    _debugTimer?.cancel();
     super.dispose();
+  }
+
+  void _toggleDebugMode() {
+    setState(() {
+      _isDebugMode = !_isDebugMode;
+      _emailController.clear();
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Debug mode ${_isDebugMode ? "enabled" : "disabled"}'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _startDebugTimer() {
+    if (!kDebugBackdoorEnabled) return;
+    _debugTimer?.cancel();
+    _debugTimer = Timer(const Duration(seconds: 5), () {
+      _toggleDebugMode();
+    });
+  }
+
+  void _cancelDebugTimer() {
+    _debugTimer?.cancel();
   }
 
   Future<void> _handleReset() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedSchool == null) {
+    if (!_isDebugMode && _selectedSchool == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a school first'),
@@ -43,7 +77,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     }
 
     final emailValue = _emailController.text.trim();
-    await ref.read(authProvider.notifier).resetPassword(emailValue, _selectedSchool!.emailDomain);
+    if (_isDebugMode) {
+      await ref.read(authProvider.notifier).resetPasswordDebug(emailValue);
+    } else {
+      await ref.read(authProvider.notifier).resetPassword(emailValue, _selectedSchool!.emailDomain);
+    }
 
     if (mounted && !ref.read(authProvider).hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -103,12 +141,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             color: colors.onSurface,
                           ),
                           const Spacer(),
-                          Text(
-                            'Smivo',
-                            style: typo.displayLarge.copyWith(
-                              fontSize: 24,
-                              fontStyle: FontStyle.italic,
-                              color: colors.primary,
+                          GestureDetector(
+                            onTapDown: (_) => _startDebugTimer(),
+                            onTapUp: (_) => _cancelDebugTimer(),
+                            onTapCancel: _cancelDebugTimer,
+                            child: Text(
+                              'Smivo',
+                              style: typo.displayLarge.copyWith(
+                                fontSize: 24,
+                                fontStyle: FontStyle.italic,
+                                color: colors.primary,
+                              ),
                             ),
                           ),
                           const Spacer(),
@@ -150,64 +193,66 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                               const SizedBox(height: 32),
 
                               // ── School Selector ─────────────────────────────
-                              activeSchoolsAsync.when(
-                                data: (schools) {
-                                  if (schools.isEmpty) {
-                                    return const Text('No schools available.');
-                                  }
-                                  
-                                  if (_selectedSchool == null) {
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                                      if (mounted) setState(() => _selectedSchool = schools.first);
-                                    });
-                                  }
+                              if (!_isDebugMode) ...[
+                                activeSchoolsAsync.when(
+                                  data: (schools) {
+                                    if (schools.isEmpty) {
+                                      return const Text('No schools available.');
+                                    }
+                                    
+                                    if (_selectedSchool == null) {
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        if (mounted) setState(() => _selectedSchool = schools.first);
+                                      });
+                                    }
 
-                                  return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                                        child: Text('SELECT SCHOOL', style: typo.labelUppercase),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      DropdownButtonFormField<School>(
-                                        value: _selectedSchool ?? schools.first,
-                                        items: schools.map((s) => DropdownMenuItem(
-                                          value: s,
-                                          child: Text(s.name, style: typo.bodyMedium),
-                                        )).toList(),
-                                        onChanged: (val) {
-                                          if (val != null) {
-                                            setState(() => _selectedSchool = val);
-                                          }
-                                        },
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor: colors.surfaceContainerLow,
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(radius.input),
-                                            borderSide: BorderSide.none,
-                                          ),
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          child: Text('SELECT SCHOOL', style: typo.labelUppercase),
                                         ),
-                                        icon: Icon(Icons.arrow_drop_down_rounded, color: colors.onSurfaceVariant),
-                                      ),
-                                    ],
-                                  );
-                                },
-                                loading: () => const Center(child: CircularProgressIndicator()),
-                                error: (err, st) => Text('Error loading schools: $err'),
-                              ),
-                              const SizedBox(height: 24),
+                                        const SizedBox(height: 8),
+                                        DropdownButtonFormField<School>(
+                                          value: _selectedSchool ?? schools.first,
+                                          items: schools.map((s) => DropdownMenuItem(
+                                            value: s,
+                                            child: Text(s.name, style: typo.bodyMedium),
+                                          )).toList(),
+                                          onChanged: (val) {
+                                            if (val != null) {
+                                              setState(() => _selectedSchool = val);
+                                            }
+                                          },
+                                          decoration: InputDecoration(
+                                            filled: true,
+                                            fillColor: colors.surfaceContainerLow,
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(radius.input),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                          ),
+                                          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.onSurfaceVariant),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  loading: () => const Center(child: CircularProgressIndicator()),
+                                  error: (err, st) => Text('Error loading schools: $err'),
+                                ),
+                                const SizedBox(height: 24),
+                              ],
 
                               // ── Email Field ───────────────────────────────
                               AppTextField(
-                                label: 'University Username',
-                                hintText: 'username',
-                                suffixText: _selectedSchool != null ? '@${_selectedSchool!.emailDomain}' : '@edu',
+                                label: _isDebugMode ? 'Test Email' : 'University Username',
+                                hintText: _isDebugMode ? 'test@smivo.dev' : 'username',
+                                suffixText: _isDebugMode ? null : (_selectedSchool != null ? '@${_selectedSchool!.emailDomain}' : '@edu'),
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                validator: Validators.emailPrefix,
+                                validator: _isDebugMode ? Validators.eduEmail : Validators.emailPrefix,
                               ),
                               const SizedBox(height: 32),
 

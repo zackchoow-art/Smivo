@@ -415,6 +415,7 @@ class _CreateListingFormScreenState
                           final pickupsAsync = ref.watch(
                             myPickupLocationsProvider,
                           );
+                          final activeSchools = ref.watch(activeSchoolsProvider).value ?? [];
                           return pickupsAsync.when(
                             loading:
                                 () => const SizedBox(
@@ -464,7 +465,7 @@ class _CreateListingFormScreenState
                                                 PickupLocation
                                               >(
                                                 value: loc,
-                                                child: Text(loc.name),
+                                                child: Text('${loc.name}, ${activeSchools.where((s) => s.id == loc.schoolId).firstOrNull?.name ?? 'Unknown'}'),
                                               ),
                                             )
                                             .toList(),

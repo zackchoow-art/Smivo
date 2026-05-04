@@ -293,7 +293,7 @@ class SaleOrderDetailScreen extends ConsumerWidget {
         label: 'Picked Up',
         date: order.status == 'completed' ? order.updatedAt : null,
         isCompleted: order.status == 'completed',
-        subtitle: order.pickupLocation?.name,
+        subtitle: order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : null,
       ),
       // NOTE: Append terminal steps for cancelled / missed states
       if (order.status == 'cancelled')

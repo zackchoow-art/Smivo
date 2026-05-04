@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useListingModerationDetail, useModerateListing } from '@/hooks/useListingModeration';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserSummary } from '@/hooks/useUsers';
+import { useColleges } from '@/hooks/useColleges';
 import { MODERATION_STATUS } from '@/lib/constants';
 import { UserSummaryPopup } from '@/components/users/UserSummaryPopup';
 import { showToast } from '@/hooks/useToast';
@@ -23,6 +24,7 @@ export function ListingModerationDetailPage() {
   const { admin } = useAuth();
 
   const { data: listing, isLoading, error } = useListingModerationDetail(id);
+  const { data: colleges = [] } = useColleges();
   const moderateMutation = useModerateListing();
   
   const { data: sellerSummary } = useUserSummary(listing?.seller?.id || null);
@@ -137,7 +139,7 @@ export function ListingModerationDetailPage() {
                 <div><span className="lmd-meta-key">Category:</span> {listing.category}</div>
                 <div><span className="lmd-meta-key">Condition:</span> {listing.condition}</div>
                 <div><span className="lmd-meta-key">Type:</span> {listing.listing_type}</div>
-                {listing.pickup_location && <div><span className="lmd-meta-key">Pickup:</span> {listing.pickup_location}</div>}
+                {listing.pickup_location && <div><span className="lmd-meta-key">Pickup:</span> {listing.pickup_location}, {colleges.find(c => c.id === listing.college_id)?.name || listing.college_id}</div>}
               </div>
 
               <div>

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
@@ -7,6 +8,7 @@ enum IkeaSellerCardType {
   awaitingDelivery,
   activeTransaction,
   history,
+  flaggedItem,
 }
 
 /// A square grid card for seller center used in IKEA theme.
@@ -67,6 +69,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
         context,
       ),
       IkeaSellerCardType.history => _buildHistoryContent(context),
+      IkeaSellerCardType.flaggedItem => _buildFlaggedItemContent(context),
     };
   }
 
@@ -260,7 +263,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                order.pickupLocation?.name ?? 'Unknown location',
+                order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : 'Unknown location',
                 style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -459,6 +462,127 @@ class IkeaSellerOrderCard extends StatelessWidget {
                   fontSize: 9,
                 ),
               ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFlaggedItemContent(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    final isRejected = listing.moderationStatus == 'rejected';
+    final isTakenDown = listing.moderationStatus == 'taken_down';
+    final statusColor = (isRejected || isTakenDown)
+        ? Theme.of(context).colorScheme.error
+        : Colors.amber.shade700;
+    final statusLabel = isTakenDown ? 'Taken Down' : (isRejected ? 'Rejected' : 'Under Review');
+
+    final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(radius.image),
+            child: Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 1.3,
+                  child: imageUrl != null
+                      ? Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ImageFiltered(
+                              imageFilter: listing.images.first.moderationStatus == 'rejected'
+                                  ? ImageFilter.blur(sigmaX: 5, sigmaY: 5)
+                                  : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                              child: Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            if (listing.images.first.moderationStatus == 'rejected')
+                              Positioned.fill(
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.all(2),
+                                  child: Text(
+                                    (listing.images.first.moderationReasons ?? 'Violation')
+                                        .replaceAll(RegExp(r'^automatically rejected by (open ai|openai):\s*', caseSensitive: false), '')
+                                        .replaceAll(RegExp(r'^AI:\s*', caseSensitive: false), ''),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold,
+                                      height: 1.1,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        )
+                      : Container(
+                          color: colors.surfaceContainerHigh,
+                          child: const Icon(Icons.image),
+                        ),
+                ),
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      borderRadius: BorderRadius.circular(radius.full),
+                    ),
+                    child: Text(
+                      statusLabel,
+                      style: typo.labelSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 9,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                listing.title,
+                style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (listing.moderationNote != null) ...[
+                const SizedBox(height: 1),
+                Text(
+                  listing.moderationNote!
+                      .replaceAll(RegExp(r'^automatically rejected by (open ai|openai):\s*', caseSensitive: false), '')
+                      .replaceAll(RegExp(r'^AI:\s*', caseSensitive: false), ''),
+                  style: typo.bodySmall.copyWith(
+                    color: statusColor,
+                    fontSize: 11,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ],
           ),
         ),

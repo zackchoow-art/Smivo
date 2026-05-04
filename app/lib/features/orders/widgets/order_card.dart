@@ -299,7 +299,7 @@ class _BackSide extends StatelessWidget {
                 ),
                 Expanded(
                   child: Text(
-                    order.pickupLocation?.name ?? order.school,
+                    order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : order.school,
                     style: typo.bodyMedium.copyWith(
                       color: colors.onSurface,
                       fontWeight: FontWeight.w500,

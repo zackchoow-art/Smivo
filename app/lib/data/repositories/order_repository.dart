@@ -196,20 +196,6 @@ class OrderRepository {
           .update({field: true})
           .eq('id', orderId);
 
-      // Step 2: fetch updated record to check confirmations
-      final current =
-          await _client
-              .from(AppConstants.tableOrders)
-              .select(
-                'delivery_confirmed_by_buyer, delivery_confirmed_by_seller, status',
-              )
-              .eq('id', orderId)
-              .single();
-
-      final bothConfirmed =
-          current['delivery_confirmed_by_buyer'] == true &&
-          current['delivery_confirmed_by_seller'] == true;
-
       // Note: Sale orders are handled directly by confirmSaleDelivery
       // Rental orders stay in 'confirmed' — provider layer activates rental.
 

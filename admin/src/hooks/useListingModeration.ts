@@ -316,7 +316,7 @@ export function useAllListings(page: number, filters?: AllListingsFilters) {
       }
 
       if (filters?.categoryId && filters.categoryId !== 'all') {
-        query = query.eq('category_id', filters.categoryId);
+        query = query.eq('category', filters.categoryId);
       }
 
       query = query.order('created_at', { ascending: filters?.dateSort === 'oldest' });

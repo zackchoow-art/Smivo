@@ -197,7 +197,7 @@ final class OrderReviewActionsProvider
 }
 
 String _$orderReviewActionsHash() =>
-    r'78a464e68ba817cdeb54c7811d28ea01d4ad78ae';
+    r'a7f7743bfd07e3ddf79c79b74cf72247728c585d';
 
 abstract class _$OrderReviewActions extends $AsyncNotifier<void> {
   FutureOr<void> build();

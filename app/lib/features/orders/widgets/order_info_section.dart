@@ -143,7 +143,7 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
                             child: _infoRow(
                               context,
                               'Pickup',
-                              widget.order.pickupLocation!.name,
+                              '${widget.order.pickupLocation!.name}, ${widget.order.school}',
                             ),
                           ),
                         // 5. Price / Rental Total

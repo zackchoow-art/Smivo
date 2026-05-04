@@ -124,10 +124,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
-    // NOTE: LayoutBuilder at screen level drives responsive layout decisions
     // for the information section below the image carousel.
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = Breakpoints.isDesktop(screenWidth);
+    final activeSchools = ref.watch(activeSchoolsProvider).value ?? [];
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -447,10 +447,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                           Alignment.centerLeft,
                                                       height: 48,
                                                       child: Text(
-                                                        listing
-                                                                .pickupLocation
-                                                                ?.name ??
-                                                            'Not specified',
+                                                        listing.pickupLocation?.name != null
+                                                              ? '${listing.pickupLocation!.name}, ${activeSchools.where((s) => s.id == listing.schoolId).firstOrNull?.name ?? 'Unknown'}'
+                                                              : 'Not specified',
                                                         style: typo.titleMedium
                                                             .copyWith(
                                                               color:
@@ -489,10 +488,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                           .centerLeft,
                                                                   height: 48,
                                                                   child: Text(
-                                                                    listing
-                                                                            .pickupLocation
-                                                                            ?.name ??
-                                                                        'Unable to load',
+                                                                    listing.pickupLocation?.name != null
+                                                                        ? '${listing.pickupLocation!.name}, ${activeSchools.where((s) => s.id == listing.schoolId).firstOrNull?.name ?? 'Unknown'}'
+                                                                        : 'Unable to load',
                                                                     style:
                                                                         typo.bodyMedium,
                                                                   ),
@@ -543,7 +541,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                             value:
                                                                                 loc.id,
                                                                             child: Text(
-                                                                              loc.name,
+                                                                              '${loc.name}, ${activeSchools.where((s) => s.id == loc.schoolId).firstOrNull?.name ?? 'Unknown'}',
                                                                             ),
                                                                           ),
                                                                         )
@@ -1155,6 +1153,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                     } catch (e) {
                                                       if (!context.mounted)
                                                         return;
+
+                                                      if (e.toString().contains('in_progress')) {
+                                                        return;
+                                                      }
 
                                                       // Handle duplicate order submission gracefully
                                                       final isDuplicate = e

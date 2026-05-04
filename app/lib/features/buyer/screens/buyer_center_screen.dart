@@ -364,7 +364,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
                             onTap: () => _handleOrderTap(order.id, hasUnread),
                             borderRadius: BorderRadius.circular(radius.card),
                             child: Container(
-                              margin: const EdgeInsets.only(bottom: 8),
+                              margin: const EdgeInsets.only(bottom: 16),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 8,
@@ -435,7 +435,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
                                               TextSpan(
                                                 text:
                                                     title == 'Awaiting Delivery'
-                                                        ? ' · ${order.pickupLocation?.name ?? 'Unknown location'}'
+                                                        ? ' · ${order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : 'Unknown location'}'
                                                         : ' · $sellerName',
                                               ),
                                             ],

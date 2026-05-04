@@ -4,15 +4,19 @@ import { useTargetModerationLogs } from '@/hooks/useBackendModerationLogs';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import { Filter, Bot, Eye, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { showToast } from '@/hooks/useToast';
+import { useColleges } from '@/hooks/useColleges';
+import { useSchoolDictItems } from '@/hooks/useSchoolDictData';
 import React from 'react';
-
-const CATEGORIES = ['furniture', 'electronics', 'instruments', 'books', 'clothing', 'sports', 'other'];
 
 export function AllListingsPage() {
   const [page, setPage] = useState(0);
   const [dateSort, setDateSort] = useState<'newest' | 'oldest'>('newest');
   const [categoryId, setCategoryId] = useState<string>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // NOTE: Dynamically fetch categories from school_categories table
+  // so the filter dropdown always reflects admin-managed categories.
+  const { data: categoryItems } = useSchoolDictItems('category');
 
   const { data, isLoading, error } = useAllListings(page, { dateSort, categoryId });
 
@@ -35,8 +39,8 @@ export function AllListingsPage() {
               onChange={(e) => { setCategoryId(e.target.value); setPage(0); }}
             >
               <option value="all">All Categories</option>
-              {CATEGORIES.map((val) => (
-                <option key={val} value={val}>{val.charAt(0).toUpperCase() + val.slice(1)}</option>
+              {(categoryItems ?? []).map((cat) => (
+                <option key={cat.dict_key} value={cat.dict_key}>{cat.dict_value}</option>
               ))}
             </select>
           </div>
@@ -100,7 +104,7 @@ export function AllListingsPage() {
                       </td>
                       <td className="lm-td lm-cell-text">${listing.price}</td>
                       <td className="lm-td">
-                        <span className="lm-badge lm-badge--neutral">{listing.category_id}</span>
+                        <span className="lm-badge lm-badge--neutral">{listing.category}</span>
                       </td>
                       <td className="lm-td lm-cell-muted">{new Date(listing.created_at).toLocaleDateString()}</td>
                       <td className="lm-td lm-td--right">
@@ -220,6 +224,7 @@ function ListingDetailCard({ listing }: { listing: any }) {
   const [priority, setPriority] = useState('urgent');
   
   const simulateMutation = useSimulateAIReview();
+  const { data: colleges = [] } = useColleges();
 
   const handleSimulate = async () => {
     try {
@@ -253,7 +258,7 @@ function ListingDetailCard({ listing }: { listing: any }) {
           {listing.pickup_location && (
             <div className="detail-item">
               <span className="label">Pickup Location</span>
-              <span className="value">{listing.pickup_location}</span>
+              <span className="value">{listing.pickup_location}, {colleges.find((c: any) => c.id === listing.college_id)?.name || listing.college_id}</span>
             </div>
           )}
         </div>

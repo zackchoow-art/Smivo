@@ -12,7 +12,7 @@ abstract class UserProfile with _$UserProfile {
     required String email,
     @JsonKey(name: 'display_name') String? displayName,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
-    @Default('Smith College') String school,
+    @Default('Data Not Found') String school,
     @JsonKey(name: 'school_id') required String schoolId,
     @JsonKey(name: 'is_verified') @Default(false) bool isVerified,
     // Nested join — populated when querying with school join

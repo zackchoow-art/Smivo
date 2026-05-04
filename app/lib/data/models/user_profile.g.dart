@@ -11,7 +11,7 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
   email: json['email'] as String,
   displayName: json['display_name'] as String?,
   avatarUrl: json['avatar_url'] as String?,
-  school: json['school'] as String? ?? 'Smith College',
+  school: json['school'] as String? ?? 'Data Not Found',
   schoolId: json['school_id'] as String,
   isVerified: json['is_verified'] as bool? ?? false,
   schoolData:

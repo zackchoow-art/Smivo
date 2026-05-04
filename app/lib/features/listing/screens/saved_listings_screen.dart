@@ -197,7 +197,7 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
                       : SliverList(
                         delegate: SliverChildBuilderDelegate((context, index) {
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.only(bottom: 16),
                             child: SavedListingCard(savedListing: items[index]),
                           );
                         }, childCount: items.length),

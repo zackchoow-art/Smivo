@@ -429,7 +429,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         label: 'Delivered',
         date: delivered ? order.updatedAt : null,
         isCompleted: delivered,
-        subtitle: order.pickupLocation?.name,
+        subtitle: order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : null,
       ),
     ];
 

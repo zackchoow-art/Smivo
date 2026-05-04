@@ -128,6 +128,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       backgroundColor: colors.surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.goNamed(AppRoutes.home);
+              }
+            },
+            icon: Icon(Icons.close_rounded, color: colors.onSurfaceVariant),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -415,7 +433,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
-                                        'Join with smith.edu email',
+                                        'Join with .edu email',
                                         style: typo.labelLarge.copyWith(
                                           color: colors.primary,
                                           fontSize: 16,

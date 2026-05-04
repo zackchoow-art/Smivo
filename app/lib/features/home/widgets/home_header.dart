@@ -20,7 +20,7 @@ class HomeHeader extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
-    final schoolName = profile?.school ?? AppConstants.defaultSchool;
+    final schoolName = profile?.school ?? 'Please Login';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -42,7 +42,7 @@ class HomeHeader extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      schoolName.replaceAll(' ', ''),
+                      schoolName,
                       style: typo.headlineLarge.copyWith(
                         color: colors.secondaryGradientStart,
                       ),
@@ -56,11 +56,15 @@ class HomeHeader extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                profile.displayName ?? 'User',
-                                style: typo.labelLarge.copyWith(
-                                  color: colors.onSurface,
-                                  fontWeight: FontWeight.bold,
+                              Flexible(
+                                child: Text(
+                                  profile.displayName ?? 'User',
+                                  style: typo.labelLarge.copyWith(
+                                    color: colors.onSurface,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 8),

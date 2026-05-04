@@ -20,7 +20,7 @@ abstract class Order with _$Order {
     @JsonKey(name: 'seller_id') required String sellerId,
     @JsonKey(name: 'order_type') required String orderType,
     @Default('pending') String status,
-    @JsonKey(name: 'school') @Default('Smith College') String school,
+    @JsonKey(name: 'school') @Default('Data Not Found') String school,
     @JsonKey(name: 'rental_start_date') DateTime? rentalStartDate,
     @JsonKey(name: 'rental_end_date') DateTime? rentalEndDate,
     // NOTE: Using DateTime? instead of bool so we record WHEN the item

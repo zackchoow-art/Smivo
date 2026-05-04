@@ -59,13 +59,25 @@ Future<List<SchoolCondition>> mySchoolConditions(Ref ref) async {
 /// Converts AppConstants.categories into SchoolCategory objects
 /// so consumers have a uniform type regardless of data source.
 List<SchoolCategory> _fallbackCategories() {
+  // NOTE: Explicit display names for fallback, since slug-based
+  // capitalization doesn't work well for multi-word categories.
+  const fallbackNames = {
+    'dorm': 'Dorm',
+    'kitchen': 'Kitchen',
+    'self_care': 'Self-care',
+    'food': 'Food',
+    'study_supplies': 'Study Supplies',
+    'sports': 'Sports',
+    'other': 'Others',
+  };
   final list = AppConstants.categories.asMap().entries.map((e) {
     final slug = e.value;
     return SchoolCategory(
       id: 'fallback_${e.key}',
       schoolId: '',
       slug: slug,
-      name: slug[0].toUpperCase() + slug.substring(1),
+      name: fallbackNames[slug] ??
+          slug[0].toUpperCase() + slug.substring(1),
       displayOrder: e.key,
       isActive: true,
       createdAt: DateTime.now(),

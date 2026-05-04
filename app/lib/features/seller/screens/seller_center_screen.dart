@@ -370,25 +370,67 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         ),
                       ),
                       if (isExpanded)
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final listing = flaggedListings[index];
-                                final isRejected = listing.moderationStatus == 'rejected';
-                                return _FlaggedListingTile(
-                                  listing: listing,
-                                  isRejected: isRejected,
-                                  onTap: () => context.pushNamed(
-                                    AppRoutes.listingDetail,
-                                    pathParameters: {'id': listing.id},
-                                  ),
-                                );
-                              },
-                              childCount: flaggedListings.length,
-                            ),
-                          ),
+                        Builder(
+                          builder: (context) {
+                            final isIkea = colors.primary == const Color(0xFF004181);
+                            final sw = MediaQuery.of(context).size.width;
+                            final useConstraint = Breakpoints.isDesktop(sw);
+                            final maxW = isIkea ? 1280.0 : 960.0;
+                            final sliver = SliverPadding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              sliver: isIkea
+                                  ? SliverResponsiveGrid(
+                                      itemCount: flaggedListings.length,
+                                      mobileColumns: 2,
+                                      tabletColumns: 3,
+                                      desktopColumns: 4,
+                                      crossAxisSpacing: 24,
+                                      mainAxisSpacing: 12,
+                                      childAspectRatio: 0.72,
+                                      itemBuilder: (context, index) {
+                                        final listing = flaggedListings[index];
+                                        return IkeaSellerOrderCard(
+                                          cardType: IkeaSellerCardType.flaggedItem,
+                                          listing: listing,
+                                          hasUnread: false,
+                                          onTap: () => context.pushNamed(
+                                            AppRoutes.listingDetail,
+                                            pathParameters: {'id': listing.id},
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : SliverList(
+                                      delegate: SliverChildBuilderDelegate(
+                                        (context, index) {
+                                          final listing = flaggedListings[index];
+                                          final isRejected = listing.moderationStatus == 'rejected';
+                                          return _FlaggedListingTile(
+                                            listing: listing,
+                                            isRejected: isRejected,
+                                            onTap: () => context.pushNamed(
+                                              AppRoutes.listingDetail,
+                                              pathParameters: {'id': listing.id},
+                                            ),
+                                          );
+                                        },
+                                        childCount: flaggedListings.length,
+                                      ),
+                                    ),
+                            );
+                            return useConstraint
+                                ? SliverToBoxAdapter(
+                                    child: ContentWidthConstraint(
+                                      maxWidth: maxW,
+                                      child: CustomScrollView(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        slivers: [sliver],
+                                      ),
+                                    ),
+                                  )
+                                : sliver;
+                          },
                         ),
                     ],
                   );
@@ -1018,7 +1060,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                                     ),
                                                 child: Container(
                                                   margin: const EdgeInsets.only(
-                                                    bottom: 8,
+                                                    bottom: 16,
                                                   ),
                                                   padding:
                                                       const EdgeInsets.symmetric(
@@ -1219,7 +1261,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final radius = context.smivoRadius;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
@@ -1343,7 +1385,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
       onTap: () => _handleOrderTap(order.id, hasUnread),
       borderRadius: BorderRadius.circular(radius.card),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: colors.surfaceContainerLow,
@@ -1398,7 +1440,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         ),
                         TextSpan(
                           text:
-                              ' · ${order.pickupLocation?.name ?? 'Unknown location'}',
+                              ' · ${order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : 'Unknown location'}',
                         ),
                       ],
                     ),
@@ -1465,7 +1507,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final listingTitle = order.listing?.title ?? 'Transaction';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
@@ -1818,7 +1860,7 @@ class _FlaggedListingTile extends StatelessWidget {
         : null;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Material(
         color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(radius.md),

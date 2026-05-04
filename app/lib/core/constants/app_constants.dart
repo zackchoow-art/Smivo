@@ -8,7 +8,7 @@ class AppConstants {
   // ── App Info ───────────────────────────────────────────────
   static const String appName = 'Smivo';
   static const String appBundleId = 'com.smivo';
-  static const String defaultSchool = 'Smith College';
+  static const String defaultSchool = 'Data Not Found';
   static const String authCallbackUrl = 'https://smivo.io/auth/callback';
 
   // ── Database Table Names ───────────────────────────────────
@@ -28,13 +28,13 @@ class AppConstants {
   static const String bucketAvatars = 'avatars';
   static const String bucketOrderFiles = 'order-files';
 
-  // ── Item Categories ────────────────────────────────────────
+  // ── Item Categories (fallback when DB is unreachable) ──────
   static const List<String> categories = [
-    'furniture',
-    'electronics',
-    'instruments',
-    'books',
-    'clothing',
+    'dorm',
+    'kitchen',
+    'self_care',
+    'food',
+    'study_supplies',
     'sports',
     'other',
   ];

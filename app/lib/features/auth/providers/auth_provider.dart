@@ -213,4 +213,24 @@ class Auth extends _$Auth {
       state = AsyncValue.error(_mapError(e, st), st);
     }
   }
+
+  /// Debug Reset Password using full email address.
+  ///
+  /// Only available when [kDebugBackdoorEnabled] is true.
+  Future<void> resetPasswordDebug(String fullEmail) async {
+    state = const AsyncValue.loading();
+    try {
+      if (!kDebugBackdoorEnabled) {
+        throw const AuthException(
+          'Debug password reset is not available in this build',
+        );
+      }
+      await ref
+          .read(authRepositoryProvider)
+          .resetPasswordForEmail(fullEmail.trim());
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(_mapError(e, st), st);
+    }
+  }
 }

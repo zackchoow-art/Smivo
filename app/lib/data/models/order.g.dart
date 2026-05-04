@@ -13,7 +13,7 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
   sellerId: json['seller_id'] as String,
   orderType: json['order_type'] as String,
   status: json['status'] as String? ?? 'pending',
-  school: json['school'] as String? ?? 'Smith College',
+  school: json['school'] as String? ?? 'Data Not Found',
   rentalStartDate:
       json['rental_start_date'] == null
           ? null

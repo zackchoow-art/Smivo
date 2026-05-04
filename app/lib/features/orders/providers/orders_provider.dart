@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -156,9 +155,12 @@ class OrderActions extends _$OrderActions {
     double depositAmount = 0.0,
     DateTime? rentalStartDate,
     DateTime? rentalEndDate,
-    String school = 'Smith College',
+    String school = 'Data Not Found',
     String? pickupLocationId,
   }) async {
+    if (state.isLoading) {
+      throw StateError('in_progress');
+    }
     state = const AsyncValue.loading();
     try {
       final user = ref.read(authStateProvider).value;
@@ -209,6 +211,9 @@ class OrderActions extends _$OrderActions {
   /// Also cancels all other pending orders for the same listing.
   /// For sale orders: listing status → 'sold' (removed from home feed).
   Future<void> acceptOrder(String orderId) async {
+    if (state.isLoading) {
+      throw StateError('in_progress');
+    }
     state = const AsyncValue.loading();
     try {
       final repo = ref.read(orderRepositoryProvider);
@@ -238,6 +243,9 @@ class OrderActions extends _$OrderActions {
 
   /// Cancels an order (buyer or seller can trigger).
   Future<void> cancelOrder(String orderId) async {
+    if (state.isLoading) {
+      throw StateError('in_progress');
+    }
     state = const AsyncValue.loading();
     try {
       await ref
@@ -334,6 +342,9 @@ class OrderActions extends _$OrderActions {
 
   /// Buyer requests to return the rented item.
   Future<void> requestReturn(String orderId) async {
+    if (state.isLoading) {
+      throw StateError('in_progress');
+    }
     state = const AsyncValue.loading();
     try {
       await ref
@@ -372,6 +383,9 @@ class OrderActions extends _$OrderActions {
 
   /// Seller confirms the deposit has been refunded.
   Future<void> refundDeposit(String orderId) async {
+    if (state.isLoading) {
+      throw StateError('in_progress');
+    }
     state = const AsyncValue.loading();
     try {
       await ref
