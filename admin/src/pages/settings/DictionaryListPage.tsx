@@ -95,7 +95,7 @@ export function DictionaryListPage() {
       <div className="dlist-legend">
         {ACCESS_LEVEL_ORDER.map((level) => {
           const meta = ACCESS_LEVEL_META[level];
-          const canEdit = canEditLevel(role, level);
+          const canEdit = canEditLevel(role ?? undefined, level);
           return (
             <div className="dlist-legend-item" key={level}>
               <span
@@ -122,7 +122,7 @@ export function DictionaryListPage() {
         const dictCodes = byLevel[level];
         if (dictCodes.length === 0) return null;
         const levelMeta = ACCESS_LEVEL_META[level];
-        const canEdit = canEditLevel(role, level);
+        const canEdit = canEditLevel(role ?? undefined, level);
 
         return (
           <section key={level} className="dlist-section">

@@ -44,7 +44,9 @@ export function useUsers(page: number, filters: UserFilters = {}) {
 
       let query = supabase
         .from(TABLES.USER_PROFILES)
-        .select(`*, school_obj:school_id(name), admin:admin_users(role, scopes:admin_school_scopes(school:schools(name)))`, { count: 'exact' })
+        // NOTE: Removed admin_roles join from list query — it caused PostgREST FK
+        // resolution errors. Admin role info is fetched in useUserDetail for detail page.
+        .select(`*, school_obj:school_id(name)`, { count: 'exact' })
         .range(from, to)
         .order('created_at', { ascending: false });
 
@@ -94,7 +96,6 @@ export function useUsers(page: number, filters: UserFilters = {}) {
         data: (data ?? []).map((u: any) => ({
           ...u,
           school: u.school_obj?.name || u.school,
-          managed_schools: u.admin?.[0]?.scopes?.map((s: any) => s.school?.name).filter(Boolean) || [],
           active_restrictions: restrictionMap[u.id] || [],
         })) as UserProfile[],
         totalCount: count ?? 0,
@@ -110,16 +111,37 @@ export function useUserDetail(userId?: string) {
     queryFn: async () => {
       if (!userId) return null;
 
-      // 1. Fetch user profile
+      // 1. Fetch user profile (without admin_roles join to avoid FK disambiguation)
       const { data: user, error: userError } = await supabase
         .from(TABLES.USER_PROFILES)
-        .select(`*, school_obj:school_id(name), admin:admin_users(role, scopes:admin_school_scopes(school:schools(name)))`)
+        .select(`*, school_obj:school_id(name)`)
         .eq('id', userId)
         .single();
 
       if (userError) throw userError;
 
-      // 2. Fetch recent 10 listings
+      // 2. Fetch admin role records separately (if any)
+      const { data: adminRoles } = await supabase
+        .from(TABLES.ADMIN_ROLES)
+        .select('role, scope_type, scope_id')
+        .eq('user_id', userId)
+        .eq('is_active', true);
+
+      // Fetch school names for school-scoped roles
+      const schoolScopeIds = (adminRoles ?? [])
+        .filter((r) => r.scope_type === 'school' && r.scope_id)
+        .map((r) => r.scope_id!);
+
+      let managedSchools: string[] = [];
+      if (schoolScopeIds.length > 0) {
+        const { data: schools } = await supabase
+          .from(TABLES.COLLEGES)
+          .select('name')
+          .in('id', schoolScopeIds);
+        managedSchools = (schools ?? []).map((s) => s.name);
+      }
+
+      // 3. Fetch recent 10 listings
       const { data: listings, error: listingsError } = await supabase
         .from(TABLES.LISTINGS)
         .select('id, title, price, moderation_status, created_at')
@@ -130,7 +152,7 @@ export function useUserDetail(userId?: string) {
 
       if (listingsError) throw listingsError;
 
-      // 3. Fetch recent 10 orders (as buyer or seller)
+      // 4. Fetch recent 10 orders (as buyer or seller)
       const { data: orders, error: ordersError } = await supabase
         .from(TABLES.ORDERS)
         .select('id, status, total_price, created_at, listing:listings(title)')
@@ -140,7 +162,7 @@ export function useUserDetail(userId?: string) {
 
       if (ordersError) throw ordersError;
 
-      // 4. Fetch active bans (not lifted, not expired)
+      // 5. Fetch active bans (not lifted, not expired)
       const { data: bans, error: bansError } = await supabase
         .from(TABLES.USER_BANS)
         .select('*')
@@ -154,7 +176,7 @@ export function useUserDetail(userId?: string) {
         user: { 
           ...user, 
           school: (user as any).school_obj?.name || user.school,
-          managed_schools: (user as any).admin?.[0]?.scopes?.map((s: any) => s.school?.name).filter(Boolean) || []
+          managed_schools: managedSchools,
         } as UserProfile,
         listings: listings || [],
         orders: orders || [],
@@ -211,7 +233,7 @@ export function useUserSummary(userId: string | null) {
  *
  * NOTE: This bypasses the Supabase dashboard which fails due to
  * orders.listing_id ON DELETE RESTRICT blocking cascade from listings.
- * Only callable by users with is_admin = true.
+ * Only callable by users with admin_roles record (verified via is_admin_user() RPC).
  */
 export function useAdminDeleteUser() {
   const queryClient = useQueryClient();

@@ -1,67 +1,82 @@
 /**
  * Auth hook — handles login, logout, and admin verification.
- * Verifies the user exists in admin_users table after Supabase auth.
+ * Verifies the user has entries in the unified admin_roles table
+ * after Supabase auth (migration 00102).
  */
 import { useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/stores/auth-store';
+import { useAuthStore, isSysadmin, getSchoolScopeIds } from '@/stores/auth-store';
 import { useSchoolScopeStore } from '@/stores/school-scope-store';
 import { TABLES } from '@/lib/constants';
-import type { AdminUser, AdminSchoolScope } from '@/types';
+import type { AdminRoleRecord } from '@/types';
 
 export function useAuth() {
-  const { admin, scopes, initialized, loading, setAdmin, setInitialized, setLoading, logout: clearStore } = useAuthStore();
+  const { roles, initialized, loading, setRoles, setAdminProfile, setInitialized, setLoading, logout: clearStore } = useAuthStore();
 
   /** Check if current session user is an admin */
   const checkAdminStatus = useCallback(async (userId: string) => {
     try {
-      // Fetch admin record
-      const { data: adminData, error: adminError } = await supabase
-        .from(TABLES.ADMIN_USERS)
+      // Fetch all active role records for this user
+      const { data: roleData, error: roleError } = await supabase
+        .from(TABLES.ADMIN_ROLES)
         .select('*')
         .eq('user_id', userId)
-        .eq('is_active', true)
-        .single();
+        .eq('is_active', true);
 
-      if (adminError || !adminData) {
-        setAdmin(null);
+      if (roleError || !roleData || roleData.length === 0) {
+        setRoles([]);
+        setAdminProfile(null);
         return false;
       }
 
-      // Fetch school scopes
-      const { data: scopeData } = await supabase
-        .from(TABLES.ADMIN_SCHOOL_SCOPES)
-        .select('*')
-        .eq('admin_user_id', userId);
+      const adminRoles = roleData as AdminRoleRecord[];
+      setRoles(adminRoles);
 
-      setAdmin(adminData as AdminUser, (scopeData || []) as AdminSchoolScope[]);
+      // Fetch admin's profile info for display in TopBar
+      const { data: profileData } = await supabase
+        .from(TABLES.USER_PROFILES)
+        .select('id, display_name, email, avatar_url')
+        .eq('id', userId)
+        .single();
 
-      // NOTE: Always override school scope on auth-check, not just when null.
+      if (profileData) {
+        setAdminProfile({
+          id: profileData.id,
+          display_name: profileData.display_name,
+          email: profileData.email,
+          avatar_url: profileData.avatar_url,
+        });
+      }
+
+      // NOTE: Always override school scope on auth-check.
       // This prevents cross-admin data leaks when different admins share a browser.
       const store = useSchoolScopeStore.getState();
-      const adminScopeData = (scopeData || []) as AdminSchoolScope[];
-      if (adminData.role === 'sysadmin') {
+
+      if (isSysadmin(adminRoles)) {
         // Sysadmin: restore last persisted choice or default to platform view
         if (!store.currentCollegeId && !store.isPlatformView) {
           store.setPlatformView();
         }
-      } else if (adminScopeData.length > 0) {
-        // School-level admin: always lock to their first school (or last valid choice)
-        const validIds = adminScopeData.map((s) => s.college_id);
-        const lastStored = localStorage.getItem('smivo_admin_last_school');
-        if (lastStored && validIds.includes(lastStored)) {
-          store.setCollege(lastStored);
-        } else {
-          store.setCollege(validIds[0]);
+      } else {
+        // Non-sysadmin: derive school access from school-scoped roles
+        const schoolIds = getSchoolScopeIds(adminRoles);
+        if (schoolIds.length > 0) {
+          const lastStored = localStorage.getItem('smivo_admin_last_school');
+          if (lastStored && schoolIds.includes(lastStored)) {
+            store.setCollege(lastStored);
+          } else {
+            store.setCollege(schoolIds[0]);
+          }
         }
       }
 
       return true;
     } catch {
-      setAdmin(null);
+      setRoles([]);
+      setAdminProfile(null);
       return false;
     }
-  }, [setAdmin]);
+  }, [setRoles, setAdminProfile]);
 
   /** Initialize auth state on mount */
   useEffect(() => {
@@ -74,7 +89,7 @@ export function useAuth() {
       if (session?.user) {
         await checkAdminStatus(session.user.id);
       } else {
-        setAdmin(null);
+        setRoles([]);
       }
 
       setInitialized(true);
@@ -93,7 +108,7 @@ export function useAuth() {
     });
 
     return () => subscription.unsubscribe();
-  }, [initialized, checkAdminStatus, setAdmin, setInitialized, setLoading, clearStore]);
+  }, [initialized, checkAdminStatus, setRoles, setInitialized, setLoading, clearStore]);
 
   /** Login with email/password */
   const login = useCallback(async (email: string, password: string) => {
@@ -124,12 +139,24 @@ export function useAuth() {
     clearStore();
   }, [clearStore]);
 
+  // NOTE: Backward-compatible `admin` object for pages that reference admin.user_id.
+  // Derives the user_id from the first role record and profile info from adminProfile.
+  const { adminProfile } = useAuthStore();
+  const admin = roles.length > 0
+    ? {
+        user_id: roles[0].user_id,
+        display_name: adminProfile?.display_name ?? null,
+        email: adminProfile?.email ?? '',
+        role: roles[0].role,
+      }
+    : null;
+
   return {
+    roles,
     admin,
-    scopes,
     initialized,
     loading,
-    isAuthenticated: !!admin,
+    isAuthenticated: roles.length > 0,
     login,
     logout,
   };

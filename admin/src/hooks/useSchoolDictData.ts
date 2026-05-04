@@ -14,7 +14,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useSchoolScopeStore } from '@/stores/school-scope-store';
-import type { DictItem, PlatformCategoryDefault, PlatformConditionDefault } from '@/types';
+import type { DictItem } from '@/types';
 
 // ── Source identifiers ────────────────────────────────────────────────────────
 

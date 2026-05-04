@@ -1,52 +1,89 @@
 /**
- * Hook for managing admin users and their school scopes.
+ * Hook for managing admin roles via the unified admin_roles table.
+ * Replaces the old admin_users + admin_school_scopes pattern.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { TABLES } from '@/lib/constants';
-import type { AdminUser, AdminSchoolScope, AdminUserWithScopes } from '@/types';
+import type { AdminRoleRecord, AdminUserInfo, AdminRoleName } from '@/types';
 
 const QUERY_KEY = ['admins'] as const;
 
-/** Fetch all admin users with their school scopes */
+/** Role hierarchy priority for sorting */
+const ROLE_PRIORITY: Record<AdminRoleName, number> = {
+  school_reviewer: 1,
+  school_admin: 2,
+  platform_reviewer: 3,
+  platform_admin: 4,
+  sysadmin: 5,
+};
+
+/** Fetch all admin role records, grouped by user */
 export function useAdmins() {
   return useQuery({
     queryKey: QUERY_KEY,
-    queryFn: async (): Promise<AdminUserWithScopes[]> => {
-      // Fetch admin users
-      const { data: admins, error: adminError } = await supabase
-        .from(TABLES.ADMIN_USERS)
-        .select('*')
+    queryFn: async (): Promise<AdminUserInfo[]> => {
+      // Fetch all admin role records with user profiles
+      const { data: roleRecords, error: roleError } = await supabase
+        .from(TABLES.ADMIN_ROLES)
+        .select(`
+          *,
+          user_profiles!inner(email, display_name, avatar_url),
+          schools(name)
+        `)
         .order('created_at', { ascending: false });
 
-      if (adminError) throw adminError;
+      if (roleError) throw roleError;
 
-      // Fetch all scopes
-      const { data: scopes, error: scopeError } = await supabase
-        .from(TABLES.ADMIN_SCHOOL_SCOPES)
-        .select('*');
+      // Group by user_id
+      const userMap = new Map<string, AdminUserInfo>();
 
-      if (scopeError) throw scopeError;
-
-      // Fetch school names for display
-      const { data: schools, error: schoolError } = await supabase
-        .from(TABLES.COLLEGES)
-        .select('id, name');
-
-      if (schoolError) throw schoolError;
-
-      const schoolMap = new Map((schools ?? []).map((s) => [s.id, s.name]));
-
-      // Merge scopes into admin records
-      return ((admins ?? []) as AdminUser[]).map((admin) => {
-        const adminScopes = ((scopes ?? []) as AdminSchoolScope[])
-          .filter((s) => s.admin_user_id === admin.user_id);
-        return {
-          ...admin,
-          scopes: adminScopes,
-          college_names: adminScopes.map((s) => schoolMap.get(s.college_id) ?? s.college_id),
+      for (const row of (roleRecords ?? [])) {
+        const userProfile = row.user_profiles as { email: string; display_name: string | null; avatar_url: string | null } | null;
+        const school = row.schools as { name: string } | null;
+        const roleRecord: AdminRoleRecord = {
+          id: row.id,
+          user_id: row.user_id,
+          role: row.role,
+          scope_type: row.scope_type,
+          scope_id: row.scope_id,
+          is_active: row.is_active,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
         };
-      });
+
+        if (!userMap.has(row.user_id)) {
+          userMap.set(row.user_id, {
+            user_id: row.user_id,
+            display_name: userProfile?.display_name ?? null,
+            email: userProfile?.email ?? '',
+            avatar_url: userProfile?.avatar_url ?? null,
+            roles: [],
+            highest_role: null,
+            school_names: [],
+          });
+        }
+
+        const user = userMap.get(row.user_id)!;
+        user.roles.push(roleRecord);
+
+        // Track school names for display
+        if (school?.name && !user.school_names.includes(school.name)) {
+          user.school_names.push(school.name);
+        }
+      }
+
+      // Compute highest_role for each user
+      for (const user of userMap.values()) {
+        const active = user.roles.filter((r) => r.is_active);
+        if (active.length > 0) {
+          user.highest_role = active.reduce<AdminRoleName>((best, r) => {
+            return (ROLE_PRIORITY[r.role] ?? 0) > (ROLE_PRIORITY[best] ?? 0) ? r.role : best;
+          }, active[0].role);
+        }
+      }
+
+      return Array.from(userMap.values());
     },
   });
 }
@@ -69,129 +106,88 @@ export function useSearchUsers(query: string) {
   });
 }
 
-/** Create a new admin user */
-export function useCreateAdmin() {
+/** Create a new admin role assignment */
+export function useCreateAdminRole() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       userId,
       role,
-      displayName,
-      email,
-      collegeIds,
+      scopeType,
+      scopeId,
     }: {
       userId: string;
-      role: string;
-      displayName: string;
-      email: string;
-      collegeIds: string[];
+      role: AdminRoleName;
+      scopeType: 'platform' | 'school';
+      scopeId?: string | null;
     }) => {
-      // Insert admin_users
-      const { error: adminError } = await supabase
-        .from(TABLES.ADMIN_USERS)
+      const { error } = await supabase
+        .from(TABLES.ADMIN_ROLES)
         .insert({
           user_id: userId,
           role,
-          display_name: displayName,
-          email,
+          scope_type: scopeType,
+          scope_id: scopeType === 'platform' ? null : scopeId,
           is_active: true,
         });
 
-      if (adminError) throw adminError;
-
-      // Insert school scopes
-      if (collegeIds.length > 0) {
-        const scopeRows = collegeIds.map((cid) => ({
-          admin_user_id: userId,
-          college_id: cid,
-        }));
-        const { error: scopeError } = await supabase
-          .from(TABLES.ADMIN_SCHOOL_SCOPES)
-          .insert(scopeRows);
-
-        if (scopeError) throw scopeError;
-      }
+      if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 }
 
-/** Update admin role */
+/** Update an existing admin role record */
 export function useUpdateAdminRole() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+    mutationFn: async ({ roleId, role, isActive }: { roleId: string; role?: AdminRoleName; isActive?: boolean }) => {
+      const updates: Record<string, unknown> = {};
+      if (role !== undefined) updates.role = role;
+      if (isActive !== undefined) updates.is_active = isActive;
+      updates.updated_at = new Date().toISOString();
+
       const { error } = await supabase
-        .from(TABLES.ADMIN_USERS)
-        .update({ role, updated_at: new Date().toISOString() })
-        .eq('user_id', userId);
+        .from(TABLES.ADMIN_ROLES)
+        .update(updates)
+        .eq('id', roleId);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 }
 
-/** Toggle admin active status */
-export function useToggleAdminActive() {
+/** Delete a specific admin role record */
+export function useDeleteAdminRole() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
+    mutationFn: async ({ roleId }: { roleId: string }) => {
       const { error } = await supabase
-        .from(TABLES.ADMIN_USERS)
-        .update({ is_active: isActive, updated_at: new Date().toISOString() })
-        .eq('user_id', userId);
+        .from(TABLES.ADMIN_ROLES)
+        .delete()
+        .eq('id', roleId);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 }
 
-/** Remove admin privileges completely */
+/** Remove ALL admin roles for a user */
 export function useRemoveAdmin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ userId }: { userId: string }) => {
       const { error } = await supabase
-        .from(TABLES.ADMIN_USERS)
+        .from(TABLES.ADMIN_ROLES)
         .delete()
         .eq('user_id', userId);
       if (error) throw error;
     },
     onSuccess: () => {
-      // toast.success('Admin privileges revoked'); // toast not defined here
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error('Error revoking admin access:', error);
-      // toast.error(error.message || 'Failed to revoke admin access');
     },
-  });
-}
-
-/** Update school scopes for an admin */
-export function useUpdateAdminScopes() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ userId, collegeIds }: { userId: string; collegeIds: string[] }) => {
-      // Delete existing scopes
-      const { error: delError } = await supabase
-        .from(TABLES.ADMIN_SCHOOL_SCOPES)
-        .delete()
-        .eq('admin_user_id', userId);
-      if (delError) throw delError;
-
-      // Insert new scopes
-      if (collegeIds.length > 0) {
-        const rows = collegeIds.map((cid) => ({
-          admin_user_id: userId,
-          college_id: cid,
-        }));
-        const { error: insError } = await supabase
-          .from(TABLES.ADMIN_SCHOOL_SCOPES)
-          .insert(rows);
-        if (insError) throw insError;
-      }
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 }

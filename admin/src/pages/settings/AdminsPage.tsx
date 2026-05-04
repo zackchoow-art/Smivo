@@ -2,21 +2,16 @@
  * Admin user management page — sysadmin only.
  * Supports listing admins, assigning 5-level roles, and multi-school scope assignment.
  *
- * School scope rules:
- *   sysadmin           — no scope selector (has all schools)
- *   platform_admin     — multi-school checkboxes
- *   platform_reviewer  — multi-school checkboxes
- *   school_admin       — single or multi-school checkboxes
- *   school_reviewer    — single or multi-school checkboxes
+ * Now reads from the unified admin_roles table (migration 00102).
  */
 import { useState } from 'react';
 import { showToast } from '@/hooks/useToast';
-import { Shield, Plus, Loader2, ToggleLeft, ToggleRight, School, Info, Search } from 'lucide-react';
-import { useAdmins, useUpdateAdminRole, useToggleAdminActive, useUpdateAdminScopes, useCreateAdmin, useSearchUsers, useRemoveAdmin } from '@/hooks/useAdmins';
+import { Shield, Plus, Loader2, School, Info, Search } from 'lucide-react';
+import { useAdmins, useCreateAdminRole, useDeleteAdminRole, useSearchUsers, useRemoveAdmin, useUpdateAdminRole } from '@/hooks/useAdmins';
 import { useColleges } from '@/hooks/useColleges';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { ADMIN_ROLE_LABELS } from '@/lib/constants';
-import type { AdminRole, AdminUserWithScopes } from '@/types';
+import type { AdminRoleName, AdminUserInfo } from '@/types';
 import { CreateAdminDialog } from '@/components/users/CreateAdminDialog';
 
 const ROLE_COLORS: Record<string, string> = {
@@ -27,19 +22,17 @@ const ROLE_COLORS: Record<string, string> = {
   school_reviewer:   '#20c997',
 };
 
-const ROLE_OPTIONS: { value: AdminRole | 'normal_user'; label: string; hint: string }[] = [
-  { value: 'sysadmin',          label: 'Super Admin',        hint: 'Full control — only one allowed' },
+const ROLE_OPTIONS: { value: AdminRoleName; label: string; hint: string }[] = [
   { value: 'platform_admin',    label: 'Platform Admin',     hint: 'Cross-school management' },
   { value: 'platform_reviewer', label: 'Platform Reviewer',  hint: 'Cross-school moderation' },
   { value: 'school_admin',      label: 'School Admin',       hint: 'Management within school(s)' },
   { value: 'school_reviewer',   label: 'School Reviewer',    hint: 'Campus moderation' },
-  { value: 'normal_user',       label: 'Normal User',        hint: 'Revoke all admin privileges' },
 ];
 
 // ── School picker (checkboxes for all non-sysadmin roles) ─────────────────────
 
 interface SchoolPickerProps {
-  role: AdminRole;
+  role: AdminRoleName;
   selected: string[];
   onChange: (ids: string[]) => void;
   colleges: { id: string; name: string }[];
@@ -54,22 +47,22 @@ function SchoolPicker({ role, selected, onChange, colleges }: SchoolPickerProps)
     );
   }
 
+  // Platform-level roles also don't need school selection
+  if (role === 'platform_admin' || role === 'platform_reviewer') {
+    return (
+      <p className="am-scope-note">
+        <Info size={12} /> Platform-level roles automatically have access to all schools.
+      </p>
+    );
+  }
+
   const toggle = (id: string) => {
-    if (role.startsWith('school_')) {
-      onChange([id]);
-    } else {
-      onChange(selected.includes(id) ? selected.filter((c) => c !== id) : [...selected, id]);
-    }
+    onChange(selected.includes(id) ? selected.filter((c) => c !== id) : [...selected, id]);
   };
 
   return (
     <div className="am-ff">
-      <label className="am-fl">
-        School Access
-        {role.startsWith('platform_') && (
-          <span className="am-fl-hint"> — multiple schools allowed</span>
-        )}
-      </label>
+      <label className="am-fl">School Access</label>
       <div className="am-chips">
         {colleges.map((c) => (
           <button
@@ -95,26 +88,22 @@ export function AdminsPage() {
   const { data: admins, isLoading } = useAdmins();
   const { data: colleges }          = useColleges();
   const { role: myRole }            = useAdminRole();
+  const createRole                  = useCreateAdminRole();
+  const deleteRole                  = useDeleteAdminRole();
   const updateRole                  = useUpdateAdminRole();
-  const updateScopes                = useUpdateAdminScopes();
-  const toggleActive                = useToggleAdminActive();
-  const createAdmin                 = useCreateAdmin();
-  
+  const removeAdmin                 = useRemoveAdmin();
+
   const [showAdd, setShowAdd]     = useState(false);
   const [showPromote, setShowPromote] = useState(false);
-  
+
   // Promote existing user state
   const [searchQ, setSearchQ]     = useState('');
   const { data: searchResults }   = useSearchUsers(searchQ);
   const [selUser, setSelUser]     = useState<{ id: string; name: string; email: string } | null>(null);
-  const [selRole, setSelRole]     = useState<AdminRole>('school_reviewer');
+  const [selRole, setSelRole]     = useState<AdminRoleName>('school_reviewer');
   const [selSchools, setSelSchools] = useState<string[]>([]);
 
-  const [editingAdmin, setEditingAdmin] = useState<AdminUserWithScopes | null>(null);
-  const [editRole, setEditRole]         = useState<AdminRole | 'normal_user'>('school_reviewer');
-  const [editSchools, setEditSchools]   = useState<string[]>([]);
-
-  const removeAdmin                 = useRemoveAdmin();
+  const [editingAdmin, setEditingAdmin] = useState<AdminUserInfo | null>(null);
 
   if (myRole !== 'sysadmin') {
     return (
@@ -128,45 +117,74 @@ export function AdminsPage() {
 
   if (isLoading) return <div className="am-ld"><Loader2 size={24} className="spin" /> Loading admins...</div>;
 
-
-  const handleSaveEdit = async () => {
-    if (!editingAdmin) return;
+  const handlePromote = async () => {
+    if (!selUser) return;
     try {
-      if (editRole === 'normal_user') {
-        const confirmRemove = window.confirm('Are you sure you want to revoke all admin privileges for this user?');
-        if (!confirmRemove) return;
-        await removeAdmin.mutateAsync({ userId: editingAdmin.user_id });
-      } else {
-        if (editRole !== editingAdmin.role) {
-          await updateRole.mutateAsync({ userId: editingAdmin.user_id, role: editRole });
+      const scopeType = ['sysadmin', 'platform_admin', 'platform_reviewer'].includes(selRole) ? 'platform' : 'school';
+
+      if (scopeType === 'school' && selSchools.length > 0) {
+        // Create one role record per school
+        for (const schoolId of selSchools) {
+          await createRole.mutateAsync({
+            userId: selUser.id,
+            role: selRole,
+            scopeType: 'school',
+            scopeId: schoolId,
+          });
         }
-        await updateScopes.mutateAsync({
-          userId: editingAdmin.user_id,
-          collegeIds: editRole === 'sysadmin' ? [] : editSchools,
+      } else {
+        // Platform-level: single record, no scope_id
+        await createRole.mutateAsync({
+          userId: selUser.id,
+          role: selRole,
+          scopeType,
+          scopeId: null,
         });
-        showToast('Admin privileges updated successfully', 'success');
       }
-      setEditingAdmin(null);
+
+      showToast('Admin role assigned successfully', 'success');
+      setShowPromote(false);
+      setSelUser(null);
+      setSearchQ('');
+      setSelSchools([]);
     } catch (err: any) {
-      console.error(err);
-      showToast(err?.message || 'Failed to update admin', 'error');
+      showToast(err?.message || 'Failed to assign role', 'error');
     }
   };
 
-  const handlePromote = async () => {
-    if (!selUser) return;
-    await createAdmin.mutateAsync({
-      userId: selUser.id,
-      role: selRole,
-      displayName: selUser.name,
-      email: selUser.email,
-      collegeIds: selRole === 'sysadmin' ? [] : selSchools,
-    });
-    setShowPromote(false);
-    setSelUser(null);
-    setSearchQ('');
-    setSelSchools([]);
+  const handleRevokeAll = async (admin: AdminUserInfo) => {
+    const confirmRemove = window.confirm(`Are you sure you want to revoke all admin privileges for ${admin.display_name || admin.email}?`);
+    if (!confirmRemove) return;
+    try {
+      await removeAdmin.mutateAsync({ userId: admin.user_id });
+      showToast('Admin privileges revoked', 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to revoke admin', 'error');
+    }
   };
+
+  const handleDeleteRole = async (roleId: string) => {
+    try {
+      await deleteRole.mutateAsync({ roleId });
+      showToast('Role removed', 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to remove role', 'error');
+    }
+  };
+
+  // NOTE: Handle inline role change for a specific role record
+  const handleRoleChange = async (roleId: string, newRole: AdminRoleName) => {
+    try {
+      await updateRole.mutateAsync({ roleId, role: newRole });
+      showToast('Role updated', 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to update role', 'error');
+    }
+  };
+
+  // NOTE: Filter out sysadmin from the displayed list — sysadmin should
+  // never be editable or visible in the admin management UI.
+  const visibleAdmins = admins?.filter((a) => a.highest_role !== 'sysadmin') ?? [];
 
   return (
     <div className="am-page">
@@ -174,7 +192,7 @@ export function AdminsPage() {
       <div className="am-hdr">
         <div>
           <h1 className="am-title">Admin Management</h1>
-          <p className="am-sub">{admins?.length ?? 0} administrators</p>
+          <p className="am-sub">{visibleAdmins.length} administrators</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="am-add" onClick={() => { setShowPromote(true); setShowAdd(false); }}>
@@ -222,12 +240,12 @@ export function AdminsPage() {
               <div className="am-ff">
                 <label className="am-fl">Role</label>
                 <div className="am-role-grid">
-                  {ROLE_OPTIONS.filter(o => o.value !== 'normal_user').map((opt) => (
+                  {ROLE_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
                       className={`am-role-btn ${selRole === opt.value ? 'sel' : ''}`}
-                      style={{ '--role-color': ROLE_COLORS[opt.value as AdminRole] } as any}
-                      onClick={() => { setSelRole(opt.value as AdminRole); setSelSchools([]); }}
+                      style={{ '--role-color': ROLE_COLORS[opt.value] } as any}
+                      onClick={() => { setSelRole(opt.value); setSelSchools([]); }}
                     >
                       <span className="am-role-name">{opt.label}</span>
                       <span className="am-role-hint">{opt.hint}</span>
@@ -245,8 +263,8 @@ export function AdminsPage() {
 
               <div className="am-fa">
                 <button className="am-fc" onClick={() => { setShowPromote(false); setSelUser(null); }}>Cancel</button>
-                <button className="am-fs" onClick={handlePromote} disabled={createAdmin.isPending}>
-                  {createAdmin.isPending ? <Loader2 size={14} className="spin" /> : 'Promote to Admin'}
+                <button className="am-fs" onClick={handlePromote} disabled={createRole.isPending}>
+                  {createRole.isPending ? <Loader2 size={14} className="spin" /> : 'Promote to Admin'}
                 </button>
               </div>
             </>
@@ -256,82 +274,95 @@ export function AdminsPage() {
 
       {/* Admin list */}
       <div className="am-list">
-        {admins?.map((admin) => (
-          <div key={admin.user_id} className={`am-card ${!admin.is_active ? 'am-ci' : ''}`}>
-            {editingAdmin?.user_id === admin.user_id ? (
-              <div className="am-ef" style={{ marginTop: '16px', padding: '16px', background: 'var(--color-bg-secondary)', borderRadius: '8px' }}>
-                <p className="am-fh" style={{ marginBottom: 12 }}>Edit {admin.display_name || admin.email}</p>
-
-                <div className="am-ff">
-                  <label className="am-fl">Change Role</label>
-                  <div className="am-role-grid">
-                    {ROLE_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        className={`am-role-btn ${editRole === opt.value ? 'sel' : ''}`}
-                        style={{ '--role-color': opt.value === 'normal_user' ? 'var(--color-text-tertiary)' : ROLE_COLORS[opt.value as AdminRole] } as any}
-                        onClick={() => { setEditRole(opt.value as any); setEditSchools([]); }}
-                      >
-                        <span className="am-role-name">{opt.label}</span>
-                        <span className="am-role-hint">{opt.hint}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {editRole !== 'normal_user' && (
-                  <SchoolPicker
-                    role={editRole as AdminRole}
-                    selected={editSchools}
-                    onChange={setEditSchools}
-                    colleges={colleges ?? []}
-                  />
-                )}
-
-                <div className="am-fa">
-                  <button className="am-fc" onClick={() => setEditingAdmin(null)}>Cancel</button>
-                  <button className="am-fs" onClick={handleSaveEdit}
-                    disabled={updateRole.isPending || updateScopes.isPending}>
-                    {updateRole.isPending || updateScopes.isPending
-                      ? <Loader2 size={14} className="spin" /> : 'Save Changes'}
-                  </button>
-                </div>
+        {visibleAdmins.map((admin) => (
+          <div key={admin.user_id} className="am-card">
+            <div className="am-cr">
+              <div className="am-cn"
+                onClick={() => setEditingAdmin(editingAdmin?.user_id === admin.user_id ? null : admin)}
+                style={{ cursor: 'pointer' }}>
+                <h3 className="am-cname">{admin.display_name || admin.email}</h3>
+                <span className="am-ce">{admin.email}</span>
               </div>
-            ) : (
-              <>
-                <div className="am-cr">
-                  <div className="am-cn"
-                    onClick={() => { setEditingAdmin(admin); setEditRole(admin.role as AdminRole); setEditSchools(admin.scopes.map((s) => s.college_id)); }}
-                    style={{ cursor: 'pointer' }}>
-                    <h3 className="am-cname">{admin.display_name || admin.email}</h3>
-                    <span className="am-ce">{admin.email}</span>
-                  </div>
-                  <div className="am-ca">
-                    <span className="am-role-badge" style={{ color: ROLE_COLORS[admin.role], borderColor: ROLE_COLORS[admin.role] + '40' }}>
-                      {ADMIN_ROLE_LABELS[admin.role] ?? admin.role}
-                    </span>
-                    <button className="am-tg" onClick={() => toggleActive.mutate({ userId: admin.user_id, isActive: !admin.is_active })}>
-                      {admin.is_active
-                        ? <ToggleRight size={20} color="var(--color-success)" />
-                        : <ToggleLeft  size={20} color="var(--color-text-tertiary)" />}
-                    </button>
-                  </div>
-                </div>
-                {admin.college_names.length > 0 && (
-                  <div className="am-sc">
-                    {admin.college_names.map((name, i) => (
-                      <span key={i} className="am-st"><School size={10} />{name}</span>
+              <div className="am-ca">
+                {editingAdmin?.user_id === admin.user_id ? (
+                  // Inline role editor — select dropdown
+                  <select
+                    className="am-role-select"
+                    value={admin.roles[0]?.role || ''}
+                    onChange={(e) => {
+                      if (admin.roles[0]) {
+                        handleRoleChange(admin.roles[0].id, e.target.value as AdminRoleName);
+                      }
+                    }}
+                  >
+                    {ROLE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
+                  </select>
+                ) : (
+                  admin.highest_role && (
+                    <span className="am-role-badge" style={{
+                      color: ROLE_COLORS[admin.highest_role],
+                      borderColor: (ROLE_COLORS[admin.highest_role] ?? '') + '40',
+                    }}>
+                      {ADMIN_ROLE_LABELS[admin.highest_role] ?? admin.highest_role}
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Role records list — only show for multi-role admins */}
+            {admin.roles.length > 1 && (
+              <div className="am-roles-list">
+                {admin.roles.map((r) => (
+                  <div key={r.id} className="am-role-row">
+                    {editingAdmin?.user_id === admin.user_id ? (
+                      <select
+                        className="am-role-select-sm"
+                        value={r.role}
+                        onChange={(e) => handleRoleChange(r.id, e.target.value as AdminRoleName)}
+                      >
+                        {ROLE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="am-role-tag" style={{ color: ROLE_COLORS[r.role] }}>
+                        {ADMIN_ROLE_LABELS[r.role]}
+                      </span>
+                    )}
+                    <span className="am-scope-tag">
+                      {r.scope_type === 'platform' ? 'Platform' : admin.school_names.find((_, i) => admin.roles.filter(rr => rr.scope_type === 'school')[i]?.scope_id === r.scope_id) ?? r.scope_id}
+                    </span>
+                    {editingAdmin?.user_id === admin.user_id && (
+                      <button className="am-role-del" onClick={() => handleDeleteRole(r.id)}>×</button>
+                    )}
                   </div>
-                )}
-                {admin.role === 'sysadmin' && (
-                  <p className="am-scope-note" style={{ marginTop: 8 }}>
-                    <Info size={11} /> Access to all schools
-                  </p>
-                )}
-                <div className="am-meta tabular-nums">Created {new Date(admin.created_at).toLocaleDateString()}</div>
-              </>
+                ))}
+              </div>
             )}
+
+            {admin.school_names.length > 0 && admin.roles.length <= 1 && (
+              <div className="am-sc">
+                {admin.school_names.map((name, i) => (
+                  <span key={i} className="am-st"><School size={10} />{name}</span>
+                ))}
+              </div>
+            )}
+
+            {/* Edit actions */}
+            {editingAdmin?.user_id === admin.user_id && (
+              <div className="am-fa" style={{ marginTop: 12 }}>
+                <button className="am-fc" style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
+                  onClick={() => handleRevokeAll(admin)}>
+                  Revoke All
+                </button>
+                <button className="am-fc" onClick={() => setEditingAdmin(null)}>Done</button>
+              </div>
+            )}
+
+            <div className="am-meta tabular-nums">Created {new Date(admin.roles[0]?.created_at ?? '').toLocaleDateString()}</div>
           </div>
         ))}
       </div>
@@ -393,7 +424,6 @@ export function AdminsPage() {
         .am-list { display:flex; flex-direction:column; gap:8px; }
         .am-card { background:var(--color-bg-primary); border:1px solid var(--color-border-light);
           border-radius:var(--radius-lg); padding:14px 16px; }
-        .am-ci { opacity:.5; }
         .am-cr { display:flex; justify-content:space-between; align-items:center; }
         .am-cname { font-size:14px; font-weight:600; color:var(--color-text-primary);
           text-decoration:underline; text-decoration-color:transparent; }
@@ -402,7 +432,6 @@ export function AdminsPage() {
         .am-ca { display:flex; align-items:center; gap:10px; }
         .am-role-badge { font-size:12px; font-weight:600; padding:3px 10px;
           border:1px solid; border-radius:var(--radius-sm); }
-        .am-tg { background:none; border:none; cursor:pointer; padding:2px; display:flex; }
         .am-sc { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
         .am-st { display:flex; align-items:center; gap:3px; font-size:11px; padding:2px 8px;
           background:var(--color-bg-tertiary); border-radius:var(--radius-sm); color:var(--color-text-secondary); }
@@ -412,6 +441,24 @@ export function AdminsPage() {
           font-size:14px; text-align:center; }
         .am-denied h2 { font-size:18px; color:var(--color-text-primary); }
         .spin { animation:spin 1s linear infinite; } @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* Role records list */
+        .am-roles-list { display:flex; flex-direction:column; gap:4px; margin-top:8px;
+          padding:8px; background:var(--color-bg-secondary); border-radius:var(--radius-sm); }
+        .am-role-row { display:flex; align-items:center; gap:8px; font-size:12px; }
+        .am-role-tag { font-weight:600; }
+        .am-scope-tag { color:var(--color-text-tertiary); }
+        .am-role-del { background:none; border:none; cursor:pointer; color:var(--color-danger);
+          font-size:16px; font-weight:bold; padding:0 4px; }
+
+        /* Inline role editor dropdowns */
+        .am-role-select { padding:4px 8px; font-size:12px; font-weight:600; border:1px solid var(--color-info);
+          border-radius:var(--radius-sm); background:var(--color-bg-primary); color:var(--color-info);
+          cursor:pointer; outline:none; }
+        .am-role-select:focus { box-shadow:0 0 0 2px color-mix(in srgb, var(--color-info) 20%, transparent); }
+        .am-role-select-sm { padding:2px 6px; font-size:11px; font-weight:600; border:1px solid var(--color-border);
+          border-radius:var(--radius-sm); background:var(--color-bg-primary); color:var(--color-text-primary);
+          cursor:pointer; outline:none; }
       `}</style>
     </div>
   );

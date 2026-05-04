@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useUserDetail, useUserSummary, useAdminDeleteUser, useUpdateUserSchool } from '@/hooks/useUsers';
 import { useCreateBan, useLiftBan, useUserActiveRestrictions } from '@/hooks/useBans';
 import { useAuth } from '@/hooks/useAuth';
+import { isSysadmin } from '@/stores/auth-store';
 import { useColleges } from '@/hooks/useColleges';
 import { RESTRICTION_SCOPE_META } from '@/lib/constants';
 import type { BanType, RestrictionScope } from '@/types/ban';
@@ -27,7 +28,8 @@ export function UserDetailPage() {
   const navigate = useNavigate();
   const { data, isLoading, error } = useUserDetail(id);
   const { data: summary } = useUserSummary(id ?? null);
-  const { admin } = useAuth();
+  const { roles } = useAuth();
+  const userId = roles[0]?.user_id;
   const { data: activeRestrictions, refetch: refetchRestrictions } = useUserActiveRestrictions(id);
   const banMutation     = useCreateBan();
   const liftBanMutation = useLiftBan();
@@ -76,7 +78,7 @@ export function UserDetailPage() {
 
   const handleAddRestriction = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!admin) return;
+    if (!userId) return;
     try {
       await banMutation.mutateAsync({
         userId: user.id,
@@ -86,7 +88,7 @@ export function UserDetailPage() {
         reasonCode: addReasonCode,
         reasonDetail: addReason.trim() || shortcutReason,
         durationDays: addType === 'temporary' ? addDuration : null,
-        adminId: admin.user_id,
+        adminId: userId,
       });
       setShowAddForm(false);
       setAddReason('');
@@ -99,14 +101,14 @@ export function UserDetailPage() {
   };
 
   const handleLiftRestriction = async (banId: string, scopeLabel: string) => {
-    if (!admin) return;
+    if (!userId) return;
     const reason = prompt(`Reason for lifting "${scopeLabel}":`);
     if (!reason) return;
 
     try {
       await liftBanMutation.mutateAsync({
         banId,
-        adminId: admin.user_id,
+        adminId: userId,
         liftReason: reason,
       });
       refetchRestrictions();
@@ -161,7 +163,7 @@ export function UserDetailPage() {
           <button onClick={() => setShowAddForm(!showAddForm)} className="ud-btn-add-restriction">
             {showAddForm ? 'Cancel' : '+ Add Restriction'}
           </button>
-          {admin?.role === 'sysadmin' && (
+          {isSysadmin(roles) && (
             <button
               onClick={handleDeleteUser}
               className="ud-btn-delete-user"
@@ -298,7 +300,7 @@ export function UserDetailPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span className="ud-meta-value">{(user as any).school || '—'}</span>
                   {/* NOTE: Only sysadmin can reassign a user's school to prevent cross-school tampering */}
-                  {admin?.role === 'sysadmin' && (
+                  {isSysadmin(roles) && (
                     <button 
                       onClick={() => {
                         setEditSchoolId((user as any).school_id || '');
@@ -314,16 +316,6 @@ export function UserDetailPage() {
               )}
             </div>
             
-            {(user as any).is_admin && (
-              <div className="ud-meta-row">
-                <span className="ud-meta-label">Managed</span>
-                <span className="ud-meta-value">
-                  {((user as any).managed_schools?.length ?? 0) > 0 
-                    ? (user as any).managed_schools.join(', ') 
-                    : 'All Platform / None'}
-                </span>
-              </div>
-            )}
 
             <div className="ud-meta-row">
               <span className="ud-meta-label">Status</span>

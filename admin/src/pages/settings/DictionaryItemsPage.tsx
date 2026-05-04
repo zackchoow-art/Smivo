@@ -12,13 +12,13 @@ import {
 } from 'lucide-react';
 import {
   useDictItems, useCreateDictItem, useUpdateDictItem,
-  useDeleteDictItem, useReorderDictItems,
+  useDeleteDictItem,
   DICT_REGISTRY, ACCESS_LEVEL_META, canEditLevel,
 } from '@/hooks/useDictionary';
 import {
   SCHOOL_DICT_SOURCE_MAP,
   useSchoolDictItems, useCreateSchoolDictItem, useUpdateSchoolDictItem,
-  useDeleteSchoolDictItem, useReorderSchoolDictItems,
+  useDeleteSchoolDictItem,
   useImportPlatformDefaults,
 } from '@/hooks/useSchoolDictData';
 import { MaterialIconPicker } from '@/components/MaterialIconPicker';
@@ -61,7 +61,7 @@ function DictItemModal({ dictType, item, onClose, onSave, isSaving, isSchoolSour
     if (!isSchoolSource && !isEdit && !key.trim()) return;
 
     const extraObj = regMeta?.extraFields?.length
-      ? Object.fromEntries(regMeta.extraFields.map((f) => [
+      ? Object.fromEntries(regMeta.extraFields.map((f: { key: string; type: string }) => [
           f.key,
           f.type === 'number' ? Number(extra[f.key] ?? 0) : (extra[f.key] ?? ''),
         ]))
@@ -124,7 +124,7 @@ function DictItemModal({ dictType, item, onClose, onSave, isSaving, isSchoolSour
           )}
 
           {/* Other extra fields (non-category) */}
-          {!isCategoryType && regMeta?.extraFields?.map((f) => (
+          {!isCategoryType && regMeta?.extraFields?.map((f: { key: string; label: string; type: string; placeholder?: string }) => (
             <label key={f.key} className="modal-label">
               {f.label}
               {f.type === 'color' ? (
@@ -168,8 +168,8 @@ export function DictionaryItemsPage() {
   const { dictCode }           = useParams<{ dictCode: string }>();
   const navigate               = useNavigate();
   const { role }               = useAdminRole();
-  const { admin }              = useAuthStore();
-  const adminId                = admin?.user_id ?? '';
+  const { roles }              = useAuthStore();
+  const adminId                = roles[0]?.user_id ?? '';
   const { currentCollegeId }   = useSchoolScopeStore();
   const { data: colleges }     = useColleges();
 
@@ -185,13 +185,11 @@ export function DictionaryItemsPage() {
   const sysCreate  = useCreateDictItem();
   const sysUpdate  = useUpdateDictItem();
   const sysDelete  = useDeleteDictItem();
-  const sysReorder = useReorderDictItems();
 
   // School mutations
   const schCreate  = useCreateSchoolDictItem(dictCode ?? '');
   const schUpdate  = useUpdateSchoolDictItem(dictCode ?? '');
   const schDelete  = useDeleteSchoolDictItem(dictCode ?? '');
-  const schReorder = useReorderSchoolDictItems(dictCode ?? '');
   const importDefaults = useImportPlatformDefaults();
 
   // All 3 school-level dict types support platform defaults import
@@ -222,7 +220,7 @@ export function DictionaryItemsPage() {
   const regMeta       = DICT_REGISTRY[dictCode ?? ''];
   const level         = regMeta?.access_level ?? 'platform';
   const levelMeta     = ACCESS_LEVEL_META[level];
-  const canEdit       = canEditLevel(role, level);
+  const canEdit       = canEditLevel(role ?? undefined, level);
   const displayItems  = draftItems ?? items ?? [];
 
   const hasUnsavedChanges = draftItems !== null && (JSON.stringify(draftItems) !== JSON.stringify(items) || deletedItems.size > 0);
@@ -464,7 +462,7 @@ export function DictionaryItemsPage() {
             <span>Key / Slug</span>
             <span>Display Value</span>
             <span>Description</span>
-            {regMeta?.extraFields?.map((f) => <span key={f.key}>{f.label}</span>)}
+            {regMeta?.extraFields?.map((f: { key: string; label: string }) => <span key={f.key}>{f.label}</span>)}
             <span style={{ textAlign: 'right', paddingRight: '8px' }}>Actions</span>
           </div>
 
@@ -485,7 +483,7 @@ export function DictionaryItemsPage() {
               <code className="ditems-key">{item.dict_key}</code>
               <span className="ditems-value">{item.dict_value}</span>
               <span className="ditems-desc" title={item.description ?? ''}>{item.description ?? '—'}</span>
-              {regMeta?.extraFields?.map((f) => {
+              {regMeta?.extraFields?.map((f: { key: string; type: string }) => {
                 const rawVal = (item.extra as any)?.[f.key];
                 return (
                   <span key={f.key} className="ditems-extra">

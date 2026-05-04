@@ -8,8 +8,7 @@ export const TABLES = {
   // Core multi-tenant
   // NOTE: In the DB this table is called 'schools', not 'colleges'
   COLLEGES: 'schools',
-  ADMIN_USERS: 'admin_users',
-  ADMIN_SCHOOL_SCOPES: 'admin_school_scopes',
+  ADMIN_ROLES: 'admin_roles',
 
   // Business tables
   USER_PROFILES: 'user_profiles',

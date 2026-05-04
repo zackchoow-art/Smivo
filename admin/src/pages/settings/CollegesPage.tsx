@@ -21,8 +21,8 @@ export function CollegesPage() {
   const toggleActive     = useToggleCollegeActive();
   const importDefaults   = useImportAllDefaultsForSchool();
   const { role }         = useAdminRole();
-  const { admin }        = useAuthStore();
-  const adminId          = admin?.user_id ?? '';
+  const { roles }        = useAuthStore();
+  const adminId          = roles[0]?.user_id ?? '';
 
   const [dialogOpen, setDialogOpen]       = useState(false);
   const [editingCollege, setEditingCollege] = useState<College | null>(null);

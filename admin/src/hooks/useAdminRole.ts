@@ -1,53 +1,53 @@
 /**
  * Hook for checking admin role and permissions.
  *
- * Permission model (migration 00068):
- *   sysadmin           — full control
- *   platform_admin     — cross-school management (soft + hard restrictions)
- *   platform_reviewer  — cross-school moderation (soft restrictions only)
- *   school_admin       — per-school management (soft + hard restrictions)
- *   school_reviewer    — per-school moderation (soft restrictions only)
+ * Now reads from the unified admin_roles table via auth store.
  *
- * "Soft restrictions": mute, listing ban, feedback ban (user_restrictions table)
- * "Hard ban": freeze/deactivate account (user_bans table)
+ * Permission model (migration 00102):
+ *   sysadmin           — full control
+ *   platform_admin     — cross-school management
+ *   platform_reviewer  — cross-school moderation
+ *   school_admin       — per-school management
+ *   school_reviewer    — per-school moderation
  */
 import { useMemo } from 'react';
-import { useAuthStore } from '@/stores/auth-store';
+import { useAuthStore, getHighestRole, isSysadmin as checkSysadmin, getSchoolScopeIds } from '@/stores/auth-store';
 import { useSchoolScopeStore } from '@/stores/school-scope-store';
 
 export function useAdminRole() {
-  const { admin, scopes } = useAuthStore();
+  const { roles } = useAuthStore();
   const { currentCollegeId } = useSchoolScopeStore();
 
-  const role = admin?.role;
+  const role = getHighestRole(roles);
+  const schoolScopeIds = getSchoolScopeIds(roles);
 
   const permissions = useMemo(() => {
-    const isSysadmin         = role === 'sysadmin';
-    const isPlatformAdmin    = role === 'platform_admin';
-    const isPlatformReviewer = role === 'platform_reviewer';
-    const isSchoolAdmin      = role === 'school_admin';
-    const isSchoolReviewer   = role === 'school_reviewer';
+    const _isSysadmin        = checkSysadmin(roles);
+    const isPlatformAdmin    = roles.some((r) => r.is_active && r.role === 'platform_admin');
+    const isPlatformReviewer = roles.some((r) => r.is_active && r.role === 'platform_reviewer');
+    const isSchoolAdmin      = roles.some((r) => r.is_active && r.role === 'school_admin');
+    const isSchoolReviewer   = roles.some((r) => r.is_active && r.role === 'school_reviewer');
 
     // Platform-level roles can cross schools
-    const isPlatformLevel = isSysadmin || isPlatformAdmin || isPlatformReviewer;
+    const isPlatformLevel = _isSysadmin || isPlatformAdmin || isPlatformReviewer;
 
     // Roles that can perform write/moderation actions (both reviewer levels and above)
-    const isModeratorOrAbove = isSysadmin || isPlatformAdmin || isPlatformReviewer
+    const isModeratorOrAbove = _isSysadmin || isPlatformAdmin || isPlatformReviewer
       || isSchoolAdmin || isSchoolReviewer;
 
     // School scope: does the current admin have access to the currently selected school?
-    const hasCurrentSchoolAccess = isSysadmin
-      || scopes.some((s) => s.college_id === currentCollegeId);
+    const hasCurrentSchoolAccess = _isSysadmin || isPlatformLevel
+      || schoolScopeIds.includes(currentCollegeId ?? '');
 
     // Hard ban: only admins (not reviewers)
-    const canHardBan = isSysadmin || isPlatformAdmin || isSchoolAdmin;
+    const canHardBan = _isSysadmin || isPlatformAdmin || isSchoolAdmin;
 
     // Soft restrictions: all moderation roles
     const canSoftRestrict = isModeratorOrAbove;
 
     return {
       // ── Role flags ───────────────────────────────────────────
-      isSysadmin,
+      isSysadmin: _isSysadmin,
       isPlatformAdmin,
       isPlatformReviewer,
       isSchoolAdmin,
@@ -56,56 +56,49 @@ export function useAdminRole() {
       isModeratorOrAbove,
 
       // ── Legacy aliases (backward compat with older components) ──
-      isSuperAdmin:  isSysadmin,
+      isSuperAdmin:  _isSysadmin,
       isModerator:   isPlatformAdmin,
 
       // ── Menu visibility ───────────────────────────────────────
-      // All moderation roles can see these
       canViewModeration:        isModeratorOrAbove,
       canViewUsers:             isModeratorOrAbove,
       canViewFeedback:          isModeratorOrAbove,
       canViewAnalytics:         isModeratorOrAbove,
-      canViewAuditLog:          isSysadmin || isPlatformAdmin || isPlatformReviewer || isSchoolAdmin,
+      canViewAuditLog:          _isSysadmin || isPlatformAdmin || isPlatformReviewer || isSchoolAdmin,
 
-      // Platform admin and above only
-      canViewSensitiveWords:    isSysadmin || isPlatformAdmin,
-      canViewPush:              isSysadmin || isPlatformAdmin,
+      canViewSensitiveWords:    _isSysadmin || isPlatformAdmin,
+      canViewPush:              _isSysadmin || isPlatformAdmin,
 
-      // Dictionary — school admins manage school-level dict only
-      canViewDictionary:        isSysadmin || isPlatformAdmin || isSchoolAdmin,
+      canViewDictionary:        _isSysadmin || isPlatformAdmin || isSchoolAdmin,
 
-      // Sysadmin only
-      canViewFeatureFlags:      isSysadmin,
-      canViewAdminManagement:   isSysadmin,
-      canViewCollegeManagement: isSysadmin,
-      canViewSystemConfigs:     isSysadmin,
-      canViewCleanup:           isSysadmin,
+      canViewFeatureFlags:      _isSysadmin,
+      canViewAdminManagement:   _isSysadmin,
+      canViewCollegeManagement: _isSysadmin,
+      canViewSystemConfigs:     _isSysadmin,
+      canViewCleanup:           _isSysadmin,
 
-      // Purge functions
-      canPurgePlatformData:     isSysadmin,
-      canPurgeSchoolData:       isSysadmin || isSchoolAdmin,
+      canPurgePlatformData:     _isSysadmin,
+      canPurgeSchoolData:       _isSysadmin || isSchoolAdmin,
 
       // ── Action permissions ────────────────────────────────────
       canHardBan,
       canSoftRestrict,
 
       // ── Dictionary edit (by level) ───────────────────────────
-      // Used by canEditLevel() helper in useDictionary
-      canEditSchoolDict:    isSysadmin || isSchoolAdmin,
-      canEditPlatformDict:  isSysadmin || isPlatformAdmin,
-      canEditSystemDict:    isSysadmin,
+      canEditSchoolDict:    _isSysadmin || isSchoolAdmin,
+      canEditPlatformDict:  _isSysadmin || isPlatformAdmin,
+      canEditSystemDict:    _isSysadmin,
 
       // ── Cross-school context ──────────────────────────────────
       hasCurrentSchoolAccess,
-      showSchoolSwitcher: isPlatformLevel || scopes.length > 1,
+      showSchoolSwitcher: isPlatformLevel || schoolScopeIds.length > 1,
       showPlatformView:   isPlatformLevel,
 
       // Accessible school IDs (for filtering queries)
-      accessibleSchoolIds: isSysadmin
-        ? null  // null = all schools
-        : scopes.map((s) => s.college_id),
+      // null = all schools (platform-level access)
+      accessibleSchoolIds: isPlatformLevel ? null : schoolScopeIds,
     };
-  }, [role, scopes, currentCollegeId]);
+  }, [roles, schoolScopeIds, currentCollegeId]);
 
   return { role, ...permissions };
 }

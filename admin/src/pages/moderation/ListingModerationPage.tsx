@@ -4,7 +4,7 @@ import { useListingsModeration, useBatchModerateListings } from '@/hooks/useList
 import { useGroupedListingReports } from '@/hooks/useListingReports';
 import { useBackendModerationLogs, type BackendModerationLog, type LogFilters } from '@/hooks/useBackendModerationLogs';
 import { DEFAULT_PAGE_SIZE, MODERATION_STATUS, MODERATION_PRIORITY, REPORT_REASONS } from '@/lib/constants';
-import { Filter, ChevronRight, Bot, CheckCircle, XCircle, AlertTriangle, Eye } from 'lucide-react';
+import { Filter, ChevronRight, Bot, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function ListingModerationPage() {

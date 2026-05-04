@@ -10,7 +10,7 @@
  * button becomes active, preventing accidental data loss.
  */
 import { useState } from 'react';
-import { Shield, School, Trash2, AlertTriangle, CheckCircle, Loader2, Lock } from 'lucide-react';
+import { School, Trash2, AlertTriangle, CheckCircle, Loader2, Lock } from 'lucide-react';
 import { usePurgeSchoolData } from '@/hooks/useTestDataCleanup';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { useColleges } from '@/hooks/useColleges';

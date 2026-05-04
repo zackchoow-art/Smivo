@@ -107,11 +107,6 @@ export function UsersPage() {
                     <td><span className="user-email">{user.email}</span></td>
                     <td>
                       <span className="user-college">{(user as any).school || '—'}</span>
-                      {(user as any).is_admin && ((user as any).managed_schools?.length > 0) && (
-                         <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
-                           Managed: {(user as any).managed_schools.join(', ')}
-                         </div>
-                      )}
                     </td>
                     <td>
                       {restrictions.length > 0 ? (

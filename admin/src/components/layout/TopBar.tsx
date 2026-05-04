@@ -1,30 +1,36 @@
 /**
- * Top bar with breadcrumb, school switcher, and admin avatar.
+ * Top bar with admin role label, school switcher, and admin avatar.
  * Defined in 04_ADMIN_WEB_SPEC.md §4.1.
  */
-import { useAuthStore } from '@/stores/auth-store';
+import { useAuthStore, getHighestRole, getSchoolScopeIds } from '@/stores/auth-store';
 import { useSchoolScopeStore } from '@/stores/school-scope-store';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { useColleges } from '@/hooks/useColleges';
 import { useAuth } from '@/hooks/useAuth';
 import { GlobalSearch } from '@/components/shared/GlobalSearch';
+import { ADMIN_ROLE_LABELS } from '@/lib/constants';
 import { Bell, LogOut, User } from 'lucide-react';
 import { useState } from 'react';
 
 export function TopBar() {
-  const { admin, scopes } = useAuthStore();
+  const { roles, adminProfile } = useAuthStore();
   const { currentCollegeId, setCollege, setPlatformView } = useSchoolScopeStore();
-  const { showSchoolSwitcher, isSuperAdmin } = useAdminRole();
+  const { isSuperAdmin } = useAdminRole();
   const { logout } = useAuth();
   const { data: colleges } = useColleges();
   const [showDropdown, setShowDropdown] = useState(false);
 
+  // Derive role label from current roles
+  const highestRole = getHighestRole(roles);
+  const roleLabel = highestRole ? (ADMIN_ROLE_LABELS[highestRole] ?? highestRole) : 'Admin';
+
   // Determine available schools based on admin scopes
+  const schoolScopeIds = getSchoolScopeIds(roles);
   const availableSchools = isSuperAdmin
     ? colleges || []
-    : colleges?.filter((c) => scopes.some((s) => s.college_id === c.id)) || [];
+    : colleges?.filter((c) => schoolScopeIds.includes(c.id)) || [];
 
-  // If not super admin and no current college is selected (shouldn't happen, but fallback), select first available
+  // If not super admin and no current college is selected, select first available
   if (!isSuperAdmin && !currentCollegeId && availableSchools.length > 0) {
     setCollege(availableSchools[0].id);
   }
@@ -32,8 +38,8 @@ export function TopBar() {
   return (
     <header className="topbar">
       <div className="topbar__left">
-        {/* NOTE: Breadcrumb will be implemented per-page using a context provider */}
-        <span className="topbar__breadcrumb">Smivo Admin</span>
+        {/* NOTE: Show current admin's role level instead of static "Smivo Admin" */}
+        <span className="topbar__breadcrumb">{roleLabel}</span>
       </div>
 
       {/* Global search — searches users, listings, orders */}
@@ -80,15 +86,25 @@ export function TopBar() {
             className="topbar__avatar-btn"
             onClick={() => setShowDropdown(!showDropdown)}
           >
-            <User size={18} />
-            <span className="topbar__name">{admin?.display_name || admin?.email || 'Admin'}</span>
+            {adminProfile?.avatar_url ? (
+              <img
+                src={adminProfile.avatar_url}
+                alt=""
+                className="topbar__avatar-img"
+              />
+            ) : (
+              <User size={18} />
+            )}
+            <span className="topbar__name">
+              {adminProfile?.display_name || adminProfile?.email || 'Admin'}
+            </span>
           </button>
 
           {showDropdown && (
             <div className="topbar__dropdown">
               <div className="topbar__dropdown-item topbar__dropdown-info">
-                <div>{admin?.email}</div>
-                <div className="topbar__role">{admin?.role?.replace(/_/g, ' ')}</div>
+                <div>{adminProfile?.email}</div>
+                <div className="topbar__role">{roleLabel}</div>
               </div>
               <button className="topbar__dropdown-item" onClick={logout}>
                 <LogOut size={14} />
@@ -199,6 +215,13 @@ export function TopBar() {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+
+        .topbar__avatar-img {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          object-fit: cover;
         }
 
         .topbar__dropdown {
