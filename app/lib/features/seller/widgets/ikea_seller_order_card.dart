@@ -282,12 +282,15 @@ class IkeaSellerOrderCard extends StatelessWidget {
     final buyer = order.buyer;
     final listingTitle = order.listing?.title ?? 'Transaction';
     final dateStr = DateFormat('M/d HH:mm').format(order.updatedAt.toLocal());
+    final listingData = order.listing;
+    final imageUrl =
+        listingData?.images.isNotEmpty == true
+            ? listingData!.images.first.imageUrl
+            : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // NOTE: Shows buyer avatar instead of product image to identify
-        // the counterparty at a glance in the active transactions grid.
         // Image with 12px gap from top/left/right card edges.
         Padding(
           padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
@@ -298,15 +301,11 @@ class IkeaSellerOrderCard extends StatelessWidget {
                 AspectRatio(
                   aspectRatio: 1.3,
                   child:
-                      buyer?.avatarUrl != null && buyer!.avatarUrl!.isNotEmpty
-                          ? Image.network(buyer!.avatarUrl!, fit: BoxFit.cover)
+                      imageUrl != null
+                          ? Image.network(imageUrl, fit: BoxFit.cover)
                           : Container(
                             color: colors.surfaceContainerHigh,
-                            child: Icon(
-                              Icons.person,
-                              color: colors.onSurface.withValues(alpha: 0.3),
-                              size: 48,
-                            ),
+                            child: const Icon(Icons.image),
                           ),
                 ),
                 // NOTE: Status chip moved to image top-right per design request.

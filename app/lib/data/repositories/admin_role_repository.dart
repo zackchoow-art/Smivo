@@ -1,11 +1,14 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/admin_role.dart';
-import 'package:smivo/data/models/admin_permission.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'admin_role_repository.g.dart';
 
-/// Repository for admin role CRUD and permission queries.
+/// Repository for admin role CRUD operations.
+///
+/// Reads from the unified admin_roles table (migration 00102).
+/// The admin_permissions table no longer exists — permissions
+/// are derived from the role hierarchy directly.
 class AdminRoleRepository {
   final SupabaseClient _client;
 
@@ -88,42 +91,6 @@ class AdminRoleRepository {
   /// Delete an admin role assignment.
   Future<void> deleteRole(String id) async {
     await _client.from('admin_roles').delete().eq('id', id);
-  }
-
-  // ─── Permissions ──────────────────────────────────────────
-
-  /// Fetch all permission overrides for a specific role assignment.
-  Future<List<AdminPermission>> fetchPermissionsForRole(String roleId) async {
-    final res = await _client
-        .from('admin_permissions')
-        .select()
-        .eq('role_id', roleId)
-        .order('module');
-
-    return (res as List).map((row) => AdminPermission.fromJson(row)).toList();
-  }
-
-  /// Upsert a permission override.
-  Future<void> upsertPermission({
-    required String roleId,
-    required String module,
-    required String permission,
-  }) async {
-    await _client.from('admin_permissions').upsert({
-      'role_id': roleId,
-      'module': module,
-      'permission': permission,
-    }, onConflict: 'role_id, module');
-  }
-
-  /// Delete a permission override (reverts to role default).
-  Future<void> deletePermission(String id) async {
-    await _client.from('admin_permissions').delete().eq('id', id);
-  }
-
-  /// Delete all permission overrides for a role.
-  Future<void> deleteAllPermissionsForRole(String roleId) async {
-    await _client.from('admin_permissions').delete().eq('role_id', roleId);
   }
 }
 

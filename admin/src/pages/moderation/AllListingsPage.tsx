@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useAllListings, useSimulateAIReview } from '@/hooks/useListingModeration';
+import { useAllListings, useListingOrders } from '@/hooks/useListingModeration';
 import { useTargetModerationLogs } from '@/hooks/useBackendModerationLogs';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
-import { Filter, Bot, Eye, FileText, CheckCircle, XCircle } from 'lucide-react';
-import { showToast } from '@/hooks/useToast';
+import { Filter, Eye, FileText, CheckCircle, XCircle } from 'lucide-react';
+
 import { useColleges } from '@/hooks/useColleges';
 import { useSchoolDictItems } from '@/hooks/useSchoolDictData';
 import React from 'react';
@@ -88,8 +88,8 @@ export function AllListingsPage() {
                     >
                       <td className="lm-td">
                         <div className="lm-listing-cell">
-                          {listing.listing_images?.[0] ? (
-                            <img className="lm-listing-thumb" src={listing.listing_images[0]} alt="" />
+                          {listing.images?.[0]?.image_url ? (
+                            <img className="lm-listing-thumb" src={listing.images[0].image_url} alt="" />
                           ) : (
                             <div className="lm-listing-thumb-placeholder">No Img</div>
                           )}
@@ -219,41 +219,28 @@ export function AllListingsPage() {
 }
 
 function ListingDetailCard({ listing }: { listing: any }) {
-  const [trigger, setTrigger] = useState('Weapons/Firearms');
-  const [action, setAction] = useState('Auto-Take Down & Ban');
-  const [priority, setPriority] = useState('urgent');
-  
-  const simulateMutation = useSimulateAIReview();
   const { data: colleges = [] } = useColleges();
-
-  const handleSimulate = async () => {
-    try {
-      await simulateMutation.mutateAsync({
-        listingId: listing.id,
-        trigger,
-        action,
-        priority
-      });
-      showToast('AI moderation simulated successfully! Flagged for system queue.', 'success');
-    } catch (err) {
-      showToast('Failed to simulate AI review.', 'error');
-    }
-  };
+  const { data: orders = [] } = useListingOrders(listing.id);
+  const isRental = listing.listing_type === 'rental';
 
   return (
     <div className="card-expanded-content">
-      <div className="detail-pane">
+      <div className="detail-pane" style={{ flex: 1, borderRight: 'none', paddingRight: 0 }}>
         <h3 className="pane-title">Listing Information</h3>
         <p className="detail-desc">{listing.description}</p>
         
         <div className="detail-grid">
           <div className="detail-item">
+            <span className="label">Type</span>
+            <span className="value" style={{ textTransform: 'capitalize' }}>{listing.listing_type || 'Sale'}</span>
+          </div>
+          <div className="detail-item">
             <span className="label">Condition</span>
-            <span className="value">{listing.condition}</span>
+            <span className="value">{listing.condition?.replace('_', ' ')}</span>
           </div>
           <div className="detail-item">
             <span className="label">Status</span>
-            <span className="value">{listing.status}</span>
+            <span className="value" style={{ textTransform: 'capitalize' }}>{listing.status}</span>
           </div>
           {listing.pickup_location && (
             <div className="detail-item">
@@ -263,85 +250,124 @@ function ListingDetailCard({ listing }: { listing: any }) {
           )}
         </div>
 
+        <h3 className="pane-title" style={{ marginTop: '24px' }}>Pricing Details</h3>
+        <div className="detail-grid" style={{ marginBottom: '24px' }}>
+          {!isRental ? (
+            <div className="detail-item">
+              <span className="label">Sale Price</span>
+              <span className="value" style={{ fontSize: '16px', fontWeight: 600, color: '#10b981' }}>${listing.price}</span>
+            </div>
+          ) : (
+            <>
+              {listing.daily_rate != null && (
+                <div className="detail-item">
+                  <span className="label">Daily Rate</span>
+                  <span className="value" style={{ color: '#10b981', fontWeight: 600 }}>${listing.daily_rate}/day</span>
+                </div>
+              )}
+              {listing.weekly_rate != null && (
+                <div className="detail-item">
+                  <span className="label">Weekly Rate</span>
+                  <span className="value" style={{ color: '#10b981', fontWeight: 600 }}>${listing.weekly_rate}/week</span>
+                </div>
+              )}
+              {listing.monthly_rate != null && (
+                <div className="detail-item">
+                  <span className="label">Monthly Rate</span>
+                  <span className="value" style={{ color: '#10b981', fontWeight: 600 }}>${listing.monthly_rate}/month</span>
+                </div>
+              )}
+              {listing.deposit != null && (
+                <div className="detail-item">
+                  <span className="label">Deposit Required</span>
+                  <span className="value" style={{ fontWeight: 600 }}>${listing.deposit}</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <h3 className="pane-title">Images</h3>
         <div className="image-gallery">
-          {listing.listing_images?.map((img: string, i: number) => (
-            <img key={i} src={img} alt="listing" className="gallery-img" />
+          {listing.images?.map((img: any, i: number) => (
+            <img key={i} src={img.image_url} alt="listing" className="gallery-img" />
           ))}
+          {(!listing.images || listing.images.length === 0) && (
+            <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>No images available.</div>
+          )}
         </div>
+
+        <h3 className="pane-title" style={{ marginTop: '24px' }}>Engagement</h3>
+        <div className="detail-grid" style={{ marginBottom: '24px' }}>
+          <div className="detail-item">
+            <span className="label">Views</span>
+            <span className="value">{listing.view_count || 0}</span>
+          </div>
+          <div className="detail-item">
+            <span className="label">Saves</span>
+            <span className="value">{listing.save_count || 0}</span>
+          </div>
+          <div className="detail-item">
+            <span className="label">Orders</span>
+            <span className="value">{orders?.length || 0}</span>
+          </div>
+        </div>
+
+        {orders && orders.length > 0 && (
+          <div className="orders-section">
+            <h3 className="pane-title">Order History</h3>
+            <div className="orders-list">
+              {orders.map((order: any) => (
+                <div key={order.id} className="order-card">
+                  <div className="order-header">
+                    <span className="order-id">Order #{order.id.slice(0, 8)}</span>
+                    <span className={`order-status status-${order.status}`}>{order.status}</span>
+                  </div>
+                  <div className="order-body">
+                    <div className="buyer-info">
+                      {order.buyer?.avatar_url ? (
+                        <img src={order.buyer.avatar_url} alt="avatar" className="buyer-avatar" />
+                      ) : (
+                        <div className="buyer-avatar placeholder-avatar" />
+                      )}
+                      <span>{order.buyer?.display_name || order.buyer?.email || 'Unknown Buyer'}</span>
+                    </div>
+                    <div className="order-dates">
+                      <div className="date-item">
+                        <span className="date-label">Created:</span>
+                        <span className="date-value">{new Date(order.created_at).toLocaleString()}</span>
+                      </div>
+                      {order.updated_at !== order.created_at && (
+                        <div className="date-item">
+                          <span className="date-label">Updated:</span>
+                          <span className="date-value">{new Date(order.updated_at).toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <AiLogsPanel listingId={listing.id} />
       </div>
-      
-      <div className="ai-sim-pane">
-        <div className="ai-sim-header">
-          <Bot size={18} className="ai-icon" />
-          <h3 className="pane-title" style={{ margin: 0 }}>Secondary AI Simulation</h3>
-        </div>
-        <p className="ai-sim-desc">
-          Manually trigger an AI flag to test the moderation pipeline. This will intercept the listing and send it to the System Queue.
-        </p>
-
-        <div className="form-group">
-          <label className="form-label">Detected Issue (Tag)</label>
-          <select className="form-select" value={trigger} onChange={e => setTrigger(e.target.value)}>
-            <option value="Weapons/Firearms">Weapons / Firearms</option>
-            <option value="Explicit Content">Explicit Content</option>
-            <option value="Counterfeit Goods">Counterfeit Goods</option>
-            <option value="Scam Language">Scam Language</option>
-            <option value="Personal Information">Personal Info Leak</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Recommended Action</label>
-          <select className="form-select" value={action} onChange={e => setAction(e.target.value)}>
-            <option value="Auto-Take Down & Ban">Auto-Take Down & Ban</option>
-            <option value="Suspend Listing & Human Review">Suspend Listing & Human Review</option>
-            <option value="Human Review (Low Priority)">Human Review (Low Priority)</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Assign Priority</label>
-          <select className="form-select" value={priority} onChange={e => setPriority(e.target.value)}>
-            <option value="urgent">Urgent</option>
-            <option value="normal">Normal</option>
-            <option value="low">Low</option>
-          </select>
-        </div>
-
-        <button 
-          className="ai-sim-btn" 
-          onClick={handleSimulate}
-          disabled={simulateMutation.isPending || listing.moderation_status === 'pending_review'}
-        >
-          {simulateMutation.isPending ? 'Simulating...' : 
-           listing.moderation_status === 'pending_review' ? 'Already in Queue' : 'Execute AI Flag'}
-        </button>
-      </div>
-
-      <AiLogsPanel listingId={listing.id} />
 
       <style>{`
         .card-expanded-content {
           display: flex;
           gap: 24px;
           padding: 24px 32px;
-        }
-
-        .detail-pane {
-          flex: 2;
-          padding-right: 24px;
-          border-right: 1px solid var(--color-border);
-        }
-
-        .ai-sim-pane {
-          flex: 1;
-          min-width: 300px;
-          background: rgba(139, 92, 246, 0.04);
-          border: 1px solid rgba(139, 92, 246, 0.2);
+          margin: 16px;
+          background: var(--color-bg-secondary);
+          border: 1px solid var(--color-border);
           border-radius: var(--radius-md);
-          padding: 20px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
-
+        .detail-pane {
+          flex: 1;
+        }
         .pane-title {
           font-size: 15px;
           font-weight: 600;
@@ -349,7 +375,6 @@ function ListingDetailCard({ listing }: { listing: any }) {
           margin-top: 0;
           margin-bottom: 12px;
         }
-
         .detail-desc {
           font-size: 13px;
           color: var(--color-text-secondary);
@@ -357,40 +382,34 @@ function ListingDetailCard({ listing }: { listing: any }) {
           margin-bottom: 20px;
           white-space: pre-wrap;
         }
-
         .detail-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
           gap: 16px;
           margin-bottom: 20px;
         }
-
         .detail-item {
           display: flex;
           flex-direction: column;
           gap: 4px;
         }
-
         .detail-item .label {
           font-size: 11px;
           font-weight: 600;
           text-transform: uppercase;
           color: var(--color-text-tertiary);
         }
-
         .detail-item .value {
           font-size: 13px;
           color: var(--color-text-primary);
           font-weight: 500;
         }
-
         .image-gallery {
           display: flex;
           gap: 12px;
           overflow-x: auto;
-          padding-bottom: 8px;
+          padding-bottom: 16px;
         }
-
         .gallery-img {
           width: 80px;
           height: 80px;
@@ -398,78 +417,101 @@ function ListingDetailCard({ listing }: { listing: any }) {
           object-fit: cover;
           border: 1px solid var(--color-border);
         }
-
-        .ai-sim-header {
+        .orders-section {
+          margin-top: 24px;
+          margin-bottom: 24px;
+        }
+        .orders-list {
           display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 8px;
-          color: #8b5cf6;
+          flex-direction: column;
+          gap: 12px;
+          max-height: 300px;
+          overflow-y: auto;
         }
-
-        .ai-icon {
-          color: #8b5cf6;
-        }
-
-        .ai-sim-desc {
-          font-size: 12px;
-          color: var(--color-text-secondary);
-          margin-bottom: 20px;
-          line-height: 1.4;
-        }
-
-        .form-group {
-          margin-bottom: 16px;
-        }
-
-        .form-label {
-          display: block;
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--color-text-primary);
-          margin-bottom: 6px;
-        }
-
-        .form-select {
-          width: 100%;
-          padding: 8px 12px;
-          font-size: 13px;
+        .order-card {
           border: 1px solid var(--color-border);
           border-radius: var(--radius-sm);
+          padding: 12px 16px;
           background: var(--color-bg-primary);
-          color: var(--color-text-primary);
-          outline: none;
         }
-
-        .form-select:focus {
-          border-color: #8b5cf6;
+        .order-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid var(--color-border);
         }
-
-        .ai-sim-btn {
-          width: 100%;
-          padding: 10px;
-          background: #8b5cf6;
-          color: white;
-          border: none;
-          border-radius: var(--radius-sm);
-          font-size: 13px;
+        .order-id {
+          font-family: monospace;
+          font-size: 12px;
+          color: var(--color-text-secondary);
+        }
+        .order-status {
+          font-size: 11px;
           font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s;
+          text-transform: uppercase;
+          padding: 2px 8px;
+          border-radius: 12px;
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-secondary);
+        }
+        .order-status.status-completed {
+          background: #d1fae5;
+          color: #065f46;
+        }
+        .order-status.status-pending {
+          background: #fef3c7;
+          color: #92400e;
+        }
+        .order-status.status-confirmed {
+          background: #dbeafe;
+          color: #1e40af;
+        }
+        .order-status.status-cancelled,
+        .order-status.status-missed {
+          background: #fee2e2;
+          color: #991b1b;
+        }
+        .order-body {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+        .buyer-info {
           display: flex;
           align-items: center;
-          justify-content: center;
           gap: 8px;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--color-text-primary);
         }
-
-        .ai-sim-btn:hover:not(:disabled) {
-          background: #7c3aed;
+        .buyer-avatar {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          object-fit: cover;
         }
-
-        .ai-sim-btn:disabled {
+        .placeholder-avatar {
           background: var(--color-bg-tertiary);
+        }
+        .order-dates {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          text-align: right;
+        }
+        .date-item {
+          font-size: 11px;
           color: var(--color-text-tertiary);
-          cursor: not-allowed;
+        }
+        .date-label {
+          margin-right: 4px;
+        }
+        .date-value {
+          color: var(--color-text-secondary);
         }
       `}</style>
     </div>

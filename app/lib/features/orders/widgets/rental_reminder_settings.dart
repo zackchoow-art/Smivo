@@ -27,11 +27,17 @@ class _RentalReminderSettingsState
   late bool _sendEmail;
   bool _isSaving = false;
 
+  // NOTE: Tracks the end date seen at last initState/didUpdateWidget to detect
+  // when a rental extension has been approved and the date has changed.
+  late DateTime? _lastKnownEndDate;
+  bool _wasRescheduled = false;
+
   @override
   void initState() {
     super.initState();
     _selectedDays = widget.order.reminderDaysBefore;
     _sendEmail = widget.order.reminderEmail;
+    _lastKnownEndDate = widget.order.rentalEndDate;
   }
 
   @override
@@ -43,6 +49,20 @@ class _RentalReminderSettingsState
         _selectedDays = widget.order.reminderDaysBefore;
         _sendEmail = widget.order.reminderEmail;
       });
+    }
+    // Detect when a rental extension was approved: end date changed and
+    // reminder_sent has been reset to false by the DB trigger.
+    final newEndDate = widget.order.rentalEndDate;
+    if (newEndDate != null &&
+        _lastKnownEndDate != null &&
+        newEndDate != _lastKnownEndDate &&
+        !widget.order.reminderSent) {
+      setState(() {
+        _wasRescheduled = true;
+        _lastKnownEndDate = newEndDate;
+      });
+    } else {
+      _lastKnownEndDate = newEndDate;
     }
   }
 
@@ -169,6 +189,7 @@ class _RentalReminderSettingsState
           ),
           const SizedBox(height: 16),
           if (widget.order.reminderSent)
+            // Reminder was already sent — show confirmation banner
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -199,6 +220,41 @@ class _RentalReminderSettingsState
               ),
             )
           else ...[
+            // If rental period was extended/shortened and reminder was reset,
+            // show a banner indicating the reminder has been automatically
+            // rescheduled for the new end date.
+            if (_wasRescheduled) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(radius.md),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.update_rounded,
+                      size: 18,
+                      color: colors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Reminder rescheduled for new end date',
+                        style: typo.bodySmall.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             Text(
               'Reminder will be sent $_selectedDays day${_selectedDays == 1 ? '' : 's'} before $endDateStr',
               style: typo.bodySmall.copyWith(color: colors.outlineVariant),

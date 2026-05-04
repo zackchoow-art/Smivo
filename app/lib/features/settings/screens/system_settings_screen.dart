@@ -346,8 +346,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      if (kDebugBackdoorEnabled || 
-                          ref.watch(adminContextProvider).maybeWhen(
+                      if (ref.watch(adminContextProvider).maybeWhen(
                             data: (ctx) => ctx.isSysadmin,
                             orElse: () => false,
                           )) ...[

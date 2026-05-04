@@ -1505,6 +1505,11 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final radius = context.smivoRadius;
 
     final listingTitle = order.listing?.title ?? 'Transaction';
+    final listingData = order.listing;
+    final imageUrl =
+        listingData?.images.isNotEmpty == true
+            ? listingData!.images.first.imageUrl
+            : null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -1527,21 +1532,22 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
               behavior: HitTestBehavior.opaque,
               child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: colors.surfaceContainerHigh,
-                    backgroundImage:
-                        order.buyer?.avatarUrl != null &&
-                                order.buyer!.avatarUrl!.isNotEmpty
-                            ? NetworkImage(order.buyer!.avatarUrl!)
-                            : null,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(radius.image),
                     child:
-                        order.buyer?.avatarUrl == null ||
-                                order.buyer!.avatarUrl!.isEmpty
-                            ? Icon(
-                              Icons.person,
-                              color: colors.onSurface.withValues(alpha: 0.5),
+                        imageUrl != null
+                            ? Image.network(
+                              imageUrl,
+                              width: 48,
+                              height: 48,
+                              fit: BoxFit.cover,
                             )
-                            : null,
+                            : Container(
+                              width: 48,
+                              height: 48,
+                              color: colors.surfaceContainerHigh,
+                              child: const Icon(Icons.image),
+                            ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

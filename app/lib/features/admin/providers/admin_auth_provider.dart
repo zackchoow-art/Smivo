@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/admin_role.dart';
-import 'package:smivo/data/models/admin_permission.dart';
 import 'package:smivo/data/repositories/admin_role_repository.dart';
 
 part 'admin_auth_provider.g.dart';
@@ -24,16 +23,15 @@ enum AdminModule {
 /// Permission levels, ordered by access.
 enum PermissionLevel { none, read, write }
 
-/// Encapsulates the current user's admin context: their roles,
-/// permission overrides, and helper methods for authorization.
+/// Encapsulates the current user's admin context: their roles
+/// and helper methods for authorization.
+///
+/// Permissions are now derived entirely from the role hierarchy —
+/// no more per-module permission overrides (admin_permissions table removed).
 class AdminContext {
   final List<AdminRole> roles;
-  final Map<String, List<AdminPermission>> _overrides; // roleId -> perms
 
-  AdminContext({
-    required this.roles,
-    Map<String, List<AdminPermission>>? overrides,
-  }) : _overrides = overrides ?? {};
+  AdminContext({required this.roles});
 
   /// Whether the user has any admin role at all.
   bool get isAdmin => roles.any((r) => r.isActive);
@@ -46,8 +44,10 @@ class AdminContext {
   /// The user's highest role across all scopes.
   String get highestRole {
     if (isSysadmin) return 'sysadmin';
-    if (roles.any((r) => r.isActive && r.role == 'admin')) return 'admin';
-    if (roles.any((r) => r.isActive && r.role == 'operator')) return 'operator';
+    if (_hasActiveRole('platform_admin')) return 'platform_admin';
+    if (_hasActiveRole('platform_reviewer')) return 'platform_reviewer';
+    if (_hasActiveRole('school_admin')) return 'school_admin';
+    if (_hasActiveRole('school_reviewer')) return 'school_reviewer';
     return 'none';
   }
 
@@ -55,11 +55,15 @@ class AdminContext {
   String get highestRoleLabel {
     switch (highestRole) {
       case 'sysadmin':
-        return 'System Admin';
-      case 'admin':
-        return 'Admin';
-      case 'operator':
-        return 'Operator';
+        return 'Super Admin';
+      case 'platform_admin':
+        return 'Platform Admin';
+      case 'platform_reviewer':
+        return 'Platform Reviewer';
+      case 'school_admin':
+        return 'School Admin';
+      case 'school_reviewer':
+        return 'School Reviewer';
       default:
         return 'No Access';
     }
@@ -70,10 +74,12 @@ class AdminContext {
     switch (highestRole) {
       case 'sysadmin':
         return Icons.shield;
-      case 'admin':
+      case 'platform_admin':
+      case 'school_admin':
         return Icons.admin_panel_settings;
-      case 'operator':
-        return Icons.person;
+      case 'platform_reviewer':
+      case 'school_reviewer':
+        return Icons.rate_review;
       default:
         return Icons.block;
     }
@@ -82,7 +88,6 @@ class AdminContext {
   /// Check if user has at least [required] permission for [module].
   ///
   /// Optionally scope to a specific [schoolId].
-  /// Logic: find best applicable role → check overrides → fall back to defaults.
   bool hasPermission(
     AdminModule module, {
     PermissionLevel required = PermissionLevel.read,
@@ -94,9 +99,7 @@ class AdminContext {
 
   /// Get the effective permission level for a module.
   PermissionLevel _effectivePermission(AdminModule module, {String? schoolId}) {
-    final moduleName = module.name;
-
-    // Collect applicable roles sorted by priority (sysadmin > admin > operator)
+    // Collect applicable roles sorted by priority
     final applicable =
         roles.where((r) {
             if (!r.isActive) return false;
@@ -110,19 +113,8 @@ class AdminContext {
 
     if (applicable.isEmpty) return PermissionLevel.none;
 
-    // Check each role from highest to lowest for overrides
-    for (final role in applicable) {
-      final overrides = _overrides[role.id];
-      if (overrides != null) {
-        final match = overrides.where((p) => p.module == moduleName);
-        if (match.isNotEmpty) {
-          return _parsePermission(match.first.permission);
-        }
-      }
-    }
-
-    // No overrides found → use default for highest role
-    return _defaultPermission(applicable.first.role, moduleName);
+    // NOTE: No more per-module overrides — derive from role hierarchy
+    return _defaultPermission(applicable.first.role, module.name);
   }
 
   /// Get list of module names visible to this user (permission >= read).
@@ -143,42 +135,61 @@ class AdminContext {
 
   // ─── Private helpers ──────────────────────────────────────
 
+  bool _hasActiveRole(String roleName) =>
+      roles.any((r) => r.isActive && r.role == roleName);
+
   static int _rolePriority(String role) {
     switch (role) {
       case 'sysadmin':
+        return 5;
+      case 'platform_admin':
+        return 4;
+      case 'platform_reviewer':
         return 3;
-      case 'admin':
+      case 'school_admin':
         return 2;
-      case 'operator':
+      case 'school_reviewer':
         return 1;
       default:
         return 0;
     }
   }
 
-  static PermissionLevel _parsePermission(String perm) {
-    switch (perm) {
-      case 'write':
-        return PermissionLevel.write;
-      case 'read':
-        return PermissionLevel.read;
-      default:
-        return PermissionLevel.none;
-    }
-  }
-
   /// Default permissions per role per module.
+  /// Matches the permission matrix from the migration plan.
   static PermissionLevel _defaultPermission(String role, String module) {
     switch (role) {
       case 'sysadmin':
         // NOTE: Sysadmin has write access to everything
         return PermissionLevel.write;
 
-      case 'admin':
+      case 'platform_admin':
+        // Same as school_admin but for all schools
         switch (module) {
-          case 'schools':
-          case 'dictionary':
           case 'roles':
+            return PermissionLevel.none;
+          case 'schools':
+            return PermissionLevel.none;
+          default:
+            return PermissionLevel.write;
+        }
+
+      case 'platform_reviewer':
+        // Same as school_reviewer but for all schools
+        switch (module) {
+          case 'dashboard':
+          case 'listings':
+          case 'orders':
+          case 'users':
+            return PermissionLevel.read;
+          default:
+            return PermissionLevel.none;
+        }
+
+      case 'school_admin':
+        switch (module) {
+          case 'roles':
+          case 'schools':
             return PermissionLevel.none;
           case 'users':
             return PermissionLevel.read;
@@ -186,13 +197,11 @@ class AdminContext {
             return PermissionLevel.write;
         }
 
-      case 'operator':
+      case 'school_reviewer':
         switch (module) {
           case 'dashboard':
           case 'listings':
           case 'orders':
-          case 'faqs':
-          case 'pickupLocations':
             return PermissionLevel.read;
           default:
             return PermissionLevel.none;
@@ -211,17 +220,9 @@ class AdminContext {
 @riverpod
 Future<AdminContext> adminContext(Ref ref) async {
   final repo = ref.watch(adminRoleRepositoryProvider);
-
   final roles = await repo.fetchMyRoles();
 
-  // Load permission overrides for each role
-  final overrides = <String, List<AdminPermission>>{};
-  for (final role in roles) {
-    final perms = await repo.fetchPermissionsForRole(role.id);
-    if (perms.isNotEmpty) {
-      overrides[role.id] = perms;
-    }
-  }
-
-  return AdminContext(roles: roles, overrides: overrides);
+  // NOTE: No more permission override loading — role hierarchy is the sole
+  // source of truth for access control (admin_permissions table removed)
+  return AdminContext(roles: roles);
 }

@@ -6,8 +6,12 @@ part 'admin_role.g.dart';
 
 /// An admin role assignment linking a user to a scope with a role tier.
 ///
-/// Roles: operator (read-only), admin (school-level write),
-/// sysadmin (platform-wide full access).
+/// Role hierarchy (5 levels):
+///   sysadmin           — full control, only one per platform
+///   platform_admin     — all schools admin
+///   platform_reviewer  — all schools reviewer
+///   school_admin       — per-school management
+///   school_reviewer    — per-school moderation
 ///
 /// Scope: 'platform' (scope_id = null) or 'school' (scope_id = school uuid).
 @freezed

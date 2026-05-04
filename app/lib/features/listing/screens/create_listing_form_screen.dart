@@ -634,11 +634,12 @@ class _CreateListingFormScreenState
     final isSale = formMode == 'sale';
     final errors = <String>[];
     if (_titleController.text.trim().isEmpty) errors.add('Title is required');
-    if (_descriptionController.text.trim().isEmpty) {
-      errors.add('Description is required');
-    }
     if (category == null || category.isEmpty) {
       errors.add('Please select a category');
+    }
+    final photoFiles = ref.read(listingPhotosProvider);
+    if (photoFiles.isEmpty) {
+      errors.add('At least one photo is required');
     }
     if (isSale) {
       final price = double.tryParse(_priceController.text.trim());

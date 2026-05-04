@@ -213,14 +213,18 @@ class _RoleCard extends StatelessWidget {
 
     final roleColor = switch (role.role) {
       'sysadmin' => const Color(0xFFDC2626),
-      'admin' => const Color(0xFF2563EB),
+      'platform_admin' => const Color(0xFF7C3AED),
+      'platform_reviewer' => const Color(0xFF2563EB),
+      'school_admin' => const Color(0xFF0891B2),
       _ => const Color(0xFF059669),
     };
 
     final roleLabel = switch (role.role) {
-      'sysadmin' => 'System Admin',
-      'admin' => 'Admin',
-      _ => 'Operator',
+      'sysadmin' => 'Super Admin',
+      'platform_admin' => 'Platform Admin',
+      'platform_reviewer' => 'Platform Reviewer',
+      'school_admin' => 'School Admin',
+      _ => 'School Reviewer',
     };
 
     final scopeLabel =
@@ -239,9 +243,9 @@ class _RoleCard extends StatelessWidget {
           child: Icon(
             role.role == 'sysadmin'
                 ? Icons.shield
-                : role.role == 'admin'
+                : (role.role == 'platform_admin' || role.role == 'school_admin')
                 ? Icons.admin_panel_settings
-                : Icons.person,
+                : Icons.rate_review,
             color: roleColor,
             size: 20,
           ),
@@ -305,7 +309,7 @@ class _AssignRoleDialog extends ConsumerStatefulWidget {
 
 class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
   final _userIdCtrl = TextEditingController();
-  String _role = 'operator';
+  String _role = 'school_reviewer';
   String _scopeType = 'school';
   String? _scopeId;
   bool _loading = false;
@@ -338,17 +342,19 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
               initialValue: _role,
               decoration: const InputDecoration(labelText: 'Role'),
               items: const [
-                DropdownMenuItem(value: 'operator', child: Text('Operator')),
-                DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                DropdownMenuItem(
-                  value: 'sysadmin',
-                  child: Text('System Admin'),
-                ),
+                DropdownMenuItem(value: 'school_reviewer', child: Text('School Reviewer')),
+                DropdownMenuItem(value: 'school_admin', child: Text('School Admin')),
+                DropdownMenuItem(value: 'platform_reviewer', child: Text('Platform Reviewer')),
+                DropdownMenuItem(value: 'platform_admin', child: Text('Platform Admin')),
+                DropdownMenuItem(value: 'sysadmin', child: Text('Super Admin')),
               ],
               onChanged:
                   (v) => setState(() {
-                    _role = v ?? 'operator';
-                    if (_role == 'sysadmin') _scopeType = 'platform';
+                    _role = v ?? 'school_reviewer';
+                    // Platform-level roles auto-set scope to platform
+                    if (['sysadmin', 'platform_admin', 'platform_reviewer'].contains(_role)) {
+                      _scopeType = 'platform';
+                    }
                   }),
             ),
             const SizedBox(height: 16),
@@ -474,9 +480,11 @@ class _EditRoleDialogState extends ConsumerState<_EditRoleDialog> {
             initialValue: _role,
             decoration: const InputDecoration(labelText: 'Role'),
             items: const [
-              DropdownMenuItem(value: 'operator', child: Text('Operator')),
-              DropdownMenuItem(value: 'admin', child: Text('Admin')),
-              DropdownMenuItem(value: 'sysadmin', child: Text('System Admin')),
+              DropdownMenuItem(value: 'school_reviewer', child: Text('School Reviewer')),
+              DropdownMenuItem(value: 'school_admin', child: Text('School Admin')),
+              DropdownMenuItem(value: 'platform_reviewer', child: Text('Platform Reviewer')),
+              DropdownMenuItem(value: 'platform_admin', child: Text('Platform Admin')),
+              DropdownMenuItem(value: 'sysadmin', child: Text('Super Admin')),
             ],
             onChanged: (v) => setState(() => _role = v ?? _role),
           ),

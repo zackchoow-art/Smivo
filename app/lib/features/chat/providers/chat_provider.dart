@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -268,7 +269,10 @@ Future<ChatRoom> chatRoom(Ref ref, String chatRoomId) async {
   // re-triggering this provider every time the chat list refreshes.
   // This prevents the AppBar contact info from flickering.
   final list = ref.read(chatRoomListProvider).value;
-  final cached = list?.firstWhere((r) => r.id == chatRoomId);
+  // NOTE: Use firstWhereOrNull instead of firstWhere to avoid StateError
+  // when the user arrives via push notification and the cache does not yet
+  // contain this specific room. In that case we fall back to a network fetch.
+  final cached = list?.firstWhereOrNull((r) => r.id == chatRoomId);
   if (cached != null) return cached;
 
   final repository = ref.read(chatRepositoryProvider);

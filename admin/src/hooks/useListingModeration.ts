@@ -33,6 +33,7 @@ export function useListingsModeration(page: number, filters?: ListingModerationF
         .from(TABLES.LISTINGS)
         .select(`
           *,
+          images:listing_images(image_url),
           seller:user_profiles!seller_id(id, display_name, email, avatar_url)
         `, { count: 'exact' });
 
@@ -307,6 +308,7 @@ export function useAllListings(page: number, filters?: AllListingsFilters) {
         .from(TABLES.LISTINGS)
         .select(`
           *,
+          images:listing_images(image_url),
           seller:user_profiles!seller_id(id, display_name, email, avatar_url)
         `, { count: 'exact' });
 
@@ -366,5 +368,30 @@ export function useSimulateAIReview() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LISTINGS_QUERY_KEY });
     },
+  });
+}
+
+/**
+ * Fetch orders associated with a listing
+ */
+export function useListingOrders(listingId: string | undefined) {
+  return useQuery({
+    queryKey: ['orders', 'listing', listingId],
+    queryFn: async () => {
+      if (!listingId) return [];
+      
+      const { data, error } = await supabase
+        .from(TABLES.ORDERS)
+        .select(`
+          *,
+          buyer:user_profiles!buyer_id(id, display_name, email, avatar_url)
+        `)
+        .eq('listing_id', listingId)
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!listingId,
   });
 }

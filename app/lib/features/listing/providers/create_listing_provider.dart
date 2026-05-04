@@ -127,9 +127,6 @@ class CreateListingAction extends _$CreateListingAction {
       if (title.trim().isEmpty) {
         throw ArgumentError('Title is required');
       }
-      if (description.trim().isEmpty) {
-        throw ArgumentError('Description is required');
-      }
       if (category.trim().isEmpty) {
         throw ArgumentError('Category is required');
       }
@@ -174,14 +171,10 @@ class CreateListingAction extends _$CreateListingAction {
         }
       }
 
-      // TODO(images): Re-enable this check once image upload
-      // is restored. Currently bypassed for testing the listing
-      // creation flow end-to-end without photos.
-      // final photoPaths = ref.read(listingPhotosProvider);
-      // if (photoPaths.isEmpty) {
-      //   throw ArgumentError('At least one photo is required');
-      // }
       final photoFiles = ref.read(listingPhotosProvider);
+      if (photoFiles.isEmpty) {
+        throw ArgumentError('At least one photo is required');
+      }
 
       // Build draft Listing — database generates id, timestamps
       final now = DateTime.now();

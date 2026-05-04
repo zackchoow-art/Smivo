@@ -163,13 +163,14 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
                           )
                           .toList();
 
-                  // HISTORY: completed or cancelled
+                  // HISTORY: completed or cancelled or missed
                   final history =
                       filtered
                           .where(
                             (o) =>
                                 o.status == 'completed' ||
-                                o.status == 'cancelled',
+                                o.status == 'cancelled' ||
+                                o.status == 'missed',
                           )
                           .toList();
 
@@ -602,6 +603,11 @@ class _StatusChip extends StatelessWidget {
       'confirmed' => _confirmedChip(colors, rentalStatus),
       'completed' => (colors.success, colors.surfaceContainerLowest, 'Done'),
       'cancelled' => (
+        colors.statusCancelled,
+        colors.surfaceContainerLowest,
+        'Missed',
+      ),
+      'missed' => (
         colors.statusCancelled,
         colors.surfaceContainerLowest,
         'Missed',

@@ -187,6 +187,7 @@ class IkeaBuyerOrderCard extends StatelessWidget {
       'confirmed' => _confirmedChip(colors, rentalStatus),
       'completed' => (colors.success, Colors.white, 'Done'),
       'cancelled' => (colors.statusCancelled, Colors.white, 'Missed'),
+      'missed' => (colors.statusCancelled, Colors.white, 'Missed'),
       _ => (colors.outlineVariant, Colors.white, status.toUpperCase()),
     };
   }

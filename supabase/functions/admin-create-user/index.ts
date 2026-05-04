@@ -61,7 +61,7 @@ serve(async (req: Request) => {
     // 4. Create user
     // This will trigger handle_new_user.
     // We pass bypass_edu: 'true' in user_metadata so the trigger bypasses the .edu check
-    // and reads school_id and role from metadata to insert into user_profiles and admin_users.
+    // and reads school_id and role from metadata to insert into user_profiles and admin_roles.
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: password || 'password123',
