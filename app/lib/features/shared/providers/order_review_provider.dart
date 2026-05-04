@@ -62,6 +62,8 @@ class OrderReviewActions extends _$OrderReviewActions {
             comment: finalComment,
             tagIds: tagIds,
           );
+          
+      ref.invalidate(orderReviewProvider);
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);
