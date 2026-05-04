@@ -23,7 +23,7 @@ Future<List<ReviewTag>> reviewTags(Ref ref, {required String role}) {
   return ref.read(reviewRepositoryProvider).fetchTags(role);
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class OrderReviewActions extends _$OrderReviewActions {
   @override
   FutureOr<void> build() {}

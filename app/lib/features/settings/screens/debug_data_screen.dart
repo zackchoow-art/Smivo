@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 // --- Debug Data Provider ---
 
@@ -99,7 +100,10 @@ class DebugDataScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: asyncData.when(
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 800,
+          child: asyncData.when(
         loading: () => Center(child: CircularProgressIndicator(color: colors.primary)),
         error: (e, stackTrace) => Center(child: SelectableText('Provider Error:\n$e\n$stackTrace', style: TextStyle(color: colors.error))),
         data: (data) {
@@ -187,6 +191,8 @@ class DebugDataScreen extends ConsumerWidget {
             );
           }
         },
+          ),
+        ),
       ),
     );
     } catch (e, st) {

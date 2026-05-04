@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/admin/providers/admin_review_tags_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class AdminReviewTagsScreen extends ConsumerStatefulWidget {
   const AdminReviewTagsScreen({super.key});
@@ -106,9 +107,12 @@ class _AdminReviewTagsScreenState extends ConsumerState<AdminReviewTagsScreen> {
         backgroundColor: colors.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 1200,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           // Add Form
           Expanded(
             flex: 1,
@@ -254,7 +258,9 @@ class _AdminReviewTagsScreenState extends ConsumerState<AdminReviewTagsScreen> {
               error: (err, _) => Center(child: Text('Error: $err')),
             ),
           ),
-        ],
+          ],
+        ),
+        ),
       ),
     );
   }

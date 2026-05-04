@@ -6,6 +6,7 @@ import 'package:smivo/data/repositories/admin_role_repository.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_roles_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 /// Admin screen for managing user roles and permissions.
 class AdminRolesScreen extends ConsumerStatefulWidget {
@@ -52,8 +53,11 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        children: [
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 1200,
+          child: Column(
+            children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: TextField(
@@ -127,7 +131,9 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
               },
             ),
           ),
-        ],
+          ],
+        ),
+        ),
       ),
     );
   }

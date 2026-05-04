@@ -4,22 +4,32 @@
  * Displays schools as cards with create/edit capabilities.
  */
 import { useState } from 'react';
-import { Plus, School, Globe, Users, MapPin, ExternalLink, Loader2 } from 'lucide-react';
+import { Plus, School, Globe, Users, MapPin, ExternalLink, Loader2, Download, CheckCircle2 } from 'lucide-react';
 import { useColleges, useCreateCollege, useUpdateCollege, useToggleCollegeActive } from '@/hooks/useColleges';
+import { useImportAllDefaultsForSchool } from '@/hooks/useSchoolDictData';
 import { useAdminRole } from '@/hooks/useAdminRole';
+import { useAuthStore } from '@/stores/auth-store';
 import { CollegeDialog } from '@/components/settings/CollegeDialog';
+import { showToast } from '@/hooks/useToast';
 import { ADMIN_ROLES } from '@/lib/constants';
 import type { College } from '@/types';
 
 export function CollegesPage() {
   const { data: colleges, isLoading, error } = useColleges();
-  const createCollege = useCreateCollege();
-  const updateCollege = useUpdateCollege();
-  const toggleActive = useToggleCollegeActive();
-  const { role } = useAdminRole();
+  const createCollege    = useCreateCollege();
+  const updateCollege    = useUpdateCollege();
+  const toggleActive     = useToggleCollegeActive();
+  const importDefaults   = useImportAllDefaultsForSchool();
+  const { role }         = useAdminRole();
+  const { admin }        = useAuthStore();
+  const adminId          = admin?.user_id ?? '';
 
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen]       = useState(false);
   const [editingCollege, setEditingCollege] = useState<College | null>(null);
+  // Track which school IDs are currently importing
+  const [importingIds, setImportingIds]   = useState<Set<string>>(new Set());
+  // Track last import result per school: { categories, conditions, pickupLocations }
+  const [importResults, setImportResults] = useState<Record<string, { total: number; detail: string }>>({});
 
   const isSuperAdmin = role === ADMIN_ROLES.PLATFORM_SUPER_ADMIN;
 
@@ -52,6 +62,36 @@ export function CollegesPage() {
     }
     setDialogOpen(false);
     setEditingCollege(null);
+  };
+
+  const handleImportDefaults = async (college: College) => {
+    if (importingIds.has(college.id) || !adminId) return;
+    setImportingIds(prev => new Set(prev).add(college.id));
+    try {
+      const result = await importDefaults.mutateAsync({ schoolId: college.id, adminId });
+      const total = (result.categories_imported ?? 0)
+        + (result.conditions_imported ?? 0)
+        + (result.pickup_locations_imported ?? 0);
+
+      const parts: string[] = [];
+      if (result.categories_imported)       parts.push(`${result.categories_imported} categories`);
+      if (result.conditions_imported)       parts.push(`${result.conditions_imported} conditions`);
+      if (result.pickup_locations_imported) parts.push(`${result.pickup_locations_imported} pickup locations`);
+
+      const detail = parts.length > 0 ? parts.join(', ') : 'All already up to date';
+
+      setImportResults(prev => ({ ...prev, [college.id]: { total, detail } }));
+
+      if (total === 0) {
+        showToast(`${college.name}: all defaults already present.`, 'info');
+      } else {
+        showToast(`${college.name}: imported ${parts.join(', ')}.`, 'success');
+      }
+    } catch (e: any) {
+      showToast(`Import failed for ${college.name}: ${e?.message ?? 'unknown error'}`, 'error');
+    } finally {
+      setImportingIds(prev => { const s = new Set(prev); s.delete(college.id); return s; });
+    }
   };
 
   if (isLoading) {
@@ -146,6 +186,21 @@ export function CollegesPage() {
                 >
                   Edit
                 </button>
+
+                {/* One-click "seed all platform defaults" button */}
+                <button
+                  id={`init-defaults-${college.id}`}
+                  className="college-btn-init"
+                  onClick={() => handleImportDefaults(college)}
+                  disabled={importingIds.has(college.id)}
+                  title="Copy platform defaults (categories, conditions, pickup locations) into this school. Skips items that already exist."
+                >
+                  {importingIds.has(college.id)
+                    ? <Loader2 size={12} className="spin" />
+                    : <Download size={12} />}
+                  Init Defaults
+                </button>
+
                 <button
                   className={`college-btn-toggle ${college.is_active ? 'deactivate' : 'activate'}`}
                   onClick={() => toggleActive.mutate({
@@ -157,6 +212,16 @@ export function CollegesPage() {
                   {college.is_active ? 'Deactivate' : 'Activate'}
                 </button>
               </div>
+
+              {/* Last import result summary (shown after button click) */}
+              {importResults[college.id] && (
+                <div className="college-import-result">
+                  <CheckCircle2 size={11} />
+                  {importResults[college.id]!.total === 0
+                    ? 'All defaults already present'
+                    : `Last import: ${importResults[college.id]!.detail}`}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -316,18 +381,23 @@ export function CollegesPage() {
 
         .college-card-actions {
           display: flex;
+          flex-wrap: wrap;
           gap: 8px;
           padding-top: 12px;
           border-top: 1px solid var(--color-border-light);
         }
 
         .college-btn-edit,
-        .college-btn-toggle {
+        .college-btn-toggle,
+        .college-btn-init {
           padding: 6px 12px;
           font-size: 12px;
           border-radius: var(--radius-sm);
           cursor: pointer;
           border: 1px solid var(--color-border);
+          display: flex;
+          align-items: center;
+          gap: 5px;
         }
 
         .college-btn-edit {
@@ -338,6 +408,35 @@ export function CollegesPage() {
         .college-btn-edit:hover {
           border-color: var(--color-info);
           color: var(--color-info);
+        }
+
+        .college-btn-init {
+          background: var(--color-bg-primary);
+          color: var(--color-text-secondary);
+          transition: all 0.12s;
+        }
+
+        .college-btn-init:hover:not(:disabled) {
+          border-color: var(--color-success);
+          color: var(--color-success);
+        }
+
+        .college-btn-init:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .college-import-result {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          margin-top: 8px;
+          padding: 5px 8px;
+          background: var(--color-success-light, #d3f9d8);
+          color: var(--color-success);
+          border-radius: var(--radius-sm);
+          font-size: 11px;
+          font-weight: 500;
         }
 
         .college-btn-toggle.deactivate {

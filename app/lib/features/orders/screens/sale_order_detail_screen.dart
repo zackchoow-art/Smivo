@@ -317,6 +317,8 @@ class SaleOrderDetailScreen extends ConsumerWidget {
   Widget _buildDeliveryStatus(BuildContext context, Order order) {
     final typo = context.smivoTypo;
     final colors = context.smivoColors;
+    
+    final isConfirmed = order.deliveryConfirmedByBuyer || order.status == 'completed';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,13 +333,8 @@ class SaleOrderDetailScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         _infoRow(
           context,
-          'Buyer',
-          order.deliveryConfirmedByBuyer ? '✓ Confirmed' : 'Waiting',
-        ),
-        _infoRow(
-          context,
-          'Seller',
-          order.deliveryConfirmedBySeller ? '✓ Confirmed' : 'Waiting',
+          'Buyer Pickup',
+          isConfirmed ? '✓ Confirmed' : 'Waiting',
         ),
       ],
     );

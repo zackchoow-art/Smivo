@@ -32,6 +32,7 @@ import { PushCreatePage } from '@/pages/push/PushCreatePage';
 import { PushHistoryPage } from '@/pages/push/PushHistoryPage';
 import { TestDataCleanupPage } from '@/pages/settings/TestDataCleanupPage';
 
+
 export const router = createBrowserRouter([
   // Public routes
   {
@@ -82,6 +83,7 @@ export const router = createBrowserRouter([
       { path: 'settings/colleges', element: <CollegesPage /> },
       { path: 'settings/profile', element: <ProfilePage /> },
       { path: 'settings/cleanup', element: <TestDataCleanupPage /> },
+
 
       // 16 Audit Log
       { path: 'audit-log', element: <AuditLogPage /> },

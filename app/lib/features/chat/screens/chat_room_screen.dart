@@ -15,6 +15,7 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 
 import 'package:smivo/shared/widgets/report_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
@@ -783,9 +784,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 });
 
                 if (context.mounted) {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Report submitted with evidence.'),
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => const ActionSuccessDialog(
+                      title: 'Success',
+                      message: 'Submitted successfully. Under platform review.',
                     ),
                   );
                 }

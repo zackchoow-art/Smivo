@@ -5,6 +5,7 @@ import 'package:smivo/data/repositories/feedback_repository.dart';
 import 'package:smivo/data/repositories/storage_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/data/repositories/profile_repository.dart';
+import 'package:smivo/core/providers/content_filter_provider.dart';
 
 part 'feedback_provider.g.dart';
 
@@ -64,11 +65,24 @@ class SubmitFeedbackAction extends _$SubmitFeedbackAction {
         );
       }
 
+      final filter = ref.read(sensitiveWordsProvider).value;
+      final config = ref.read(filterConfigStateProvider).value;
+
+      var finalTitle = title.trim();
+      var finalDescription = description.trim();
+
+      if (filter != null && config != null) {
+        final titleAction = applyContentFilter(finalTitle, filter, config);
+        final descAction = applyContentFilter(finalDescription, filter, config);
+        finalTitle = titleAction.processedText;
+        finalDescription = descAction.processedText;
+      }
+
       await repo.submitFeedback(
         userId: user.id,
         type: type,
-        title: title,
-        description: description,
+        title: finalTitle,
+        description: finalDescription,
         screenshotUrl: finalScreenshotUrl,
         deviceInfo: deviceInfo,
       );

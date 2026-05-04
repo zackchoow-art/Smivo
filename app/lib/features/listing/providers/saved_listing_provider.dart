@@ -26,7 +26,7 @@ Future<List<SavedListing>> mySavedListings(Ref ref) async {
 }
 
 /// Mutation provider for save/unsave actions.
-@riverpod
+@Riverpod(keepAlive: true)
 class SavedListingActions extends _$SavedListingActions {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);

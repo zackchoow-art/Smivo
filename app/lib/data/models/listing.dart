@@ -49,6 +49,12 @@ abstract class Listing with _$Listing {
     UserProfile? seller,
     // Nested join — populated by joining pickup_locations
     @JsonKey(name: 'pickup_location') PickupLocation? pickupLocation,
+    // NOTE: moderation_status is set by admin or automated review pipeline.
+    // Possible values: auto_approved, pending_review, approved, rejected, taken_down.
+    @JsonKey(name: 'moderation_status')
+    @Default('auto_approved')
+    String moderationStatus,
+    @JsonKey(name: 'moderation_note') String? moderationNote,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _Listing;

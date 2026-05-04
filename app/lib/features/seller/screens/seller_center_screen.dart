@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +29,7 @@ class SellerCenterScreen extends ConsumerStatefulWidget {
 class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
   final Map<String, bool> _expandedSections = {
     'Active Listings': true,
+    'Flagged Items': true,
     'Awaiting Delivery': true,
     'Active Transactions': true,
     'History': true,
@@ -137,8 +139,14 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       child: Center(child: Text('Error: $e')),
                     ),
                 data: (listings) {
-                  final allActiveListings =
-                      listings.where((l) => l.status == 'active').toList();
+                  final allActiveListings = listings
+                      .where(
+                        (l) =>
+                            l.status == 'active' &&
+                            !['rejected', 'pending_review', 'taken_down']
+                                .contains(l.moderationStatus),
+                      )
+                      .toList();
                   final activeListings =
                       _searchQuery.isEmpty
                           ? allActiveListings
@@ -299,6 +307,87 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                 )
                                 : sliver;
                           },
+                        ),
+                    ],
+                  );
+                },
+              ),
+
+              // 1b. FLAGGED ITEMS Section (Rejected or Pending Review)
+              listingsAsync.when(
+                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error: (e, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                data: (listings) {
+                  final flaggedListings = listings.where((l) =>
+                    l.moderationStatus == 'rejected' ||
+                    l.moderationStatus == 'pending_review'
+                  ).toList();
+
+                  if (flaggedListings.isEmpty) {
+                    return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  }
+
+                  final isExpanded = _expandedSections['Flagged Items'] ?? true;
+
+                  return SliverMainAxisGroup(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                        sliver: SliverToBoxAdapter(
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(radius.sm),
+                            onTap: () => setState(
+                              () => _expandedSections['Flagged Items'] = !isExpanded,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.flag_outlined,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Flagged Items (${flaggedListings.length})',
+                                    style: typo.titleMedium.copyWith(
+                                      color: Theme.of(context).colorScheme.error,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  isExpanded
+                                      ? Icons.keyboard_arrow_up
+                                      : Icons.keyboard_arrow_down,
+                                  size: 20,
+                                  color: colors.onSurface.withValues(alpha: 0.5),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (isExpanded)
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final listing = flaggedListings[index];
+                                final isRejected = listing.moderationStatus == 'rejected';
+                                return _FlaggedListingTile(
+                                  listing: listing,
+                                  isRejected: isRejected,
+                                  onTap: () => context.pushNamed(
+                                    AppRoutes.listingDetail,
+                                    pathParameters: {'id': listing.id},
+                                  ),
+                                );
+                              },
+                              childCount: flaggedListings.length,
+                            ),
+                          ),
                         ),
                     ],
                   );
@@ -1693,4 +1782,162 @@ class _HistoryItem {
   final String? imageUrl;
   final String? orderId;
   final String? listingId;
+}
+
+/// Tile for displaying a flagged or rejected listing in the Seller Center.
+class _FlaggedListingTile extends StatelessWidget {
+  const _FlaggedListingTile({
+    required this.listing,
+    required this.isRejected,
+    required this.onTap,
+  });
+
+  final Listing listing;
+  final bool isRejected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    final statusColor = isRejected
+        ? Theme.of(context).colorScheme.error
+        : Colors.amber.shade700;
+    final statusBg = isRejected
+        ? Theme.of(context).colorScheme.error.withValues(alpha: 0.08)
+        : Colors.amber.withValues(alpha: 0.08);
+    final statusLabel = isRejected ? 'Rejected' : 'Under Review';
+    final statusIcon = isRejected ? Icons.block : Icons.hourglass_top;
+
+    final imageUrl = listing.images.isNotEmpty
+        ? listing.images.first.imageUrl
+        : null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(radius.md),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(radius.md),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                // Thumbnail
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(radius.sm),
+                  child: imageUrl != null
+                      ? Stack(
+                          children: [
+                            ImageFiltered(
+                              imageFilter: listing.images.first.moderationStatus == 'rejected'
+                                  ? ImageFilter.blur(sigmaX: 5, sigmaY: 5)
+                                  : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                              child: Image.network(
+                                imageUrl,
+                                width: 48,
+                                height: 48,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: 48,
+                                  height: 48,
+                                  color: colors.surfaceContainerLowest,
+                                  child: Icon(Icons.image, color: colors.onSurface.withValues(alpha: 0.3)),
+                                ),
+                              ),
+                            ),
+                            if (listing.images.first.moderationStatus == 'rejected')
+                              Positioned.fill(
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.all(2),
+                                  child: Text(
+                                    listing.images.first.moderationReasons ?? 'Violation',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold,
+                                      height: 1.1,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        )
+                      : Container(
+                          width: 48,
+                          height: 48,
+                          color: colors.surfaceContainerLowest,
+                          child: Icon(Icons.image, color: colors.onSurface.withValues(alpha: 0.3)),
+                        ),
+                ),
+                const SizedBox(width: 12),
+                // Title + note
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        listing.title,
+                        style: typo.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colors.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (listing.moderationNote != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          listing.moderationNote!,
+                          style: typo.bodySmall.copyWith(
+                            color: statusColor,
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Status chip
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusBg,
+                    borderRadius: BorderRadius.circular(radius.full),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, size: 12, color: statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        statusLabel,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

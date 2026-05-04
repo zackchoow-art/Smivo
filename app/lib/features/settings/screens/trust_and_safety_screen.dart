@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/settings/widgets/flippable_report_card.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class TrustAndSafetyScreen extends ConsumerWidget {
   const TrustAndSafetyScreen({super.key});
@@ -37,8 +38,11 @@ class TrustAndSafetyScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SelectionArea(
-        child: CustomScrollView(
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 720,
+          child: SelectionArea(
+            child: CustomScrollView(
           slivers: [
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -354,7 +358,9 @@ class TrustAndSafetyScreen extends ConsumerWidget {
                 ]),
               ),
             ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

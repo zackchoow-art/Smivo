@@ -22,7 +22,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Initialize heartbeat manager (only active when user is logged in)
     ref.watch(heartbeatManagerProvider);
-    
+
     final listingsAsync = ref.watch(homeListingsProvider);
     final themeVariant = ref.watch(themeProvider);
     final colors = context.smivoColors;
@@ -113,49 +113,146 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  /// Teal theme: original single-column layout.
-  /// First 3 = FeaturedListingCard, rest = CompactListingCard.
+  /// Teal theme: original single-column layout, but responsive on tablet/desktop.
+  /// First 4 = FeaturedListingCard, rest = CompactListingCard.
   Widget _buildTealLayout(List listings) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          // First 3 items are featured, the rest are compact
-          if (index < 3 && index < listings.length) {
-            return FeaturedListingCard(listing: listings[index]);
-          } else {
-            return CompactListingCard(listing: listings[index]);
-          }
-        }, childCount: listings.length),
-      ),
+    final featuredCount = listings.length < 4 ? listings.length : 4;
+    final compactItems = listings.length > 4 ? listings.sublist(4) : [];
+
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          sliver: SliverLayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.crossAxisExtent;
+              final isWide =
+                  Breakpoints.isTablet(width + 48) ||
+                  Breakpoints.isDesktop(width + 48);
+
+              if (isWide) {
+                return SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 24,
+                    mainAxisSpacing: 24,
+                    childAspectRatio: 1.5,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) =>
+                        FeaturedListingCard(listing: listings[index]),
+                    childCount: featuredCount,
+                  ),
+                );
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: FeaturedListingCard(listing: listings[index]),
+                  ),
+                  childCount: featuredCount,
+                ),
+              );
+            },
+          ),
+        ),
+        if (compactItems.isNotEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            sliver: SliverLayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.crossAxisExtent;
+                final isWide =
+                    Breakpoints.isTablet(width + 48) ||
+                    Breakpoints.isDesktop(width + 48);
+
+                if (isWide) {
+                  return SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisExtent: 100,
+                          crossAxisSpacing: 24,
+                          mainAxisSpacing: 32,
+                        ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) =>
+                          CompactListingCard(listing: compactItems[index]),
+                      childCount: compactItems.length,
+                    ),
+                  );
+                }
+
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => Padding(
+                      padding: const EdgeInsets.only(bottom: 32),
+                      child: CompactListingCard(listing: compactItems[index]),
+                    ),
+                    childCount: compactItems.length,
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
     );
   }
 
   /// IKEA theme: featured cards + responsive grid.
-  /// First 3 = IkeaFeaturedListingCard (full-width),
-  /// from item 4 = IkeaGridListingCard (2/3/4 columns by screen width).
+  /// First 4 = IkeaFeaturedListingCard (full-width or 2-col),
+  /// from item 5 = IkeaGridListingCard (2/3/4 columns by screen width).
   Widget _buildIkeaLayout(BuildContext context, List listings) {
-    final featuredCount = listings.length < 3 ? listings.length : 3;
-    final gridItems = listings.length > 3 ? listings.sublist(3) : [];
+    final featuredCount = listings.length < 4 ? listings.length : 4;
+    final gridItems = listings.length > 4 ? listings.sublist(4) : [];
 
     return SliverMainAxisGroup(
       slivers: [
-        // ── Featured cards (full-width, single column) ─────────
+        // ── Featured cards ─────────
         SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) =>
-                  IkeaFeaturedListingCard(listing: listings[index]),
-              childCount: featuredCount,
-            ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          sliver: SliverLayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.crossAxisExtent;
+              final isWide =
+                  Breakpoints.isTablet(width + 48) ||
+                  Breakpoints.isDesktop(width + 48);
+
+              if (isWide) {
+                return SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 24,
+                    mainAxisSpacing: 32,
+                    childAspectRatio: 0.95,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) =>
+                        IkeaFeaturedListingCard(listing: listings[index]),
+                    childCount: featuredCount,
+                  ),
+                );
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: IkeaFeaturedListingCard(listing: listings[index]),
+                  ),
+                  childCount: featuredCount,
+                ),
+              );
+            },
           ),
         ),
 
         // ── Grid cards (responsive columns) ────────────────────
         if (gridItems.isNotEmpty)
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             // NOTE: Must use SliverLayoutBuilder (not LayoutBuilder)
             // because this widget sits in a sliver context.
             // LayoutBuilder is a RenderBox and causes assertion
@@ -166,19 +263,17 @@ class HomeScreen extends ConsumerWidget {
                 // NOTE: Dynamic column count based on available width.
                 // `width` is already the content area inside padding.
                 final crossAxisCount =
-                    Breakpoints.isDesktop(width + 32)
+                    Breakpoints.isDesktop(width + 48)
                         ? 4
-                        : Breakpoints.isTablet(width + 32)
+                        : Breakpoints.isTablet(width + 48)
                         ? 3
                         : 2;
 
                 return SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    // NOTE: 18px horizontal gap (1.5× default) gives
-                    // IKEA grid cards more breathing room.
-                    crossAxisSpacing: 18,
-                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 24,
+                    mainAxisSpacing: 24,
                     // NOTE: childAspectRatio controls the card's
                     // height relative to width. Lower values = taller
                     // cards. 0.68 accommodates square image + info

@@ -4,6 +4,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/school.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class AdminSchoolsScreen extends ConsumerWidget {
   const AdminSchoolsScreen({super.key});
@@ -31,7 +32,10 @@ class AdminSchoolsScreen extends ConsumerWidget {
           const SizedBox(width: 16),
         ],
       ),
-      body: schoolsState.when(
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 1200,
+          child: schoolsState.when(
         data: (schools) {
           if (schools.isEmpty) {
             return const Center(child: Text('No schools found.'));
@@ -143,6 +147,8 @@ class AdminSchoolsScreen extends ConsumerWidget {
                 style: TextStyle(color: colors.error),
               ),
             ),
+        ),
+        ),
       ),
       floatingActionButton:
           canWrite

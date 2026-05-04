@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "DKWKX97U49.com.smivo",
-        "paths": [ "/listing/*" ]
+        "paths": [ "/listing/*", "/auth/*" ]
       }
     ]
   }

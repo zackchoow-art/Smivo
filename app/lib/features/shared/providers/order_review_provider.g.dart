@@ -183,7 +183,7 @@ final class OrderReviewActionsProvider
         argument: null,
         retry: null,
         name: r'orderReviewActionsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -197,7 +197,7 @@ final class OrderReviewActionsProvider
 }
 
 String _$orderReviewActionsHash() =>
-    r'b0f619c48dfad2c69a6525f6c475865a7438f26c';
+    r'78a464e68ba817cdeb54c7811d28ea01d4ad78ae';
 
 abstract class _$OrderReviewActions extends $AsyncNotifier<void> {
   FutureOr<void> build();

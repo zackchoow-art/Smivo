@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/data/models/listing_image.dart';
 
 class ListingImageCarousel extends StatefulWidget {
   const ListingImageCarousel({
     super.key,
-    required this.imageUrls,
+    required this.images,
     this.tagText,
     required this.isSale,
   });
 
-  final List<String> imageUrls;
+  final List<ListingImage> images;
   final String? tagText;
   final bool isSale;
 
@@ -23,7 +25,7 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final hasImages = widget.imageUrls.isNotEmpty;
+    final hasImages = widget.images.isNotEmpty;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -56,16 +58,45 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
               children: [
                 if (hasImages)
                   PageView.builder(
-                    itemCount: widget.imageUrls.length,
+                    itemCount: widget.images.length,
                     onPageChanged: (index) {
                       setState(() => _currentIndex = index);
                     },
                     itemBuilder: (context, index) {
-                      return Image.network(
-                        widget.imageUrls[index],
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
+                      final img = widget.images[index];
+                      final isRejected = img.moderationStatus == 'rejected';
+
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ImageFiltered(
+                            imageFilter: isRejected
+                                ? ImageFilter.blur(sigmaX: 10, sigmaY: 10)
+                                : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                            child: Image.network(
+                              img.imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                            ),
+                          ),
+                          if (isRejected)
+                            Positioned.fill(
+                              child: Container(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                child: Text(
+                                  img.moderationReasons ?? 'Policy Violation',
+                                  textAlign: TextAlign.center,
+                                  style: typo.titleMedium.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       );
                     },
                   )
@@ -145,7 +176,7 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                   ),
 
                 // Pagination Dots (only if multiple images)
-                if (widget.imageUrls.length > 1)
+                if (widget.images.length > 1)
                   Positioned(
                     bottom: 16,
                     left: 0,
@@ -153,7 +184,7 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
-                        widget.imageUrls.length,
+                        widget.images.length,
                         (index) => Container(
                           width: 6,
                           height: 6,

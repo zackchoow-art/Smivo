@@ -57,7 +57,6 @@ class IkeaFeaturedListingCard extends StatelessWidget {
                 pathParameters: {'id': listing.id},
               ),
           child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
               color: colors.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(radius.card),

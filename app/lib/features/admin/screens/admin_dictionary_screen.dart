@@ -5,6 +5,7 @@ import 'package:smivo/data/models/system_dictionary.dart';
 import 'package:smivo/data/repositories/school_data_repository.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_dictionary_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 /// Admin screen for managing system data dictionaries.
 class AdminDictionaryScreen extends ConsumerStatefulWidget {
@@ -56,8 +57,11 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        children: [
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 1200,
+          child: Column(
+            children: [
           // Type filter
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -258,7 +262,9 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
               },
             ),
           ),
-        ],
+          ],
+        ),
+        ),
       ),
     );
   }

@@ -16,6 +16,8 @@ abstract class ListingImage with _$ListingImage {
     @JsonKey(name: 'listing_id') required String listingId,
     @JsonKey(name: 'image_url') required String imageUrl,
     @JsonKey(name: 'sort_order') @Default(0) int sortOrder,
+    @JsonKey(name: 'moderation_status') @Default('auto_approved') String moderationStatus,
+    @JsonKey(name: 'moderation_reasons') String? moderationReasons,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _ListingImage;

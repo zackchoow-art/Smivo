@@ -42,7 +42,7 @@ class HomeCategoryChips extends ConsumerWidget {
           height: 48,
           child: TabBar(
             isScrollable: true,
-            tabAlignment: TabAlignment.start,
+            tabAlignment: TabAlignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             onTap:
                 (index) => ref
@@ -58,40 +58,56 @@ class HomeCategoryChips extends ConsumerWidget {
       );
     }
 
-    // IKEA Theme: Keep current chips style
+    // IKEA Theme: Keep current chips style but centered
     return SizedBox(
       height: 40,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = selectedCategory == category;
+      width: double.infinity,
+      child: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children:
+                categories.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final category = entry.value;
+                  final isSelected = selectedCategory == category;
 
-          return GestureDetector(
-            onTap:
-                () => ref
-                    .read(selectedCategoryProvider.notifier)
-                    .setCategory(category),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color:
-                    isSelected ? colors.primary : colors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(radius.chip),
-              ),
-              child: Text(
-                nameMap[category] ?? category,
-                style: typo.labelLarge.copyWith(
-                  color: isSelected ? colors.onPrimary : colors.onSurface,
-                ),
-              ),
-            ),
-          );
-        },
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index == categories.length - 1 ? 0 : 8,
+                    ),
+                    child: GestureDetector(
+                      onTap:
+                          () => ref
+                              .read(selectedCategoryProvider.notifier)
+                              .setCategory(category),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? colors.primary
+                                  : colors.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(radius.chip),
+                        ),
+                        child: Text(
+                          nameMap[category] ?? category,
+                          style: typo.labelLarge.copyWith(
+                            color:
+                                isSelected
+                                    ? colors.onPrimary
+                                    : colors.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+          ),
+        ),
       ),
     );
   }

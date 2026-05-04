@@ -169,7 +169,7 @@ export function DictionaryItemsPage() {
   const navigate               = useNavigate();
   const { role }               = useAdminRole();
   const { admin }              = useAuthStore();
-  const adminId                = admin?.id ?? '';
+  const adminId                = admin?.user_id ?? '';
   const { currentCollegeId }   = useSchoolScopeStore();
   const { data: colleges }     = useColleges();
 
@@ -194,8 +194,10 @@ export function DictionaryItemsPage() {
   const schReorder = useReorderSchoolDictItems(dictCode ?? '');
   const importDefaults = useImportPlatformDefaults();
 
-  // Only category and condition types support platform defaults import
-  const supportsImport = isSchoolSource && (dictCode === 'category' || dictCode === 'condition');
+  // All 3 school-level dict types support platform defaults import
+  const supportsImport = isSchoolSource && (
+    dictCode === 'category' || dictCode === 'condition' || dictCode === 'pickup_location'
+  );
   // Platform super admins see all actions; school admins cannot modify imported defaults
   const isSuperAdmin = role === ADMIN_ROLES.PLATFORM_SUPER_ADMIN;
 
@@ -317,12 +319,17 @@ export function DictionaryItemsPage() {
     setIsImporting(true);
     try {
       const result = await importDefaults.mutateAsync({ adminId });
-      const total = (result?.categories_imported ?? 0) + (result?.conditions_imported ?? 0);
+      const total = (result?.categories_imported ?? 0)
+        + (result?.conditions_imported ?? 0)
+        + (result?.pickup_locations_imported ?? 0);
       if (total === 0) {
         showToast('All platform defaults are already imported.', 'info');
       } else {
-        showToast(`Imported ${total} base item(s) successfully.`, 'success');
-        // Re-sync draft with fresh data from server
+        const parts: string[] = [];
+        if (result?.categories_imported)       parts.push(`${result.categories_imported} categories`);
+        if (result?.conditions_imported)       parts.push(`${result.conditions_imported} conditions`);
+        if (result?.pickup_locations_imported) parts.push(`${result.pickup_locations_imported} pickup locations`);
+        showToast(`Imported: ${parts.join(', ')}.`, 'success');
         setDraftItems(null);
       }
     } catch (e: any) {
@@ -489,10 +496,12 @@ export function DictionaryItemsPage() {
                 );
               })}
               <div className="ditems-actions-cell">
-                {item.is_imported_default && !isSuperAdmin ? (
-                  // NOTE: Platform-imported defaults are locked for school admins
-                  <span className="ditems-lock-badge" title="Platform default — contact platform admin to modify">
-                    <Lock size={11} /> Default
+                {(item as any).is_imported_default ? (
+                  // NOTE: Platform-imported defaults are locked for everyone.
+                  // They can only be modified by editing the platform_*_defaults
+                  // tables and re-running import_platform_defaults().
+                  <span className="ditems-lock-badge" title="Platform default — cannot be edited or deleted. Manage in Platform Defaults tables.">
+                    <Lock size={11} /> Platform default
                   </span>
                 ) : (
                   <>

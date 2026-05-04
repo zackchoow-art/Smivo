@@ -9,6 +9,7 @@ class AppConstants {
   static const String appName = 'Smivo';
   static const String appBundleId = 'com.smivo';
   static const String defaultSchool = 'Smith College';
+  static const String authCallbackUrl = 'https://smivo.io/auth/callback';
 
   // ── Database Table Names ───────────────────────────────────
   static const String tableUserProfiles = 'user_profiles';

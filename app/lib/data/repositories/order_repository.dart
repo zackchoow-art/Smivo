@@ -178,13 +178,6 @@ class OrderRepository {
 
   /// Confirms delivery by [byUserRole] ('buyer' or 'seller').
   ///
-  /// If both parties have confirmed after this update, the order
-  /// status transitions to 'completed'. The database trigger
-  /// (00006_order_listing_status_sync) then updates the listing
-  /// status for sale orders.
-  /// Confirms delivery by [byUserRole] ('buyer' or 'seller').
-  ///
-  /// For sale orders: if both confirmed, transitions to 'completed'.
   /// For rental orders: stays in 'confirmed', provider layer activates rental.
   Future<Order> confirmDelivery({
     required String orderId,
@@ -203,7 +196,7 @@ class OrderRepository {
           .update({field: true})
           .eq('id', orderId);
 
-      // Step 2: fetch updated record to check both confirmations
+      // Step 2: fetch updated record to check confirmations
       final current =
           await _client
               .from(AppConstants.tableOrders)
@@ -217,18 +210,25 @@ class OrderRepository {
           current['delivery_confirmed_by_buyer'] == true &&
           current['delivery_confirmed_by_seller'] == true;
 
-      // Step 3: only complete sale orders automatically.
+      // Note: Sale orders are handled directly by confirmSaleDelivery
       // Rental orders stay in 'confirmed' — provider layer activates rental.
-      if (bothConfirmed &&
-          current['status'] != 'completed' &&
-          orderType == 'sale') {
-        await _client
-            .from(AppConstants.tableOrders)
-            .update({'status': 'completed'})
-            .eq('id', orderId);
-      }
 
       return fetchOrder(orderId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Confirms delivery for a sale order (buyer only) and completes it.
+  Future<void> confirmSaleDelivery(String orderId) async {
+    try {
+      await _client
+          .from(AppConstants.tableOrders)
+          .update({
+            'delivery_confirmed_by_buyer': true,
+            'status': 'completed',
+          })
+          .eq('id', orderId);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

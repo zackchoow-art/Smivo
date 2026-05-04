@@ -31,92 +31,99 @@ class HomeHeader extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Smivo',
-                    style: typo.headlineMedium.copyWith(color: colors.primary),
-                  ),
-                  Text(
-                    schoolName.replaceAll(' ', ''),
-                    style: typo.headlineLarge.copyWith(
-                      color: colors.secondaryGradientStart,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Smivo',
+                      style: typo.headlineMedium.copyWith(
+                        color: colors.primary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  if (profile != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              profile.displayName ?? 'User',
-                              style: typo.labelLarge.copyWith(
-                                color: colors.onSurface,
-                                fontWeight: FontWeight.bold,
+                    Text(
+                      schoolName.replaceAll(' ', ''),
+                      style: typo.headlineLarge.copyWith(
+                        color: colors.secondaryGradientStart,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    if (profile != null)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                profile.displayName ?? 'User',
+                                style: typo.labelLarge.copyWith(
+                                  color: colors.onSurface,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: colors.success.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.verified,
-                                    size: 12,
-                                    color: colors.success,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Verified',
-                                    style: typo.labelSmall.copyWith(
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.success.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.verified,
+                                      size: 12,
                                       color: colors.success,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Verified',
+                                      style: typo.labelSmall.copyWith(
+                                        color: colors.success,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            profile.email,
+                            style: typo.labelSmall.copyWith(
+                              color: colors.onSurfaceVariant,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          profile.email,
-                          style: typo.labelSmall.copyWith(
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.account_circle,
+                            size: 14,
                             color: colors.onSurfaceVariant,
                           ),
-                        ),
-                      ],
-                    )
-                  else
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.account_circle,
-                          size: 14,
-                          color: colors.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Not logged in',
-                          style: typo.labelSmall.copyWith(
-                            color: colors.onSurfaceVariant,
+                          const SizedBox(width: 4),
+                          Text(
+                            'Not logged in',
+                            style: typo.labelSmall.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                ],
+                        ],
+                      ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               Row(
                 children: [
                   _NotificationBellIcon(unreadCount: unreadCount),

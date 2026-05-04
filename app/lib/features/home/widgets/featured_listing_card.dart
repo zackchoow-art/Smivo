@@ -51,7 +51,6 @@ class FeaturedListingCard extends StatelessWidget {
               ),
           child: Container(
             height: 300,
-            margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
               color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(radius.xl),

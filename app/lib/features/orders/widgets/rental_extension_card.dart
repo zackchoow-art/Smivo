@@ -6,6 +6,7 @@ import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/rental_extension.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/orders/providers/rental_extension_provider.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 
 class RentalExtensionCard extends ConsumerStatefulWidget {
   const RentalExtensionCard({
@@ -377,16 +378,11 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
             newTotal: newTotal,
           );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Request submitted successfully'),
-              ],
-            ),
-            backgroundColor: Colors.green,
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Success',
+            message: 'Submitted successfully. Under platform review.',
           ),
         );
         _resetAdjustment();
@@ -613,16 +609,11 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
       // NOTE: Refresh order data so updated dates/prices appear immediately
       ref.invalidate(orderDetailProvider(widget.order.id));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Extension approved — dates and price updated'),
-              ],
-            ),
-            backgroundColor: Colors.green,
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Success',
+            message: 'Extension approved — dates and price updated.',
           ),
         );
       }

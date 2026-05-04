@@ -1,16 +1,29 @@
 import { useState } from 'react';
-import { Cpu, Loader2, ShieldAlert, ToggleLeft, ToggleRight, Shield, Search } from 'lucide-react';
+import {
+  Cpu, Loader2, ShieldAlert, ToggleLeft, ToggleRight, Shield, Search,
+  KeyRound, Eye, EyeOff, CheckCircle2, XCircle, Upload, ImageIcon,
+  RefreshCw, ScanSearch, AlertTriangle,
+} from 'lucide-react';
 import { useSystemConfigs, useUpdateSystemConfig, type SystemConfig } from '@/hooks/useSystemConfigs';
 import { useFeatureFlags, useToggleFlag } from '@/hooks/useFeatureFlags';
+import {
+  useModerationUsage, useSecretStatus, useSavePlatformSecret,
+  useTestOpenAIModeration, useTestGoogleVisionModeration,
+  type OpenAIResult, type GoogleResult,
+} from '@/hooks/useImageModeration';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRole } from '@/hooks/useAdminRole';
+import { supabase } from '@/lib/supabase';
 import { ADMIN_ROLES } from '@/lib/constants';
 
 
-type Tab = 'configs' | 'flags';
+type Tab = 'configs' | 'flags' | 'moderation';
 
 export function SystemConfigsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('configs');
+  const { role } = useAdminRole();
+
+  const canSeeModerationTest = role === ADMIN_ROLES.PLATFORM_SUPER_ADMIN || role === ADMIN_ROLES.PLATFORM_ADMIN;
 
   return (
     <div className="sc-page">
@@ -26,7 +39,7 @@ export function SystemConfigsPage() {
           onClick={() => setActiveTab('configs')}
         >
           <Cpu size={14} />
-          System Configs
+          Content Moderation
         </button>
         <button
           className={`sc-tab ${activeTab === 'flags' ? 'sc-tab--active' : ''}`}
@@ -35,9 +48,19 @@ export function SystemConfigsPage() {
           <ToggleLeft size={14} />
           Feature Flags
         </button>
+        {canSeeModerationTest && (
+          <button
+            className={`sc-tab ${activeTab === 'moderation' ? 'sc-tab--active' : ''}`}
+            onClick={() => setActiveTab('moderation')}
+          >
+            <ScanSearch size={14} />
+            Image Moderation
+          </button>
+        )}
       </div>
 
-      {activeTab === 'configs' ? <ConfigsTab /> : <FlagsTab />}
+      {activeTab === 'configs' ? <ConfigsTab /> : activeTab === 'flags' ? <FlagsTab /> : <ImageModerationTab />}
+
 
       <style>{`
         .sc-page { padding: var(--spacing-page); max-width: 900px; }
@@ -79,9 +102,12 @@ export function SystemConfigsPage() {
         }
 
         .sc-section { margin-bottom: 32px; }
-        .sc-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-        .sc-section-header h2 { font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0; }
-        
+        .sc-section-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+        .sc-section-header h2 { font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 3px; }
+        .sc-section-desc { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+        .sc-card--note { background: var(--color-bg-secondary) !important; }
+        .sc-card--note p { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+
         .sc-card-list { display: flex; flex-direction: column; gap: 1px; background: var(--color-border-light); border: 1px solid var(--color-border-light); border-radius: var(--radius-md); overflow: hidden; }
         .sc-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--color-bg-primary); }
         
@@ -196,17 +222,27 @@ function ConfigsTab() {
   const backendReviewEnabled = configs.find(c => c.config_key === 'backend_review.enabled');
   const backendReviewMode = configs.find(c => c.config_key === 'backend_review.mode');
 
+  const isBackendEnabled = backendReviewEnabled?.config_value === 'true' || backendReviewEnabled?.config_value === true;
+  const showAiSettings = backendReviewMode?.config_value === 'ai' || backendReviewMode?.config_value === 'both';
+
   return (
     <>
+      {/* ── App-Side Settings ──────────────────────────────────────── */}
       <div className="sc-section">
         <div className="sc-section-header">
           <ShieldAlert size={20} color="var(--color-warning)" />
-          <h2>Content Filter Settings</h2>
+          <div>
+            <h2>App-Side Settings</h2>
+            <p className="sc-section-desc">Client-side text filtering for chat messages and listing descriptions</p>
+          </div>
         </div>
         <div className="sc-card-list">
           {contentFilterEnabled && (
             <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
-              <div className="sc-card-info"><h3>Client-Side Filtering</h3><p>Enable Content Filter</p></div>
+              <div className="sc-card-info">
+                <h3>Enable Client-Side Word Filter</h3>
+                <p>Flutter app checks each message locally against the sensitive word list before sending — no network request needed</p>
+              </div>
               <div className="sc-card-action">
                 <label className="sc-toggle">
                   <input type="checkbox" checked={contentFilterEnabled.config_value === 'true' || contentFilterEnabled.config_value === true} onChange={() => handleToggle(contentFilterEnabled)} disabled={updateConfig.isPending} />
@@ -217,22 +253,35 @@ function ConfigsTab() {
           )}
           {contentFilterWarnAction && (
             <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
-              <div className="sc-card-info"><h3>When Warn words are detected:</h3></div>
+              <div className="sc-card-info">
+                <h3>When a Warn word is detected</h3>
+                <p>Mildly inappropriate words — softer response</p>
+              </div>
               <div className="sc-card-action" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-                {['show_warning', 'silent'].map(val => (
-                  <label key={val} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                    <input type="radio" name="warn_action" value={val} checked={contentFilterWarnAction.config_value === val} onChange={(e) => handleChangeRaw(contentFilterWarnAction, e.target.value)} disabled={updateConfig.isPending} />
-                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{val === 'show_warning' ? 'Show Warning (allow send)' : 'Silent (no action)'}</span>
+                {[
+                  { v: 'show_warning', l: 'Show Warning — alert user but allow sending' },
+                  { v: 'silent',       l: 'Silent — detect but take no visible action' },
+                ].map(({ v, l }) => (
+                  <label key={v} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input type="radio" name="warn_action" value={v} checked={contentFilterWarnAction.config_value === v} onChange={(e) => handleChangeRaw(contentFilterWarnAction, e.target.value)} disabled={updateConfig.isPending} />
+                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{l}</span>
                   </label>
                 ))}
               </div>
             </div>
           )}
           {contentFilterBlockAction && (
-            <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
-              <div className="sc-card-info"><h3>When Block words are detected:</h3></div>
+            <div className="sc-card">
+              <div className="sc-card-info">
+                <h3>When a Block word is detected</h3>
+                <p>Severely inappropriate words — stricter response</p>
+              </div>
               <div className="sc-card-action" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-                {[{v:'reject',l:'Reject (prevent send)'},{v:'mask',l:'Mask (replace with ***)'},{v:'warn_only',l:'Warn Only (show warning, allow send)'}].map(({v,l}) => (
+                {[
+                  { v: 'reject',    l: 'Reject — prevent the message from being sent' },
+                  { v: 'mask',      l: 'Mask — replace bad words with *** and allow send' },
+                  { v: 'warn_only', l: 'Warn Only — show warning but allow send' },
+                ].map(({ v, l }) => (
                   <label key={v} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input type="radio" name="block_action" value={v} checked={contentFilterBlockAction.config_value === v} onChange={(e) => handleChangeRaw(contentFilterBlockAction, e.target.value)} disabled={updateConfig.isPending} />
                     <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{l}</span>
@@ -241,22 +290,46 @@ function ConfigsTab() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Server-Side Settings ────────────────────────────────────── */}
+      <div className="sc-section">
+        <div className="sc-section-header">
+          <ShieldAlert size={20} color="var(--color-info)" />
+          <div>
+            <h2>Server-Side Settings</h2>
+            <p className="sc-section-desc">Backend review pipelines for text and images</p>
+          </div>
+        </div>
+        <div className="sc-card-list">
           {backendReviewEnabled && (
-            <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
-              <div className="sc-card-info"><h3>Server-Side Review</h3><p>Enable Backend Review</p></div>
+            <div className="sc-card" style={{ borderBottom: isBackendEnabled ? '1px solid var(--color-border-light)' : 'none' }}>
+              <div className="sc-card-info">
+                <h3>Enable Server-Side Review</h3>
+                <p>After content is saved, run a secondary check on the server</p>
+              </div>
               <div className="sc-card-action">
                 <label className="sc-toggle">
-                  <input type="checkbox" checked={backendReviewEnabled.config_value === 'true' || backendReviewEnabled.config_value === true} onChange={() => handleToggle(backendReviewEnabled)} disabled={updateConfig.isPending} />
+                  <input type="checkbox" checked={isBackendEnabled} onChange={() => handleToggle(backendReviewEnabled)} disabled={updateConfig.isPending} />
                   <span className="sc-slider"></span>
                 </label>
               </div>
             </div>
           )}
-          {backendReviewMode && (
-            <div className="sc-card">
-              <div className="sc-card-info"><h3>Review Method:</h3></div>
+
+          {isBackendEnabled && backendReviewMode && (
+            <div className="sc-card" style={{ borderBottom: showAiSettings ? '1px solid var(--color-border-light)' : 'none' }}>
+              <div className="sc-card-info">
+                <h3>Server Review Method</h3>
+                <p>Choose how the backend analyzes content</p>
+              </div>
               <div className="sc-card-action" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-                {[{v:'sensitive_words',l:'Sensitive Words Only'},{v:'ai',l:'AI Moderation Only'},{v:'both',l:'Both (Words + AI)'}].map(({v,l}) => (
+                {[
+                  { v: 'sensitive_words', l: 'Sensitive Words Only — fast, no AI cost' },
+                  { v: 'ai',             l: 'AI Only — send to AI for analysis' },
+                  { v: 'both',           l: 'Both — run word filter then AI review' },
+                ].map(({ v, l }) => (
                   <label key={v} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input type="radio" name="backend_review_mode" value={v} checked={backendReviewMode.config_value === v} onChange={(e) => handleChangeRaw(backendReviewMode, e.target.value)} disabled={updateConfig.isPending} />
                     <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{l}</span>
@@ -265,52 +338,62 @@ function ConfigsTab() {
               </div>
             </div>
           )}
-          <div className="sc-card" style={{ background: 'var(--color-bg-secondary)' }}>
-            <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>
-              ℹ️ Client filtering and server review are independent. Both can be enabled simultaneously.
-            </p>
-          </div>
-        </div>
-      </div>
 
-      <div className="sc-section">
-        <div className="sc-section-header">
-          <ShieldAlert size={20} color="var(--color-warning)" />
-          <h2>AI Content Moderation</h2>
-        </div>
-        <div className="sc-card-list">
-          {aiModerationEnabled && (
-            <div className="sc-card">
-              <div className="sc-card-info"><h3>Secondary AI Review</h3><p>{aiModerationEnabled.description}</p></div>
-              <div className="sc-card-action">
-                <label className="sc-toggle">
-                  <input type="checkbox" checked={aiModerationEnabled.config_value === 'true' || aiModerationEnabled.config_value === true} onChange={() => handleToggle(aiModerationEnabled)} disabled={updateConfig.isPending} />
-                  <span className="sc-slider"></span>
-                </label>
-              </div>
-            </div>
-          )}
-          {aiProvider && (
-            <div className="sc-card">
-              <div className="sc-card-info"><h3>AI Provider</h3><p>{aiProvider.description}</p></div>
-              <div className="sc-card-action">
-                <select value={(aiProvider.config_value || '').replace(/"/g, '')} onChange={(e) => handleChangeSelect(aiProvider, e.target.value)} disabled={updateConfig.isPending} className="sc-select">
-                  <option value="openai">OpenAI (GPT-4o Vision)</option>
-                  <option value="google">Google (Gemini Pro Vision)</option>
-                </select>
-              </div>
-            </div>
-          )}
-          {aiAction && (
-            <div className="sc-card">
-              <div className="sc-card-info"><h3>Action on Violation</h3><p>{aiAction.description}</p></div>
-              <div className="sc-card-action">
-                <select value={(aiAction.config_value || '').replace(/"/g, '')} onChange={(e) => handleChangeSelect(aiAction, e.target.value)} disabled={updateConfig.isPending} className="sc-select">
-                  <option value="flag">Flag for Manual Review</option>
-                  <option value="reject">Auto-Reject (Remove immediately)</option>
-                </select>
-              </div>
-            </div>
+          {isBackendEnabled && showAiSettings && (
+            <>
+              {aiProvider && (
+                <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+                  <div className="sc-card-info">
+                    <h3>AI Engine Provider</h3>
+                    <p>Which AI service to call for content analysis</p>
+                  </div>
+                  <div className="sc-card-action">
+                    <select
+                      value={(aiProvider.config_value || '').replace(/"/g, '')}
+                      onChange={(e) => handleChangeSelect(aiProvider, e.target.value)}
+                      disabled={updateConfig.isPending}
+                      className="sc-select"
+                    >
+                      <option value="openai">OpenAI — omni-moderation-latest</option>
+                      <option value="google">Google — Cloud Vision SafeSearch</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+              {aiModerationEnabled && (
+                <div className="sc-card" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+                  <div className="sc-card-info">
+                    <h3>Enable AI Image Review</h3>
+                    <p>Also run AI checks on listing photos when a seller uploads them</p>
+                  </div>
+                  <div className="sc-card-action">
+                    <label className="sc-toggle">
+                      <input type="checkbox" checked={aiModerationEnabled.config_value === 'true' || aiModerationEnabled.config_value === true} onChange={() => handleToggle(aiModerationEnabled)} disabled={updateConfig.isPending} />
+                      <span className="sc-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              )}
+              {aiAction && (
+                <div className="sc-card">
+                  <div className="sc-card-info">
+                    <h3>Action on Violation</h3>
+                    <p>What happens when AI flags content as unsafe</p>
+                  </div>
+                  <div className="sc-card-action">
+                    <select
+                      value={(aiAction.config_value || '').replace(/"/g, '')}
+                      onChange={(e) => handleChangeSelect(aiAction, e.target.value)}
+                      disabled={updateConfig.isPending}
+                      className="sc-select"
+                    >
+                      <option value="flag">Flag — queue for manual admin review</option>
+                      <option value="reject">Auto-Reject — block or remove immediately</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -319,6 +402,7 @@ function ConfigsTab() {
 }
 
 /* ─── Feature Flags Tab ─── */
+
 function FlagsTab() {
   const [search, setSearch] = useState('');
   const { data: flags, isLoading, error } = useFeatureFlags();
@@ -403,7 +487,6 @@ function FlagsTab() {
             </div>
           </div>
         ))}
-
         {Object.keys(groupedFlags).length === 0 && (
           <div className="ff-empty">No flags match your search.</div>
         )}
@@ -411,3 +494,433 @@ function FlagsTab() {
     </>
   );
 }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Upload a file to Supabase storage and return a public URL for AI testing. */
+async function uploadTestImage(file: File): Promise<string> {
+  const ext  = file.name.split('.').pop() ?? 'jpg';
+  const path = `moderation-test/${Date.now()}.${ext}`;
+
+  // NOTE: We reuse the listing-images bucket (public read) so that both
+  // OpenAI and Google Vision can fetch the URL without any auth headers.
+  const { error } = await supabase.storage.from('listing-images').upload(path, file, {
+    upsert: true,
+    contentType: file.type,
+  });
+  if (error) throw new Error(`Upload failed: ${error.message}`);
+
+  const { data } = supabase.storage.from('listing-images').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ─── API Key Row ──────────────────────────────────────────────────────────────
+
+function ApiKeyRow({ secretKey, label }: { secretKey: string, label: string }) {
+  const { role } = useAdminRole();
+  const isSysadmin = role === ADMIN_ROLES.PLATFORM_SUPER_ADMIN;
+  const { data: status, isLoading } = useSecretStatus(secretKey);
+  const save = useSavePlatformSecret();
+  const [input, setInput] = useState('');
+  const [showInput, setShowInput] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!input.trim()) return;
+    setSaving(true);
+    try {
+      await save.mutateAsync({ key: secretKey, value: input.trim(), description: label });
+      setInput('');
+      setShowInput(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="im-key-row">
+      <div className="im-key-meta">
+        <KeyRound size={14} color="var(--color-info)" />
+        <span className="im-key-label">{label}</span>
+        {isLoading ? (
+          <Loader2 size={12} className="spin" />
+        ) : status?.exists ? (
+          <span className="im-badge im-badge--ok"><CheckCircle2 size={11} /> Saved</span>
+        ) : (
+          <span className="im-badge im-badge--missing"><AlertTriangle size={11} /> Not set</span>
+        )}
+      </div>
+      {showInput ? (
+        <div className="im-key-input-row">
+          <div className="im-key-input-wrap">
+            <input
+              className="im-key-input"
+              type={visible ? 'text' : 'password'}
+              placeholder="Paste API key…"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+            />
+            <button className="im-eye-btn" onClick={() => setVisible(v => !v)}>
+              {visible ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          </div>
+          <button className="im-save-btn" onClick={handleSave} disabled={saving || !input.trim()}>
+            {saving ? <Loader2 size={13} className="spin" /> : 'Save'}
+          </button>
+          <button className="im-cancel-btn" onClick={() => { setShowInput(false); setInput(''); }}>Cancel</button>
+        </div>
+      ) : (
+        <button className="im-update-btn" onClick={() => setShowInput(true)} disabled={!isSysadmin} title={!isSysadmin ? 'Only SYSADMIN can update API keys' : ''}>
+          {status?.exists ? 'Update Key' : 'Set Key'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Result display ───────────────────────────────────────────────────────────
+
+function OpenAIResultView({ result }: { result: OpenAIResult }) {
+  const flaggedEntries = Object.entries(result.categories).filter(([, v]) => v);
+  return (
+    <div className={`im-result ${result.flagged ? 'im-result--flagged' : 'im-result--ok'}`}>
+      <div className="im-result-header">
+        {result.flagged ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
+        <strong>OpenAI · {result.model}</strong>
+        <span className="im-result-verdict">{result.flagged ? 'FLAGGED' : 'SAFE'}</span>
+      </div>
+      {flaggedEntries.length > 0 && (
+        <p className="im-result-detail">Categories: {flaggedEntries.map(([k]) => k).join(', ')}</p>
+      )}
+      <p className="im-result-url" title={result.image_url}>{result.image_url}</p>
+    </div>
+  );
+}
+
+function GoogleResultView({ result }: { result: GoogleResult }) {
+  return (
+    <div className={`im-result ${result.flagged ? 'im-result--flagged' : 'im-result--ok'}`}>
+      <div className="im-result-header">
+        {result.flagged ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
+        <strong>Google Vision · {result.model}</strong>
+        <span className="im-result-verdict">{result.flagged ? 'FLAGGED' : 'SAFE'}</span>
+      </div>
+      {result.reasons.length > 0 && (
+        <p className="im-result-detail">Reasons: {result.reasons.join(', ')}</p>
+      )}
+      <div className="im-safesearch">
+        {Object.entries(result.safe_search).map(([k, v]) => (
+          <span key={k} className={`im-ss-chip im-ss-${v.toLowerCase()}`}>{k}: {v}</span>
+        ))}
+      </div>
+      <p className="im-result-url" title={result.image_url}>{result.image_url}</p>
+    </div>
+  );
+}
+
+// ─── Image Moderation Tab ─────────────────────────────────────────────────────
+
+function ImageModerationTab() {
+  const { data: usage, isLoading: usageLoading, refetch: refetchUsage } = useModerationUsage();
+  const testOpenAI = useTestOpenAIModeration();
+  const testGoogle = useTestGoogleVisionModeration();
+
+
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+  const [uploading, setUploading]       = useState(false);
+  const [uploadErr, setUploadErr]       = useState<string | null>(null);
+  const [previewSrcs, setPreviewSrcs]   = useState<string[]>([]);
+  const [testText, setTestText]         = useState('');
+  const [openAIResult, setOpenAIResult] = useState<OpenAIResult | null>(null);
+  const [googleResult, setGoogleResult] = useState<GoogleResult | null>(null);
+  const [testErr, setTestErr]           = useState<string | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    
+    // Local preview
+    setPreviewSrcs(files.map(f => URL.createObjectURL(f)));
+    setUploadedUrls([]);
+    setUploadErr(null);
+    setOpenAIResult(null);
+    setGoogleResult(null);
+    setTestErr(null);
+
+    setUploading(true);
+    try {
+      const urls = await Promise.all(files.map(f => uploadTestImage(f)));
+      setUploadedUrls(urls);
+    } catch (err: any) {
+      setUploadErr(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleTest = async (provider: 'openai' | 'google') => {
+    setTestErr(null);
+    try {
+      const isTest = uploadedUrls.length === 0 && !testText;
+      const payload = isTest 
+        ? { text: undefined, imageUrls: undefined, isTest: true }
+        : { text: testText || undefined, imageUrls: uploadedUrls.length > 0 ? uploadedUrls : undefined };
+
+      if (provider === 'openai') {
+        const result = await testOpenAI.mutateAsync(payload);
+        setOpenAIResult(result);
+      } else {
+        const result = await testGoogle.mutateAsync(payload);
+        setGoogleResult(result);
+      }
+      refetchUsage();
+    } catch (err: any) {
+      setTestErr(err.message);
+    }
+  };
+
+  const googlePct = usage
+    ? Math.min(100, Math.round((usage.google_vision.count / (usage.google_vision.limit ?? 1000)) * 100))
+    : 0;
+
+  return (
+    <>
+      {/* API Keys */}
+      <div className="sc-section">
+        <div className="sc-section-header">
+          <KeyRound size={20} color="var(--color-info)" />
+          <h2>API Key Configuration</h2>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', marginBottom: 16 }}>
+          Keys are encrypted with pgcrypto before storage. The plaintext is never returned after saving.
+        </p>
+        <div className="im-key-card">
+          <ApiKeyRow secretKey="openai_api_key"        label="OpenAI API Key (omni-moderation-latest)" />
+          <ApiKeyRow secretKey="google_vision_api_key" label="Google Vision API Key (SafeSearch)" />
+        </div>
+      </div>
+
+      {/* Usage meters */}
+      <div className="sc-section">
+        <div className="sc-section-header">
+          <RefreshCw size={18} color="var(--color-info)" />
+          <h2>Monthly Usage</h2>
+          <button className="im-refresh-btn" onClick={() => refetchUsage()} disabled={usageLoading}>
+            <RefreshCw size={13} className={usageLoading ? 'spin' : ''} />
+          </button>
+        </div>
+        {usageLoading ? (
+          <div className="sc-state"><Loader2 size={20} className="spin" /></div>
+        ) : usage ? (
+          <div className="im-usage-grid">
+            <div className="im-usage-card">
+              <span className="im-usage-label">OpenAI</span>
+              <span className="im-usage-count">{usage.openai.count.toLocaleString()}</span>
+              <span className="im-usage-sublabel">calls this month · no hard limit</span>
+            </div>
+            <div className="im-usage-card">
+              <span className="im-usage-label">Google Vision</span>
+              <span className="im-usage-count">{usage.google_vision.count.toLocaleString()} / {(usage.google_vision.limit ?? 1000).toLocaleString()}</span>
+              <div className="im-progress-bar">
+                <div
+                  className={`im-progress-fill ${googlePct >= 90 ? 'danger' : googlePct >= 70 ? 'warn' : ''}`}
+                  style={{ width: `${googlePct}%` }}
+                />
+              </div>
+              <span className="im-usage-sublabel">{googlePct}% of free tier used</span>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Test Section */}
+      <div className="sc-section">
+        <div className="sc-section-header">
+          <ScanSearch size={20} color="var(--color-info)" />
+          <h2>Test Moderation</h2>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', marginBottom: 16 }}>
+          Upload an image to test whether the AI providers can read it from Supabase Storage.
+          Verifies your API keys and end-to-end connectivity.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '16px' }}>
+          <textarea
+            className="sc-textarea"
+            style={{ minHeight: '80px' }}
+            placeholder="Enter text content to moderate (optional)..."
+            value={testText}
+            onChange={(e) => setTestText(e.target.value)}
+          />
+          
+          {/* Upload zone */}
+          <label
+            className={`im-upload-zone ${previewSrcs.length > 0 ? 'has-preview' : ''}`}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            {previewSrcs.length > 0 ? (
+              <div className="im-preview-wrap" style={{ position: 'relative', display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', width: '100%', padding: '20px' }}>
+                {previewSrcs.map((src, i) => (
+                  <img key={i} className="im-preview" style={{ width: '80px', height: '80px', objectFit: 'cover' }} src={src} alt="preview" />
+                ))}
+                <div className="im-preview-overlay">
+                  <Upload size={20} />
+                  <span>Click to replace</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <ImageIcon size={32} color="var(--color-text-tertiary)" />
+                <p className="im-upload-hint">Click to upload images<br />JPEG · PNG · WEBP — max 10 MB</p>
+              </>
+            )}
+          </label>
+        </div>
+
+        {uploading && (
+          <div className="im-upload-status">
+            <Loader2 size={14} className="spin" /> Uploading to Supabase Storage…
+          </div>
+        )}
+        {uploadErr && (
+          <div className="im-upload-status im-upload-status--err">
+            <XCircle size={14} /> {uploadErr}
+          </div>
+        )}
+        {uploadedUrls.length > 0 && !uploading && (
+          <div className="im-upload-status im-upload-status--ok">
+            <CheckCircle2 size={14} /> {uploadedUrls.length} image(s) uploaded · Ready for testing
+          </div>
+        )}
+
+        {/* Test buttons */}
+        <div className="im-test-actions">
+          <button
+            className="im-test-btn"
+            onClick={() => handleTest('openai')}
+            disabled={testOpenAI.isPending}
+          >
+            {testOpenAI.isPending ? <Loader2 size={14} className="spin" /> : <ScanSearch size={14} />}
+            {uploadedUrls.length > 0 || testText ? 'Test with OpenAI' : 'Quick Test OpenAI'}
+          </button>
+          <button
+            className="im-test-btn im-test-btn--google"
+            onClick={() => handleTest('google')}
+            disabled={testGoogle.isPending}
+          >
+            {testGoogle.isPending ? <Loader2 size={14} className="spin" /> : <ScanSearch size={14} />}
+            {uploadedUrls.length > 0 || testText ? 'Test with Google Vision' : 'Quick Test Google Vision'}
+          </button>
+        </div>
+        {uploadedUrls.length === 0 && !testText && (
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 8 }}>
+            "Quick Test" uses a default image URL embedded in the Edge Function.
+            Enter text or upload images above to test with your own inputs.
+          </p>
+        )}
+
+        {testErr && (
+          <div className="im-result im-result--flagged" style={{ marginTop: 16 }}>
+            <div className="im-result-header"><XCircle size={16} /> Error</div>
+            <p className="im-result-detail">{testErr}</p>
+          </div>
+        )}
+
+        {openAIResult && <OpenAIResultView result={openAIResult} />}
+        {googleResult && <GoogleResultView result={googleResult} />}
+      </div>
+
+      <style>{`
+        /* API Key rows */
+        .im-key-card { background: var(--color-bg-primary); border: 1px solid var(--color-border-light); border-radius: var(--radius-md); overflow: hidden; }
+        .im-key-row { display: flex; align-items: flex-start; flex-direction: column; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--color-border-light); }
+        .im-key-row:last-child { border-bottom: none; }
+        .im-key-meta { display: flex; align-items: center; gap: 8px; }
+        .im-key-label { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+        .im-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; }
+        .im-badge--ok { background: var(--color-success-light); color: var(--color-success); }
+        .im-badge--missing { background: var(--color-warning-light, #fff3cd); color: var(--color-warning, #d97706); }
+        .im-key-input-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+        .im-key-input-wrap { position: relative; flex: 1; }
+        .im-key-input { width: 100%; padding: 8px 36px 8px 10px; font-size: 13px; border: 1px solid var(--color-info); border-radius: var(--radius-sm); background: var(--color-bg-secondary); color: var(--color-text-primary); outline: none; box-sizing: border-box; }
+        .im-eye-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--color-text-tertiary); padding: 0; }
+        .im-save-btn { padding: 8px 16px; font-size: 13px; background: var(--color-info); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .im-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .im-cancel-btn { padding: 8px 12px; font-size: 13px; background: none; border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; color: var(--color-text-secondary); }
+        .im-update-btn { padding: 6px 14px; font-size: 12px; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; color: var(--color-text-secondary); transition: all 0.1s; }
+        .im-update-btn:hover { border-color: var(--color-info); color: var(--color-info); }
+        .im-refresh-btn { margin-left: auto; padding: 4px 8px; background: none; border: 1px solid var(--color-border-light); border-radius: var(--radius-sm); cursor: pointer; color: var(--color-text-tertiary); display: flex; align-items: center; }
+        .im-refresh-btn:hover { border-color: var(--color-info); color: var(--color-info); }
+
+        /* Usage meters */
+        .im-usage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 600px) { .im-usage-grid { grid-template-columns: 1fr; } }
+        .im-usage-card { background: var(--color-bg-primary); border: 1px solid var(--color-border-light); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 4px; }
+        .im-usage-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-tertiary); }
+        .im-usage-count { font-size: 24px; font-weight: 700; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+        .im-usage-sublabel { font-size: 12px; color: var(--color-text-tertiary); }
+        .im-progress-bar { height: 6px; background: var(--color-bg-tertiary); border-radius: 3px; overflow: hidden; margin: 4px 0; }
+        .im-progress-fill { height: 100%; border-radius: 3px; background: var(--color-success); transition: width 0.3s ease; }
+        .im-progress-fill.warn { background: var(--color-warning, #d97706); }
+        .im-progress-fill.danger { background: var(--color-danger); }
+
+        /* Upload zone */
+        .im-upload-zone {
+          border: 2px dashed var(--color-border);
+          border-radius: var(--radius-lg);
+          padding: 40px;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+          cursor: pointer; transition: all 0.15s; min-height: 160px;
+          background: var(--color-bg-secondary);
+        }
+        .im-upload-zone:hover { border-color: var(--color-info); background: var(--color-info-light, #e8f4fd); }
+        .im-upload-zone.has-preview { padding: 0; overflow: hidden; }
+        .im-upload-hint { font-size: 13px; color: var(--color-text-tertiary); text-align: center; line-height: 1.6; margin: 0; }
+        .im-preview-wrap { position: relative; width: 100%; }
+        .im-preview { width: 100%; max-height: 260px; object-fit: contain; display: block; background: var(--color-bg-tertiary); }
+        .im-preview-overlay {
+          position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+          color: white; font-size: 13px; opacity: 0; transition: opacity 0.2s;
+        }
+        .im-preview-wrap:hover .im-preview-overlay { opacity: 1; }
+        .im-upload-status { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--color-text-secondary); }
+        .im-upload-status--ok { color: var(--color-success); }
+        .im-upload-status--err { color: var(--color-danger); }
+
+        /* Test buttons */
+        .im-test-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+        .im-test-btn {
+          display: flex; align-items: center; gap: 6px; padding: 10px 18px;
+          font-size: 13px; font-weight: 500;
+          background: var(--color-info); color: white;
+          border: none; border-radius: var(--radius-md); cursor: pointer;
+          transition: opacity 0.15s;
+        }
+        .im-test-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .im-test-btn:hover:not(:disabled) { opacity: 0.88; }
+        .im-test-btn--google { background: #4285F4; }
+
+        /* Results */
+        .im-result { margin-top: 16px; padding: 16px; border-radius: var(--radius-md); border: 1px solid; }
+        .im-result--ok { background: var(--color-success-light, #d3f9d8); border-color: var(--color-success); color: var(--color-success); }
+        .im-result--flagged { background: var(--color-danger-light, #ffe4e6); border-color: var(--color-danger); color: var(--color-danger); }
+        .im-result-header { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 6px; }
+        .im-result-verdict { margin-left: auto; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
+        .im-result-detail { font-size: 12px; margin: 4px 0; opacity: 0.85; }
+        .im-result-url { font-size: 11px; font-family: var(--font-mono); word-break: break-all; opacity: 0.6; margin: 4px 0 0; }
+        .im-safesearch { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .im-ss-chip { font-size: 11px; padding: 2px 8px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.5); border: 1px solid currentColor; opacity: 0.8; }
+      `}</style>
+    </>
+  );
+}
+

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/settings/providers/contribution_provider.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:intl/intl.dart';
 
 class MyContributionsScreen extends ConsumerWidget {
@@ -26,8 +27,11 @@ class MyContributionsScreen extends ConsumerWidget {
         backgroundColor: colors.surface,
         elevation: 0,
       ),
-      body: SelectionArea(
-        child: Column(
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 640,
+          child: SelectionArea(
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
@@ -117,6 +121,8 @@ class MyContributionsScreen extends ConsumerWidget {
               ),
             ),
           ],
+            ),
+          ),
         ),
       ),
     );

@@ -388,7 +388,7 @@ final class OrderActionsProvider
         argument: null,
         retry: null,
         name: r'orderActionsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -409,7 +409,7 @@ final class OrderActionsProvider
   }
 }
 
-String _$orderActionsHash() => r'064f8dd2bc93cf6920f00b3c5ad1bd59fd33a77c';
+String _$orderActionsHash() => r'ccce6dc166064552ec997dae9dabc5b158ccf06a';
 
 /// Handles order actions (cancel, confirm delivery, request return, etc.).
 

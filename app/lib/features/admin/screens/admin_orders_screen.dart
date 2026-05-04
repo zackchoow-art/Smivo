@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/admin/providers/admin_orders_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 /// Admin screen for viewing and searching all orders.
 class AdminOrdersScreen extends ConsumerStatefulWidget {
@@ -43,8 +44,11 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        children: [
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 1200,
+          child: Column(
+            children: [
           // Search + filter row
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -226,7 +230,9 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
               },
             ),
           ),
-        ],
+          ],
+        ),
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/data/models/user_profile.dart';
 import 'package:smivo/data/repositories/profile_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/core/providers/content_filter_provider.dart';
 
 part 'profile_provider.g.dart';
 
@@ -38,7 +39,17 @@ class Profile extends _$Profile {
 
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final updated = currentProfile.copyWith(displayName: name);
+      final filter = ref.read(sensitiveWordsProvider).value;
+      final config = ref.read(filterConfigStateProvider).value;
+
+      var finalName = name.trim();
+
+      if (filter != null && config != null) {
+        final action = applyContentFilter(finalName, filter, config);
+        finalName = action.processedText;
+      }
+
+      final updated = currentProfile.copyWith(displayName: finalName);
       return ref.read(profileRepositoryProvider).updateProfile(updated);
     });
   }
@@ -108,8 +119,18 @@ class Profile extends _$Profile {
             .uploadAvatar(currentProfile.id, avatarFile);
       }
 
+      final filter = ref.read(sensitiveWordsProvider).value;
+      final config = ref.read(filterConfigStateProvider).value;
+
+      var finalName = displayName.trim();
+
+      if (filter != null && config != null) {
+        final action = applyContentFilter(finalName, filter, config);
+        finalName = action.processedText;
+      }
+
       final updated = currentProfile.copyWith(
-        displayName: displayName,
+        displayName: finalName,
         avatarUrl: avatarUrl,
       );
 

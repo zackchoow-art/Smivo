@@ -109,7 +109,7 @@ final class RentalExtensionActionsProvider
         argument: null,
         retry: null,
         name: r'rentalExtensionActionsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -123,7 +123,7 @@ final class RentalExtensionActionsProvider
 }
 
 String _$rentalExtensionActionsHash() =>
-    r'580f65727b315cef1013fc21aa2c6046213b9c4b';
+    r'6c5955764589043514c92f58698e413d15548723';
 
 /// Handles extension request actions (create, approve, reject).
 

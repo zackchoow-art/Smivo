@@ -47,89 +47,86 @@ class CompactListingCard extends StatelessWidget {
             AppRoutes.listingDetail,
             pathParameters: {'id': listing.id},
           ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Image
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: colors.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(radius.image),
-                image:
-                    imageUrl != null
-                        ? DecorationImage(
-                          image: NetworkImage(imageUrl),
-                          fit: BoxFit.cover,
-                        )
-                        : null,
-              ),
-              child:
-                  imageUrl == null
-                      ? Center(
-                        child: Icon(
-                          Icons.image_not_supported_outlined,
-                          size: 32,
-                          color: colors.outlineVariant.withValues(alpha: 0.5),
-                        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Image
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(radius.image),
+              image:
+                  imageUrl != null
+                      ? DecorationImage(
+                        image: NetworkImage(imageUrl),
+                        fit: BoxFit.cover,
                       )
                       : null,
             ),
-            const SizedBox(width: 12),
-            // NOTE: Title and price side by side on the right,
-            // using system theme primary color for price.
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // NOTE: Tag placed above title per design requirement —
-                  // outside the image, left-aligned in the info column.
-                  TransactionTag(transactionType: listing.transactionType),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          listing.title,
-                          style: typo.titleMedium.copyWith(
-                            color: colors.onSurface,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+            child:
+                imageUrl == null
+                    ? Center(
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 32,
+                        color: colors.outlineVariant.withValues(alpha: 0.5),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        priceText,
+                    )
+                    : null,
+          ),
+          const SizedBox(width: 12),
+          // NOTE: Title and price side by side on the right,
+          // using system theme primary color for price.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // NOTE: Tag placed above title per design requirement —
+                // outside the image, left-aligned in the info column.
+                TransactionTag(transactionType: listing.transactionType),
+                const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        listing.title,
                         style: typo.titleMedium.copyWith(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w800,
+                          color: colors.onSurface,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-                  if (listing.description != null &&
-                      listing.description!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    ),
+                    const SizedBox(width: 8),
                     Text(
-                      listing.description!,
-                      style: typo.bodySmall.copyWith(
-                        color: colors.onSurfaceVariant,
+                      priceText,
+                      style: typo.titleMedium.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w800,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
+                ),
+                if (listing.description != null &&
+                    listing.description!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    listing.description!,
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

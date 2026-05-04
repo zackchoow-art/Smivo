@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAllListings, useSimulateAIReview } from '@/hooks/useListingModeration';
+import { useTargetModerationLogs } from '@/hooks/useBackendModerationLogs';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
-import { Filter, Bot, Eye } from 'lucide-react';
+import { Filter, Bot, Eye, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { showToast } from '@/hooks/useToast';
 import React from 'react';
 
@@ -312,6 +313,8 @@ function ListingDetailCard({ listing }: { listing: any }) {
         </button>
       </div>
 
+      <AiLogsPanel listingId={listing.id} />
+
       <style>{`
         .card-expanded-content {
           display: flex;
@@ -462,6 +465,151 @@ function ListingDetailCard({ listing }: { listing: any }) {
           background: var(--color-bg-tertiary);
           color: var(--color-text-tertiary);
           cursor: not-allowed;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/**
+ * Shows a collapsible list of AI moderation logs for a specific listing.
+ */
+function AiLogsPanel({ listingId }: { listingId: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const { data: logs, isLoading } = useTargetModerationLogs(expanded ? listingId : null);
+
+  return (
+    <div className="ai-logs-panel">
+      <button className="ai-logs-toggle" onClick={() => setExpanded(!expanded)}>
+        <FileText size={15} />
+        AI Moderation History
+        <span style={{ marginLeft: 'auto', fontSize: 12, opacity: 0.6 }}>
+          {expanded ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="ai-logs-body">
+          {isLoading ? (
+            <div style={{ padding: 16, fontSize: 13, color: 'var(--color-text-secondary)' }}>Loading logs...</div>
+          ) : !logs || logs.length === 0 ? (
+            <div style={{ padding: 16, fontSize: 13, color: 'var(--color-text-tertiary)' }}>No AI reviews recorded for this listing.</div>
+          ) : (
+            <table className="ai-logs-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Engine</th>
+                  <th>Result</th>
+                  <th>Action</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((log) => {
+                  const flaggedImgs = log.image_details?.filter(i => i.flagged) || [];
+                  const textWords = log.text_details?.matched_words || [];
+                  const reasons = [
+                    ...textWords.map((w: string) => `word: ${w}`),
+                    ...flaggedImgs.flatMap(i => i.reasons.map(r => `img#${i.index}: ${r}`)),
+                  ];
+
+                  return (
+                    <tr key={log.id}>
+                      <td style={{ fontSize: 11 }}>{new Date(log.created_at).toLocaleString()}</td>
+                      <td>
+                        <span className="ai-engine-tag">{log.engine.replace('_', ' ')}</span>
+                      </td>
+                      <td>
+                        {log.result === 'pass' ? (
+                          <CheckCircle size={14} color="var(--color-success)" />
+                        ) : (
+                          <XCircle size={14} color="var(--color-danger)" />
+                        )}
+                      </td>
+                      <td style={{ textTransform: 'capitalize' }}>{log.action_taken}</td>
+                      <td>
+                        {reasons.length === 0 ? (
+                          <span style={{ color: 'var(--color-text-tertiary)' }}>—</span>
+                        ) : (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                            {reasons.map((r, idx) => (
+                              <span key={idx} className="ai-detail-tag">{r}</span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      <style>{`
+        .ai-logs-panel {
+          width: 100%;
+          margin-top: 16px;
+          border-top: 1px solid var(--color-border-light);
+        }
+        .ai-logs-toggle {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          padding: 12px 0;
+          background: none;
+          border: none;
+          font-size: 13px;
+          font-weight: 600;
+          color: #8b5cf6;
+          cursor: pointer;
+        }
+        .ai-logs-toggle:hover { opacity: 0.8; }
+        .ai-logs-body {
+          border: 1px solid var(--color-border-light);
+          border-radius: var(--radius-sm);
+          overflow: hidden;
+          margin-bottom: 8px;
+        }
+        .ai-logs-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+        }
+        .ai-logs-table th {
+          text-align: left;
+          padding: 8px 12px;
+          background: var(--color-bg-secondary);
+          color: var(--color-text-secondary);
+          font-weight: 600;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+        .ai-logs-table td {
+          padding: 8px 12px;
+          border-top: 1px solid var(--color-border-light);
+          color: var(--color-text-primary);
+        }
+        .ai-engine-tag {
+          display: inline-flex;
+          padding: 1px 6px;
+          font-size: 10px;
+          background: rgba(139, 92, 246, 0.1);
+          color: #8b5cf6;
+          border-radius: 4px;
+          text-transform: capitalize;
+        }
+        .ai-detail-tag {
+          display: inline-flex;
+          padding: 1px 5px;
+          font-size: 10px;
+          background: var(--color-danger-light);
+          color: var(--color-danger);
+          border-radius: 3px;
         }
       `}</style>
     </div>

@@ -147,7 +147,7 @@ final class SavedListingActionsProvider
         argument: null,
         retry: null,
         name: r'savedListingActionsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -169,7 +169,7 @@ final class SavedListingActionsProvider
 }
 
 String _$savedListingActionsHash() =>
-    r'31ac4b8c693069b5f3dec7a89de117a6b88370eb';
+    r'97d484cf9da9c0e4eceb08c672420df3933bcb7a';
 
 /// Mutation provider for save/unsave actions.
 

@@ -6,6 +6,7 @@ import 'package:smivo/data/repositories/school_data_repository.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_categories_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 /// Admin screen for managing school-specific product categories.
 class AdminCategoriesScreen extends ConsumerStatefulWidget {
@@ -49,8 +50,11 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        children: [
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 1200,
+          child: Column(
+            children: [
           // School selector
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -96,7 +100,9 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                     )
                     : _buildCategoryList(context, canWrite),
           ),
-        ],
+          ],
+        ),
+        ),
       ),
     );
   }

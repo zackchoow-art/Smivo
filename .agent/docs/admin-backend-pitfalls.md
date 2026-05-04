@@ -3,7 +3,7 @@
 > **目的**：记录开发 Admin Dashboard 和 Supabase 数据库过程中遇到的所有坑，
 > 供后续 agent 在处理后台管理相关任务时参考，避免重复踩坑。
 >
-> **最后更新**：2026-05-03 · Migration 00088
+> **最后更新**：2026-05-03 · Migration 00093
 
 ---
 
@@ -434,8 +434,8 @@ CREATE FUNCTION clear_school_test_data(p_school_id uuid) ...
 | 00069 | `admin_reward_points` | `fix_rls_recursion` |
 
 ### 规则
-- **新迁移必须使用当前最大编号 + 1**（当前最大 = 00088）
-- 下一个迁移应该是 `00089_xxx.sql`
+- **新迁移必须使用当前最大编号 + 1**（当前最大 = 00093）
+- 下一个迁移应该是 `00094_xxx.sql`
 - 命名格式：`00NNN_简洁描述.sql`
 
 ---
@@ -585,6 +585,11 @@ DELETE FROM public.user_feedbacks WHERE true;
 | 00086 | `fix_cleanup_feedback_audit` | 清理函数补充 feedbacks、contributions、audit_logs |
 | 00087 | `fix_cleanup_where_clause` | pg_safeupdate: 无条件 DELETE 加 WHERE true |
 | 00088 | `production_safe_cleanup` | 恢复学校级作用域，生产安全，保留 audit log |
+| 00089 | `open_peeps_avatar` | Open Peeps 头像系统 |
+| 00090 | `image_moderation_infrastructure` | platform_secrets 加密存储 + image_moderation_usage 月计数器 |
+| 00091 | `pickup_location_defaults` | platform_pickup_location_defaults 表 + import_platform_defaults 扩展支持 pickup_location |
+| 00092 | `fix_school_dict_rls` | 修复 school_categories/school_conditions/pickup_locations 写策略改用 admin_users 表；补充 pickup_locations 缺失的 INSERT/UPDATE/DELETE policy |
+| 00093 | `admin_storage_policy` | 允许 admin_users 上传文件到 listing-images/moderation-test/ 路径 |
 
 ### 更新本文档
 **每次创建新的数据库迁移时，请在上表中追加一行，并在相关章节补充踩坑记录。**

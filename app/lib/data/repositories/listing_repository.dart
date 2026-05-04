@@ -51,7 +51,7 @@ class ListingRepository {
           // NOTE: Exclude listings that have been rejected or taken down by admin.
           // moderation_status can be: auto_approved, pending_review, approved, rejected, taken_down.
           // We only show listings NOT in rejected/taken_down state.
-          .not('moderation_status', 'in', '("rejected","taken_down")');
+          .not('moderation_status', 'in', '("rejected","taken_down","pending_review")');
 
       if (category != null) {
         // NOTE: DB CHECK constraint uses lowercase values; always
@@ -113,7 +113,7 @@ class ListingRepository {
           .eq('status', AppConstants.listingActive)
           // NOTE: Same moderation_status filter as fetchListings —
           // rejected/taken_down items must never appear in search results.
-          .not('moderation_status', 'in', '("rejected","taken_down")');
+          .not('moderation_status', 'in', '("rejected","taken_down","pending_review")');
 
       if (category != null) {
         dbQuery = dbQuery.eq('category', category.toLowerCase());
@@ -283,6 +283,9 @@ class ListingRepository {
             ..remove('id')
             ..remove('created_at')
             ..remove('updated_at')
+            // NOTE: moderation fields are server-managed — never sent from client.
+            ..remove('moderation_status')
+            ..remove('moderation_note')
             // NOTE: category must always be lowercase to satisfy the
             // DB CHECK constraint. Normalise at the boundary.
             ..['category'] = listing.category.toLowerCase();
@@ -347,6 +350,8 @@ class ListingRepository {
           listing.toJson()
             ..remove('images')
             ..remove('seller')
+            ..remove('moderation_status')
+            ..remove('moderation_note')
             ..['category'] = listing.category.toLowerCase();
 
       final data =

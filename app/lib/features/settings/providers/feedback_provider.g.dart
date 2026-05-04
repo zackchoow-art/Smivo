@@ -125,7 +125,7 @@ final class SubmitFeedbackActionProvider
 }
 
 String _$submitFeedbackActionHash() =>
-    r'6a0ae4fa344479dd6cd05a62714883979df6a37c';
+    r'f112334c126c6581cc66b4d3a03579e56c793016';
 
 abstract class _$SubmitFeedbackAction extends $Notifier<AsyncValue<void>> {
   AsyncValue<void> build();

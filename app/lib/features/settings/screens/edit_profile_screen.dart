@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:smivo/features/settings/widgets/avatar_customization_dialog.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -508,16 +509,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   void _showSuccess(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            Text(message),
-          ],
-        ),
-        backgroundColor: Colors.green,
+    showDialog(
+      context: context,
+      builder: (context) => ActionSuccessDialog(
+        title: 'Success',
+        message: 'Submitted successfully. Under platform review.',
       ),
     );
   }

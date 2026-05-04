@@ -362,10 +362,17 @@ export function usePlatformConditionDefaults() {
   });
 }
 
+/** Return shape from import_platform_defaults RPC (migration 00091) */
+export interface ImportDefaultsResult {
+  categories_imported:       number;
+  conditions_imported:       number;
+  pickup_locations_imported: number;
+}
+
 /**
- * Calls the import_platform_defaults(school_id) RPC.
- * Copies all active platform defaults into the school,
- * skipping slugs that already exist (idempotent).
+ * Calls the import_platform_defaults(school_id) RPC using the
+ * currently selected school from the school-scope store.
+ * Used by DictionaryItemsPage's "Import Base Items" button.
  */
 export function useImportPlatformDefaults() {
   const queryClient = useQueryClient();
@@ -379,7 +386,6 @@ export function useImportPlatformDefaults() {
         .rpc('import_platform_defaults', { p_school_id: currentCollegeId });
       if (error) throw error;
 
-      // Write audit log for the import action
       await supabase.from('admin_audit_logs').insert({
         admin_id:    adminId,
         action:      'import_platform_defaults',
@@ -388,12 +394,51 @@ export function useImportPlatformDefaults() {
         payload:     { school_id: currentCollegeId, result: data },
       });
 
-      return data as { categories_imported: number; conditions_imported: number };
+      return data as ImportDefaultsResult;
     },
     onSuccess: () => {
-      // Invalidate both dict types so the list refreshes after import
       queryClient.invalidateQueries({ queryKey: ['school-dict', 'category', currentCollegeId] });
       queryClient.invalidateQueries({ queryKey: ['school-dict', 'condition', currentCollegeId] });
+      queryClient.invalidateQueries({ queryKey: ['school-dict', 'pickup_location', currentCollegeId] });
+    },
+  });
+}
+
+/**
+ * Variant of useImportPlatformDefaults that accepts an explicit school ID.
+ * Used by CollegesPage where the admin picks the target school from a list
+ * rather than relying on the global school-scope store.
+ */
+export function useImportAllDefaultsForSchool() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      schoolId,
+      adminId,
+    }: {
+      schoolId: string;
+      adminId: string;
+    }): Promise<ImportDefaultsResult> => {
+      const { data, error } = await supabase
+        .rpc('import_platform_defaults', { p_school_id: schoolId });
+      if (error) throw error;
+
+      await supabase.from('admin_audit_logs').insert({
+        admin_id:    adminId,
+        action:      'import_platform_defaults',
+        target_type: 'school',
+        target_id:   schoolId,
+        payload:     { school_id: schoolId, result: data },
+      });
+
+      return data as ImportDefaultsResult;
+    },
+    onSuccess: (_data, { schoolId }) => {
+      // Invalidate all 3 school-dict types for the target school
+      queryClient.invalidateQueries({ queryKey: ['school-dict', 'category',        schoolId] });
+      queryClient.invalidateQueries({ queryKey: ['school-dict', 'condition',       schoolId] });
+      queryClient.invalidateQueries({ queryKey: ['school-dict', 'pickup_location', schoolId] });
     },
   });
 }

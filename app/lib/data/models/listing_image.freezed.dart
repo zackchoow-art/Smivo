@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ListingImage {
 
- String get id;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'image_url') String get imageUrl;@JsonKey(name: 'sort_order') int get sortOrder;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'listing_id') String get listingId;@JsonKey(name: 'image_url') String get imageUrl;@JsonKey(name: 'sort_order') int get sortOrder;@JsonKey(name: 'moderation_status') String get moderationStatus;@JsonKey(name: 'moderation_reasons') String? get moderationReasons;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of ListingImage
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ListingImageCopyWith<ListingImage> get copyWith => _$ListingImageCopyWithImpl<L
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ListingImage&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ListingImage&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.moderationStatus, moderationStatus) || other.moderationStatus == moderationStatus)&&(identical(other.moderationReasons, moderationReasons) || other.moderationReasons == moderationReasons)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,listingId,imageUrl,sortOrder,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,listingId,imageUrl,sortOrder,moderationStatus,moderationReasons,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'ListingImage(id: $id, listingId: $listingId, imageUrl: $imageUrl, sortOrder: $sortOrder, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'ListingImage(id: $id, listingId: $listingId, imageUrl: $imageUrl, sortOrder: $sortOrder, moderationStatus: $moderationStatus, moderationReasons: $moderationReasons, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ListingImageCopyWith<$Res>  {
   factory $ListingImageCopyWith(ListingImage value, $Res Function(ListingImage) _then) = _$ListingImageCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'image_url') String imageUrl,@JsonKey(name: 'sort_order') int sortOrder,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'image_url') String imageUrl,@JsonKey(name: 'sort_order') int sortOrder,@JsonKey(name: 'moderation_status') String moderationStatus,@JsonKey(name: 'moderation_reasons') String? moderationReasons,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -65,13 +65,15 @@ class _$ListingImageCopyWithImpl<$Res>
 
 /// Create a copy of ListingImage
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? listingId = null,Object? imageUrl = null,Object? sortOrder = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? listingId = null,Object? imageUrl = null,Object? sortOrder = null,Object? moderationStatus = null,Object? moderationReasons = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,listingId: null == listingId ? _self.listingId : listingId // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
-as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as int,moderationStatus: null == moderationStatus ? _self.moderationStatus : moderationStatus // ignore: cast_nullable_to_non_nullable
+as String,moderationReasons: freezed == moderationReasons ? _self.moderationReasons : moderationReasons // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -158,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'moderation_status')  String moderationStatus, @JsonKey(name: 'moderation_reasons')  String? moderationReasons, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ListingImage() when $default != null:
-return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.moderationStatus,_that.moderationReasons,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -179,10 +181,10 @@ return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.cr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'moderation_status')  String moderationStatus, @JsonKey(name: 'moderation_reasons')  String? moderationReasons, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ListingImage():
-return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.moderationStatus,_that.moderationReasons,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +201,10 @@ return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.cr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'listing_id')  String listingId, @JsonKey(name: 'image_url')  String imageUrl, @JsonKey(name: 'sort_order')  int sortOrder, @JsonKey(name: 'moderation_status')  String moderationStatus, @JsonKey(name: 'moderation_reasons')  String? moderationReasons, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ListingImage() when $default != null:
-return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.moderationStatus,_that.moderationReasons,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -214,13 +216,15 @@ return $default(_that.id,_that.listingId,_that.imageUrl,_that.sortOrder,_that.cr
 @JsonSerializable()
 
 class _ListingImage implements ListingImage {
-  const _ListingImage({required this.id, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'image_url') required this.imageUrl, @JsonKey(name: 'sort_order') this.sortOrder = 0, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _ListingImage({required this.id, @JsonKey(name: 'listing_id') required this.listingId, @JsonKey(name: 'image_url') required this.imageUrl, @JsonKey(name: 'sort_order') this.sortOrder = 0, @JsonKey(name: 'moderation_status') this.moderationStatus = 'auto_approved', @JsonKey(name: 'moderation_reasons') this.moderationReasons, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
   factory _ListingImage.fromJson(Map<String, dynamic> json) => _$ListingImageFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'listing_id') final  String listingId;
 @override@JsonKey(name: 'image_url') final  String imageUrl;
 @override@JsonKey(name: 'sort_order') final  int sortOrder;
+@override@JsonKey(name: 'moderation_status') final  String moderationStatus;
+@override@JsonKey(name: 'moderation_reasons') final  String? moderationReasons;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 
@@ -237,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ListingImage&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ListingImage&&(identical(other.id, id) || other.id == id)&&(identical(other.listingId, listingId) || other.listingId == listingId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.moderationStatus, moderationStatus) || other.moderationStatus == moderationStatus)&&(identical(other.moderationReasons, moderationReasons) || other.moderationReasons == moderationReasons)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,listingId,imageUrl,sortOrder,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,listingId,imageUrl,sortOrder,moderationStatus,moderationReasons,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'ListingImage(id: $id, listingId: $listingId, imageUrl: $imageUrl, sortOrder: $sortOrder, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'ListingImage(id: $id, listingId: $listingId, imageUrl: $imageUrl, sortOrder: $sortOrder, moderationStatus: $moderationStatus, moderationReasons: $moderationReasons, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -257,7 +261,7 @@ abstract mixin class _$ListingImageCopyWith<$Res> implements $ListingImageCopyWi
   factory _$ListingImageCopyWith(_ListingImage value, $Res Function(_ListingImage) _then) = __$ListingImageCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'image_url') String imageUrl,@JsonKey(name: 'sort_order') int sortOrder,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'listing_id') String listingId,@JsonKey(name: 'image_url') String imageUrl,@JsonKey(name: 'sort_order') int sortOrder,@JsonKey(name: 'moderation_status') String moderationStatus,@JsonKey(name: 'moderation_reasons') String? moderationReasons,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -274,13 +278,15 @@ class __$ListingImageCopyWithImpl<$Res>
 
 /// Create a copy of ListingImage
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? listingId = null,Object? imageUrl = null,Object? sortOrder = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? listingId = null,Object? imageUrl = null,Object? sortOrder = null,Object? moderationStatus = null,Object? moderationReasons = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_ListingImage(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,listingId: null == listingId ? _self.listingId : listingId // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
-as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as int,moderationStatus: null == moderationStatus ? _self.moderationStatus : moderationStatus // ignore: cast_nullable_to_non_nullable
+as String,moderationReasons: freezed == moderationReasons ? _self.moderationReasons : moderationReasons // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));

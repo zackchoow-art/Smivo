@@ -13,7 +13,7 @@ Future<List<RentalExtension>> orderExtensions(Ref ref, String orderId) async {
 }
 
 /// Handles extension request actions (create, approve, reject).
-@riverpod
+@Riverpod(keepAlive: true)
 class RentalExtensionActions extends _$RentalExtensionActions {
   @override
   FutureOr<void> build() {}

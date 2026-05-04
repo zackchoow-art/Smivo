@@ -137,7 +137,7 @@ Future<Order?> latestOrderByListingAndBuyer(
 }
 
 /// Handles order actions (cancel, confirm delivery, request return, etc.).
-@riverpod
+@Riverpod(keepAlive: true)
 class OrderActions extends _$OrderActions {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
@@ -276,7 +276,7 @@ class OrderActions extends _$OrderActions {
 
         await ref
             .read(orderRepositoryProvider)
-            .updateOrderStatus(order.id, 'completed');
+            .confirmSaleDelivery(order.id);
       } else {
         // Rental: keep dual confirmation
         final role = isBuyer ? 'buyer' : 'seller';

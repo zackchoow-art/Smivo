@@ -57,7 +57,7 @@ class HomeListings extends _$HomeListings {
     final query = ref.watch(searchQueryProvider);
     final repository = ref.watch(listingRepositoryProvider);
     final blockedUserIds = ref.watch(blockedUsersProvider).value ?? [];
-    
+
     // Get the current user's school ID to isolate listings by school
     // If not logged in, profileProvider will be null, and we can either show all or a default school.
     // For now, if logged in, we strictly filter by their school.

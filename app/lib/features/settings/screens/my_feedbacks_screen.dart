@@ -7,6 +7,7 @@ import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/user_feedback.dart';
 import 'package:smivo/features/settings/providers/feedback_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class MyFeedbacksScreen extends ConsumerWidget {
   const MyFeedbacksScreen({super.key});
@@ -25,8 +26,11 @@ class MyFeedbacksScreen extends ConsumerWidget {
         backgroundColor: colors.surface,
         elevation: 0,
       ),
-      body: SelectionArea(
-        child: feedbacksAsync.when(
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 720,
+          child: SelectionArea(
+            child: feedbacksAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(child: Text('Error: $e')),
           data: (feedbacks) {
@@ -59,6 +63,8 @@ class MyFeedbacksScreen extends ConsumerWidget {
               },
             );
           },
+            ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(

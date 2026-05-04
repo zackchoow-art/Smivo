@@ -8,6 +8,8 @@ import 'package:smivo/data/repositories/admin_repository.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_dashboard_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 
 /// Admin dashboard with platform metrics and recent activity.
 class AdminDashboardScreen extends ConsumerWidget {
@@ -43,9 +45,12 @@ class AdminDashboardScreen extends ConsumerWidget {
           const SizedBox(width: 16),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 1400,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Metrics cards
@@ -377,6 +382,8 @@ class AdminDashboardScreen extends ConsumerWidget {
             ),
           ],
         ),
+          ),
+        ),
       ),
     );
   }
@@ -545,48 +552,11 @@ class AdminDashboardScreen extends ConsumerWidget {
         showDialog(
           context: context,
           builder:
-              (ctx) => AlertDialog(
-                title: const Row(
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: Color(0xFF059669),
-                      size: 24,
-                    ),
-                    SizedBox(width: 12),
-                    Text('Data Cleared'),
-                  ],
-                ),
-                content: SizedBox(
-                  width: 380,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$total records deleted.',
-                        style: context.smivoTypo.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      if (details.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          details,
-                          style: context.smivoTypo.bodySmall.copyWith(
-                            color: context.smivoColors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                actions: [
-                  FilledButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('OK'),
-                  ),
-                ],
+              (ctx) => ActionSuccessDialog(
+                title: 'Data Cleared',
+                message: '$total records deleted.\n$details',
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
               ),
         );
       }

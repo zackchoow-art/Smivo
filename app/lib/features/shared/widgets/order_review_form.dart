@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/shared/providers/order_review_provider.dart';
-
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 class OrderReviewSection extends ConsumerStatefulWidget {
   const OrderReviewSection({
     super.key,
@@ -49,8 +49,12 @@ class _OrderReviewSectionState extends ConsumerState<OrderReviewSection> {
           SnackBar(content: Text('Failed to submit review: ${next.error}')),
         );
       } else if (!next.hasError && !next.isLoading && next.hasValue) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Review submitted successfully!')),
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Success',
+            message: 'Submitted successfully. Under platform review.',
+          ),
         );
         // Clear form after successful submit (since it's inline now)
         setState(() {

@@ -11,6 +11,7 @@ import 'package:smivo/features/listing/providers/create_listing_provider.dart';
 import 'package:smivo/features/listing/widgets/custom_text_field.dart';
 import 'package:smivo/features/listing/widgets/photo_picker_section.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 
@@ -771,56 +772,15 @@ class _CreateListingFormScreenState
   }
 
   Future<void> _showSuccessDialog(BuildContext context, bool isSale) {
-    final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radius.dialog),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.check_circle, color: colors.success, size: 80),
-                const SizedBox(height: 24),
-                Text(
-                  'Success!',
-                  style: typo.headlineSmall.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  isSale
-                      ? 'Your item has been listed for sale.'
-                      : 'Your rental listing has been posted.',
-                  textAlign: TextAlign.center,
-                  style: typo.bodyMedium,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(radius.md),
-                      ),
-                    ),
-                    child: Text(
-                      'Back to Home',
-                      style: TextStyle(color: colors.onPrimary),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+      builder: (context) => ActionSuccessDialog(
+        title: 'Success!',
+        message: 'Submitted successfully. Under platform review.',
+        buttonText: 'Back to Home',
+        onPressed: () => Navigator.pop(context),
+      ),
     );
   }
 }

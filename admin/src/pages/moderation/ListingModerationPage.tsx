@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useListingsModeration, useBatchModerateListings } from '@/hooks/useListingModeration';
 import { useGroupedListingReports } from '@/hooks/useListingReports';
+import { useBackendModerationLogs, type BackendModerationLog, type LogFilters } from '@/hooks/useBackendModerationLogs';
 import { DEFAULT_PAGE_SIZE, MODERATION_STATUS, MODERATION_PRIORITY, REPORT_REASONS } from '@/lib/constants';
-import { Filter, ChevronRight } from 'lucide-react';
+import { Filter, ChevronRight, Bot, CheckCircle, XCircle, AlertTriangle, Eye } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function ListingModerationPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [viewTab, setViewTab] = useState<'system' | 'user'>(
-    location.state?.tab === 'user' ? 'user' : 'system'
+  const [viewTab, setViewTab] = useState<'system' | 'user' | 'ai_reviewed'>(
+    location.state?.tab === 'user' ? 'user' : location.state?.tab === 'ai_reviewed' ? 'ai_reviewed' : 'system'
   );
   
   // System Queue State
@@ -27,6 +28,11 @@ export function ListingModerationPage() {
     status: reportStatus, 
     reason: reportReason 
   });
+
+  // AI Reviewed State
+  const [aiPage, setAiPage] = useState(0);
+  const [logFilters, setLogFilters] = useState<LogFilters>({ targetType: 'all', result: 'all', engine: 'all' });
+  const { data: logsData, isLoading: logsLoading, error: logsError } = useBackendModerationLogs(aiPage, logFilters);
 
   const batchModerate = useBatchModerateListings();
   const { admin } = useAuth();
@@ -95,14 +101,21 @@ export function ListingModerationPage() {
             onClick={() => { setViewTab('system'); setSelectedIds(new Set()); }}
           >
             System Queue
-            {data?.count !== undefined && <span className="lm-badge-num">{data.count}</span>}
+            {data?.count !== undefined && data.count > 0 && <span className="lm-badge-num">{data.count}</span>}
           </button>
           <button 
             className={`lm-tab-btn ${viewTab === 'user' ? 'active' : ''}`}
             onClick={() => { setViewTab('user'); setSelectedIds(new Set()); }}
           >
             User Reports
-            {reportsData !== undefined && <span className="lm-badge-num">{reportsData.length}</span>}
+            {reportsData !== undefined && reportsData.length > 0 && <span className="lm-badge-num">{reportsData.length}</span>}
+          </button>
+          <button 
+            className={`lm-tab-btn ${viewTab === 'ai_reviewed' ? 'active' : ''}`}
+            onClick={() => { setViewTab('ai_reviewed'); setSelectedIds(new Set()); }}
+          >
+            <Bot size={15} /> AI Reviewed
+            {logsData?.count !== undefined && logsData.count > 0 && <span className="lm-ai-count-label">{logsData.count}</span>}
           </button>
         </div>
       </div>
@@ -384,6 +397,166 @@ export function ListingModerationPage() {
         </>
       )}
 
+      {viewTab === 'ai_reviewed' && (
+        <>
+          <div className="lm-actions-row">
+            <div className="lm-filters">
+              <div className="lm-filter-group">
+                <Filter size={14} />
+                <select
+                  className="lm-filter-select-inline"
+                  value={logFilters.targetType}
+                  onChange={(e) => { setLogFilters(f => ({ ...f, targetType: e.target.value as any })); setAiPage(0); }}
+                >
+                  <option value="all">All Types</option>
+                  <option value="listing">Listings</option>
+                  <option value="message">Messages</option>
+                  <option value="profile">Profiles</option>
+                </select>
+              </div>
+              <div className="lm-filter-group">
+                <select
+                  className="lm-filter-select-inline"
+                  value={logFilters.result}
+                  onChange={(e) => { setLogFilters(f => ({ ...f, result: e.target.value as any })); setAiPage(0); }}
+                >
+                  <option value="all">All Results</option>
+                  <option value="pass">Pass</option>
+                  <option value="fail">Fail</option>
+                </select>
+              </div>
+              <div className="lm-filter-group">
+                <select
+                  className="lm-filter-select-inline"
+                  value={logFilters.engine}
+                  onChange={(e) => { setLogFilters(f => ({ ...f, engine: e.target.value as any })); setAiPage(0); }}
+                >
+                  <option value="all">All Engines</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="google_vision">Google Vision</option>
+                  <option value="sensitive_words">Sensitive Words</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {logsLoading ? (
+            <div className="lm-state-msg">Loading AI review logs...</div>
+          ) : logsError ? (
+            <div className="lm-state-error">Error loading logs.</div>
+          ) : (
+            <div className="lm-table-wrap">
+              <table className="lm-table">
+                <thead className="lm-thead">
+                  <tr>
+                    <th className="lm-th">Time</th>
+                    <th className="lm-th">Engine</th>
+                    <th className="lm-th">Type</th>
+                    <th className="lm-th">User</th>
+                    <th className="lm-th">Result</th>
+                    <th className="lm-th">Action</th>
+                    <th className="lm-th">Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logsData?.data.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="lm-td-empty">No AI review logs found.</td>
+                    </tr>
+                  ) : (
+                    logsData?.data.map((log: BackendModerationLog) => {
+                      const flaggedImages = log.image_details?.filter(i => i.flagged) || [];
+                      const textWords = log.text_details?.matched_words || [];
+                      const aiCategories = Object.entries(log.text_details?.ai_text?.categories || {})
+                        .filter(([, v]) => v)
+                        .map(([k]) => k);
+
+                      const reasons: string[] = [
+                        ...textWords.map((w: string) => `word: ${w}`),
+                        ...aiCategories.map(c => `text: ${c}`),
+                        ...flaggedImages.flatMap(i => i.reasons.map(r => `img#${i.index}: ${r}`)),
+                      ];
+
+                      return (
+                        <tr key={log.id} className="lm-tr">
+                          <td className="lm-td lm-cell-muted" style={{ fontSize: 12 }}>
+                            {new Date(log.created_at).toLocaleString()}
+                          </td>
+                          <td className="lm-td">
+                            <span className="lm-badge lm-badge--engine">{log.engine.replace('_', ' ')}</span>
+                          </td>
+                          <td className="lm-td">
+                            <span className="lm-badge lm-badge--neutral" style={{ textTransform: 'capitalize' }}>{log.target_type}</span>
+                          </td>
+                          <td className="lm-td">
+                            <div className="lm-user-info">
+                              <span className="lm-cell-text">{log.user_profile?.display_name || 'Unknown'}</span>
+                              <span className="lm-cell-muted" style={{ fontSize: 11 }}>{log.user_profile?.email}</span>
+                            </div>
+                          </td>
+                          <td className="lm-td">
+                            {log.result === 'pass' ? (
+                              <span className="lm-badge lm-badge--success"><CheckCircle size={12} style={{ marginRight: 4 }} /> Pass</span>
+                            ) : (
+                              <span className="lm-badge lm-badge--danger"><XCircle size={12} style={{ marginRight: 4 }} /> Fail</span>
+                            )}
+                          </td>
+                          <td className="lm-td">
+                            <span className={`lm-badge ${log.action_taken === 'approve' ? 'lm-badge--success' : log.action_taken === 'reject' ? 'lm-badge--danger' : log.action_taken === 'blur' ? 'lm-badge--info' : 'lm-badge--warning'}`}>
+                              {log.action_taken}
+                            </span>
+                          </td>
+                          <td className="lm-td">
+                            <div className="ai-reasons-cell">
+                              {reasons.length === 0 ? (
+                                <span className="lm-cell-muted">—</span>
+                              ) : (
+                                reasons.slice(0, 3).map((r, idx) => (
+                                  <span key={idx} className="ai-reason-tag">{r}</span>
+                                ))
+                              )}
+                              {reasons.length > 3 && (
+                                <span className="ai-reason-more">+{reasons.length - 3} more</span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {logsData && logsData.count > DEFAULT_PAGE_SIZE && (
+            <div className="lm-pagination">
+              <p className="lm-pagination-info">
+                Showing <strong>{aiPage * DEFAULT_PAGE_SIZE + 1}</strong> to{' '}
+                <strong>{Math.min((aiPage + 1) * DEFAULT_PAGE_SIZE, logsData.count)}</strong> of{' '}
+                <strong>{logsData.count}</strong> logs
+              </p>
+              <div className="lm-pagination-nav">
+                <button
+                  onClick={() => setAiPage(p => Math.max(0, p - 1))}
+                  disabled={aiPage === 0}
+                  className="lm-page-btn lm-page-btn--left"
+                >
+                  &larr; Previous
+                </button>
+                <button
+                  onClick={() => setAiPage(p => p + 1)}
+                  disabled={(aiPage + 1) * DEFAULT_PAGE_SIZE >= logsData.count}
+                  className="lm-page-btn lm-page-btn--right"
+                >
+                  Next &rarr;
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       <style>{`
         .lm-container { padding: var(--spacing-page); max-width: 1280px; margin: 0 auto; }
         .lm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0px; padding-bottom: 16px; }
@@ -394,7 +567,8 @@ export function ListingModerationPage() {
         .lm-tab-btn { padding: 8px 0; border: none; background: transparent; color: var(--color-text-secondary); font-size: 15px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; position: relative; display: flex; align-items: center; gap: 8px; }
         .lm-tab-btn:hover { color: var(--color-text-primary); }
         .lm-tab-btn.active { color: var(--color-text-primary); border-bottom-color: var(--color-primary); }
-        .lm-badge-num { background: var(--color-danger); color: white; font-size: 11px; padding: 2px 6px; border-radius: 99px; font-weight: 700; }
+        .lm-badge-num { background: var(--color-danger); color: white; font-size: 11px; padding: 2px 6px; border-radius: 99px; font-weight: 700; min-width: 18px; text-align: center; }
+        .lm-ai-count-label { background: #f0f4ff; color: #4338ca; font-size: 11px; font-weight: 500; padding: 1px 6px; border-radius: 4px; border: 1px solid #e0e7ff; margin-left: 4px; }
         
         .lm-actions-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .lm-filters { display: flex; gap: 12px; }
@@ -444,6 +618,13 @@ export function ListingModerationPage() {
         .lm-page-btn--right { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
         .lm-page-btn:hover:not(:disabled) { background: var(--color-bg-secondary); }
         .lm-page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* .lm-badge-num--purple was removed in favor of .lm-ai-count-label */
+        .lm-badge--engine { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; text-transform: capitalize; }
+        .ai-reasons-cell { display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px; }
+        .ai-reason-tag { display: inline-flex; padding: 2px 6px; font-size: 10px; font-weight: 500; background: var(--color-danger-light); color: var(--color-danger); border-radius: 4px; white-space: nowrap; }
+        .ai-reason-more { font-size: 10px; color: var(--color-text-tertiary); align-self: center; }
+        .lm-filter-group { display: flex; align-items: center; gap: 8px; background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 6px 12px; color: var(--color-text-tertiary); }
       `}</style>
     </div>
   );

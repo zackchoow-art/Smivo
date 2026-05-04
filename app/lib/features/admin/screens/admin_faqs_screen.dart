@@ -5,6 +5,7 @@ import 'package:smivo/data/models/faq.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_faq_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 /// Admin screen for managing FAQs with optional school scoping.
 ///
@@ -59,8 +60,11 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        children: [
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 1200,
+          child: Column(
+            children: [
           // School filter + search
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -285,7 +289,9 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
               },
             ),
           ),
-        ],
+          ],
+        ),
+        ),
       ),
     );
   }

@@ -19,7 +19,11 @@ class AuthRepository {
   /// Throws [AuthException] if signup fails (e.g. duplicate email).
   Future<void> signUp({required String email, required String password}) async {
     try {
-      await _client.auth.signUp(email: email, password: password);
+      await _client.auth.signUp(
+        email: email,
+        password: password,
+        emailRedirectTo: AppConstants.authCallbackUrl,
+      );
     } on AuthApiException catch (e) {
       throw AuthException(e.message, e);
     }
@@ -28,7 +32,11 @@ class AuthRepository {
   /// Resends the verification email for the given [email].
   Future<void> resendVerification(String email) async {
     try {
-      await _client.auth.resend(type: OtpType.signup, email: email);
+      await _client.auth.resend(
+        type: OtpType.signup,
+        email: email,
+        emailRedirectTo: AppConstants.authCallbackUrl,
+      );
     } on AuthApiException catch (e) {
       throw AuthException(e.message, e);
     }
@@ -37,7 +45,10 @@ class AuthRepository {
   /// Sends a password reset email to the given [email].
   Future<void> resetPasswordForEmail(String email) async {
     try {
-      await _client.auth.resetPasswordForEmail(email);
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: AppConstants.authCallbackUrl,
+      );
     } on AuthApiException catch (e) {
       throw AuthException(e.message, e);
     }

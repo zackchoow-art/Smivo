@@ -30,6 +30,9 @@ export const TABLES = {
   // Moderation
   MODERATION_DRAFTS: 'moderation_drafts',
   LISTING_MODERATION_NOTICES: 'listing_moderation_notices',
+  BACKEND_MODERATION_LOGS: 'backend_moderation_logs',
+  MODERATION_TASKS: 'moderation_tasks',
+  MODERATION_QUEUE: 'moderation_queue',
 
   // User governance
   USER_BANS: 'user_bans',

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 
 class RentalReminderSettings extends ConsumerStatefulWidget {
   const RentalReminderSettings({
@@ -60,8 +61,12 @@ class _RentalReminderSettingsState
             sendEmail: _sendEmail,
           );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reminder preferences saved')),
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Success',
+            message: 'Reminder preferences saved.',
+          ),
         );
       }
     } finally {

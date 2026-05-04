@@ -12,6 +12,8 @@ _ListingImage _$ListingImageFromJson(Map<String, dynamic> json) =>
       listingId: json['listing_id'] as String,
       imageUrl: json['image_url'] as String,
       sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
+      moderationStatus: json['moderation_status'] as String? ?? 'auto_approved',
+      moderationReasons: json['moderation_reasons'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -22,6 +24,8 @@ Map<String, dynamic> _$ListingImageToJson(_ListingImage instance) =>
       'listing_id': instance.listingId,
       'image_url': instance.imageUrl,
       'sort_order': instance.sortOrder,
+      'moderation_status': instance.moderationStatus,
+      'moderation_reasons': instance.moderationReasons,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
     };

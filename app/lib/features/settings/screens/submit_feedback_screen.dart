@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/settings/providers/feedback_provider.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class SubmitFeedbackScreen extends ConsumerStatefulWidget {
   const SubmitFeedbackScreen({super.key});
@@ -77,18 +79,14 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
       
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Thank You'),
-          content: const Text('Your feedback has been submitted successfully.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                context.pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
+        builder: (context) => ActionSuccessDialog(
+          title: 'Thank You',
+          message: 'Submitted successfully. Under platform review.',
+          buttonText: 'OK',
+          onPressed: () {
+            Navigator.of(context).pop();
+            context.pop();
+          },
         ),
       );
     } catch (e) {
@@ -112,9 +110,12 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      body: Center(
+        child: ContentWidthConstraint(
+          maxWidth: 640,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Feedback Type', style: typo.labelLarge),
@@ -235,7 +236,9 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
                     : const Text('Submit Feedback'),
               ),
             ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );
