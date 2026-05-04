@@ -158,3 +158,15 @@ a private method or a separate widget
   (separated by blank lines)
 - Use path aliases (e.g. @/components, @/lib) configured in vite.config.ts
 - No unused imports — ESLint will catch these
+
+### Pre-Push Verification (CRITICAL)
+
+- **Always run `cd admin && npx tsc -b` before pushing to remote.**
+  `npm run dev` (Vite) uses esbuild which only transpiles — it does NOT
+  perform type checking. This means code with type errors, unused variables,
+  missing exports, or implicit `any` will work perfectly in local dev but
+  **fail on Vercel** where `npm run build` runs `tsc -b && vite build`.
+- The project's `tsconfig.app.json` enforces strict rules:
+  `strict: true`, `noUnusedLocals: true`, `noUnusedParameters: true`.
+  All of these are silently ignored by Vite's dev server.
+- If `tsc -b` passes locally, Vercel deploy will succeed.

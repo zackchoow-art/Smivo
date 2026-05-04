@@ -340,9 +340,18 @@ flutter test
 ```bash
 cd admin
 npm install
-npm run dev                 # http://localhost:5173
-npm run build               # Production build (Vercel handles this)
+npm run dev                 # http://localhost:5173 (NO type checking — esbuild only)
+npx tsc -b                  # Strict type check (MUST pass before push)
+npm run build               # Production build: tsc -b && vite build
 ```
+
+#### Vercel Deployment Config
+- Framework Preset: **Vite**
+- Root Directory: `admin/`
+- Build Command: `npm run build` (runs `tsc -b && vite build`)
+- Output Directory: `dist`
+- IMPORTANT: `npm run dev` does NOT run type checking. Always verify
+  with `npx tsc -b` before pushing — Vercel will fail on any TS error.
 
 ### Database Migrations
 ```bash
