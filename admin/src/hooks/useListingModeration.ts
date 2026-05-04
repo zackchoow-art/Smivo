@@ -141,36 +141,43 @@ export function useModerateListing() {
         targetStatus = MODERATION_STATUS.REJECTED;
         draftDecision = 'reject';
       } else if (action === 'takedown') {
-        targetStatus = MODERATION_STATUS.TAKEN_DOWN;
+        targetStatus = MODERATION_STATUS.REJECTED;
         draftDecision = 'takedown';
       }
 
       // 1. Update the listing status
+      const updatePayload: Record<string, any> = {
+        moderation_status: targetStatus,
+        moderation_note: reason || null,
+        moderated_by: adminId,
+        moderated_at: new Date().toISOString(),
+      };
+
+      // IMPORTANT: When rejecting or taking down, deactivate the listing
+      // so it disappears from public feeds and 'active' lists.
+      if (action === 'reject' || action === 'takedown') {
+        updatePayload.status = 'inactive';
+      }
+
       const { error: updateError } = await supabase
         .from(TABLES.LISTINGS)
-        .update({
-          moderation_status: targetStatus,
-          moderation_note: reason || null,
-          moderated_by: adminId,
-          moderated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq('id', id);
 
       if (updateError) throw updateError;
 
-      // 1.5. Update associated images to 'rejected' if listing is rejected/takedown
-      if (action === 'reject' || action === 'takedown') {
-        const { error: imageError } = await supabase
-          .from(TABLES.LISTING_IMAGES)
-          .update({
-            moderation_status: 'rejected',
-            moderation_reasons: reason || 'Manual Admin Action'
-          })
-          .eq('listing_id', id);
+      // 1.5. Update associated images status to sync with listing decision
+      const imageStatus = action === 'approve' ? MODERATION_STATUS.APPROVED : MODERATION_STATUS.REJECTED;
+      const { error: imageError } = await supabase
+        .from(TABLES.LISTING_IMAGES)
+        .update({
+          moderation_status: imageStatus,
+          moderation_reasons: action === 'approve' ? null : (reason || 'Taken down by administrator')
+        })
+        .eq('listing_id', id);
 
-        if (imageError) {
-          console.error('Failed to update listing images status', imageError);
-        }
+      if (imageError) {
+        console.error('Failed to update listing images status', imageError);
       }
 
       // 2. Insert into moderation_drafts
@@ -245,6 +252,19 @@ export function useBatchModerateListings() {
         .in('id', ids);
 
       if (error) throw error;
+
+      // 1.5. Batch update associated images status
+      const { error: imagesError } = await supabase
+        .from(TABLES.LISTING_IMAGES)
+        .update({
+          moderation_status: targetModerationStatus,
+          moderation_reasons: action === 'approve' ? null : 'Taken down by administrator'
+        })
+        .in('listing_id', ids);
+
+      if (imagesError) {
+        console.error('[useBatchModerateListings] images update failed:', imagesError);
+      }
 
       // Batch audit log insert for all affected listings
       const auditRows = ids.map((listingId) => ({

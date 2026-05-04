@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Eye, Bot } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useListingModerationDetail, useModerateListing } from '@/hooks/useListingModeration';
 import { useAuth } from '@/hooks/useAuth';

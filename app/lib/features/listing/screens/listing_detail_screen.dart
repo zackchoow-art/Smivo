@@ -247,7 +247,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                   style: typo.bodyLarge,
                                 ),
                                 const SizedBox(height: 24),
-                                if (listing.moderationStatus == 'rejected') ...[
+                                if (listing.moderationStatus == 'rejected' ||
+                                    listing.moderationStatus ==
+                                        'taken_down') ...[
                                   Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.all(16),
@@ -300,8 +302,22 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
-                                          listing.moderationNote ??
-                                              'Policy Violation',
+                                          (listing.moderationNote ??
+                                                  'Policy Violation')
+                                              .replaceAll(
+                                                RegExp(
+                                                  r'^automatically rejected by (open ai|openai):\s*',
+                                                  caseSensitive: false,
+                                                ),
+                                                '',
+                                              )
+                                              .replaceAll(
+                                                RegExp(
+                                                  r'^AI:\s*',
+                                                  caseSensitive: false,
+                                                ),
+                                                '',
+                                              ),
                                           style: typo.bodyLarge.copyWith(
                                             color:
                                                 Theme.of(
@@ -687,8 +703,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                   ),
                                   const SizedBox(height: 24),
                                   if (listing.status == 'active' &&
+                                      listing.moderationStatus != 'rejected' &&
                                       listing.moderationStatus !=
-                                          'rejected') ...[
+                                          'taken_down') ...[
                                     // NOTE: Hide delist button if listing has confirmed orders
                                     // (rental accepted but pre-delivery: listing is still 'active')
                                     Builder(

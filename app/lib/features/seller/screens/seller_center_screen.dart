@@ -320,7 +320,8 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                 data: (listings) {
                   final flaggedListings = listings.where((l) =>
                     l.moderationStatus == 'rejected' ||
-                    l.moderationStatus == 'pending_review'
+                    l.moderationStatus == 'pending_review' ||
+                    l.moderationStatus == 'taken_down'
                   ).toList();
 
                   if (flaggedListings.isEmpty) {
@@ -1802,14 +1803,15 @@ class _FlaggedListingTile extends StatelessWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    final statusColor = isRejected
+    final isTakenDown = listing.moderationStatus == 'taken_down';
+    final statusColor = (isRejected || isTakenDown)
         ? Theme.of(context).colorScheme.error
         : Colors.amber.shade700;
-    final statusBg = isRejected
+    final statusBg = (isRejected || isTakenDown)
         ? Theme.of(context).colorScheme.error.withValues(alpha: 0.08)
         : Colors.amber.withValues(alpha: 0.08);
-    final statusLabel = isRejected ? 'Rejected' : 'Under Review';
-    final statusIcon = isRejected ? Icons.block : Icons.hourglass_top;
+    final statusLabel = isTakenDown ? 'Taken Down' : (isRejected ? 'Rejected' : 'Under Review');
+    final statusIcon = (isRejected || isTakenDown) ? Icons.block : Icons.hourglass_top;
 
     final imageUrl = listing.images.isNotEmpty
         ? listing.images.first.imageUrl
@@ -1857,7 +1859,9 @@ class _FlaggedListingTile extends StatelessWidget {
                                   alignment: Alignment.center,
                                   padding: const EdgeInsets.all(2),
                                   child: Text(
-                                    listing.images.first.moderationReasons ?? 'Violation',
+                                    (listing.images.first.moderationReasons ?? 'Violation')
+                                        .replaceAll(RegExp(r'^automatically rejected by (open ai|openai):\s*', caseSensitive: false), '')
+                                        .replaceAll(RegExp(r'^AI:\s*', caseSensitive: false), ''),
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       color: Colors.white,
@@ -1897,7 +1901,9 @@ class _FlaggedListingTile extends StatelessWidget {
                       if (listing.moderationNote != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          listing.moderationNote!,
+                          listing.moderationNote!
+                              .replaceAll(RegExp(r'^automatically rejected by (open ai|openai):\s*', caseSensitive: false), '')
+                              .replaceAll(RegExp(r'^AI:\s*', caseSensitive: false), ''),
                           style: typo.bodySmall.copyWith(
                             color: statusColor,
                             fontSize: 11,

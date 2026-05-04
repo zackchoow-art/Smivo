@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, User, AlertTriangle, Shield, CheckCircle, XCircle, ChevronRight, Ban } from 'lucide-react';
+import { ChevronLeft, User, AlertTriangle, Shield, CheckCircle, XCircle, ChevronRight, Ban, Eye, EyeOff } from 'lucide-react';
 import { useListingReportsByListingId, useResolveListingReport, useGroupedListingReports } from '@/hooks/useListingReports';
 import { useListingModerationDetail, useBatchModerateListings } from '@/hooks/useListingModeration';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,6 +61,21 @@ export function ListingReportDetailPage() {
     setPopupUser(null);
   }, [id]);
 
+  // Image visibility state
+  const [visibleImages, setVisibleImages] = useState<Set<string>>(new Set());
+
+  const toggleImageVisibility = (imageUrl: string) => {
+    setVisibleImages(prev => {
+      const next = new Set(prev);
+      if (next.has(imageUrl)) {
+        next.delete(imageUrl);
+      } else {
+        next.add(imageUrl);
+      }
+      return next;
+    });
+  };
+
   if (reportsLoading || listingLoading) return <div className="loading-state">Loading report details...</div>;
   if (reportsError || !reports || reports.length === 0) return <div className="error-state">Reports not found</div>;
 
@@ -102,6 +117,13 @@ export function ListingReportDetailPage() {
           action: listingAction === 'takedown' ? 'reject' : 'approve',
           adminId: admin.user_id
         });
+
+        // Trigger AI audit for images only (does NOT change listing status)
+        if (listingAction === 'takedown') {
+          supabase.functions.invoke('audit-images', {
+            body: { listing_id: id }
+          }).catch(err => console.error('Failed to trigger AI audit:', err));
+        }
       }
 
       // ── Step 2: Apply user penalty if takedown + penalty selected ─
@@ -279,7 +301,21 @@ export function ListingReportDetailPage() {
               {report.screenshot_urls && report.screenshot_urls.length > 0 && (
                 <div className="screenshot-gallery">
                   {report.screenshot_urls.map((url, idx) => (
-                    <img key={idx} src={url} alt={`Evidence ${idx + 1}`} className="evidence-img" />
+                    <div key={idx} className="image-wrapper evidence-wrapper">
+                      <img 
+                        src={url} 
+                        alt={`Evidence ${idx + 1}`} 
+                        className="evidence-img" 
+                        style={{ filter: visibleImages.has(url) ? 'none' : 'blur(25px)' }}
+                      />
+                      <button 
+                        className="blur-toggle-btn"
+                        onClick={() => toggleImageVisibility(url)}
+                        title={visibleImages.has(url) ? "Blur image" : "View original"}
+                      >
+                        {visibleImages.has(url) ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -302,7 +338,21 @@ export function ListingReportDetailPage() {
                     {listing.images && listing.images.length > 0 && (
                       <div className="listing-image-gallery">
                         {listing.images.map((img: any, idx: number) => (
-                          <img key={idx} src={img.image_url} alt="Listing" className="listing-img" />
+                          <div key={idx} className="image-wrapper listing-wrapper">
+                            <img 
+                              src={img.image_url} 
+                              alt="Listing" 
+                              className="listing-img" 
+                              style={{ filter: visibleImages.has(img.image_url) ? 'none' : 'blur(20px)' }}
+                            />
+                            <button 
+                              className="blur-toggle-btn"
+                              onClick={() => toggleImageVisibility(img.image_url)}
+                              title={visibleImages.has(img.image_url) ? "Blur image" : "View original"}
+                            >
+                              {visibleImages.has(img.image_url) ? <EyeOff size={14} /> : <Eye size={14} />}
+                            </button>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -622,7 +672,31 @@ export function ListingReportDetailPage() {
         .listing-meta { display: flex; gap: 16px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 12px; }
         .listing-description { font-size: 14px; color: var(--color-text-secondary); white-space: pre-wrap; margin-bottom: 16px; }
         .listing-image-gallery { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; }
-        .listing-img { height: 100px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-light); object-fit: cover; }
+        .listing-img { width: 100%; height: 120px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-light); object-fit: cover; transition: filter 0.3s ease; }
+        
+        .image-wrapper { position: relative; overflow: hidden; border-radius: var(--radius-sm); background: #eee; }
+        .evidence-wrapper { height: 200px; }
+        .listing-wrapper { width: 120px; flex-shrink: 0; }
+        .evidence-img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s ease; }
+        
+        .blur-toggle-btn {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, 0.6);
+          color: white;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s;
+          z-index: 2;
+        }
+        .blur-toggle-btn:hover { background: rgba(0, 0, 0, 0.8); }
         
         .empty-evidence { padding: 32px; text-align: center; color: var(--color-text-tertiary); background: var(--color-bg-tertiary); border-radius: var(--radius-md); font-style: italic; font-size: 13px; }
         .involved-parties { margin-top: 32px; }
