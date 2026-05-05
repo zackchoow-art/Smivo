@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderListingPreview {
 
- String get id; String get title; List<OrderListingImage> get images;@JsonKey(name: 'rental_daily_price') double? get rentalDailyPrice;@JsonKey(name: 'rental_weekly_price') double? get rentalWeeklyPrice;@JsonKey(name: 'rental_monthly_price') double? get rentalMonthlyPrice;@JsonKey(name: 'deposit_amount') double get depositAmount;
+ String get id; String get title; String get status; List<OrderListingImage> get images;@JsonKey(name: 'rental_daily_price') double? get rentalDailyPrice;@JsonKey(name: 'rental_weekly_price') double? get rentalWeeklyPrice;@JsonKey(name: 'rental_monthly_price') double? get rentalMonthlyPrice;@JsonKey(name: 'deposit_amount') double get depositAmount;@JsonKey(name: 'listing_cycle') int get listingCycle;
 /// Create a copy of OrderListingPreview
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OrderListingPreviewCopyWith<OrderListingPreview> get copyWith => _$OrderListing
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderListingPreview&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.images, images)&&(identical(other.rentalDailyPrice, rentalDailyPrice) || other.rentalDailyPrice == rentalDailyPrice)&&(identical(other.rentalWeeklyPrice, rentalWeeklyPrice) || other.rentalWeeklyPrice == rentalWeeklyPrice)&&(identical(other.rentalMonthlyPrice, rentalMonthlyPrice) || other.rentalMonthlyPrice == rentalMonthlyPrice)&&(identical(other.depositAmount, depositAmount) || other.depositAmount == depositAmount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderListingPreview&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.images, images)&&(identical(other.rentalDailyPrice, rentalDailyPrice) || other.rentalDailyPrice == rentalDailyPrice)&&(identical(other.rentalWeeklyPrice, rentalWeeklyPrice) || other.rentalWeeklyPrice == rentalWeeklyPrice)&&(identical(other.rentalMonthlyPrice, rentalMonthlyPrice) || other.rentalMonthlyPrice == rentalMonthlyPrice)&&(identical(other.depositAmount, depositAmount) || other.depositAmount == depositAmount)&&(identical(other.listingCycle, listingCycle) || other.listingCycle == listingCycle));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(images),rentalDailyPrice,rentalWeeklyPrice,rentalMonthlyPrice,depositAmount);
+int get hashCode => Object.hash(runtimeType,id,title,status,const DeepCollectionEquality().hash(images),rentalDailyPrice,rentalWeeklyPrice,rentalMonthlyPrice,depositAmount,listingCycle);
 
 @override
 String toString() {
-  return 'OrderListingPreview(id: $id, title: $title, images: $images, rentalDailyPrice: $rentalDailyPrice, rentalWeeklyPrice: $rentalWeeklyPrice, rentalMonthlyPrice: $rentalMonthlyPrice, depositAmount: $depositAmount)';
+  return 'OrderListingPreview(id: $id, title: $title, status: $status, images: $images, rentalDailyPrice: $rentalDailyPrice, rentalWeeklyPrice: $rentalWeeklyPrice, rentalMonthlyPrice: $rentalMonthlyPrice, depositAmount: $depositAmount, listingCycle: $listingCycle)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OrderListingPreviewCopyWith<$Res>  {
   factory $OrderListingPreviewCopyWith(OrderListingPreview value, $Res Function(OrderListingPreview) _then) = _$OrderListingPreviewCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, List<OrderListingImage> images,@JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,@JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,@JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,@JsonKey(name: 'deposit_amount') double depositAmount
+ String id, String title, String status, List<OrderListingImage> images,@JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,@JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,@JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,@JsonKey(name: 'deposit_amount') double depositAmount,@JsonKey(name: 'listing_cycle') int listingCycle
 });
 
 
@@ -65,16 +65,18 @@ class _$OrderListingPreviewCopyWithImpl<$Res>
 
 /// Create a copy of OrderListingPreview
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? images = null,Object? rentalDailyPrice = freezed,Object? rentalWeeklyPrice = freezed,Object? rentalMonthlyPrice = freezed,Object? depositAmount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? status = null,Object? images = null,Object? rentalDailyPrice = freezed,Object? rentalWeeklyPrice = freezed,Object? rentalMonthlyPrice = freezed,Object? depositAmount = null,Object? listingCycle = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,images: null == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
 as List<OrderListingImage>,rentalDailyPrice: freezed == rentalDailyPrice ? _self.rentalDailyPrice : rentalDailyPrice // ignore: cast_nullable_to_non_nullable
 as double?,rentalWeeklyPrice: freezed == rentalWeeklyPrice ? _self.rentalWeeklyPrice : rentalWeeklyPrice // ignore: cast_nullable_to_non_nullable
 as double?,rentalMonthlyPrice: freezed == rentalMonthlyPrice ? _self.rentalMonthlyPrice : rentalMonthlyPrice // ignore: cast_nullable_to_non_nullable
 as double?,depositAmount: null == depositAmount ? _self.depositAmount : depositAmount // ignore: cast_nullable_to_non_nullable
-as double,
+as double,listingCycle: null == listingCycle ? _self.listingCycle : listingCycle // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -159,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  List<OrderListingImage> images, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'deposit_amount')  double depositAmount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String status,  List<OrderListingImage> images, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'deposit_amount')  double depositAmount, @JsonKey(name: 'listing_cycle')  int listingCycle)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderListingPreview() when $default != null:
-return $default(_that.id,_that.title,_that.images,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.depositAmount);case _:
+return $default(_that.id,_that.title,_that.status,_that.images,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.depositAmount,_that.listingCycle);case _:
   return orElse();
 
 }
@@ -180,10 +182,10 @@ return $default(_that.id,_that.title,_that.images,_that.rentalDailyPrice,_that.r
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  List<OrderListingImage> images, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'deposit_amount')  double depositAmount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String status,  List<OrderListingImage> images, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'deposit_amount')  double depositAmount, @JsonKey(name: 'listing_cycle')  int listingCycle)  $default,) {final _that = this;
 switch (_that) {
 case _OrderListingPreview():
-return $default(_that.id,_that.title,_that.images,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.depositAmount);case _:
+return $default(_that.id,_that.title,_that.status,_that.images,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.depositAmount,_that.listingCycle);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +202,10 @@ return $default(_that.id,_that.title,_that.images,_that.rentalDailyPrice,_that.r
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  List<OrderListingImage> images, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'deposit_amount')  double depositAmount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String status,  List<OrderListingImage> images, @JsonKey(name: 'rental_daily_price')  double? rentalDailyPrice, @JsonKey(name: 'rental_weekly_price')  double? rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price')  double? rentalMonthlyPrice, @JsonKey(name: 'deposit_amount')  double depositAmount, @JsonKey(name: 'listing_cycle')  int listingCycle)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderListingPreview() when $default != null:
-return $default(_that.id,_that.title,_that.images,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.depositAmount);case _:
+return $default(_that.id,_that.title,_that.status,_that.images,_that.rentalDailyPrice,_that.rentalWeeklyPrice,_that.rentalMonthlyPrice,_that.depositAmount,_that.listingCycle);case _:
   return null;
 
 }
@@ -215,11 +217,12 @@ return $default(_that.id,_that.title,_that.images,_that.rentalDailyPrice,_that.r
 @JsonSerializable()
 
 class _OrderListingPreview implements OrderListingPreview {
-  const _OrderListingPreview({required this.id, required this.title, final  List<OrderListingImage> images = const [], @JsonKey(name: 'rental_daily_price') this.rentalDailyPrice, @JsonKey(name: 'rental_weekly_price') this.rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price') this.rentalMonthlyPrice, @JsonKey(name: 'deposit_amount') this.depositAmount = 0.0}): _images = images;
+  const _OrderListingPreview({required this.id, required this.title, this.status = 'active', final  List<OrderListingImage> images = const [], @JsonKey(name: 'rental_daily_price') this.rentalDailyPrice, @JsonKey(name: 'rental_weekly_price') this.rentalWeeklyPrice, @JsonKey(name: 'rental_monthly_price') this.rentalMonthlyPrice, @JsonKey(name: 'deposit_amount') this.depositAmount = 0.0, @JsonKey(name: 'listing_cycle') this.listingCycle = 1}): _images = images;
   factory _OrderListingPreview.fromJson(Map<String, dynamic> json) => _$OrderListingPreviewFromJson(json);
 
 @override final  String id;
 @override final  String title;
+@override@JsonKey() final  String status;
  final  List<OrderListingImage> _images;
 @override@JsonKey() List<OrderListingImage> get images {
   if (_images is EqualUnmodifiableListView) return _images;
@@ -231,6 +234,7 @@ class _OrderListingPreview implements OrderListingPreview {
 @override@JsonKey(name: 'rental_weekly_price') final  double? rentalWeeklyPrice;
 @override@JsonKey(name: 'rental_monthly_price') final  double? rentalMonthlyPrice;
 @override@JsonKey(name: 'deposit_amount') final  double depositAmount;
+@override@JsonKey(name: 'listing_cycle') final  int listingCycle;
 
 /// Create a copy of OrderListingPreview
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +249,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderListingPreview&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._images, _images)&&(identical(other.rentalDailyPrice, rentalDailyPrice) || other.rentalDailyPrice == rentalDailyPrice)&&(identical(other.rentalWeeklyPrice, rentalWeeklyPrice) || other.rentalWeeklyPrice == rentalWeeklyPrice)&&(identical(other.rentalMonthlyPrice, rentalMonthlyPrice) || other.rentalMonthlyPrice == rentalMonthlyPrice)&&(identical(other.depositAmount, depositAmount) || other.depositAmount == depositAmount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderListingPreview&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other._images, _images)&&(identical(other.rentalDailyPrice, rentalDailyPrice) || other.rentalDailyPrice == rentalDailyPrice)&&(identical(other.rentalWeeklyPrice, rentalWeeklyPrice) || other.rentalWeeklyPrice == rentalWeeklyPrice)&&(identical(other.rentalMonthlyPrice, rentalMonthlyPrice) || other.rentalMonthlyPrice == rentalMonthlyPrice)&&(identical(other.depositAmount, depositAmount) || other.depositAmount == depositAmount)&&(identical(other.listingCycle, listingCycle) || other.listingCycle == listingCycle));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_images),rentalDailyPrice,rentalWeeklyPrice,rentalMonthlyPrice,depositAmount);
+int get hashCode => Object.hash(runtimeType,id,title,status,const DeepCollectionEquality().hash(_images),rentalDailyPrice,rentalWeeklyPrice,rentalMonthlyPrice,depositAmount,listingCycle);
 
 @override
 String toString() {
-  return 'OrderListingPreview(id: $id, title: $title, images: $images, rentalDailyPrice: $rentalDailyPrice, rentalWeeklyPrice: $rentalWeeklyPrice, rentalMonthlyPrice: $rentalMonthlyPrice, depositAmount: $depositAmount)';
+  return 'OrderListingPreview(id: $id, title: $title, status: $status, images: $images, rentalDailyPrice: $rentalDailyPrice, rentalWeeklyPrice: $rentalWeeklyPrice, rentalMonthlyPrice: $rentalMonthlyPrice, depositAmount: $depositAmount, listingCycle: $listingCycle)';
 }
 
 
@@ -265,7 +269,7 @@ abstract mixin class _$OrderListingPreviewCopyWith<$Res> implements $OrderListin
   factory _$OrderListingPreviewCopyWith(_OrderListingPreview value, $Res Function(_OrderListingPreview) _then) = __$OrderListingPreviewCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, List<OrderListingImage> images,@JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,@JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,@JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,@JsonKey(name: 'deposit_amount') double depositAmount
+ String id, String title, String status, List<OrderListingImage> images,@JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,@JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,@JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,@JsonKey(name: 'deposit_amount') double depositAmount,@JsonKey(name: 'listing_cycle') int listingCycle
 });
 
 
@@ -282,16 +286,18 @@ class __$OrderListingPreviewCopyWithImpl<$Res>
 
 /// Create a copy of OrderListingPreview
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? images = null,Object? rentalDailyPrice = freezed,Object? rentalWeeklyPrice = freezed,Object? rentalMonthlyPrice = freezed,Object? depositAmount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? status = null,Object? images = null,Object? rentalDailyPrice = freezed,Object? rentalWeeklyPrice = freezed,Object? rentalMonthlyPrice = freezed,Object? depositAmount = null,Object? listingCycle = null,}) {
   return _then(_OrderListingPreview(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,images: null == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
 as List<OrderListingImage>,rentalDailyPrice: freezed == rentalDailyPrice ? _self.rentalDailyPrice : rentalDailyPrice // ignore: cast_nullable_to_non_nullable
 as double?,rentalWeeklyPrice: freezed == rentalWeeklyPrice ? _self.rentalWeeklyPrice : rentalWeeklyPrice // ignore: cast_nullable_to_non_nullable
 as double?,rentalMonthlyPrice: freezed == rentalMonthlyPrice ? _self.rentalMonthlyPrice : rentalMonthlyPrice // ignore: cast_nullable_to_non_nullable
 as double?,depositAmount: null == depositAmount ? _self.depositAmount : depositAmount // ignore: cast_nullable_to_non_nullable
-as double,
+as double,listingCycle: null == listingCycle ? _self.listingCycle : listingCycle // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

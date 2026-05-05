@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smivo/features/profile/screens/profile_setup_screen.dart';
-import 'package:smivo/features/profile/providers/profile_provider.dart';
 
 import 'package:smivo/features/auth/screens/register_screen.dart';
 import 'package:smivo/features/auth/screens/login_screen.dart';
@@ -30,7 +29,6 @@ import 'package:smivo/features/seller/screens/transaction_management_screen.dart
 import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
 import 'package:smivo/features/settings/screens/debug_data_screen.dart';
 import 'package:smivo/shared/widgets/app_shell.dart';
-import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
 import 'package:smivo/features/admin/screens/admin_shell_screen.dart';
 import 'package:smivo/features/admin/screens/admin_login_screen.dart';
@@ -46,108 +44,38 @@ import 'package:smivo/features/admin/screens/admin_dictionary_screen.dart';
 import 'package:smivo/features/admin/screens/admin_schools_screen.dart';
 import 'package:smivo/features/admin/screens/admin_roles_screen.dart';
 import 'package:smivo/features/admin/screens/admin_review_tags_screen.dart';
+import 'package:smivo/core/router/router_notifier.dart';
 import 'app_routes.dart';
 
 part 'router.g.dart';
 
-/// Routes that guests can access without authentication.
-const _publicRoutes = {
-  AppRoutes.homePath,
-  AppRoutes.loginPath,
-  AppRoutes.forgotPasswordPath,
-  AppRoutes.registerPath,
-  AppRoutes.emailVerificationPath,
-};
-
-/// Returns true if [path] matches a public route pattern.
+/// GoRouter configuration.
 ///
-/// Listing detail is also public (guest browsing), so we check
-/// for the /listing/ prefix but exclude /listing/create.
-bool _isPublicRoute(String path) {
-  if (_publicRoutes.contains(path)) return true;
-  // NOTE: Listing detail (/listing/:id) is public for guest browsing,
-  // but /listing/create requires auth.
-  if (path.startsWith('/listing/') && path != '/listing/create') {
-    // Exclude /listing/:id/edit which requires auth
-    if (!path.endsWith('/edit')) return true;
-  }
-  // NOTE: Admin routes bypass normal auth — admin has its own login.
-  if (path.startsWith('/admin')) return true;
-  return false;
-}
-
-/// GoRouter configuration with reactive auth redirect guard.
+/// NOTE: keepAlive: true is CRITICAL here. Without it, the router provider
+/// can be garbage-collected and recreated, which destroys the navigation
+/// stack and drops the user to the home screen.
 ///
-/// Handles four authentication/onboarding states:
-/// 1. Guest: Access to home, listing details, login, and register.
-/// 2. Unverified: Logged in but email not confirmed. Restricted to verification screen.
-/// 3. Needs Onboarding: Logged in, verified, but display name is missing.
-/// 4. Authenticated: Full access. Redirects away from auth screens to home.
-@riverpod
+/// Auth/profile state changes are handled via RouterNotifier (Listenable),
+/// which triggers GoRouter.redirect() re-evaluation WITHOUT recreating the
+/// GoRouter instance. This is the correct pattern for GoRouter + Riverpod.
+@Riverpod(keepAlive: true)
 GoRouter router(Ref ref) {
-  // Watch auth state to trigger router refreshes automatically
-  final authStateValue = ref.watch(authStateProvider);
-  final user = authStateValue.value;
-  final isLoggedIn = user != null;
-  final isEmailVerified = user?.emailConfirmedAt != null;
+  // Obtain the notifier instance (stable object, never recreated).
+  // NOTE: ref.watch on .notifier only re-runs this factory if the notifier
+  // provider itself is disposed — which never happens with keepAlive: true.
+  // Auth/profile changes are signalled via refreshListenable, not re-creation.
+  final notifier = ref.watch(appRouterProvider.notifier);
 
-  // Watch profile state to handle onboarding redirect
-  final profileValue = ref.watch(profileProvider);
-  final profile = profileValue.value;
-  final needsOnboarding = profile != null && profile.displayName == null;
-
-  return GoRouter(
+  final goRouter = GoRouter(
     initialLocation: AppRoutes.homePath,
     debugLogDiagnostics: true,
-    redirect: (BuildContext context, GoRouterState state) {
-      final currentPath = state.matchedLocation;
-
-      // ─── STATE 1: Fully Authenticated & Onboarded ───────
-      if (isLoggedIn && isEmailVerified && !needsOnboarding) {
-        // Prevent authenticated users from going back to login/register/setup
-        if (currentPath == AppRoutes.loginPath ||
-            currentPath == AppRoutes.registerPath ||
-            currentPath == AppRoutes.profileSetupPath) {
-          return AppRoutes.homePath;
-        }
-        return null;
-      }
-
-      // ─── STATE 2: Logged in & Verified but Needs Onboarding ───
-      if (isLoggedIn && isEmailVerified && needsOnboarding) {
-        if (currentPath == AppRoutes.profileSetupPath) {
-          return null;
-        }
-        return AppRoutes.profileSetupPath;
-      }
-
-      // ─── STATE 3: Logged in but NOT Verified ────────────
-      if (isLoggedIn && !isEmailVerified) {
-        // Only allow access to the verification screen and login (for logout)
-        if (currentPath == AppRoutes.emailVerificationPath ||
-            currentPath == AppRoutes.loginPath) {
-          return null;
-        }
-        final email = user.email ?? '';
-        return '${AppRoutes.emailVerificationPath}?email=$email';
-      }
-
-      // ─── STATE 4: Guest (Not Logged In) ──────────────────
-      if (!isLoggedIn) {
-        // Allow access to public routes
-        if (_isPublicRoute(currentPath)) {
-          return null;
-        }
-        // Redirect protected routes to login with returnTo param
-        // URL encode the returnTo path to be safe
-        final encodedPath = Uri.encodeComponent(currentPath);
-        return '${AppRoutes.loginPath}?returnTo=$encodedPath';
-      }
-
-      return null;
-    },
+    // NOTE: refreshListenable causes redirect() to be re-evaluated when
+    // RouterNotifier fires (i.e. when auth/profile state changes), but the
+    // GoRouter object itself is NOT recreated. Navigation stack is preserved.
+    refreshListenable: notifier,
+    redirect: notifier.redirect,
     routes: [
-      // ── Public Routes ────────────────────────────────────
+      // ── Public Routes ────────────────────────────────────────────
       GoRoute(
         name: AppRoutes.login,
         path: AppRoutes.loginPath,
@@ -173,14 +101,14 @@ GoRouter router(Ref ref) {
         },
       ),
 
-      // ── Auth Required Routes ─────────────────────────────
+      // ── Auth Required Routes ──────────────────────────────────────
       GoRoute(
         name: AppRoutes.profileSetup,
         path: AppRoutes.profileSetupPath,
         builder: (context, state) => const ProfileSetupScreen(),
       ),
 
-      // ── Main App (Stateful Shell) ────────────────────────────
+      // ── Main App Shell (Stateful indexed stack) ───────────────────
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);
@@ -216,7 +144,7 @@ GoRouter router(Ref ref) {
         ],
       ),
 
-      // ── Listings ─────────────────────────────────────────
+      // ── Listings ──────────────────────────────────────────────────
       GoRoute(
         name: AppRoutes.createListing,
         path: AppRoutes.createListingPath,
@@ -249,7 +177,7 @@ GoRouter router(Ref ref) {
             const _PlaceholderScreen(name: 'My Listings'),
       ),
 
-      // ── Chat (auth required) ─────────────────────────────
+      // ── Chat ──────────────────────────────────────────────────────
       GoRoute(
         name: AppRoutes.chatRoom,
         path: AppRoutes.chatRoomPath,
@@ -258,7 +186,7 @@ GoRouter router(Ref ref) {
                 ChatRoomScreen(chatRoomId: state.pathParameters['id']!),
       ),
 
-      // ── Orders (auth required) ───────────────────────────
+      // ── Orders ────────────────────────────────────────────────────
       GoRoute(
         name: AppRoutes.orderDetail,
         path: AppRoutes.orderDetailPath,
@@ -267,13 +195,12 @@ GoRouter router(Ref ref) {
                 OrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
 
-      // ── Seller Center ─────────────────────────────────────
+      // ── Seller Center ─────────────────────────────────────────────
       GoRoute(
         name: AppRoutes.sellerCenter,
         path: AppRoutes.sellerCenterPath,
         builder: (context, state) => const SellerCenterScreen(),
       ),
-
       GoRoute(
         name: AppRoutes.transactionManagement,
         path: AppRoutes.transactionManagementPath,
@@ -285,28 +212,28 @@ GoRouter router(Ref ref) {
             ),
       ),
 
-      // ── Buyer Center ─────────────────────────────────────
+      // ── Buyer Center ──────────────────────────────────────────────
       GoRoute(
         name: AppRoutes.buyerCenter,
         path: AppRoutes.buyerCenterPath,
         builder: (context, state) => const BuyerCenterScreen(),
       ),
 
-      // ── Notification Center ──────────────────────────────
+      // ── Notification Center ───────────────────────────────────────
       GoRoute(
         name: AppRoutes.notificationCenter,
         path: AppRoutes.notificationCenterPath,
         builder: (context, state) => const NotificationCenterScreen(),
       ),
 
-      // ── Saved Listings ───────────────────────────────────
+      // ── Saved Listings ────────────────────────────────────────────
       GoRoute(
         name: AppRoutes.savedListings,
         path: AppRoutes.savedListingsPath,
         builder: (context, state) => const SavedListingsScreen(),
       ),
 
-      // ── Profile & Settings (auth required) ────────────────
+      // ── Profile & Settings ────────────────────────────────────────
       GoRoute(
         name: AppRoutes.profile,
         path: AppRoutes.profilePath,
@@ -364,21 +291,20 @@ GoRouter router(Ref ref) {
           ),
         ],
       ),
-
       GoRoute(
         name: AppRoutes.myContributions,
         path: AppRoutes.myContributionsPath,
         builder: (context, state) => const MyContributionsScreen(),
       ),
 
-      // ── Admin Login ──────────────────────────────────────────
+      // ── Admin Login ───────────────────────────────────────────────
       GoRoute(
         name: AppRoutes.adminLogin,
         path: AppRoutes.adminLoginPath,
         builder: (context, state) => const AdminLoginScreen(),
       ),
 
-      // ── Admin Shell (sidebar + content) ────────────────────
+      // ── Admin Shell ───────────────────────────────────────────────
       ShellRoute(
         builder: (context, state, child) => AdminShellScreen(child: child),
         routes: [
@@ -446,12 +372,14 @@ GoRouter router(Ref ref) {
       ),
     ],
   );
+
+  // NOTE: Dispose GoRouter when provider is cleaned up (app shutdown only).
+  ref.onDispose(goRouter.dispose);
+
+  return goRouter;
 }
 
-/// Temporary screen shown until Stitch MCP designs replace each route.
-///
-/// Each route will be replaced with the real screen widget once we
-/// fetch and implement the corresponding Stitch design via MCP.
+/// Temporary placeholder until Stitch MCP designs replace each route.
 class _PlaceholderScreen extends StatelessWidget {
   const _PlaceholderScreen({required this.name});
 

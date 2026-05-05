@@ -42,7 +42,8 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
         unitPrice: order.listing?.rentalDailyPrice ?? 0,
       );
     }
-    final days = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+    final daysDiff = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+    final days = daysDiff > 0 ? daysDiff : 1;
     final listing = order.listing;
 
     // Check monthly first

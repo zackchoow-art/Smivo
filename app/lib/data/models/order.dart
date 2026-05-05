@@ -40,6 +40,7 @@ abstract class Order with _$Order {
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
     @JsonKey(name: 'pickup_location_id') String? pickupLocationId,
+    @JsonKey(name: 'pickup_location_name') String? pickupLocationName,
     @JsonKey(name: 'rental_status') String? rentalStatus,
     @JsonKey(name: 'deposit_refunded_at') DateTime? depositRefundedAt,
     @JsonKey(name: 'return_requested_at') DateTime? returnRequestedAt,
@@ -54,6 +55,11 @@ abstract class Order with _$Order {
     UserProfile? seller,
     OrderListingPreview? listing,
     @JsonKey(name: 'pickup_location') PickupLocation? pickupLocation,
+
+    // NOTE: Set by the cancelling party so the status banner can display
+    // "Cancelled by [Name]" instead of the generic "Order was cancelled".
+    @JsonKey(name: 'cancelled_by') String? cancelledBy,
+    @JsonKey(name: 'listing_cycle') @Default(1) int listingCycle,
   }) = _Order;
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);

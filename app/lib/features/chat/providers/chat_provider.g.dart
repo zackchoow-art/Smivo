@@ -288,7 +288,7 @@ final class ChatRoomProvider
   }
 }
 
-String _$chatRoomHash() => r'd24298653194d135d3051f9d8e02fdfa5355386d';
+String _$chatRoomHash() => r'dfa61495195d0eab1107eeafed58b8eeca37a763';
 
 /// Fetches details for a single chat room.
 

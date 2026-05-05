@@ -101,3 +101,89 @@ final class SellerOrdersProvider
 }
 
 String _$sellerOrdersHash() => r'2665d5536db11114897ed1ffe1a37dd91a41bd17';
+
+/// Handles the seller-initiated relist action.
+///
+/// Calls [relistListing] RPC which atomically:
+///   - Sets listing status back to 'active'
+///   - Increments listing_cycle to isolate previous cancelled offers
+///
+/// After completion, both [myListingsProvider] and [allOrdersProvider]
+/// are invalidated so the Seller Center rebuilds with fresh data.
+
+@ProviderFor(RelistActions)
+final relistActionsProvider = RelistActionsProvider._();
+
+/// Handles the seller-initiated relist action.
+///
+/// Calls [relistListing] RPC which atomically:
+///   - Sets listing status back to 'active'
+///   - Increments listing_cycle to isolate previous cancelled offers
+///
+/// After completion, both [myListingsProvider] and [allOrdersProvider]
+/// are invalidated so the Seller Center rebuilds with fresh data.
+final class RelistActionsProvider
+    extends $NotifierProvider<RelistActions, AsyncValue<void>> {
+  /// Handles the seller-initiated relist action.
+  ///
+  /// Calls [relistListing] RPC which atomically:
+  ///   - Sets listing status back to 'active'
+  ///   - Increments listing_cycle to isolate previous cancelled offers
+  ///
+  /// After completion, both [myListingsProvider] and [allOrdersProvider]
+  /// are invalidated so the Seller Center rebuilds with fresh data.
+  RelistActionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'relistActionsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$relistActionsHash();
+
+  @$internal
+  @override
+  RelistActions create() => RelistActions();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<void> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<void>>(value),
+    );
+  }
+}
+
+String _$relistActionsHash() => r'804bee05d7bed06d5e325aaf1f86ec5c9a8f9a82';
+
+/// Handles the seller-initiated relist action.
+///
+/// Calls [relistListing] RPC which atomically:
+///   - Sets listing status back to 'active'
+///   - Increments listing_cycle to isolate previous cancelled offers
+///
+/// After completion, both [myListingsProvider] and [allOrdersProvider]
+/// are invalidated so the Seller Center rebuilds with fresh data.
+
+abstract class _$RelistActions extends $Notifier<AsyncValue<void>> {
+  AsyncValue<void> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<void>, AsyncValue<void>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

@@ -15,6 +15,7 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/features/shared/widgets/order_review_form.dart';
 import 'package:smivo/features/shared/widgets/submitted_review_card.dart';
 import 'package:smivo/features/shared/providers/order_review_provider.dart';
+import 'package:smivo/features/seller/providers/seller_center_provider.dart';
 
 class SaleOrderDetailScreen extends ConsumerWidget {
   const SaleOrderDetailScreen({
@@ -54,7 +55,7 @@ class SaleOrderDetailScreen extends ConsumerWidget {
               CollapsibleSection(
                 title: 'Order Timeline',
                 initiallyExpanded: true,
-                child: OrderTimeline(steps: _buildSaleSteps(order)),
+                child: OrderTimeline(steps: _buildSaleSteps(order, isSeller)),
               ),
               const SizedBox(height: 16),
               // Section 2: Item Pricing — collapsible, default closed
@@ -115,7 +116,7 @@ class SaleOrderDetailScreen extends ConsumerWidget {
               // Section 6: Chat History — collapsible, default closed
               _buildChatSection(ref, order),
               _buildReviewSection(context, ref, order, isBuyer, currentUserId),
-              _buildStatusBanner(context, order),
+              _buildStatusBanner(context, ref, order, isSeller),
             ],
           ),
         ),
@@ -123,7 +124,12 @@ class SaleOrderDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusBanner(BuildContext context, Order order) {
+  Widget _buildStatusBanner(
+    BuildContext context,
+    WidgetRef ref,
+    Order order,
+    bool isSeller,
+  ) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -149,22 +155,40 @@ class SaleOrderDetailScreen extends ConsumerWidget {
     }
 
     if (order.status == 'cancelled') {
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: colors.error.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(radius.md),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.cancel, color: colors.error),
-            const SizedBox(width: 8),
-            Text(
-              'Order was cancelled',
-              style: typo.bodyMedium.copyWith(color: colors.error),
+      // NOTE: Determine who cancelled so we can show an attributable message.
+      // cancelled_by is null for legacy orders — fall back to generic text.
+      String cancelText;
+      if (order.cancelledBy == null) {
+        cancelText = 'Order was cancelled';
+      } else if (order.cancelledBy == order.buyerId) {
+        final name = order.buyer?.displayName ?? 'Buyer';
+        cancelText = 'Cancelled by $name';
+      } else {
+        final name = order.seller?.displayName ?? 'Seller';
+        cancelText = 'Cancelled by $name';
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(radius.md),
             ),
-          ],
-        ),
+            child: Row(
+              children: [
+                Icon(Icons.cancel, color: colors.error),
+                const SizedBox(width: 8),
+                Text(
+                  cancelText,
+                  style: typo.bodyMedium.copyWith(color: colors.error),
+                ),
+              ],
+            ),
+          ),
+        ],
       );
     }
 
@@ -267,7 +291,7 @@ class SaleOrderDetailScreen extends ConsumerWidget {
     return const SizedBox.shrink();
   }
 
-  List<TimelineStep> _buildSaleSteps(Order order) {
+  List<TimelineStep> _buildSaleSteps(Order order, bool isSeller) {
     // NOTE: 'missed' is treated like 'cancelled' for timeline display purposes
     final isTerminated =
         order.status == 'cancelled' || order.status == 'missed';
@@ -293,7 +317,9 @@ class SaleOrderDetailScreen extends ConsumerWidget {
         label: 'Picked Up',
         date: order.status == 'completed' ? order.updatedAt : null,
         isCompleted: order.status == 'completed',
-        subtitle: order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : null,
+        subtitle: (order.pickupLocationName != null || order.pickupLocation != null)
+            ? '${order.pickupLocationName ?? order.pickupLocation?.name ?? 'Unknown'}, ${order.school}'
+            : null,
       ),
       // NOTE: Append terminal steps for cancelled / missed states
       if (order.status == 'cancelled')
@@ -302,6 +328,12 @@ class SaleOrderDetailScreen extends ConsumerWidget {
           date: order.updatedAt,
           isCompleted: true,
           isCancelled: true,
+          trailing: (isSeller && order.listingId.isNotEmpty)
+              ? _RelistButton(
+                  listingId: order.listingId,
+                  initialStatus: order.listing?.status ?? 'active',
+                )
+              : null,
         ),
       if (order.status == 'missed')
         TimelineStep(
@@ -534,5 +566,97 @@ class SaleOrderDetailScreen extends ConsumerWidget {
     if (isBuyer) return !order.deliveryConfirmedByBuyer;
     if (isSeller) return !order.deliveryConfirmedBySeller;
     return false;
+  }
+}
+
+/// Relist button shown in the seller's cancelled order detail view.
+///
+/// NOTE: Uses a local [_relisted] flag so the button disables itself
+/// immediately after success without waiting for the full provider
+/// refresh cycle — prevents double-taps on slow connections.
+class _RelistButton extends ConsumerStatefulWidget {
+  const _RelistButton({required this.listingId, required this.initialStatus});
+
+  final String listingId;
+  final String initialStatus;
+
+  @override
+  ConsumerState<_RelistButton> createState() => _RelistButtonState();
+}
+
+class _RelistButtonState extends ConsumerState<_RelistButton> {
+  bool _relisted = false;
+  bool _isRelisting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final isLoading = ref.watch(relistActionsProvider).isLoading;
+    final isAlreadyActive = widget.initialStatus == 'active';
+    final isDone = _relisted || isAlreadyActive;
+
+    if (isDone) {
+      return Text(
+        'Relisted',
+        style: typo.labelLarge.copyWith(color: colors.outlineVariant),
+      );
+    }
+
+    final isDisabled = isLoading || _isRelisting;
+
+    return TextButton.icon(
+      style: TextButton.styleFrom(
+        foregroundColor: isDisabled ? colors.outlineVariant : colors.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: isDisabled
+          ? null
+          : () async {
+              setState(() => _isRelisting = true);
+              try {
+                await ref
+                    .read(relistActionsProvider.notifier)
+                    .relist(widget.listingId);
+                if (mounted) {
+                  setState(() {
+                    _relisted = true;
+                    _isRelisting = false;
+                  });
+                }
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Item relisted — it\'s live on the marketplace again.',
+                      ),
+                    ),
+                  );
+                }
+              } catch (_) {
+                if (mounted) setState(() => _isRelisting = false);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to relist. Please try again.'),
+                    ),
+                  );
+                }
+              }
+            },
+      icon: _isRelisting
+          ? SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(Icons.refresh, size: 18),
+      label: Text(
+        _isRelisting ? 'Relisting...' : 'Relist',
+        style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold),
+      ),
+    );
   }
 }

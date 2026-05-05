@@ -515,3 +515,116 @@ final class ListingHasConfirmedOrderFamily extends $Family
   @override
   String toString() => r'listingHasConfirmedOrderProvider';
 }
+
+/// Checks whether the current user is blocked by the seller of a listing.
+///
+/// Used on the listing detail page to render "Item Unavailable" instead of
+/// the order button when the seller has blocked the buyer.
+///
+/// NOTE: Uses [check_order_eligibility] RPC (SECURITY DEFINER) which ONLY
+/// checks the block relationship — not mute or freeze status — so being
+/// platform-muted does NOT prevent ordering.
+
+@ProviderFor(isBlockedBySeller)
+final isBlockedBySellerProvider = IsBlockedBySellerFamily._();
+
+/// Checks whether the current user is blocked by the seller of a listing.
+///
+/// Used on the listing detail page to render "Item Unavailable" instead of
+/// the order button when the seller has blocked the buyer.
+///
+/// NOTE: Uses [check_order_eligibility] RPC (SECURITY DEFINER) which ONLY
+/// checks the block relationship — not mute or freeze status — so being
+/// platform-muted does NOT prevent ordering.
+
+final class IsBlockedBySellerProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// Checks whether the current user is blocked by the seller of a listing.
+  ///
+  /// Used on the listing detail page to render "Item Unavailable" instead of
+  /// the order button when the seller has blocked the buyer.
+  ///
+  /// NOTE: Uses [check_order_eligibility] RPC (SECURITY DEFINER) which ONLY
+  /// checks the block relationship — not mute or freeze status — so being
+  /// platform-muted does NOT prevent ordering.
+  IsBlockedBySellerProvider._({
+    required IsBlockedBySellerFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'isBlockedBySellerProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$isBlockedBySellerHash();
+
+  @override
+  String toString() {
+    return r'isBlockedBySellerProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    final argument = this.argument as String;
+    return isBlockedBySeller(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is IsBlockedBySellerProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$isBlockedBySellerHash() => r'dbe5002938bb009f8d0c8f6c3b506b733898075b';
+
+/// Checks whether the current user is blocked by the seller of a listing.
+///
+/// Used on the listing detail page to render "Item Unavailable" instead of
+/// the order button when the seller has blocked the buyer.
+///
+/// NOTE: Uses [check_order_eligibility] RPC (SECURITY DEFINER) which ONLY
+/// checks the block relationship — not mute or freeze status — so being
+/// platform-muted does NOT prevent ordering.
+
+final class IsBlockedBySellerFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<bool>, String> {
+  IsBlockedBySellerFamily._()
+    : super(
+        retry: null,
+        name: r'isBlockedBySellerProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Checks whether the current user is blocked by the seller of a listing.
+  ///
+  /// Used on the listing detail page to render "Item Unavailable" instead of
+  /// the order button when the seller has blocked the buyer.
+  ///
+  /// NOTE: Uses [check_order_eligibility] RPC (SECURITY DEFINER) which ONLY
+  /// checks the block relationship — not mute or freeze status — so being
+  /// platform-muted does NOT prevent ordering.
+
+  IsBlockedBySellerProvider call(String sellerId) =>
+      IsBlockedBySellerProvider._(argument: sellerId, from: this);
+
+  @override
+  String toString() => r'isBlockedBySellerProvider';
+}

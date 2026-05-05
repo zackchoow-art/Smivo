@@ -219,36 +219,70 @@ class _FlippableReportCardState extends State<FlippableReportCard>
             ),
           ),
           const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _isExpanded ? 'Show less' : 'Details',
-                      style: typo.labelSmall
-                          .copyWith(color: colors.primary),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (f.reporterRewardPoints > 0)
+                Flexible(
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: colors.success.withAlpha(20),
+                      borderRadius: BorderRadius.circular(radius.md),
+                      border: Border.all(color: colors.success.withAlpha(60)),
                     ),
-                    Icon(
-                      _isExpanded
-                          ? Icons.expand_less
-                          : Icons.expand_more,
-                      color: colors.primary,
-                      size: 20,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star_rounded, size: 14, color: colors.success),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            '+${f.reporterRewardPoints} contribution points awarded',
+                            style: typo.labelSmall.copyWith(
+                              color: colors.success,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                )
+              else
+                const SizedBox.shrink(),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _isExpanded ? 'Show less' : 'Details',
+                        style: typo.labelSmall
+                            .copyWith(color: colors.primary),
+                      ),
+                      Icon(
+                        _isExpanded
+                            ? Icons.expand_less
+                            : Icons.expand_more,
+                        color: colors.primary,
+                        size: 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -373,34 +407,11 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                     ),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusBgColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        statusText,
-                        style: typo.labelSmall.copyWith(
-                          color: statusColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      responseDate,
-                      style: typo.labelSmall.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                Text(
+                  responseDate,
+                  style: typo.labelSmall.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -482,9 +493,10 @@ class _ReporterOutcomeContent extends StatelessWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
+    final reportedName = report.reportedUser?.displayName ?? 'reported party';
     final penaltyLabel = report.actionTaken == 'warn'
-        ? 'Formal Warning'
-        : 'Account Restriction';
+        ? 'Action taken on $reportedName: Formal Warning'
+        : 'Action taken on $reportedName: Account Restriction';
     final penaltyIcon = report.actionTaken == 'warn'
         ? Icons.warning_amber_rounded
         : Icons.block_rounded;
@@ -515,11 +527,13 @@ class _ReporterOutcomeContent extends StatelessWidget {
             children: [
               Icon(penaltyIcon, size: 16, color: penaltyColor),
               const SizedBox(width: 6),
-              Text(
-                penaltyLabel,
-                style: typo.labelSmall.copyWith(
-                  color: penaltyColor,
-                  fontWeight: FontWeight.bold,
+              Flexible(
+                child: Text(
+                  penaltyLabel,
+                  style: typo.labelSmall.copyWith(
+                    color: penaltyColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -532,32 +546,6 @@ class _ReporterOutcomeContent extends StatelessWidget {
             report.resolutionNote!,
             style: typo.bodySmall.copyWith(
               color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-        // Contribution points row
-        if (hasPoints) ...[
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: colors.success.withAlpha(20),
-              borderRadius: BorderRadius.circular(radius.md),
-              border: Border.all(color: colors.success.withAlpha(60)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.star_rounded, size: 16, color: colors.success),
-                const SizedBox(width: 6),
-                Text(
-                  '+${report.reporterRewardPoints} contribution points awarded',
-                  style: typo.labelSmall.copyWith(
-                    color: colors.success,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
             ),
           ),
         ],
@@ -849,8 +837,9 @@ class _PenaltyCardState extends State<PenaltyCard>
         'Dismissed',
       );
     case 'resolved':
-      // NOTE: If action_taken is available, show the specific penalty label.
-      // This replaces the generic "Action Taken" badge that confused reporters.
+      if (isReporter) {
+        return (colors.success, colors.success.withAlpha(20), 'Reviewed');
+      }
       if (actionTaken == 'warn') {
         return (colors.warning, colors.warning.withAlpha(20), 'Warned');
       } else if (actionTaken == 'restrict') {

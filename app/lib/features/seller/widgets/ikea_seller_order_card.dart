@@ -421,7 +421,7 @@ class IkeaSellerOrderCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(radius.full),
                     ),
                     child: Text(
-                      historyItem.isCompleted ? 'Done' : 'Cancelled',
+                      historyItem.isCompleted ? 'Done' : (historyItem.isDelisted ? 'Delisted' : 'Cancelled'),
                       style: typo.labelSmall.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -430,6 +430,8 @@ class IkeaSellerOrderCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (hasUnread)
+                  Positioned(top: 6, left: 6, child: _buildUnreadDot(context)),
               ],
             ),
           ),

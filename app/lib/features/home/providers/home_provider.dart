@@ -56,7 +56,12 @@ class HomeListings extends _$HomeListings {
     final category = ref.watch(selectedCategoryProvider);
     final query = ref.watch(searchQueryProvider);
     final repository = ref.watch(listingRepositoryProvider);
-    final blockedUserIds = ref.watch(blockedUsersProvider).value ?? [];
+    // NOTE: allBlockedUserIdsProvider merges both directions of blocks:
+    // users I've blocked AND users who have blocked me. This ensures neither
+    // party can see the other's listings in the home feed.
+    // It is a synchronous Provider so it always returns a List immediately
+    // (empty while sub-providers are still loading).
+    final blockedUserIds = ref.watch(allBlockedUserIdsProvider);
 
     // Get the current user's school ID to isolate listings by school
     // If not logged in, profileProvider will be null, and we can either show all or a default school.

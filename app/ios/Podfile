@@ -52,12 +52,21 @@ post_install do |installer|
       # Prevents "deployment target lower than minimum" warnings.
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
 
-      # NOTE: Fix for "The executable contains an invalid signature" (0xe8008014)
-      # and PhaseScriptExecution failures. Instead of disabling signing, we
-      # ensures Pods are built with the correct settings without blocking scripts.
-      config.build_settings.delete 'CODE_SIGNING_ALLOWED'
-      config.build_settings.delete 'CODE_SIGNING_REQUIRED'
-      
+      # NOTE: Suppress "requires a development team" errors for all pod targets.
+      # Pod frameworks do not need independent signing — only the main Runner
+      # target requires a team. Setting this avoids Xcode prompting for a team
+      # on every Flutter plugin sub-target.
+      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+
+      # NOTE: Force dSYM generation for Release/Profile configs on all pod targets.
+      # Without this, objective_c.framework (and other FFI frameworks) only emit
+      # inline DWARF — no standalone .dSYM file is produced, causing App Store
+      # Connect to reject the archive with "did not include a dSYM" UUID errors.
+      # Debug config is excluded because dSYM is not needed for local development.
+      if config.name != 'Debug'
+        config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+      end
+
       # NOTE: Bitcode is deprecated and can cause build failures in modern Xcode.
       config.build_settings['ENABLE_BITCODE'] = 'NO'
     end

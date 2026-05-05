@@ -294,7 +294,7 @@ final class CreateListingActionProvider
 }
 
 String _$createListingActionHash() =>
-    r'abc29cd9f55c070440566162f3f79e16739705a2';
+    r'8a5062a488f4570f22405c80cf273ba2bdbef119';
 
 /// Handles the async submission of the create listing form.
 ///

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:smivo/data/models/message.dart';
+import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
@@ -95,17 +96,99 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     });
   }
 
-  void _sendMessage() {
+  /// Returns the ID of the other party in this chat room.
+  Future<String?> _getRecipientId() async {
+    final currentUserId = ref.read(authStateProvider).value?.id;
+    if (currentUserId == null) return null;
+    final chatRoom =
+        await ref.read(chatRoomProvider(widget.chatRoomId).future);
+    return chatRoom.buyerId == currentUserId
+        ? chatRoom.sellerId
+        : chatRoom.buyerId;
+  }
+
+  /// Checks block / mute / freeze status before sending.
+  ///
+  /// Returns null when the check cannot be performed (no network, etc.).
+  /// On failure we allow the send to proceed — same policy as ChatRoomScreen.
+  Future<Map<String, bool>?> _checkEligibility() async {
+    final senderId = ref.read(authStateProvider).value?.id;
+    final recipientId = await _getRecipientId();
+    if (senderId == null || recipientId == null) return null;
+    return ref.read(chatRepositoryProvider).checkChatEligibility(
+      senderId: senderId,
+      recipientId: recipientId,
+    );
+  }
+
+  void _showSnackBar(String message, {required Color color}) {
+    if (!mounted) return;
+    // NOTE: chat-popup is inside a dialog, so we use the root ScaffoldMessenger
+    // to ensure the SnackBar appears above the dialog layer.
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    ref
-        .read(chatMessagesProvider(widget.chatRoomId).notifier)
-        .sendMessage(text);
-    _controller.clear();
+    // Pre-send eligibility check — mirrors ChatRoomScreen._handleSend logic.
+    Map<String, bool>? eligibility;
+    try {
+      eligibility = await _checkEligibility();
+    } catch (_) {
+      // NOTE: Allow send on network error to avoid silently blocking users.
+    }
 
-    // Scroll to bottom
-    _scrollToBottom();
+    if (eligibility?['isBlockedByRecipient'] == true) {
+      _showSnackBar(
+        'Message failed: You have been blocked by the recipient',
+        color: Colors.red.shade700,
+      );
+      return;
+    }
+
+    if (eligibility?['senderIsMuted'] == true) {
+      _showSnackBar(
+        'You are currently muted by the platform and cannot send messages',
+        color: Colors.red.shade700,
+      );
+      return;
+    }
+
+    try {
+      // sendMessage applies keyword filtering and returns a warning string
+      // when warn-severity words are detected. The message is always sent.
+      final warning = await ref
+          .read(chatMessagesProvider(widget.chatRoomId).notifier)
+          .sendMessage(text);
+      _controller.clear();
+      _scrollToBottom();
+
+      // Show content-filter warning if applicable.
+      if (warning != null) {
+        _showSnackBar(warning, color: Colors.amber.shade800);
+      }
+
+      // Warn if recipient has a platform restriction.
+      final isMuted = eligibility?['recipientIsMuted'] == true;
+      final isFrozen = eligibility?['recipientIsFrozen'] == true;
+      if (isMuted || isFrozen) {
+        final reason = isFrozen ? 'frozen' : 'muted';
+        _showSnackBar(
+          'Message sent, but the recipient is currently $reason by the platform',
+          color: Colors.orange.shade700,
+        );
+      }
+    } catch (e) {
+      _showSnackBar('Send failed: ${e.toString()}', color: Colors.red.shade700);
+    }
   }
 
   void _scrollToBottom() {

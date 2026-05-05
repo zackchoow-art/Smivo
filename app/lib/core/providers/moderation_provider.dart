@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/repositories/moderation_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
@@ -17,6 +18,35 @@ class BlockedUsers extends _$BlockedUsers {
     final repo = ref.watch(moderationRepositoryProvider);
     return repo.getBlockedUserIds(user.id);
   }
+}
+
+/// IDs of users who have blocked the current user.
+///
+/// Fetched via a SECURITY DEFINER RPC because RLS only exposes
+/// blocks the user has *sent*, not blocks *received*.
+@riverpod
+class BlockedByUsers extends _$BlockedByUsers {
+  @override
+  Future<List<String>> build() async {
+    final user = ref.watch(authStateProvider).value;
+    if (user == null) return [];
+
+    final repo = ref.watch(moderationRepositoryProvider);
+    return repo.getBlockedByUserIds();
+  }
+}
+
+/// IDs to exclude from the home feed: only users the current user has blocked.
+///
+/// NOTE: We deliberately do NOT include "users who blocked me" here.
+/// Bidirectional feed filtering required an extra SECURITY DEFINER RPC on
+/// every home feed load, which was resource-intensive and unstable.
+/// Instead, the block is enforced at order-placement time via the
+/// [isBlockedBySellerProvider] which calls [check_order_eligibility].
+@riverpod
+List<String> allBlockedUserIds(Ref ref) {
+  // Synchronous read — returns [] while the async provider is still loading.
+  return ref.watch(blockedUsersProvider).value ?? [];
 }
 
 @riverpod
@@ -47,6 +77,8 @@ class ModerationActions extends _$ModerationActions {
 
       // Invalidate the blocked users provider to refresh the cache
       ref.invalidate(blockedUsersProvider);
+      ref.invalidate(blockedByUsersProvider);
+      ref.invalidate(allBlockedUserIdsProvider);
 
       // Invalidate the home feed so the abusive user's content disappears instantly
       ref.invalidate(homeListingsProvider);
@@ -64,6 +96,8 @@ class ModerationActions extends _$ModerationActions {
       await repo.unblockUser(user.id, blockedUserId);
 
       ref.invalidate(blockedUsersProvider);
+      ref.invalidate(blockedByUsersProvider);
+      ref.invalidate(allBlockedUserIdsProvider);
       ref.invalidate(blockedUsersListProvider);
       ref.invalidate(homeListingsProvider);
     });
@@ -138,3 +172,49 @@ class UserPenalties extends _$UserPenalties {
     return repo.getReportPenaltiesAgainstUser(user.id);
   }
 }
+
+/// Set of image URLs that have been flagged by the AI moderation system.
+///
+/// Loaded once at session start from backend_moderation_logs where result='fail'.
+/// Used by [ModerationAwareImage] to decide whether to apply blur.
+///
+/// NOTE: keepAlive: true — this set must persist for the entire session so
+/// the blur is consistent across page navigations. It is NOT per-user data;
+/// it loads all flagged images visible to the current user via RLS.
+@Riverpod(keepAlive: true)
+class FlaggedImageUrls extends _$FlaggedImageUrls {
+  @override
+  Future<Set<String>> build() async {
+    try {
+      final supabase = ref.watch(supabaseClientProvider);
+      // Query backend_moderation_logs for failed image moderation results.
+      // NOTE: content_snapshot holds the image URL for image-type logs.
+      final data = await supabase
+          .from('backend_moderation_logs')
+          .select('content_snapshot')
+          .eq('result', 'fail')
+          .inFilter('action_taken', ['image_flagged', 'blur_applied'])
+          .limit(500);
+
+      final urls = <String>{};
+      for (final row in (data as List)) {
+        final url = row['content_snapshot'] as String?;
+        if (url != null && url.startsWith('http')) {
+          urls.add(url);
+        }
+      }
+      return urls;
+    } catch (e) {
+      // NOTE: If the query fails (e.g. RLS or network), return empty set.
+      // No images should be accidentally blurred due to a DB error.
+      return {};
+    }
+  }
+
+  /// Adds a URL to the in-memory flagged set immediately after moderation
+  /// completes, so the blur takes effect without waiting for a full reload.
+  void addFlagged(String url) {
+    state = AsyncData({...?state.value, url});
+  }
+}
+

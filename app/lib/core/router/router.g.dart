@@ -8,42 +8,48 @@ part of 'router.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// GoRouter configuration with reactive auth redirect guard.
+/// GoRouter configuration.
 ///
-/// Handles four authentication/onboarding states:
-/// 1. Guest: Access to home, listing details, login, and register.
-/// 2. Unverified: Logged in but email not confirmed. Restricted to verification screen.
-/// 3. Needs Onboarding: Logged in, verified, but display name is missing.
-/// 4. Authenticated: Full access. Redirects away from auth screens to home.
+/// NOTE: keepAlive: true is CRITICAL here. Without it, the router provider
+/// can be garbage-collected and recreated, which destroys the navigation
+/// stack and drops the user to the home screen.
+///
+/// Auth/profile state changes are handled via RouterNotifier (Listenable),
+/// which triggers GoRouter.redirect() re-evaluation WITHOUT recreating the
+/// GoRouter instance. This is the correct pattern for GoRouter + Riverpod.
 
 @ProviderFor(router)
 final routerProvider = RouterProvider._();
 
-/// GoRouter configuration with reactive auth redirect guard.
+/// GoRouter configuration.
 ///
-/// Handles four authentication/onboarding states:
-/// 1. Guest: Access to home, listing details, login, and register.
-/// 2. Unverified: Logged in but email not confirmed. Restricted to verification screen.
-/// 3. Needs Onboarding: Logged in, verified, but display name is missing.
-/// 4. Authenticated: Full access. Redirects away from auth screens to home.
+/// NOTE: keepAlive: true is CRITICAL here. Without it, the router provider
+/// can be garbage-collected and recreated, which destroys the navigation
+/// stack and drops the user to the home screen.
+///
+/// Auth/profile state changes are handled via RouterNotifier (Listenable),
+/// which triggers GoRouter.redirect() re-evaluation WITHOUT recreating the
+/// GoRouter instance. This is the correct pattern for GoRouter + Riverpod.
 
 final class RouterProvider
     extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
     with $Provider<GoRouter> {
-  /// GoRouter configuration with reactive auth redirect guard.
+  /// GoRouter configuration.
   ///
-  /// Handles four authentication/onboarding states:
-  /// 1. Guest: Access to home, listing details, login, and register.
-  /// 2. Unverified: Logged in but email not confirmed. Restricted to verification screen.
-  /// 3. Needs Onboarding: Logged in, verified, but display name is missing.
-  /// 4. Authenticated: Full access. Redirects away from auth screens to home.
+  /// NOTE: keepAlive: true is CRITICAL here. Without it, the router provider
+  /// can be garbage-collected and recreated, which destroys the navigation
+  /// stack and drops the user to the home screen.
+  ///
+  /// Auth/profile state changes are handled via RouterNotifier (Listenable),
+  /// which triggers GoRouter.redirect() re-evaluation WITHOUT recreating the
+  /// GoRouter instance. This is the correct pattern for GoRouter + Riverpod.
   RouterProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'routerProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -70,4 +76,4 @@ final class RouterProvider
   }
 }
 
-String _$routerHash() => r'c619a0dc462b8b9a4ae7cdb0291e1c1a86e7191a';
+String _$routerHash() => r'2b5bd3d5b45f4d85fe13d3494f8d463ae6a554ed';

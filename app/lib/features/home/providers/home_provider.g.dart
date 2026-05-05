@@ -168,7 +168,7 @@ final class HomeListingsProvider
   HomeListings create() => HomeListings();
 }
 
-String _$homeListingsHash() => r'c1d3ef6e2568096ffcd523bc4f5a55a5014f1309';
+String _$homeListingsHash() => r'317c0164aaafcd9c01ee039000e42724f4734ce0';
 
 /// Main provider for listings on the Home Screen.
 ///

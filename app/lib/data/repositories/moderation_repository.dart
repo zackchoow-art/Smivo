@@ -39,6 +39,29 @@ class ModerationRepository {
     }
   }
 
+  /// Fetches the IDs of users who have blocked the current user.
+  ///
+  /// Uses the [get_blocked_by_user_ids] SECURITY DEFINER RPC because RLS
+  /// only allows a user to see their own blocks. Without this RPC, a user
+  /// has no way to query who has blocked them.
+  Future<List<String>> getBlockedByUserIds() async {
+    try {
+      final data = await _client.rpc('get_blocked_by_user_ids');
+      // NOTE: PostgREST may return null for an empty uuid[] array,
+      // or a List<dynamic> with String elements. Handle both safely.
+      if (data == null) return [];
+      if (data is List) return List<String>.from(data);
+      // Unexpected format — fail safe, return empty list.
+      return [];
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    } catch (_) {
+      // NOTE: Any unexpected type error from PostgREST deserialization
+      // should not crash the home feed — return empty list.
+      return [];
+    }
+  }
+
   /// Unblocks a user by deleting the record from `user_blocks`.
   Future<void> unblockUser(String currentUserId, String blockedUserId) async {
     try {

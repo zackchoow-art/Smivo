@@ -49,7 +49,7 @@ final class PushNotificationManagerProvider
 }
 
 String _$pushNotificationManagerHash() =>
-    r'912648ce1a3eeb59ba252b3191b4543ef030e762';
+    r'56c0a8deec19b7e46571a2fee40d9d36bd94c0a0';
 
 /// Manages OneSignal push notification lifecycle:
 /// - Requests permission on first login

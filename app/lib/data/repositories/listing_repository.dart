@@ -67,7 +67,7 @@ class ListingRepository {
         query = query.eq('school_id', schoolId);
       }
 
-      final data = await query.order('created_at', ascending: false);
+      final data = await query.order('updated_at', ascending: false);
       return data.map((json) => Listing.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -127,7 +127,7 @@ class ListingRepository {
         dbQuery = dbQuery.eq('school_id', schoolId);
       }
 
-      final data = await dbQuery.order('created_at', ascending: false);
+      final data = await dbQuery.order('updated_at', ascending: false);
       final allListings = data.map((json) => Listing.fromJson(json)).toList();
 
       if (query.trim().isEmpty) return allListings;
@@ -165,7 +165,7 @@ class ListingRepository {
           .from(AppConstants.tableListings)
           .select('*, images:listing_images(*)')
           .eq('seller_id', sellerId)
-          .order('created_at', ascending: false);
+          .order('updated_at', ascending: false);
       return data.map((json) => Listing.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -181,7 +181,7 @@ class ListingRepository {
             '*, images:listing_images(*), seller:user_profiles!seller_id(*), pickup_location:pickup_locations!pickup_location_id(*)',
           )
           .eq('seller_id', userId)
-          .order('created_at', ascending: false);
+          .order('updated_at', ascending: false);
       return data.map((json) => Listing.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -408,6 +408,24 @@ class ListingRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  /// Re-lists a cancelled listing back to 'active', incrementing the cycle.
+  ///
+  /// NOTE: listing_cycle is incremented so that offers from the previous
+  /// failed transaction are isolated. The Seller Center will only show
+  /// current-cycle offers going forward; old cancelled orders stay in
+  /// History for record-keeping but won't inflate the new inquiry count.
+  Future<void> relistListing(String id) async {
+    try {
+      await _client.rpc(
+        'relist_listing',
+        params: {'p_listing_id': id},
+      );
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
 
   /// Records a view event for a listing.
   ///

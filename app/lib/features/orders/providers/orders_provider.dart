@@ -157,6 +157,7 @@ class OrderActions extends _$OrderActions {
     DateTime? rentalEndDate,
     String school = 'Data Not Found',
     String? pickupLocationId,
+    String? pickupLocationName,
   }) async {
     if (state.isLoading) {
       throw StateError('in_progress');
@@ -188,6 +189,7 @@ class OrderActions extends _$OrderActions {
         rentalStartDate: rentalStartDate,
         rentalEndDate: rentalEndDate,
         pickupLocationId: pickupLocationId,
+        pickupLocationName: pickupLocationName,
         createdAt: now,
         updatedAt: now,
       );
@@ -248,9 +250,16 @@ class OrderActions extends _$OrderActions {
     }
     state = const AsyncValue.loading();
     try {
+      // NOTE: Pass current user as cancelled_by so DB trigger notifies only
+      // the OTHER party (not the one who performed the cancellation).
+      final currentUser = ref.read(authStateProvider).value;
       await ref
           .read(orderRepositoryProvider)
-          .updateOrderStatus(orderId, 'cancelled');
+          .updateOrderStatus(
+            orderId,
+            'cancelled',
+            cancelledBy: currentUser?.id,
+          );
       // Refresh order lists so the cancelled order shows updated status
       ref.invalidate(allOrdersProvider);
       ref.invalidate(orderDetailProvider(orderId));
@@ -443,7 +452,9 @@ Future<int> unreadBuyerUpdatesCount(Ref ref) async {
 
   int count = 0;
   for (final n in notifications) {
-    if (!n.isRead && n.actionType == 'order' && n.relatedOrderId != null) {
+    // NOTE: Filter by relatedOrderId presence only — actionType value varies
+    // by DB trigger version ('order' vs 'route'), so avoid depending on it.
+    if (!n.isRead && n.relatedOrderId != null) {
       final order =
           allOrdersList.where((o) => o.id == n.relatedOrderId).firstOrNull;
       if (order != null && order.buyerId == user.id) {
@@ -463,7 +474,8 @@ Future<int> unreadSellerUpdatesCount(Ref ref) async {
 
   int count = 0;
   for (final n in notifications) {
-    if (!n.isRead && n.actionType == 'order' && n.relatedOrderId != null) {
+    // NOTE: Filter by relatedOrderId presence only — same reason as buyer provider.
+    if (!n.isRead && n.relatedOrderId != null) {
       final order =
           allOrdersList.where((o) => o.id == n.relatedOrderId).firstOrNull;
       if (order != null && order.sellerId == user.id) {

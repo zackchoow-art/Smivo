@@ -137,13 +137,13 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
                           ),
                         ),
                         // 4. Pickup location
-                        if (widget.order.pickupLocation != null)
+                        if (widget.order.pickupLocationName != null || widget.order.pickupLocation != null)
                           SizedBox(
                             width: itemWidth,
                             child: _infoRow(
                               context,
                               'Pickup',
-                              '${widget.order.pickupLocation!.name}, ${widget.order.school}',
+                              '${widget.order.pickupLocationName ?? widget.order.pickupLocation?.name ?? 'Unknown'}, ${widget.order.school}',
                             ),
                           ),
                         // 5. Price / Rental Total

@@ -100,3 +100,21 @@ Future<bool> listingHasConfirmedOrder(Ref ref, String listingId) async {
   final repo = ref.watch(orderRepositoryProvider);
   return repo.hasConfirmedOrderForListing(listingId);
 }
+
+/// Checks whether the current user is blocked by the seller of a listing.
+///
+/// Used on the listing detail page to render "Item Unavailable" instead of
+/// the order button when the seller has blocked the buyer.
+///
+/// NOTE: Uses [check_order_eligibility] RPC (SECURITY DEFINER) which ONLY
+/// checks the block relationship — not mute or freeze status — so being
+/// platform-muted does NOT prevent ordering.
+@riverpod
+Future<bool> isBlockedBySeller(Ref ref, String sellerId) async {
+  final user = ref.watch(authStateProvider).value;
+  // Not logged in or viewing own listing — no block check needed.
+  if (user == null || user.id == sellerId) return false;
+
+  final repo = ref.watch(orderRepositoryProvider);
+  return repo.isBlockedBySeller(buyerId: user.id, sellerId: sellerId);
+}

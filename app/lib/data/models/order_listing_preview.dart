@@ -13,11 +13,13 @@ abstract class OrderListingPreview with _$OrderListingPreview {
   const factory OrderListingPreview({
     required String id,
     required String title,
+    @Default('active') String status,
     @Default([]) List<OrderListingImage> images,
     @JsonKey(name: 'rental_daily_price') double? rentalDailyPrice,
     @JsonKey(name: 'rental_weekly_price') double? rentalWeeklyPrice,
     @JsonKey(name: 'rental_monthly_price') double? rentalMonthlyPrice,
     @JsonKey(name: 'deposit_amount') @Default(0.0) double depositAmount,
+    @JsonKey(name: 'listing_cycle') @Default(1) int listingCycle,
   }) = _OrderListingPreview;
 
   factory OrderListingPreview.fromJson(Map<String, dynamic> json) =>

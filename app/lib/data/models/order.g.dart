@@ -38,6 +38,7 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
   pickupLocationId: json['pickup_location_id'] as String?,
+  pickupLocationName: json['pickup_location_name'] as String?,
   rentalStatus: json['rental_status'] as String?,
   depositRefundedAt:
       json['deposit_refunded_at'] == null
@@ -70,6 +71,8 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
           : PickupLocation.fromJson(
             json['pickup_location'] as Map<String, dynamic>,
           ),
+  cancelledBy: json['cancelled_by'] as String?,
+  listingCycle: (json['listing_cycle'] as num?)?.toInt() ?? 1,
 );
 
 Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
@@ -93,6 +96,7 @@ Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
   'pickup_location_id': instance.pickupLocationId,
+  'pickup_location_name': instance.pickupLocationName,
   'rental_status': instance.rentalStatus,
   'deposit_refunded_at': instance.depositRefundedAt?.toIso8601String(),
   'return_requested_at': instance.returnRequestedAt?.toIso8601String(),
@@ -103,4 +107,6 @@ Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
   'seller': instance.seller,
   'listing': instance.listing,
   'pickup_location': instance.pickupLocation,
+  'cancelled_by': instance.cancelledBy,
+  'listing_cycle': instance.listingCycle,
 };

@@ -14,6 +14,7 @@ import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
+import 'package:smivo/core/providers/preferences_provider.dart';
 
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
@@ -433,6 +434,30 @@ class _CreateListingFormScreenState
                                   'No pickup locations available',
                                 );
                               }
+
+                              // Auto-select the last used pickup location
+                              // when the list first loads and nothing is
+                              // selected yet. Uses WidgetsBinding to defer
+                              // the setState until after build completes.
+                              if (_selectedPickup == null) {
+                                final savedId = ref.read(
+                                  lastPickupLocationIdProvider,
+                                );
+                                if (savedId != null) {
+                                  final match = locations.where(
+                                    (l) => l.id == savedId,
+                                  ).firstOrNull;
+                                  if (match != null) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      if (mounted) {
+                                        setState(() => _selectedPickup = match);
+                                      }
+                                    });
+                                  }
+                                }
+                              }
+
                               return Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -455,9 +480,19 @@ class _CreateListingFormScreenState
                                     style: typo.titleMedium.copyWith(
                                       color: colors.onSurface,
                                     ),
-                                    onChanged:
-                                        (v) =>
-                                            setState(() => _selectedPickup = v),
+                                    onChanged: (v) {
+                                      setState(() => _selectedPickup = v);
+                                      // Persist the selection so next time
+                                      // the form opens it defaults to this.
+                                      if (v != null) {
+                                        ref
+                                            .read(
+                                              lastPickupLocationIdProvider
+                                                  .notifier,
+                                            )
+                                            .save(v.id);
+                                      }
+                                    },
                                     items:
                                         locations
                                             .map(

@@ -205,6 +205,14 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   });
 
                   if (searchFiltered.isEmpty) {
+                    // NOTE: If the selected chat room is no longer in the
+                    // filtered list (e.g. after blocking/filtering), clear
+                    // the desktop panel selection so the ghost panel disappears.
+                    if (_selectedChatRoomId != null) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) setState(() => _selectedChatRoomId = null);
+                      });
+                    }
                     return SliverFillRemaining(
                       child: Center(
                         child: Text(
@@ -220,6 +228,16 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         ),
                       ),
                     );
+                  }
+
+                  // NOTE: When the list is non-empty but the currently selected
+                  // chat room has been filtered out (e.g. blocked user's room
+                  // disappears), clear the desktop panel selection.
+                  if (_selectedChatRoomId != null &&
+                      !searchFiltered.any((r) => r.id == _selectedChatRoomId)) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() => _selectedChatRoomId = null);
+                    });
                   }
 
                   return SliverPadding(

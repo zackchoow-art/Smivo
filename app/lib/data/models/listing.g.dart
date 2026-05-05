@@ -45,6 +45,7 @@ _Listing _$ListingFromJson(Map<String, dynamic> json) => _Listing(
           ),
   moderationStatus: json['moderation_status'] as String? ?? 'auto_approved',
   moderationNote: json['moderation_note'] as String?,
+  listingCycle: (json['listing_cycle'] as num?)?.toInt() ?? 1,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
 );
@@ -76,6 +77,7 @@ Map<String, dynamic> _$ListingToJson(_Listing instance) => <String, dynamic>{
   'pickup_location': instance.pickupLocation,
   'moderation_status': instance.moderationStatus,
   'moderation_note': instance.moderationNote,
+  'listing_cycle': instance.listingCycle,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
 };

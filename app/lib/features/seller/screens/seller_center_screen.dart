@@ -894,6 +894,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                             subtitle:
                                 '${groupOrders.length} offer${groupOrders.length > 1 ? 's' : ''} cancelled',
                             isCompleted: false,
+                            isDelisted: fullListing?.status == 'inactive',
                             isMergedCancelled: true,
                             mergedOrders: groupOrders,
                             listing: fullListing,
@@ -1029,11 +1030,23 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                             itemBuilder: (context, index) {
                                               final item =
                                                   filteredHistory[index];
+                                              // NOTE: Compute hasUnread fresh
+                                              // from live notification stream,
+                                              // not from closure at build time.
+                                              final hasUnread =
+                                                  item.orderId != null
+                                                      ? notifications.any(
+                                                          (n) =>
+                                                              !n.isRead &&
+                                                              n.relatedOrderId ==
+                                                                  item.orderId,
+                                                        )
+                                                      : false;
                                               return IkeaSellerOrderCard(
                                                 cardType:
                                                     IkeaSellerCardType.history,
                                                 historyItem: item,
-                                                hasUnread: false,
+                                                hasUnread: hasUnread,
                                                 onTap: item.onTap,
                                               );
                                             },
@@ -1045,6 +1058,17 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                             ) {
                                               final item =
                                                   filteredHistory[index];
+                                              // NOTE: Compute hasUnread fresh
+                                              // from live notification stream.
+                                              final hasUnread =
+                                                  item.orderId != null
+                                                      ? notifications.any(
+                                                          (n) =>
+                                                              !n.isRead &&
+                                                              n.relatedOrderId ==
+                                                                  item.orderId,
+                                                        )
+                                                      : false;
                                               final dateStr = DateFormat(
                                                 'M/d/yyyy HH:mm',
                                               ).format(
@@ -1084,6 +1108,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                                     ),
                                                   ),
                                                   child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
                                                     children: [
                                                       ClipRRect(
                                                         borderRadius:
@@ -1197,6 +1224,24 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                                             CrossAxisAlignment
                                                                 .end,
                                                         children: [
+                                                          if (hasUnread)
+                                                            Container(
+                                                              width: 8,
+                                                              height: 8,
+                                                              margin:
+                                                                  const EdgeInsets.only(
+                                                                    bottom: 4,
+                                                                  ),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                    color:
+                                                                        colors
+                                                                            .error,
+                                                                    shape:
+                                                                        BoxShape
+                                                                            .circle,
+                                                                  ),
+                                                            ),
                                                           _buildHistoryStatusChip(
                                                             item,
                                                           ),
@@ -1511,114 +1556,104 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
             ? listingData!.images.first.imageUrl
             : null;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(radius.card),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          // Left side: image + title → Listing Detail
-          Expanded(
-            child: GestureDetector(
-              onTap:
-                  () => context.pushNamed(
-                    AppRoutes.listingDetail,
-                    pathParameters: {'id': order.listingId},
-                  ),
-              behavior: HitTestBehavior.opaque,
-              child: Row(
+    // NOTE: Entire card taps to Order Detail — listing detail navigation removed
+    // per design change: Active Transactions should always open the order.
+    return InkWell(
+      onTap: () => _handleOrderTap(order.id, hasUnread),
+      borderRadius: BorderRadius.circular(radius.card),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(radius.card),
+          border: Border.all(
+            color: colors.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Product image (no tap zone — full card is the tap target)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(radius.image),
+              child:
+                  imageUrl != null
+                      ? Image.network(
+                        imageUrl,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      )
+                      : Container(
+                        width: 48,
+                        height: 48,
+                        color: colors.surfaceContainerHigh,
+                        child: const Icon(Icons.image),
+                      ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(radius.image),
-                    child:
-                        imageUrl != null
-                            ? Image.network(
-                              imageUrl,
-                              width: 48,
-                              height: 48,
-                              fit: BoxFit.cover,
-                            )
-                            : Container(
-                              width: 48,
-                              height: 48,
-                              color: colors.surfaceContainerHigh,
-                              child: const Icon(Icons.image),
-                            ),
+                  Text(
+                    listingTitle,
+                    style: typo.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 2),
+                  RichText(
+                    text: TextSpan(
+                      style: typo.bodySmall.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.6),
+                      ),
                       children: [
-                        Text(
-                          listingTitle,
-                          style: typo.bodyMedium.copyWith(
+                        TextSpan(
+                          text: formatOrderPrice(order),
+                          style: TextStyle(
+                            color: colors.primary,
                             fontWeight: FontWeight.bold,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
-                        RichText(
-                          text: TextSpan(
-                            style: typo.bodySmall.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.6),
-                            ),
-                            children: [
-                              TextSpan(
-                                text: formatOrderPrice(order),
-                                style: TextStyle(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              TextSpan(
-                                text:
-                                    ' · ${order.buyer?.displayName ?? 'Buyer'}',
-                              ),
-                            ],
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Container(
-                          constraints: const BoxConstraints(minWidth: 72),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.primary,
-                            borderRadius: BorderRadius.circular(radius.full),
-                          ),
-                          child: Text(
-                            statusLabel,
-                            textAlign: TextAlign.center,
-                            style: typo.labelSmall.copyWith(
-                              color: colors.surfaceContainerLowest,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 10,
-                            ),
-                          ),
+                        TextSpan(
+                          text:
+                              ' · ${order.buyer?.displayName ?? 'Buyer'}',
                         ),
                       ],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Container(
+                    constraints: const BoxConstraints(minWidth: 72),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      borderRadius: BorderRadius.circular(radius.full),
+                    ),
+                    child: Text(
+                      statusLabel,
+                      textAlign: TextAlign.center,
+                      style: typo.labelSmall.copyWith(
+                        color: colors.surfaceContainerLowest,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 10,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          // Right side: timestamps → Order Detail
-          GestureDetector(
-            onTap: () => _handleOrderTap(order.id, hasUnread),
-            behavior: HitTestBehavior.opaque,
-            child: Container(
+            const SizedBox(width: 12),
+            // Right side: timestamps + unread dot + chevron
+            Container(
               constraints: const BoxConstraints(minWidth: 64, minHeight: 44),
               alignment: Alignment.centerRight,
               child: Column(
@@ -1658,8 +1693,8 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1780,7 +1815,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final radius = context.smivoRadius;
 
     final bgColor = item.isCompleted ? colors.success : colors.statusCancelled;
-    final label = item.isCompleted ? 'Done' : 'Cancelled';
+    final label = item.isCompleted ? 'Done' : (item.isDelisted ? 'Delisted' : 'Cancelled');
 
     return Container(
       constraints: const BoxConstraints(minWidth: 72),
@@ -1832,6 +1867,7 @@ class _HistoryItem {
   final String? orderId;
   final String? listingId;
 }
+
 
 /// Tile for displaying a flagged or rejected listing in the Seller Center.
 class _FlaggedListingTile extends StatelessWidget {

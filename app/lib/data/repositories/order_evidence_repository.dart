@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -5,13 +6,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/core/utils/image_moderation_service.dart';
 import 'package:smivo/data/models/order_evidence.dart';
 
 part 'order_evidence_repository.g.dart';
 
 class OrderEvidenceRepository {
-  const OrderEvidenceRepository(this._client);
+  const OrderEvidenceRepository(this._client, this._moderation);
   final SupabaseClient _client;
+  final ImageModerationService _moderation;
 
   /// Fetches all evidence photos for an order.
   Future<List<OrderEvidence>> fetchEvidence(String orderId) async {
@@ -47,6 +50,16 @@ class OrderEvidenceRepository {
           .from(AppConstants.bucketOrderFiles)
           .getPublicUrl(path);
 
+      // Non-blocking AI moderation for evidence photos.
+      unawaited(
+        _moderation.moderateAsync(
+          imageUrl: imageUrl,
+          targetType: 'evidence',
+          targetId: orderId,
+          userId: uploaderId,
+        ),
+      );
+
       // Create DB record
       final data =
           await _client
@@ -71,4 +84,7 @@ class OrderEvidenceRepository {
 
 @riverpod
 OrderEvidenceRepository orderEvidenceRepository(Ref ref) =>
-    OrderEvidenceRepository(ref.watch(supabaseClientProvider));
+    OrderEvidenceRepository(
+      ref.watch(supabaseClientProvider),
+      ImageModerationService(ref.watch(supabaseClientProvider)),
+    );

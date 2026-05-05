@@ -23,12 +23,26 @@ class OrderRepository {
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
-            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url)),
+            listing:listings(id, title, status, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, listing_cycle, images:listing_images(image_url)),
             pickup_location:pickup_locations(*)
           ''')
           .or('buyer_id.eq.$userId,seller_id.eq.$userId')
           .order('created_at', ascending: false);
-      return data.map((json) => Order.fromJson(json)).toList();
+          
+      return data
+          .map((json) => Order.fromJson(json))
+          .where((o) {
+            // 1. Always keep completed orders visible
+            if (o.status == 'completed') return true;
+            
+            // 2. Buyers should always see their own history (even if cancelled/missed in past cycles)
+            if (o.buyerId == userId) return true;
+            
+            // 3. For sellers, hide non-completed orders from previous listing cycles
+            // This ensures a "fresh start" when a listing is relisted.
+            return o.listingCycle == (o.listing?.listingCycle ?? o.listingCycle);
+          })
+          .toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -44,7 +58,7 @@ class OrderRepository {
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
-            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url)),
+            listing:listings(id, title, status, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, listing_cycle, images:listing_images(image_url)),
             pickup_location:pickup_locations(*)
           ''')
               .eq('id', id)
@@ -77,12 +91,16 @@ class OrderRepository {
             *,
             buyer:user_profiles!buyer_id(*),
             seller:user_profiles!seller_id(*),
-            listing:listings(id, title, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, images:listing_images(image_url)),
+            listing:listings(id, title, status, rental_daily_price, rental_weekly_price, rental_monthly_price, deposit_amount, listing_cycle, images:listing_images(image_url)),
             pickup_location:pickup_locations(*)
           ''')
           .inFilter('id', orderIds)
           .order('created_at', ascending: false);
-      return data.map((json) => Order.fromJson(json)).toList();
+      
+      return data
+          .map((json) => Order.fromJson(json))
+          .where((o) => o.listingCycle == o.listing?.listingCycle)
+          .toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -161,12 +179,25 @@ class OrderRepository {
   }
 
   /// Updates an order's status (e.g. 'cancelled').
-  Future<Order> updateOrderStatus(String id, String status) async {
+  ///
+  /// [cancelledBy] — optional: the user UUID who performed the cancel.
+  /// When provided, the DB trigger will notify only the OTHER party instead
+  /// of both buyer and seller.
+  Future<Order> updateOrderStatus(
+    String id,
+    String status, {
+    String? cancelledBy,
+  }) async {
     try {
+      final payload = <String, dynamic>{'status': status};
+      // NOTE: Pass cancelled_by so the trigger can notify only the other party.
+      if (cancelledBy != null) {
+        payload['cancelled_by'] = cancelledBy;
+      }
       final data =
           await _client
               .from(AppConstants.tableOrders)
-              .update({'status': status})
+              .update(payload)
               .eq('id', id)
               .select()
               .single();
@@ -298,13 +329,17 @@ class OrderRepository {
   }
 
   /// Cancels all pending orders for a listing (used when delisting).
+  ///
+  /// NOTE: Uses the cancel_pending_orders_on_delist RPC instead of a direct
+  /// UPDATE so that cancelled_by is automatically set to the seller's ID.
+  /// This lets the notify_order_status_change trigger send buyers a
+  /// "listing removed" message rather than the generic cancel notification.
   Future<void> cancelAllPendingOrders(String listingId) async {
     try {
-      await _client
-          .from(AppConstants.tableOrders)
-          .update({'status': 'cancelled'})
-          .eq('listing_id', listingId)
-          .eq('status', 'pending');
+      await _client.rpc(
+        'cancel_pending_orders_on_delist',
+        params: {'p_listing_id': listingId},
+      );
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -328,9 +363,45 @@ class OrderRepository {
       if (data == null) return null;
 
       // Now fetch full order details using the ID
-      return fetchOrder(data['id'] as String);
+      final order = await fetchOrder(data['id'] as String);
+      
+      // If the latest order is from a previous listing cycle, 
+      // act as if the user has no active orders for this listing.
+      if (order.listingCycle != order.listing?.listingCycle) {
+        return null;
+      }
+      
+      return order;
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Checks whether [buyerId] is allowed to place an order on a listing
+  /// owned by [sellerId].
+  ///
+  /// Returns `true` if the seller has blocked the buyer (order should be
+  /// blocked), `false` otherwise.
+  ///
+  /// NOTE: Only checks the block relationship — deliberately does NOT check
+  /// mute or freeze status, which are chat-only restrictions and must not
+  /// prevent a user from placing orders.
+  Future<bool> isBlockedBySeller({
+    required String buyerId,
+    required String sellerId,
+  }) async {
+    try {
+      final result = await _client.rpc(
+        'check_order_eligibility',
+        params: {'p_buyer_id': buyerId, 'p_seller_id': sellerId},
+      );
+      return (result['is_blocked_by_seller'] as bool?) ?? false;
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    } catch (_) {
+      // NOTE: Fail-safe: if the RPC fails for any reason, allow the order
+      // attempt to proceed. The server-side RLS will be the final guard.
+      return false;
     }
   }
 }

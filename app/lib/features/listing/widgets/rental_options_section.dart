@@ -228,9 +228,10 @@ class _DateRangePicker extends ConsumerWidget {
     );
     final endDate = DateTime(rawEndDate.year, rawEndDate.month, rawEndDate.day);
     final formatter = DateFormat('MM/dd/yyyy');
+    // NOTE: Daily rental assumes 24-hour periods. Renting from 4th to 5th is 1 day.
     final durationDays = endDate.difference(startDate).inDays;
     final dailyPrice = listing.rentalDailyPrice ?? 0.0;
-    final totalRent = dailyPrice * (durationDays > 0 ? durationDays : 0);
+    final totalRent = dailyPrice * (durationDays > 0 ? durationDays : 1);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
@@ -326,7 +327,7 @@ class _DateRangePicker extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         _TotalRentBanner(
-          periodText: '${durationDays > 0 ? durationDays : 0} days',
+          periodText: '${durationDays > 0 ? durationDays : 1} days',
           totalAmount: totalRent,
         ),
       ],

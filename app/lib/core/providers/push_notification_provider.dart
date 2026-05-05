@@ -99,12 +99,33 @@ class PushNotificationManager extends _$PushNotificationManager {
 
     final router = ref.read(routerProvider);
 
-    // order_placed has a special route: Transaction Management Offers tab
-    // Other order notifications still go to order detail
+    // Priority 1: explicit action_url (handles order_placed, chats, etc.)
     if (actionUrl != null && actionUrl.isNotEmpty) {
+      // NOTE: action_url may use internal format '/orders/:id'
+      // which maps directly to GoRouter's path — use push() for navigation.
       router.push(actionUrl);
-    } else if (type != null && type.startsWith('order_') && orderId != null) {
+      return;
+    }
+
+    // Priority 2: order-related types (order_accepted, order_cancelled, etc.)
+    if (type != null && type.startsWith('order_') && orderId != null) {
       router.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': orderId});
+      return;
+    }
+
+    // Priority 3: rental types — go to order detail
+    // NOTE: rental_extension and rental_reminder now include action_url from
+    // migration 00105, so Priority 1 handles them. This is a fallback safety net.
+    if (type != null &&
+        (type == 'rental_extension' || type == 'rental_reminder') &&
+        orderId != null) {
+      router.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': orderId});
+      return;
+    }
+
+    // Priority 4: system / moderation notifications → notification center
+    if (type != null) {
+      router.pushNamed(AppRoutes.notificationCenter);
     }
   }
 

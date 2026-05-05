@@ -153,6 +153,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           final existingOrder = ref.watch(
             existingBuyerOrderProvider(listing.id),
           );
+          final isBlockedBySeller = ref.watch(
+            isBlockedBySellerProvider(listing.sellerId),
+          );
           // Removed imageUrls map as we now pass the whole images list
           // NOTE: Tag removed per design — no overlay text on images.
           // Load DB conditions for dynamic label resolution
@@ -938,6 +941,59 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                         );
                                       }
 
+                                      // NOTE: Check if the seller has blocked
+                                      // the current user via the dedicated
+                                      // check_order_eligibility RPC.
+                                      if (isBlockedBySeller.isLoading) {
+                                        return const Center(
+                                          child: Padding(
+                                            padding: EdgeInsets.all(16.0),
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                        );
+                                      }
+
+                                      if (isBlockedBySeller.value == true) {
+                                        return Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: colors.surfaceContainerLow,
+                                            borderRadius: BorderRadius.circular(
+                                              radius.card,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Icon(
+                                                Icons.block_outlined,
+                                                color: colors.error,
+                                                size: 28,
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                'Item Unavailable',
+                                                style: typo.titleMedium
+                                                    .copyWith(
+                                                      color: colors.onSurface,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'You cannot interact with this seller.',
+                                                style: typo.bodySmall.copyWith(
+                                                  color: colors.outlineVariant,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+
                                       if (listing.status != 'active') {
                                         return Container(
                                           width: double.infinity,
@@ -1045,18 +1101,12 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                         final endDate = ref.read(
                                                           rentalEndDateProvider,
                                                         );
-                                                        final days =
-                                                            endDate
-                                                                .difference(
-                                                                  startDate,
-                                                                )
-                                                                .inDays;
+                                                        final daysDiff = endDate.difference(startDate).inDays;
+                                                        final days = daysDiff > 0 ? daysDiff : 1;
                                                         orderPrice =
                                                             (listing.rentalDailyPrice ??
                                                                 0) *
-                                                            (days > 0
-                                                                ? days
-                                                                : 1);
+                                                            days;
                                                         rentalStart = startDate;
                                                         rentalEnd = endDate;
                                                       } else if (selectedRate ==
@@ -1114,6 +1164,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                           _selectedPickupLocationId ??
                                                           listing
                                                               .pickupLocationId;
+                                                      final pickups = ref.read(myPickupLocationsProvider).value ?? [];
+                                                      final selectedPickup = pickups.where((p) => p.id == effectivePickupId).firstOrNull;
+                                                      final effectivePickupName = selectedPickup?.name ?? listing.pickupLocation?.name ?? 'Unknown Address';
+                                                      final schoolName = activeSchools.where((s) => s.id == listing.schoolId).firstOrNull?.name ?? 'Unknown School';
+
                                                       await ref
                                                           .read(
                                                             orderActionsProvider
@@ -1139,6 +1194,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                     .depositAmount,
                                                             pickupLocationId:
                                                                 effectivePickupId,
+                                                            pickupLocationName:
+                                                                effectivePickupName,
+                                                            school: schoolName,
                                                           );
                                                       if (!context.mounted)
                                                         return;
@@ -1597,8 +1655,8 @@ String _formatRentalSummary(Order order) {
   if (order.rentalStartDate == null || order.rentalEndDate == null) {
     return 'Total: \$${order.totalPrice.toStringAsFixed(0)}';
   }
-  final days = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
-  final duration = days > 0 ? days : 1;
+  final daysDiff = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+  final duration = daysDiff > 0 ? daysDiff : 1;
   final unitLabel = duration == 1 ? 'Day' : 'Days';
   return '$duration $unitLabel, Total: \$${order.totalPrice.toStringAsFixed(0)}';
 }

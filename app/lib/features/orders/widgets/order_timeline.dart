@@ -12,12 +12,14 @@ class TimelineStep {
     this.date,
     this.subtitle,
     this.isCancelled,
+    this.trailing,
   });
   final String label;
   final DateTime? date;
   final bool isCompleted;
   final String? subtitle;
   final bool? isCancelled;
+  final Widget? trailing;
 }
 
 class OrderTimeline extends StatelessWidget {
@@ -155,27 +157,38 @@ class OrderTimeline extends StatelessWidget {
 
           const SizedBox(width: 10),
 
-          // Right column: label + subtitle
+          // Right column: label + subtitle + optional trailing widget
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 20),
-              child: Column(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    step.label,
-                    style: typo.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: labelColor,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          step.label,
+                          style: typo.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: labelColor,
+                          ),
+                        ),
+                        if (step.subtitle != null)
+                          Text(
+                            step.subtitle!,
+                            style: typo.bodySmall.copyWith(
+                              color: colors.outlineVariant,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                  if (step.subtitle != null)
-                    Text(
-                      step.subtitle!,
-                      style: typo.bodySmall.copyWith(
-                        color: colors.outlineVariant,
-                      ),
-                    ),
+                  if (step.trailing != null) ...[
+                    const SizedBox(width: 8),
+                    step.trailing!,
+                  ],
                 ],
               ),
             ),

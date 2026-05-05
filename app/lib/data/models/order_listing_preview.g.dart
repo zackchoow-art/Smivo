@@ -10,6 +10,7 @@ _OrderListingPreview _$OrderListingPreviewFromJson(Map<String, dynamic> json) =>
     _OrderListingPreview(
       id: json['id'] as String,
       title: json['title'] as String,
+      status: json['status'] as String? ?? 'active',
       images:
           (json['images'] as List<dynamic>?)
               ?.map(
@@ -21,6 +22,7 @@ _OrderListingPreview _$OrderListingPreviewFromJson(Map<String, dynamic> json) =>
       rentalWeeklyPrice: (json['rental_weekly_price'] as num?)?.toDouble(),
       rentalMonthlyPrice: (json['rental_monthly_price'] as num?)?.toDouble(),
       depositAmount: (json['deposit_amount'] as num?)?.toDouble() ?? 0.0,
+      listingCycle: (json['listing_cycle'] as num?)?.toInt() ?? 1,
     );
 
 Map<String, dynamic> _$OrderListingPreviewToJson(
@@ -28,11 +30,13 @@ Map<String, dynamic> _$OrderListingPreviewToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'title': instance.title,
+  'status': instance.status,
   'images': instance.images,
   'rental_daily_price': instance.rentalDailyPrice,
   'rental_weekly_price': instance.rentalWeeklyPrice,
   'rental_monthly_price': instance.rentalMonthlyPrice,
   'deposit_amount': instance.depositAmount,
+  'listing_cycle': instance.listingCycle,
 };
 
 _OrderListingImage _$OrderListingImageFromJson(Map<String, dynamic> json) =>

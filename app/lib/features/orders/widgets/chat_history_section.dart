@@ -100,14 +100,26 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
                                 isMe
                                     ? colors.primary.withValues(alpha: 0.1)
                                     : colors.surfaceContainerHigh,
-                            child: Text(
-                              senderName.isNotEmpty
-                                  ? senderName[0].toUpperCase()
-                                  : '?',
-                              style: typo.labelSmall.copyWith(
-                                color: isMe ? colors.primary : colors.onSurface,
-                              ),
-                            ),
+                            // NOTE: Show real avatar image if sender has one set.
+                            // Falls back to initials if the URL is null or fails to load.
+                            backgroundImage:
+                                msg.sender?.avatarUrl != null
+                                    ? NetworkImage(msg.sender!.avatarUrl!)
+                                    : null,
+                            child:
+                                msg.sender?.avatarUrl == null
+                                    ? Text(
+                                      senderName.isNotEmpty
+                                          ? senderName[0].toUpperCase()
+                                          : '?',
+                                      style: typo.labelSmall.copyWith(
+                                        color:
+                                            isMe
+                                                ? colors.primary
+                                                : colors.onSurface,
+                                      ),
+                                    )
+                                    : null,
                           ),
                           const SizedBox(width: 8),
                           Expanded(

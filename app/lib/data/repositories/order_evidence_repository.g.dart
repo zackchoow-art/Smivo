@@ -55,4 +55,4 @@ final class OrderEvidenceRepositoryProvider
 }
 
 String _$orderEvidenceRepositoryHash() =>
-    r'a0b80b3547f647436ba7f41d586ec1ca0d8cea90';
+    r'b134b0636828322a7a337c333900178a9cf6b925';
