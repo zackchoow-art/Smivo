@@ -41,11 +41,22 @@ smivo/                          ← Git repository root
 
 ### Deployment Topology
 
-| Target           | Source      | Platform       |
-|------------------|-------------|----------------|
-| App Store / Play | `app/`      | Xcode / Gradle |
-| smivo.io         | `website/`  | Vercel         |
-| admin.smivo.io   | `admin/`    | Vercel         |
+| Target              | Source       | Platform         | URL                |
+|---------------------|--------------|------------------|--------------------|
+| App Store / Play    | `app/`       | Xcode / Gradle   | —                  |
+| smivo.io            | `website/`   | Vercel           | smivo.io           |
+| admin.smivo.io      | `admin/`     | Vercel           | admin.smivo.io     |
+| smivo.app (web app) | `app/`       | GitHub Pages     | smivo.app          |
+
+### Notes on `website/`
+
+- `website/` is the static landing page and policy site hosted on Vercel at smivo.io.
+- It is also registered as the official app website on the App Store.
+- `website/auth/` contains the Universal Links (Apple) and Android App Links
+  (assetlinks.json) certificates, which enable in-app share links to deep-link
+  back into the Flutter app. This folder must never be removed.
+- `website/admin/` was the old Flutter web admin panel. It has been **deleted
+  and is no longer used**. The React admin dashboard in `admin/` replaced it.
 
 ### Cross-Project Rules
 
@@ -55,6 +66,9 @@ smivo/                          ← Git repository root
 - Environment variables (`.env`) are per-project: `app/.env` for Flutter,
   `admin/.env` for React — never share `.env` files across projects
 - The `website/` directory must always contain `.well-known/` for Universal Links
+- `app/.env` is git-ignored. GitHub Actions reads `SUPABASE_URL` and
+  `SUPABASE_ANON_KEY` from GitHub Secrets to build the Flutter Web target.
+  Add these two secrets in: GitHub repo → Settings → Secrets → Actions.
 
 ---
 
@@ -315,7 +329,7 @@ Rental status field (rental_status) is NULL for sale orders.
 
 - All migrations stored in supabase/migrations/
 - Naming: 00NNN_description.sql (sequential numbering)
-- Current range: 00001–00047
+- Current range: 00001–00117
 - **Migration Runner Script**: Use `supabase/scripts/run_migration.sh` to execute
   migrations directly against the production database. The script reads
   `DATABASE_URL` from `.env.db` at repo root, shows a preview, and asks
@@ -352,6 +366,40 @@ npm run build               # Production build: tsc -b && vite build
 - Output Directory: `dist`
 - IMPORTANT: `npm run dev` does NOT run type checking. Always verify
   with `npx tsc -b` before pushing — Vercel will fail on any TS error.
+
+### Flutter Web (smivo.app)
+
+The Flutter app is also compiled as a web target and hosted on **GitHub Pages**
+at https://smivo.app. Deployment is fully automated via GitHub Actions.
+
+#### How it works
+1. Push to `main` with changes in `app/**` triggers
+   `.github/workflows/flutter_web_deploy.yml`.
+2. The workflow installs Flutter 3.41.7 (stable), creates `app/.env` from
+   GitHub Secrets, runs `flutter build web --release --base-href /`,
+   writes a `CNAME` file containing `smivo.app`, and publishes the output
+   to the `github-pages` environment.
+3. GitHub Pages serves the static files at https://smivo.app.
+
+#### Required GitHub Secrets (repo → Settings → Secrets → Actions)
+| Secret name         | Value source          |
+|---------------------|-----------------------|
+| `SUPABASE_URL`      | `app/.env`            |
+| `SUPABASE_ANON_KEY` | `app/.env`            |
+
+#### Required GitHub Pages setup (one-time)
+1. Repo → Settings → Pages
+2. Source: **GitHub Actions**
+3. Custom domain: `smivo.app` (DNS CNAME smivo.app → `<org>.github.io`)
+4. Enforce HTTPS: ✅
+
+#### Manual re-deploy
+If you update GitHub Secrets without touching `app/`, trigger manually:
+```bash
+# From GitHub Actions UI: select workflow → Run workflow
+# Or via CLI:
+gh workflow run flutter_web_deploy.yml
+```
 
 ### Database Migrations
 ```bash

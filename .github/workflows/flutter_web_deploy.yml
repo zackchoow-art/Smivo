@@ -1,0 +1,83 @@
+name: Build & Deploy Flutter Web → GitHub Pages
+
+# Trigger on any push to main that touches app/ code
+# (env secrets change also requires re-deploy, which can be done manually)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+  # Allow manual re-trigger from GitHub Actions UI
+  workflow_dispatch:
+
+# Grant write access to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; cancel in-progress if a newer push arrives
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Flutter Web
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # NOTE: Pin to the exact Flutter version used in development to prevent
+      # silent behavior changes from channel updates.
+      - name: Set up Flutter 3.41.x (stable)
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: stable
+          cache: true
+
+      # NOTE: The .env file is git-ignored. We reconstruct it here from
+      # GitHub Secrets so the flutter_dotenv package can load credentials
+      # at app startup on the web target.
+      - name: Create app/.env from GitHub Secrets
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > app/.env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> app/.env
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+        working-directory: app
+
+      # NOTE: base-href must be "/" for GitHub Pages custom domain (smivo.app).
+      # If the app is served at a sub-path, change accordingly.
+      - name: Build Flutter Web (release)
+        run: flutter build web --release --base-href /
+        working-directory: app
+
+      # CNAME file tells GitHub Pages to use the custom domain smivo.app.
+      # It must live in the root of the deployed artifact.
+      - name: Write CNAME for custom domain
+        run: echo "smivo.app" > app/build/web/CNAME
+
+      # Upload the build output as a GitHub Pages artifact
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/build/web
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
