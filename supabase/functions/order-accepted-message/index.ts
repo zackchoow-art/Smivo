@@ -48,20 +48,33 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // ── 1. Check system config flag ─────────────────────────────────────
-    const { data: config } = await supabase
-      .from("system_configs")
-      .select("config_value")
-      .eq("config_key", "auto_accept_message_enabled")
-      .single();
+    // Stored in system_settings (jsonb column) via migration 00125.
+    // The value should be JSON boolean true — but we also handle the legacy
+    // JSON string "true" case in case the DB row was inserted without ::jsonb cast.
+    const { data: flag, error: flagError } = await supabase
+      .from("system_settings")
+      .select("value")
+      .eq("key", "auto_accept_message_enabled")
+      .maybeSingle();
 
-    // Default to disabled if config is missing or explicitly false.
-    const isEnabled =
-      config?.config_value === true ||
-      config?.config_value === "true" ||
-      config?.config_value === '"true"';
+    if (flagError) {
+      // NOTE: Log but do not abort — fail open (send the message) so a
+      // misconfigured DB doesn't silently break the user experience.
+      console.warn("[order-accepted-message] Could not read feature flag, defaulting to enabled:", flagError.message);
+    }
+
+    // Resolve flag: default to enabled if row is missing or unreadable.
+    // flag.value is JS boolean true  when DB stores jsonb boolean true  (normal case)
+    // flag.value is JS string "true" when DB stores jsonb string "true" (legacy case)
+    const rawValue = flag?.value;
+    const isEnabled = rawValue === undefined || rawValue === null ||
+      rawValue === true ||
+      rawValue === "true";
+
+    console.log(`[order-accepted-message] Feature flag raw value: ${JSON.stringify(rawValue)}, isEnabled: ${isEnabled}`);
 
     if (!isEnabled) {
-      console.log("[order-accepted-message] Feature disabled via system_configs. Skipping.");
+      console.log("[order-accepted-message] Feature disabled via system_settings. Skipping.");
       return new Response("Feature disabled", { status: 200 });
     }
 
@@ -74,24 +87,41 @@ serve(async (req) => {
       return new Response("Missing order fields", { status: 400 });
     }
 
-    // ── 2. Find the chat room for this buyer+seller+listing combo ────────
+    // ── 2. Find or Create the chat room for this buyer+seller+listing combo ──
+    let chatRoomId: string;
     const { data: chatRoom, error: chatError } = await supabase
       .from("chat_rooms")
       .select("id")
       .eq("listing_id", listingId)
       .eq("buyer_id", buyerId)
       .eq("seller_id", sellerId)
-      .single();
+      .maybeSingle();
 
-    if (chatError || !chatRoom) {
-      console.warn(
-        `[order-accepted-message] No chat room found for order ${orderId}. ` +
-          "Buyer may not have messaged seller before accepting.",
-      );
-      return new Response("No chat room found", { status: 200 });
+    if (chatError) {
+      console.error("[order-accepted-message] Error fetching chat room:", chatError);
+      return new Response("Database error", { status: 500 });
     }
 
-    const chatRoomId = chatRoom.id as string;
+    if (!chatRoom) {
+      console.log(`[order-accepted-message] No chat room found for order ${orderId}. Creating one.`);
+      const { data: newRoom, error: createError } = await supabase
+        .from("chat_rooms")
+        .insert({
+          listing_id: listingId,
+          buyer_id: buyerId,
+          seller_id: sellerId,
+        })
+        .select("id")
+        .single();
+
+      if (createError || !newRoom) {
+        console.error("[order-accepted-message] Failed to create chat room:", createError);
+        return new Response("Failed to create chat room", { status: 500 });
+      }
+      chatRoomId = newRoom.id as string;
+    } else {
+      chatRoomId = chatRoom.id as string;
+    }
 
     // ── 3. Fetch the listing title for a contextual message ──────────────
     const { data: listing } = await supabase
@@ -121,6 +151,15 @@ serve(async (req) => {
       console.error("[order-accepted-message] Failed to insert message:", msgError);
       return new Response("Failed to insert message", { status: 500 });
     }
+
+    // Also update the chat room's last_message_at and increment unread count for buyer
+    await supabase
+      .from("chat_rooms")
+      .update({
+        last_message_at: new Date().toISOString(),
+        unread_count_buyer: 1, // Start with 1 if new, or increment logic (though simple update is fine for platform msg)
+      })
+      .eq("id", chatRoomId);
 
     console.log(
       `[order-accepted-message] Sent auto-message for order ${orderId} in room ${chatRoomId}`,
