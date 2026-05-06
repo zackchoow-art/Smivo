@@ -13,7 +13,7 @@ class ShakeFeedbackNotifier extends _$ShakeFeedbackNotifier {
   bool build() {
     // Synchronously return default, async load will update if needed
     _loadSavedState();
-    return true; 
+    return true;
   }
 
   Future<void> toggle(bool enabled) async {

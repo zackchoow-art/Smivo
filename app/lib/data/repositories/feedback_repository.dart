@@ -31,7 +31,10 @@ class FeedbackRepository {
       });
     } on PostgrestException catch (e) {
       if (e.message.contains('row-level security policy')) {
-        throw DatabaseException('Action denied. Your account may be restricted.', e);
+        throw DatabaseException(
+          'Action denied. Your account may be restricted.',
+          e,
+        );
       }
       throw DatabaseException(e.message, e);
     }
@@ -67,9 +70,17 @@ class FeedbackRepository {
 
   Future<int> getTodayFeedbackCount(String userId) async {
     try {
-      final todayStart = DateTime.now().copyWith(
-        hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0
-      ).toUtc().toIso8601String();
+      final todayStart =
+          DateTime.now()
+              .copyWith(
+                hour: 0,
+                minute: 0,
+                second: 0,
+                millisecond: 0,
+                microsecond: 0,
+              )
+              .toUtc()
+              .toIso8601String();
 
       final count = await _client
           .from('user_feedbacks')

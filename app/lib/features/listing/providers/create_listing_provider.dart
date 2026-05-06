@@ -14,7 +14,10 @@ part 'create_listing_provider.g.dart';
 Future<DateTime?> userListingBan(Ref ref) async {
   final user = ref.watch(authStateProvider).value;
   if (user == null) return null;
-  return ref.watch(profileRepositoryProvider).getActiveBan(user.id, ['listing_ban', 'account_freeze']);
+  return ref.watch(profileRepositoryProvider).getActiveBan(user.id, [
+    'listing_ban',
+    'account_freeze',
+  ]);
 }
 
 class CreateListingResult {
@@ -51,9 +54,10 @@ class ListingPhotos extends _$ListingPhotos {
     if (!context.mounted) return;
 
     final service = ImageUploadService();
-    final xFile = source == ImageSource.camera
-        ? await service.takePhotoAndCrop(context)
-        : await service.pickAndCropImage(context);
+    final xFile =
+        source == ImageSource.camera
+            ? await service.takePhotoAndCrop(context)
+            : await service.pickAndCropImage(context);
 
     if (xFile != null) {
       state = [...state, xFile];
@@ -203,7 +207,7 @@ class CreateListingAction extends _$CreateListingAction {
         isPinned: isPinned,
         pinnedDays: pinnedDays,
         condition: condition,
-        availableDate: availableDate,
+        availableDate: availableDate ?? now,
         status: 'active',
         createdAt: now,
         updatedAt: now,

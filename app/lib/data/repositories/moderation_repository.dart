@@ -114,7 +114,9 @@ class ModerationRepository {
       } else if (chatRoomId != null) {
         query = query.eq('chat_room_id', chatRoomId);
       } else {
-        query = query.filter('listing_id', 'is', null).filter('chat_room_id', 'is', null);
+        query = query
+            .filter('listing_id', 'is', null)
+            .filter('chat_room_id', 'is', null);
       }
 
       final data = await query.maybeSingle();
@@ -143,15 +145,22 @@ class ModerationRepository {
         'chat_room_id': chatRoomId,
         if (reasonCategory != null) 'reason_category': reasonCategory,
         'reason': reason,
-        if (selectedMessageIds != null) 'selected_message_ids': selectedMessageIds,
+        if (selectedMessageIds != null)
+          'selected_message_ids': selectedMessageIds,
         if (evidence != null) 'evidence': evidence,
       });
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        throw const DatabaseException('You have already reported this content.', null);
+        throw const DatabaseException(
+          'You have already reported this content.',
+          null,
+        );
       }
       if (e.message.contains('row-level security policy')) {
-        throw DatabaseException('Action denied. Your account may be restricted.', e);
+        throw DatabaseException(
+          'Action denied. Your account may be restricted.',
+          e,
+        );
       }
       throw DatabaseException(e.message, e);
     }
@@ -184,9 +193,7 @@ class ModerationRepository {
     try {
       final data = await _client
           .from('content_reports')
-          .select(
-            '*, listing:listings(*, images:listing_images(*))',
-          )
+          .select('*, listing:listings(*, images:listing_images(*))')
           .eq('reported_user_id', userId)
           .order('created_at', ascending: false);
       return data.map((json) => ContentReport.fromJson(json)).toList();

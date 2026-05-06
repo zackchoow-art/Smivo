@@ -31,38 +31,44 @@ class MyFeedbacksScreen extends ConsumerWidget {
           maxWidth: 720,
           child: SelectionArea(
             child: feedbacksAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
-          data: (feedbacks) {
-            if (feedbacks.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.feedback_outlined, size: 64, color: colors.onSurfaceVariant.withAlpha(100)),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No feedbacks submitted yet.\nHelp us improve the app!',
-                      textAlign: TextAlign.center,
-                      style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+              data: (feedbacks) {
+                if (feedbacks.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.feedback_outlined,
+                          size: 64,
+                          color: colors.onSurfaceVariant.withAlpha(100),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No feedbacks submitted yet.\nHelp us improve the app!',
+                          textAlign: TextAlign.center,
+                          style: typo.bodyMedium.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            }
+                  );
+                }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: feedbacks.length,
-              itemBuilder: (context, index) {
-                final feedback = feedbacks[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: FlipFeedbackCard(feedback: feedback),
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: feedbacks.length,
+                  itemBuilder: (context, index) {
+                    final feedback = feedbacks[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: FlipFeedbackCard(feedback: feedback),
+                    );
+                  },
                 );
               },
-            );
-          },
             ),
           ),
         ),
@@ -73,9 +79,10 @@ class MyFeedbacksScreen extends ConsumerWidget {
           if (banDate != null) {
             final isPermanent = banDate.year > 2090;
             final dateStr = DateFormat('yyyy-MM-dd').format(banDate.toLocal());
-            final msg = isPermanent
-                ? 'Feedback privileges permanently suspended.'
-                : 'Feedback privileges suspended until $dateStr.';
+            final msg =
+                isPermanent
+                    ? 'Feedback privileges permanently suspended.'
+                    : 'Feedback privileges suspended until $dateStr.';
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(msg),
@@ -89,7 +96,10 @@ class MyFeedbacksScreen extends ConsumerWidget {
         },
         backgroundColor: colors.primary,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('New Feedback', style: TextStyle(color: Colors.white)),
+        label: const Text(
+          'New Feedback',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
@@ -104,7 +114,8 @@ class FlipFeedbackCard extends StatefulWidget {
   State<FlipFeedbackCard> createState() => _FlipFeedbackCardState();
 }
 
-class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerProviderStateMixin {
+class _FlipFeedbackCardState extends State<FlipFeedbackCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   bool _isFront = true;
@@ -117,9 +128,10 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    _animation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -149,16 +161,18 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
 
           return Transform(
             alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001) // Perspective
-              ..rotateY(angle),
-            child: isFrontVisible
-                ? _buildFront(context)
-                : Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.identity()..rotateY(pi),
-                    child: _buildBack(context),
-                  ),
+            transform:
+                Matrix4.identity()
+                  ..setEntry(3, 2, 0.001) // Perspective
+                  ..rotateY(angle),
+            child:
+                isFrontVisible
+                    ? _buildFront(context)
+                    : Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()..rotateY(pi),
+                      child: _buildBack(context),
+                    ),
           );
         },
       ),
@@ -169,7 +183,9 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final f = widget.feedback;
-    final dateStr = DateFormat('MMM d, yyyy HH:mm').format(f.createdAt ?? DateTime.now());
+    final dateStr = DateFormat(
+      'MMM d, yyyy HH:mm',
+    ).format(f.createdAt ?? DateTime.now());
 
     Color statusColor;
     Color statusBgColor;
@@ -227,18 +243,28 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: colors.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         f.type.replaceAll('_', ' ').toUpperCase(),
-                        style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                        style: typo.labelSmall.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(f.title, style: typo.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    Text(
+                      f.title,
+                      style: typo.titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
@@ -247,20 +273,28 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: statusBgColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       statusText,
-                      style: typo.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.bold),
+                      style: typo.labelSmall.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     dateStr,
-                    style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                    style: typo.labelSmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -311,8 +345,15 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(_isExpanded ? 'Show less' : 'Details', style: typo.labelSmall.copyWith(color: colors.primary)),
-                    Icon(_isExpanded ? Icons.expand_less : Icons.expand_more, color: colors.primary, size: 20),
+                    Text(
+                      _isExpanded ? 'Show less' : 'Details',
+                      style: typo.labelSmall.copyWith(color: colors.primary),
+                    ),
+                    Icon(
+                      _isExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: colors.primary,
+                      size: 20,
+                    ),
                   ],
                 ),
               ),
@@ -327,7 +368,10 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final f = widget.feedback;
-    final responseDate = f.updatedAt != null ? DateFormat('MMM d, yyyy HH:mm').format(f.updatedAt!) : '';
+    final responseDate =
+        f.updatedAt != null
+            ? DateFormat('MMM d, yyyy HH:mm').format(f.updatedAt!)
+            : '';
 
     String statusText;
     Color statusColor;
@@ -379,28 +423,46 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
                   CircleAvatar(
                     radius: 12,
                     backgroundColor: colors.primary,
-                    child: const Icon(Icons.support_agent, size: 14, color: Colors.white),
+                    child: const Icon(
+                      Icons.support_agent,
+                      size: 14,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  Text('Smivo Support', style: typo.labelLarge.copyWith(color: colors.onSurface)),
+                  Text(
+                    'Smivo Support',
+                    style: typo.labelLarge.copyWith(color: colors.onSurface),
+                  ),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: statusBgColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       statusText,
-                      style: typo.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.bold),
+                      style: typo.labelSmall.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(responseDate, style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant)),
+                  Text(
+                    responseDate,
+                    style: typo.labelSmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -419,7 +481,10 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
             Align(
               alignment: Alignment.bottomRight,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: colors.primary,
                   borderRadius: BorderRadius.circular(100),
@@ -427,11 +492,18 @@ class _FlipFeedbackCardState extends State<FlipFeedbackCard> with SingleTickerPr
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.local_fire_department, color: Colors.white, size: 16),
+                    const Icon(
+                      Icons.local_fire_department,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '+${f.pointsAwarded} Contribution Points',
-                      style: typo.labelSmall.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: typo.labelSmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),

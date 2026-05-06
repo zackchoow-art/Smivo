@@ -50,9 +50,7 @@ class _AddressManagementSectionState
           InkWell(
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(radius.xl),
-              bottom: _expanded
-                  ? Radius.zero
-                  : Radius.circular(radius.xl),
+              bottom: _expanded ? Radius.zero : Radius.circular(radius.xl),
             ),
             onTap: () => setState(() => _expanded = !_expanded),
             child: Padding(
@@ -84,8 +82,7 @@ class _AddressManagementSectionState
                       ),
                       tooltip: 'Add new address',
                       visualDensity: VisualDensity.compact,
-                      onPressed: () =>
-                          _showEditDialog(context, existing: null),
+                      onPressed: () => _showEditDialog(context, existing: null),
                     ),
                   Icon(
                     _expanded
@@ -115,19 +112,19 @@ class _AddressManagementSectionState
                   const SizedBox(height: 4),
                   Text(
                     'These addresses appear as quick-select options when you post a listing.',
-                    style: typo.bodySmall
-                        .copyWith(color: colors.onSurfaceVariant),
+                    style: typo.bodySmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   savedAsync.when(
-                    loading: () => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    error: (e, _) => Text(
-                      'Failed to load addresses: $e',
-                      style:
-                          typo.bodySmall.copyWith(color: colors.error),
-                    ),
+                    loading:
+                        () => const Center(child: CircularProgressIndicator()),
+                    error:
+                        (e, _) => Text(
+                          'Failed to load addresses: $e',
+                          style: typo.bodySmall.copyWith(color: colors.error),
+                        ),
                     data: (saved) {
                       if (saved.isEmpty) {
                         return Padding(
@@ -141,30 +138,35 @@ class _AddressManagementSectionState
                         );
                       }
                       return Column(
-                        children: saved.asMap().entries.map((entry) {
-                          final idx = entry.key;
-                          final addr = entry.value;
-                          final isLast = idx == saved.length - 1;
-                          return Column(
-                            children: [
-                              _AddressRow(
-                                address: addr,
-                                onEdit: () => _showEditDialog(
-                                  context,
-                                  existing: addr,
-                                ),
-                                onDeleteConfirmed: () => ref
-                                    .read(savedLocationsProvider.notifier)
-                                    .delete(addr),
-                              ),
-                              if (!isLast)
-                                Divider(
-                                  color: colors.outlineVariant,
-                                  height: 1,
-                                ),
-                            ],
-                          );
-                        }).toList(),
+                        children:
+                            saved.asMap().entries.map((entry) {
+                              final idx = entry.key;
+                              final addr = entry.value;
+                              final isLast = idx == saved.length - 1;
+                              return Column(
+                                children: [
+                                  _AddressRow(
+                                    address: addr,
+                                    onEdit:
+                                        () => _showEditDialog(
+                                          context,
+                                          existing: addr,
+                                        ),
+                                    onDeleteConfirmed:
+                                        () => ref
+                                            .read(
+                                              savedLocationsProvider.notifier,
+                                            )
+                                            .delete(addr),
+                                  ),
+                                  if (!isLast)
+                                    Divider(
+                                      color: colors.outlineVariant,
+                                      height: 1,
+                                    ),
+                                ],
+                              );
+                            }).toList(),
                       );
                     },
                   ),
@@ -229,8 +231,11 @@ class _AddressRowState extends ConsumerState<_AddressRow> {
           // Edit button — hidden during pending-delete to avoid accidents.
           if (!_pendingDelete)
             IconButton(
-              icon: Icon(Icons.edit_outlined,
-                  size: 17, color: colors.onSurfaceVariant),
+              icon: Icon(
+                Icons.edit_outlined,
+                size: 17,
+                color: colors.onSurfaceVariant,
+              ),
               tooltip: 'Edit',
               visualDensity: VisualDensity.compact,
               onPressed: widget.onEdit,
@@ -239,37 +244,41 @@ class _AddressRowState extends ConsumerState<_AddressRow> {
           // Delete / Confirm delete button (two-tap pattern).
           _pendingDelete
               ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Cancel
-                    IconButton(
-                      icon: Icon(Icons.close,
-                          size: 17, color: colors.onSurfaceVariant),
-                      tooltip: 'Cancel',
-                      visualDensity: VisualDensity.compact,
-                      onPressed: () =>
-                          setState(() => _pendingDelete = false),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Cancel
+                  IconButton(
+                    icon: Icon(
+                      Icons.close,
+                      size: 17,
+                      color: colors.onSurfaceVariant,
                     ),
-                    // Confirm
-                    IconButton(
-                      icon: Icon(Icons.check,
-                          size: 17, color: colors.error),
-                      tooltip: 'Confirm delete',
-                      visualDensity: VisualDensity.compact,
-                      onPressed: () {
-                        setState(() => _pendingDelete = false);
-                        widget.onDeleteConfirmed();
-                      },
-                    ),
-                  ],
-                )
+                    tooltip: 'Cancel',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => setState(() => _pendingDelete = false),
+                  ),
+                  // Confirm
+                  IconButton(
+                    icon: Icon(Icons.check, size: 17, color: colors.error),
+                    tooltip: 'Confirm delete',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () {
+                      setState(() => _pendingDelete = false);
+                      widget.onDeleteConfirmed();
+                    },
+                  ),
+                ],
+              )
               : IconButton(
-                  icon: Icon(Icons.delete_outline,
-                      size: 17, color: colors.onSurfaceVariant),
-                  tooltip: 'Delete',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () => setState(() => _pendingDelete = true),
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 17,
+                  color: colors.onSurfaceVariant,
                 ),
+                tooltip: 'Delete',
+                visualDensity: VisualDensity.compact,
+                onPressed: () => setState(() => _pendingDelete = true),
+              ),
         ],
       ),
     );
@@ -360,13 +369,14 @@ class _AddressEditDialogState extends ConsumerState<_AddressEditDialog> {
         ),
         FilledButton(
           onPressed: _loading ? null : _submit,
-          child: _loading
-              ? const SizedBox(
-                  height: 16,
-                  width: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(_isAdd ? 'Add' : 'Save'),
+          child:
+              _loading
+                  ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : Text(_isAdd ? 'Add' : 'Save'),
         ),
       ],
     );

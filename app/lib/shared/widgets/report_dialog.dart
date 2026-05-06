@@ -5,11 +5,7 @@ class ReportDialog extends StatefulWidget {
   final String title;
   final Function(String category, String customReason) onSubmit;
 
-  const ReportDialog({
-    super.key,
-    required this.title,
-    required this.onSubmit,
-  });
+  const ReportDialog({super.key, required this.title, required this.onSubmit});
 
   @override
   State<ReportDialog> createState() => _ReportDialogState();
@@ -86,7 +82,9 @@ class _ReportDialogState extends State<ReportDialog> {
                 controller: _reasonController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(context.smivoRadius.input),
+                    borderRadius: BorderRadius.circular(
+                      context.smivoRadius.input,
+                    ),
                   ),
                   hintText: 'Please provide more details...',
                 ),
@@ -108,10 +106,11 @@ class _ReportDialogState extends State<ReportDialog> {
         ),
         TextButton(
           onPressed: () {
-            final customReason = _selectedCategory == 'other'
-                ? _reasonController.text.trim()
-                : _categories[_selectedCategory]!;
-            
+            final customReason =
+                _selectedCategory == 'other'
+                    ? _reasonController.text.trim()
+                    : _categories[_selectedCategory]!;
+
             if (_selectedCategory == 'other' && customReason.isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Please provide a reason.')),

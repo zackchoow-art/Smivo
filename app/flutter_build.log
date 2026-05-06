@@ -1,0 +1,660 @@
+Warning: Building for device with codesigning disabled. You will have to manually codesign before deploying to device.
+Building com.smivo.app for device (ios-release)...
+Running Xcode build...                                          
+Xcode build done.                                           11.1s
+Failed to build iOS app
+Error output from Xcode build:
+↳
+    2026-05-06 03:00:00.956 xcodebuild[95825:23510688]  DVTDeviceOperation: Encountered a build number "" that is incompatible with DVTBuildVersion.
+    2026-05-06 03:00:01.068 xcodebuild[95825:23510659] [MT] DVTDeviceOperation: Encountered a build number "" that is incompatible with DVTBuildVersion.
+    ** BUILD FAILED **
+
+
+Xcode's output:
+↳
+    Writing result bundle at path:
+    	/var/folders/mt/81t8fpqs5gv1mdshqdr7p3jm0000gn/T/flutter_tools.cd0Aum/flutter_ios_build_temp_dirg89pkk/temporary_xcresult_bundle
+
+    /Users/george/.pub-cache/hosted/pub.dev/share_plus-13.1.0/ios/share_plus/Sources/share_plus/FPPSharePlusPlugin.m:25:46: warning: 'keyWindow' is deprecated: first deprecated in iOS 13.0 - Should not be used for applications that support multiple scenes as it returns a key window across all connected scenes [-Wdeprecated-declarations]
+       25 |     return [UIApplication sharedApplication].keyWindow.rootViewController;
+          |                                              ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/share_plus/share_plus-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIApplication.h:108:51: note: 'keyWindow' has been explicitly marked deprecated here
+      108 | @property(nullable, nonatomic,readonly) UIWindow *keyWindow API_DEPRECATED("Should not be used for applications that support multiple scenes as it returns a key window across all connected scenes", ios(2.0, 13.0)) API_UNAVAILABLE(visionos, watchos);
+          |                                                   ^
+    1 warning generated.
+    /Users/george/.pub-cache/hosted/pub.dev/app_settings-7.0.0/ios/app_settings/Sources/app_settings/AppSettingsPlugin.swift:33:23: warning: unnecessary check for 'iOS'; enclosing scope ensures guard will always be true
+                } else if #available(iOS 15.4, *) {
+                          ^
+    /Users/george/.pub-cache/hosted/pub.dev/app_settings-7.0.0/ios/app_settings/Sources/app_settings/AppSettingsPlugin.swift:31:13: note: enclosing scope here
+                if #available(iOS 16.0, *) {
+                ^
+    /Users/george/smivo/app/ios/Pods/libwebp/src/dsp/dec_neon.c:1467:38: warning: variable 'sum_left' may be uninitialized when used here [-Wconditional-uninitialized]
+     1467 |     const uint16x8_t sum = vaddq_u16(sum_left, sum_top);
+          |                                      ^~~~~~~~
+    /Users/george/smivo/app/ios/Pods/libwebp/src/dsp/dec_neon.c:1432:3: note: variable 'sum_left' is declared here
+     1432 |   uint16x8_t sum_left;
+          |   ^
+    /Users/george/smivo/app/ios/Pods/libwebp/src/dsp/dec_neon.c:1467:48: warning: variable 'sum_top' may be uninitialized when used here [-Wconditional-uninitialized]
+     1467 |     const uint16x8_t sum = vaddq_u16(sum_left, sum_top);
+          |                                                ^~~~~~~
+    /Users/george/smivo/app/ios/Pods/libwebp/src/dsp/dec_neon.c:1431:3: note: variable 'sum_top' is declared here
+     1431 |   uint16x8_t sum_top;
+          |   ^
+    /Users/george/smivo/app/ios/Pods/libwebp/src/dsp/dec_neon.c:1556:38: warning: variable 'sum_left' may be uninitialized when used here [-Wconditional-uninitialized]
+     1556 |     const uint16x8_t sum = vaddq_u16(sum_left, sum_top);
+          |                                      ^~~~~~~~
+    /Users/george/smivo/app/ios/Pods/libwebp/src/dsp/dec_neon.c:1515:3: note: variable 'sum_left' is declared here
+     1515 |   uint16x8_t sum_left;
+          |   ^
+    /Users/george/smivo/app/ios/Pods/libwebp/src/dsp/dec_neon.c:1556:48: warning: variable 'sum_top' may be uninitialized when used here [-Wconditional-uninitialized]
+     1556 |     const uint16x8_t sum = vaddq_u16(sum_left, sum_top);
+          |                                                ^~~~~~~
+    /Users/george/smivo/app/ios/Pods/libwebp/src/dsp/dec_neon.c:1514:3: note: variable 'sum_top' is declared here
+     1514 |   uint16x8_t sum_top;
+          |   ^
+    4 warnings generated.
+    /Users/george/smivo/app/ios/Pods/libwebp/src/enc/backward_references_enc.c:720:12: warning: variable 'best_offset' may be uninitialized when used here [-Wconditional-uninitialized]
+      720 |           (best_offset << MAX_LENGTH_BITS) | (uint32_t)best_length;
+          |            ^~~~~~~~~~~
+    /Users/george/smivo/app/ios/Pods/libwebp/src/enc/backward_references_enc.c:652:20: note: initialize the variable 'best_offset' to silence this warning
+      652 |     int best_offset;
+          |                    ^
+          |                     = 0
+    1 warning generated.
+    /Users/george/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13+6/ios/image_picker_ios/Sources/image_picker_ios/FLTImagePickerPlugin.m:130:39: warning: 'kUTTypeImage' is deprecated: first deprecated in iOS 15.0 - Use UTTypeImage or UTType.image (swift) instead. [-Wdeprecated-declarations]
+      130 |     [mediaTypes addObject:(NSString *)kUTTypeImage];
+          |                                       ^
+    In module 'MobileCoreServices' imported from /Users/george/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13+6/ios/image_picker_ios/Sources/image_picker_ios/FLTImagePickerPlugin.m:9:
+    In module 'CoreServices' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/MobileCoreServices.framework/Headers/MobileCoreServices.h:9:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTCoreTypes.h:725:26: note: 'kUTTypeImage' has been explicitly marked deprecated here
+      725 | extern const CFStringRef kUTTypeImage                                API_DEPRECATED("Use UTTypeImage or UTType.image (swift) instead.", ios(3.0, 15.0), macos(10.4, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    /Users/george/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13+6/ios/image_picker_ios/Sources/image_picker_ios/FLTImagePickerPlugin.m:133:39: warning: 'kUTTypeMovie' is deprecated: first deprecated in iOS 15.0 - Use UTTypeMovie or UTType.movie (swift) instead. [-Wdeprecated-declarations]
+      133 |     [mediaTypes addObject:(NSString *)kUTTypeMovie];
+          |                                       ^
+    In module 'MobileCoreServices' imported from /Users/george/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13+6/ios/image_picker_ios/Sources/image_picker_ios/FLTImagePickerPlugin.m:9:
+    In module 'CoreServices' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/MobileCoreServices.framework/Headers/MobileCoreServices.h:9:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTCoreTypes.h:880:26: note: 'kUTTypeMovie' has been explicitly marked deprecated here
+      880 | extern const CFStringRef kUTTypeMovie                                API_DEPRECATED("Use UTTypeMovie or UTType.movie (swift) instead.", ios(3.0, 15.0), macos(10.4, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    2 warnings generated.
+    /Users/george/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13+6/ios/image_picker_ios/Sources/image_picker_ios/FLTImagePickerPhotoAssetUtil.m:106:17: warning: 'kUTTypeGIF' is deprecated: first deprecated in iOS 15.0 - Use UTTypeGIF or UTType.gif (swift) instead. [-Wdeprecated-declarations]
+      106 |     imageType = kUTTypeGIF;
+          |                 ^
+    In module 'MobileCoreServices' imported from /Users/george/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13+6/ios/image_picker_ios/Sources/image_picker_ios/FLTImagePickerPhotoAssetUtil.m:9:
+    In module 'CoreServices' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/MobileCoreServices.framework/Headers/MobileCoreServices.h:9:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTCoreTypes.h:729:26: note: 'kUTTypeGIF' has been explicitly marked deprecated here
+      729 | extern const CFStringRef kUTTypeGIF                                  API_DEPRECATED("Use UTTypeGIF or UTType.gif (swift) instead.", ios(3.0, 15.0), macos(10.4, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    1 warning generated.
+    /Users/george/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13+6/ios/image_picker_ios/Sources/image_picker_ios/FLTImagePickerImageUtil.m:125:37: warning: 'kUTTypeGIF' is deprecated: first deprecated in iOS 15.0 - Use UTTypeGIF or UTType.gif (swift) instead. [-Wdeprecated-declarations]
+      125 |     gifTypeIdentifier = (NSString *)kUTTypeGIF;
+          |                                     ^
+    In module 'MobileCoreServices' imported from /Users/george/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13+6/ios/image_picker_ios/Sources/image_picker_ios/FLTImagePickerImageUtil.m:6:
+    In module 'CoreServices' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/MobileCoreServices.framework/Headers/MobileCoreServices.h:9:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTCoreTypes.h:729:26: note: 'kUTTypeGIF' has been explicitly marked deprecated here
+      729 | extern const CFStringRef kUTTypeGIF                                  API_DEPRECATED("Use UTTypeGIF or UTType.gif (swift) instead.", ios(3.0, 15.0), macos(10.4, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    1 warning generated.
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_app_badger-1.5.0/ios/Classes/FlutterAppBadgerPlugin.m:17:9: warning: 'UIUserNotificationSettings' is deprecated: first deprecated in iOS 10.0 - Use UserNotifications Framework's UNNotificationSettings [-Wdeprecated-declarations]
+       17 |         UIUserNotificationSettings* notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:[[UIApplication sharedApplication] currentUserNotificationSettings].categories];
+          |         ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/flutter_app_badger/flutter_app_badger-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIUserNotificationSettings.h:44:12: note: 'UIUserNotificationSettings' has been explicitly marked deprecated here
+       44 | @interface UIUserNotificationSettings : NSObject
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_app_badger-1.5.0/ios/Classes/FlutterAppBadgerPlugin.m:17:105: warning: 'UIUserNotificationTypeAlert' is deprecated: first deprecated in iOS 10.0 - Use UserNotifications Framework's UNAuthorizationOptions [-Wdeprecated-declarations]
+       17 |         UIUserNotificationSettings* notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:[[UIApplication sharedApplication] currentUserNotificationSettings].categories];
+          |                                                                                                         ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/flutter_app_badger/flutter_app_badger-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIUserNotificationSettings.h:17:32: note: 'UIUserNotificationType' has been explicitly marked deprecated here
+       17 | typedef NS_OPTIONS(NSUInteger, UIUserNotificationType) {
+          |                                ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_app_badger-1.5.0/ios/Classes/FlutterAppBadgerPlugin.m:17:135: warning: 'UIUserNotificationTypeBadge' is deprecated: first deprecated in iOS 10.0 - Use UserNotifications Framework's UNAuthorizationOptions [-Wdeprecated-declarations]
+       17 |         UIUserNotificationSettings* notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:[[UIApplication sharedApplication] currentUserNotificationSettings].categories];
+          |                                                                                                                                       ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/flutter_app_badger/flutter_app_badger-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIUserNotificationSettings.h:17:32: note: 'UIUserNotificationType' has been explicitly marked deprecated here
+       17 | typedef NS_OPTIONS(NSUInteger, UIUserNotificationType) {
+          |                                ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_app_badger-1.5.0/ios/Classes/FlutterAppBadgerPlugin.m:17:165: warning: 'UIUserNotificationTypeSound' is deprecated: first deprecated in iOS 10.0 - Use UserNotifications Framework's UNAuthorizationOptions [-Wdeprecated-declarations]
+       17 |         UIUserNotificationSettings* notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:[[UIApplication sharedApplication] currentUserNotificationSettings].categories];
+          |                                                                                                                                                                     ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/flutter_app_badger/flutter_app_badger-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIUserNotificationSettings.h:17:32: note: 'UIUserNotificationType' has been explicitly marked deprecated here
+       17 | typedef NS_OPTIONS(NSUInteger, UIUserNotificationType) {
+          |                                ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_app_badger-1.5.0/ios/Classes/FlutterAppBadgerPlugin.m:17:239: warning: 'currentUserNotificationSettings' is deprecated: first deprecated in iOS 10.0 - Use UserNotifications Framework's -[UNUserNotificationCenter getNotificationSettingsWithCompletionHandler:] and -[UNUserNotificationCenter getNotificationCategoriesWithCompletionHandler:] [-Wdeprecated-declarations]
+       17 |         UIUserNotificationSettings* notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:[[UIApplication sharedApplication] currentUserNotificationSettings].categories];
+          |                                                                                                                                                                                                                                               ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/flutter_app_badger/flutter_app_badger-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIApplication.h:235:70: note: property 'currentUserNotificationSettings' is declared deprecated here
+      235 | @property(nonatomic, readonly, nullable) UIUserNotificationSettings *currentUserNotificationSettings API_DEPRECATED("Use UserNotifications Framework's -[UNUserNotificationCenter getNotificationSettingsWithCompletionHandler:] and -[UNUserNotificationCenter getNotificationCategoriesWithCompletionHandler:]", ios(8.0, 10.0)) API_UNAVAILABLE(visionos, tvos, watchos);
+          |                                                                      ^
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIApplication.h:235:70: note: 'currentUserNotificationSettings' has been explicitly marked deprecated here
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_app_badger-1.5.0/ios/Classes/FlutterAppBadgerPlugin.m:17:88: warning: 'UIUserNotificationSettings' is deprecated: first deprecated in iOS 10.0 - Use UserNotifications Framework's UNNotificationSettings [-Wdeprecated-declarations]
+       17 |         UIUserNotificationSettings* notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:[[UIApplication sharedApplication] currentUserNotificationSettings].categories];
+          |                                                                                        ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/flutter_app_badger/flutter_app_badger-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIUserNotificationSettings.h:44:12: note: 'UIUserNotificationSettings' has been explicitly marked deprecated here
+       44 | @interface UIUserNotificationSettings : NSObject
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_app_badger-1.5.0/ios/Classes/FlutterAppBadgerPlugin.m:18:44: warning: 'registerUserNotificationSettings:' is deprecated: first deprecated in iOS 10.0 - Use UserNotifications Framework's -[UNUserNotificationCenter requestAuthorizationWithOptions:completionHandler:] and -[UNUserNotificationCenter setNotificationCategories:] [-Wdeprecated-declarations]
+       18 |         [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
+          |                                            ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/flutter_app_badger/flutter_app_badger-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIApplication.h:232:1: note: 'registerUserNotificationSettings:' has been explicitly marked deprecated here
+      232 | - (void)registerUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings API_DEPRECATED("Use UserNotifications Framework's -[UNUserNotificationCenter requestAuthorizationWithOptions:completionHandler:] and -[UNUserNotificationCenter setNotificationCategories:]", ios(8.0, 10.0)) API_UNAVAILABLE(visionos, tvos, watchos);
+          | ^
+    7 warnings generated.
+    /Users/george/.pub-cache/hosted/pub.dev/image_cropper-12.2.1/ios/image_cropper/Sources/image_cropper/FLTImageCropperPlugin.m:66:15: warning: unused variable 'customAspectRatioName' [-Wunused-variable]
+       66 |     NSString *customAspectRatioName;
+          |               ^~~~~~~~~~~~~~~~~~~~~
+    /Users/george/.pub-cache/hosted/pub.dev/image_cropper-12.2.1/ios/image_cropper/Sources/image_cropper/FLTImageCropperPlugin.m:67:19: warning: unused variable 'customAspectRatioData' [-Wunused-variable]
+       67 |     NSDictionary *customAspectRatioData;
+          |                   ^~~~~~~~~~~~~~~~~~~~~
+    2 warnings generated.
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadataExif.m:41:65: warning: 'kCGImagePropertyExifSubsecTimeOrginal' is deprecated: first deprecated in iOS 10.0 - No longer supported [-Wdeprecated-declarations]
+       41 |              SYStringSel(subsecTimeOriginal):       (NSString *)kCGImagePropertyExifSubsecTimeOrginal,
+          |                                                                 ^
+    In module 'ImageIO' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadataExif.m:10:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/ImageIO.framework/Headers/CGImageProperties.h:252:34: note: 'kCGImagePropertyExifSubsecTimeOrginal' has been explicitly marked deprecated here
+      252 | IMAGEIO_EXTERN const CFStringRef kCGImagePropertyExifSubsecTimeOrginal IMAGEIO_AVAILABLE_BUT_DEPRECATED(10.4, 10.11, 4.0, 10.0);
+          |                                  ^
+    1 warning generated.
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:49:36: warning: 'ALAsset' is deprecated: first deprecated in iOS 9 - Use PHAsset from the Photos framework instead [-Wdeprecated-declarations]
+       49 | + (instancetype)metadataWithAsset:(ALAsset *)asset
+          |                                    ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAsset.h:40:12: note: 'ALAsset' has been explicitly marked deprecated here
+       40 | @interface ALAsset : NSObject {
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:52:5: warning: 'ALAssetRepresentation' is deprecated: first deprecated in iOS 9 - Use PHImageRequestOptions with the PHImageManager from the Photos framework instead [-Wdeprecated-declarations]
+       52 |     ALAssetRepresentation *representation = [asset defaultRepresentation];
+          |     ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAssetRepresentation.h:20:12: note: 'ALAssetRepresentation' has been explicitly marked deprecated here
+       20 | @interface ALAssetRepresentation : NSObject {
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:52:52: warning: 'defaultRepresentation' is deprecated: first deprecated in iOS 9 - Use PHImageRequestOptions with the PHImageManager from the Photos framework instead [-Wdeprecated-declarations]
+       52 |     ALAssetRepresentation *representation = [asset defaultRepresentation];
+          |                                                    ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAsset.h:49:1: note: 'defaultRepresentation' has been explicitly marked deprecated here
+       49 | - (ALAssetRepresentation *)defaultRepresentation AL_DEPRECATED(4, "Use PHImageRequestOptions with the PHImageManager from the Photos framework instead");
+          | ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:53:57: warning: 'metadata' is deprecated: first deprecated in iOS 9 - Use CGImageSourceCopyPropertiesAtIndex() to retrieve metadata from an image returned by the PHImageManager from the Photos framework instead [-Wdeprecated-declarations]
+       53 |     return [self metadataWithDictionary:[representation metadata]];
+          |                                                         ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAssetRepresentation.h:56:1: note: 'metadata' has been explicitly marked deprecated here
+       56 | - (NSDictionary *)metadata AL_DEPRECATED(4, "Use CGImageSourceCopyPropertiesAtIndex() to retrieve metadata from an image returned by the PHImageManager from the Photos framework instead");
+          | ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:152:13: warning: 'ALAsset' is deprecated: first deprecated in iOS 9 - Use PHAsset from the Photos framework instead [-Wdeprecated-declarations]
+      152 |     __block ALAsset *assetAtUrl = nil;
+          |             ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAsset.h:40:12: note: 'ALAsset' has been explicitly marked deprecated here
+       40 | @interface ALAsset : NSObject {
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:153:5: warning: 'ALAssetsLibrary' is deprecated: first deprecated in iOS 9 - Use PHPhotoLibrary from the Photos framework instead [-Wdeprecated-declarations]
+      153 |     ALAssetsLibrary* library = [[ALAssetsLibrary alloc] init];
+          |     ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAssetsLibrary.h:80:12: note: 'ALAssetsLibrary' has been explicitly marked deprecated here
+       80 | @interface ALAssetsLibrary : NSObject {
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:153:50: warning: 'ALAssetsLibrary' is deprecated: first deprecated in iOS 9 - Use PHPhotoLibrary from the Photos framework instead [-Wdeprecated-declarations]
+      153 |     ALAssetsLibrary* library = [[ALAssetsLibrary alloc] init];
+          |                                                  ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAssetsLibrary.h:80:12: note: 'ALAssetsLibrary' has been explicitly marked deprecated here
+       80 | @interface ALAssetsLibrary : NSObject {
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:156:49: warning: 'ALAsset' is deprecated: first deprecated in iOS 9 - Use PHAsset from the Photos framework instead [-Wdeprecated-declarations]
+      156 |     [library assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+          |                                                 ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAsset.h:40:12: note: 'ALAsset' has been explicitly marked deprecated here
+       40 | @interface ALAsset : NSObject {
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:156:14: warning: 'assetForURL:resultBlock:failureBlock:' is deprecated: first deprecated in iOS 9 - Use fetchAssetsWithLocalIdentifiers:options: on PHAsset to fetch assets by local identifier (or to lookup PHAssets by a previously known ALAssetPropertyAssetURL use fetchAssetsWithALAssetURLs:options:) from the Photos framework instead [-Wdeprecated-declarations]
+      156 |     [library assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+          |              ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAssetsLibrary.h:95:1: note: 'assetForURL:resultBlock:failureBlock:' has been explicitly marked deprecated here
+       95 | - (void)assetForURL:(NSURL *)assetURL resultBlock:(ALAssetsLibraryAssetForURLResultBlock)resultBlock failureBlock:(ALAssetsLibraryAccessFailureBlock)failureBlock AL_DEPRECATED(4, "Use fetchAssetsWithLocalIdentifiers:options: on PHAsset to fetch assets by local identifier (or to lookup PHAssets by a previously known ALAssetPropertyAssetURL use fetchAssetsWithALAssetURLs:options:) from the Photos framework instead");
+          | ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:167:5: warning: 'ALAssetRepresentation' is deprecated: first deprecated in iOS 9 - Use PHImageRequestOptions with the PHImageManager from the Photos framework instead [-Wdeprecated-declarations]
+      167 |     ALAssetRepresentation *representation = [assetAtUrl defaultRepresentation];
+          |     ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAssetRepresentation.h:20:12: note: 'ALAssetRepresentation' has been explicitly marked deprecated here
+       20 | @interface ALAssetRepresentation : NSObject {
+          |            ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:167:57: warning: 'defaultRepresentation' is deprecated: first deprecated in iOS 9 - Use PHImageRequestOptions with the PHImageManager from the Photos framework instead [-Wdeprecated-declarations]
+      167 |     ALAssetRepresentation *representation = [assetAtUrl defaultRepresentation];
+          |                                                         ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAsset.h:49:1: note: 'defaultRepresentation' has been explicitly marked deprecated here
+       49 | - (ALAssetRepresentation *)defaultRepresentation AL_DEPRECATED(4, "Use PHImageRequestOptions with the PHImageManager from the Photos framework instead");
+          | ^
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:168:28: warning: 'metadata' is deprecated: first deprecated in iOS 9 - Use CGImageSourceCopyPropertiesAtIndex() to retrieve metadata from an image returned by the PHImageManager from the Photos framework instead [-Wdeprecated-declarations]
+      168 |     return [representation metadata];
+          |                            ^
+    In module 'AssetsLibrary' imported from /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/SYPictureMetadata/SYMetadata.m:14:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/AssetsLibrary.framework/Headers/ALAssetRepresentation.h:56:1: note: 'metadata' has been explicitly marked deprecated here
+       56 | - (NSDictionary *)metadata AL_DEPRECATED(4, "Use CGImageSourceCopyPropertiesAtIndex() to retrieve metadata from an image returned by the PHImageManager from the Photos framework instead");
+          | ^
+    12 warnings generated.
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/CompressFileHandler.m:109:16: warning: unused variable 'swf' [-Wunused-variable]
+      109 |     const char swf[3] = {'F', 'W', 'S'};
+          |                ^~~
+    /Users/george/.pub-cache/hosted/pub.dev/flutter_image_compress_common-1.0.6/ios/Classes/CompressFileHandler.m:110:16: warning: unused variable 'swc' [-Wunused-variable]
+      110 |     const char swc[3] = {'C', 'W', 'S'};
+          |                ^~~
+    2 warnings generated.
+    /Users/george/smivo/app/ios/Pods/TOCropViewController/Objective-C/TOCropViewController/Views/TOCropToolbar.m:397:28: warning: 'imageEdgeInsets' is deprecated: first deprecated in iOS 15.0 - This property is ignored when using UIButtonConfiguration [-Wdeprecated-declarations]
+      397 |                     button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, image.baselineOffsetFromBottom, 0);
+          |                            ^
+    In module 'UIKit' imported from /Users/george/smivo/app/ios/Pods/Target Support Files/TOCropViewController/TOCropViewController-prefix.pch:2:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIButton.h:164:35: note: 'imageEdgeInsets' has been explicitly marked deprecated here
+      164 | @property(nonatomic) UIEdgeInsets imageEdgeInsets API_DEPRECATED("This property is ignored when using UIButtonConfiguration", ios(2.0, 15.0), tvos(2.0, 15.0), visionos(1.0, 1.0)) API_UNAVAILABLE(watchos);                // default is UIEdgeInsetsZero
+          |                                   ^
+    1 warning generated.
+    /Users/george/smivo/app/ios/Pods/SDWebImageWebPCoder/SDWebImageWebPCoder/Classes/SDImageWebPCoder.m:466:61: warning: bitwise operation between different enumeration types ('enum CGBitmapInfo' and 'enum CGImageAlphaInfo') [-Wenum-enum-conversion]
+      466 |         CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast;
+          |                                   ~~~~~~~~~~~~~~~~~~~~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /Users/george/smivo/app/ios/Pods/SDWebImageWebPCoder/SDWebImageWebPCoder/Classes/SDImageWebPCoder.m:673:33: warning: 'CGColorSpaceCreateWithICCProfile' is deprecated: first deprecated in iOS 11.0 - No longer supported [-Wdeprecated-declarations]
+      673 |                 colorSpaceRef = CGColorSpaceCreateWithICCProfile((__bridge CFDataRef)profileData);
+          |                                 ^
+    In module 'CoreGraphics' imported from /Users/george/smivo/app/ios/Pods/Headers/Private/SDWebImage/SDImageGraphics.h:10:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreGraphics.framework/Headers/CGColorSpace.h:493:38: note: 'CGColorSpaceCreateWithICCProfile' has been explicitly marked deprecated here
+      493 | CG_EXTERN CGColorSpaceRef __nullable CGColorSpaceCreateWithICCProfile(CFDataRef cg_nullable data)
+          |                                      ^
+    /Users/george/smivo/app/ios/Pods/SDWebImageWebPCoder/SDWebImageWebPCoder/Classes/SDImageWebPCoder.m:891:52: warning: bitwise operation between different enumeration types ('enum CGImageAlphaInfo' and 'enum CGBitmapInfo') [-Wenum-enum-conversion]
+      891 |         .bitmapInfo = hasAlpha ? kCGImageAlphaLast | kCGBitmapByteOrderDefault : kCGImageAlphaNone | kCGBitmapByteOrderDefault, // RGB888/RGBA8888 (Non-premultiplied to works for libwebp)
+          |                                  ~~~~~~~~~~~~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~
+    /Users/george/smivo/app/ios/Pods/SDWebImageWebPCoder/SDWebImageWebPCoder/Classes/SDImageWebPCoder.m:891:100: warning: bitwise operation between different enumeration types ('enum CGImageAlphaInfo' and 'enum CGBitmapInfo') [-Wenum-enum-conversion]
+      891 |         .bitmapInfo = hasAlpha ? kCGImageAlphaLast | kCGBitmapByteOrderDefault : kCGImageAlphaNone | kCGBitmapByteOrderDefault, // RGB888/RGBA8888 (Non-premultiplied to works for libwebp)
+          |                                                                                  ~~~~~~~~~~~~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~
+    4 warnings generated.
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/UIImage+Transform.m:761:58: warning: bitwise operation between different enumeration types ('CGBitmapInfo' (aka 'enum CGBitmapInfo') and 'enum CGImagePixelFormatInfo') [-Wenum-enum-conversion]
+      761 |         CGImagePixelFormatInfo pixelFormat = (bitmapInfo & kCGImagePixelFormatMask);
+          |                                               ~~~~~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/UIImage+Transform.m:847:58: warning: bitwise operation between different enumeration types ('CGBitmapInfo' (aka 'enum CGBitmapInfo') and 'enum CGImagePixelFormatInfo') [-Wenum-enum-conversion]
+      847 |         CGImagePixelFormatInfo pixelFormat = (bitmapInfo & kCGImagePixelFormatMask);
+          |                                               ~~~~~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/UIImage+Transform.m:964:55: warning: bitwise operation between different enumeration types ('enum CGImageAlphaInfo' and 'const CGBitmapInfo' (aka 'const enum CGBitmapInfo')) [-Wenum-enum-conversion]
+      964 |         .bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host, //requests a BGRA buffer.
+          |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~
+    3 warnings generated.
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOCoder.m:208:64: warning: 'UTTypeCreatePreferredIdentifierForTag' is deprecated: first deprecated in iOS 15.0 - Use the UTType class instead. [-Wdeprecated-declarations]
+      208 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOCoder.m:17:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:317:1: note: 'UTTypeCreatePreferredIdentifierForTag' has been explicitly marked deprecated here
+      317 | UTTypeCreatePreferredIdentifierForTag(
+          | ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOCoder.m:208:102: warning: 'kUTTagClassFilenameExtension' is deprecated: first deprecated in iOS 15.0 - Use UTTagClassFilenameExtension instead. [-Wdeprecated-declarations]
+      208 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                                                      ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOCoder.m:17:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:258:26: note: 'kUTTagClassFilenameExtension' has been explicitly marked deprecated here
+      258 | extern const CFStringRef kUTTagClassFilenameExtension                API_DEPRECATED("Use UTTagClassFilenameExtension instead.", ios(3.0, 15.0), macos(10.3, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOCoder.m:208:173: warning: 'kUTTypeImage' is deprecated: first deprecated in iOS 15.0 - Use UTTypeImage or UTType.image (swift) instead. [-Wdeprecated-declarations]
+      208 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                                                                                                                             ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOCoder.m:17:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTCoreTypes.h:725:26: note: 'kUTTypeImage' has been explicitly marked deprecated here
+      725 | extern const CFStringRef kUTTypeImage                                API_DEPRECATED("Use UTTypeImage or UTType.image (swift) instead.", ios(3.0, 15.0), macos(10.4, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOCoder.m:210:17: warning: 'UTTypeIsDynamic' is deprecated: first deprecated in iOS 15.0 - Use UTType.dynamic instead. [-Wdeprecated-declarations]
+      210 |             if (UTTypeIsDynamic((__bridge CFStringRef)typeIdentifierHint)) {
+          |                 ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOCoder.m:17:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:536:1: note: 'UTTypeIsDynamic' has been explicitly marked deprecated here
+      536 | UTTypeIsDynamic(CFStringRef inUTI)                                   API_DEPRECATED("Use UTType.dynamic instead.", ios(8.0, 15.0), macos(10.10, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          | ^
+    4 warnings generated.
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:203:51: warning: bitwise operation between different enumeration types ('CGImageAlphaInfo' (aka 'enum CGImageAlphaInfo') and 'CGBitmapInfo' (aka 'enum CGBitmapInfo')) [-Wenum-enum-conversion]
+      203 |         CGBitmapInfo newBitmapInfo = newAlphaInfo | byteOrderInfo;
+          |                                      ~~~~~~~~~~~~ ^ ~~~~~~~~~~~~~
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:652:64: warning: 'UTTypeCreatePreferredIdentifierForTag' is deprecated: first deprecated in iOS 15.0 - Use the UTType class instead. [-Wdeprecated-declarations]
+      652 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:20:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:317:1: note: 'UTTypeCreatePreferredIdentifierForTag' has been explicitly marked deprecated here
+      317 | UTTypeCreatePreferredIdentifierForTag(
+          | ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:652:102: warning: 'kUTTagClassFilenameExtension' is deprecated: first deprecated in iOS 15.0 - Use UTTagClassFilenameExtension instead. [-Wdeprecated-declarations]
+      652 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                                                      ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:20:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:258:26: note: 'kUTTagClassFilenameExtension' has been explicitly marked deprecated here
+      258 | extern const CFStringRef kUTTagClassFilenameExtension                API_DEPRECATED("Use UTTagClassFilenameExtension instead.", ios(3.0, 15.0), macos(10.3, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:652:173: warning: 'kUTTypeImage' is deprecated: first deprecated in iOS 15.0 - Use UTTypeImage or UTType.image (swift) instead. [-Wdeprecated-declarations]
+      652 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                                                                                                                             ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:20:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTCoreTypes.h:725:26: note: 'kUTTypeImage' has been explicitly marked deprecated here
+      725 | extern const CFStringRef kUTTypeImage                                API_DEPRECATED("Use UTTypeImage or UTType.image (swift) instead.", ios(3.0, 15.0), macos(10.4, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:654:17: warning: 'UTTypeIsDynamic' is deprecated: first deprecated in iOS 15.0 - Use UTType.dynamic instead. [-Wdeprecated-declarations]
+      654 |             if (UTTypeIsDynamic((__bridge CFStringRef)typeIdentifierHint)) {
+          |                 ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageIOAnimatedCoder.m:20:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:536:1: note: 'UTTypeIsDynamic' has been explicitly marked deprecated here
+      536 | UTTypeIsDynamic(CFStringRef inUTI)                                   API_DEPRECATED("Use UTType.dynamic instead.", ios(8.0, 15.0), macos(10.10, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          | ^
+    5 warnings generated.
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageCacheDefine.m:89:64: warning: 'UTTypeCreatePreferredIdentifierForTag' is deprecated: first deprecated in iOS 15.0 - Use the UTType class instead. [-Wdeprecated-declarations]
+       89 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageCacheDefine.m:17:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:317:1: note: 'UTTypeCreatePreferredIdentifierForTag' has been explicitly marked deprecated here
+      317 | UTTypeCreatePreferredIdentifierForTag(
+          | ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageCacheDefine.m:89:102: warning: 'kUTTagClassFilenameExtension' is deprecated: first deprecated in iOS 15.0 - Use UTTagClassFilenameExtension instead. [-Wdeprecated-declarations]
+       89 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                                                      ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageCacheDefine.m:17:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:258:26: note: 'kUTTagClassFilenameExtension' has been explicitly marked deprecated here
+      258 | extern const CFStringRef kUTTagClassFilenameExtension                API_DEPRECATED("Use UTTagClassFilenameExtension instead.", ios(3.0, 15.0), macos(10.3, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageCacheDefine.m:89:173: warning: 'kUTTypeImage' is deprecated: first deprecated in iOS 15.0 - Use UTTypeImage or UTType.image (swift) instead. [-Wdeprecated-declarations]
+       89 |             typeIdentifierHint = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtensionHint, kUTTypeImage);
+          |                                                                                                                                                                             ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageCacheDefine.m:17:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTCoreTypes.h:725:26: note: 'kUTTypeImage' has been explicitly marked deprecated here
+      725 | extern const CFStringRef kUTTypeImage                                API_DEPRECATED("Use UTTypeImage or UTType.image (swift) instead.", ios(3.0, 15.0), macos(10.4, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          |                          ^
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageCacheDefine.m:91:17: warning: 'UTTypeIsDynamic' is deprecated: first deprecated in iOS 15.0 - Use UTType.dynamic instead. [-Wdeprecated-declarations]
+       91 |             if (UTTypeIsDynamic((__bridge CFStringRef)typeIdentifierHint)) {
+          |                 ^
+    In module 'CoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/SDImageCacheDefine.m:17:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:536:1: note: 'UTTypeIsDynamic' has been explicitly marked deprecated here
+      536 | UTTypeIsDynamic(CFStringRef inUTI)                                   API_DEPRECATED("Use UTType.dynamic instead.", ios(8.0, 15.0), macos(10.10, 12.0), tvos(9.0, 15.0), watchos(1.0, 8.0));
+          | ^
+    4 warnings generated.
+    /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/NSData+ImageContentType.m:159:16: warning: 'UTTypeConformsTo' is deprecated: first deprecated in iOS 15.0 - Use -[UTType conformsToType:] instead. [-Wdeprecated-declarations]
+      159 |     } else if (UTTypeConformsTo(uttype, kSDUTTypeRAW)) {
+          |                ^
+    In module 'MobileCoreServices' imported from /Users/george/smivo/app/ios/Pods/SDWebImage/SDWebImage/Core/NSData+ImageContentType.m:14:
+    In module 'CoreServices' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/MobileCoreServices.framework/Headers/MobileCoreServices.h:9:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreServices.framework/Headers/UTType.h:472:1: note: 'UTTypeConformsTo' has been explicitly marked deprecated here
+      472 | UTTypeConformsTo(
+          | ^
+    1 warning generated.
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OneSignalPlugin.m:60:25: warning: null passed to a callee that requires a non-null argument [-Wnonnull]
+       60 |   [OneSignal initialize:nil withLaunchOptions:nil];
+          |                         ^~~
+    In module 'Foundation' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterDebug.h:29:
+    In module 'CoreFoundation' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h:6:
+    In module 'Darwin' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/System/Library/Frameworks/CoreFoundation.framework/Headers/CFBase.h:75:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/MacTypes.h:96:19: note: expanded from macro 'nil'
+       96 |       #define nil __DARWIN_NULL
+          |                   ^~~~~~~~~~~~~
+    In module 'Foundation' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterDebug.h:29:
+    In module 'CoreFoundation' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h:6:
+    In module '_DarwinFoundation2' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/CoreFoundation.framework/Headers/CoreFoundation.h:18:
+    /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.4.sdk/usr/include/sys/_types.h:52:23: note: expanded from macro '__DARWIN_NULL'
+       52 | #define __DARWIN_NULL NULL
+          |                       ^~~~
+    In module 'Foundation' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterDebug.h:29:
+    In module 'CoreFoundation' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h:6:
+    In module '_DarwinFoundation2' imported from /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/CoreFoundation.framework/Headers/CoreFoundation.h:18:
+    In module '_Builtin_stddef' imported from /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/include/stddef.h:93:
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/21/include/__stddef_null.h:26:14: note: expanded from macro 'NULL'
+       26 | #define NULL ((void*)0)
+          |              ^~~~~~~~~~
+    1 warning generated.
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OSFlutterUser.m:106:33: warning: incompatible pointer types sending 'NSDictionary *' to parameter of type 'NSArray<NSString *> * _Nonnull' [-Wincompatible-pointer-types]
+      106 |   [OneSignal.User removeAliases:aliases];
+          |                                 ^~~~~~~
+    In module 'OneSignalUser' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterPushSubscription.h:30:
+    /Users/george/smivo/app/build/ios/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalUser/OneSignalUser.framework/Headers/OneSignalUser-Swift.h:364:55: note: passing argument to parameter 'labels' here
+      364 | - (void)removeAliases:(NSArray<NSString *> * _Nonnull)labels;
+          |                                                       ^
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OSFlutterUser.m:118:30: warning: incompatible pointer types sending 'NSDictionary *' to parameter of type 'NSArray<NSString *> * _Nonnull' [-Wincompatible-pointer-types]
+      118 |   [OneSignal.User removeTags:tags];
+          |                              ^~~~
+    In module 'OneSignalUser' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterPushSubscription.h:30:
+    /Users/george/smivo/app/build/ios/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalUser/OneSignalUser.framework/Headers/OneSignalUser-Swift.h:368:52: note: passing argument to parameter 'tags' here
+      368 | - (void)removeTags:(NSArray<NSString *> * _Nonnull)tags;
+          |                                                    ^
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OSFlutterUser.m:164:34: warning: sending 'OSFlutterUser *const __strong' to parameter of incompatible type 'id<OSUserStateObserver> _Nonnull'
+      164 |   [OneSignal.User removeObserver:self];
+          |                                  ^~~~
+    In module 'OneSignalUser' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterPushSubscription.h:30:
+    /Users/george/smivo/app/build/ios/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalUser/OneSignalUser.framework/Headers/OneSignalUser-Swift.h:360:59: note: passing argument to parameter 'observer' here
+      360 | - (void)removeObserver:(id <OSUserStateObserver> _Nonnull)observer;
+          |                                                           ^
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OSFlutterUser.m:165:31: warning: sending 'OSFlutterUser *const __strong' to parameter of incompatible type 'id<OSUserStateObserver> _Nonnull'
+      165 |   [OneSignal.User addObserver:self];
+          |                               ^~~~
+    In module 'OneSignalUser' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterPushSubscription.h:30:
+    /Users/george/smivo/app/build/ios/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalUser/OneSignalUser.framework/Headers/OneSignalUser-Swift.h:359:56: note: passing argument to parameter 'observer' here
+      359 | - (void)addObserver:(id <OSUserStateObserver> _Nonnull)observer;
+          |                                                        ^
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OSFlutterUser.m:200:12: warning: incompatible pointer types returning 'NSNull * _Nonnull' from a function with result type 'NSString *' [-Wincompatible-pointer-types]
+      200 |     return [NSNull null];
+          |            ^~~~~~~~~~~~~
+    5 warnings generated.
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OSFlutterLiveActivities.m:150:15: warning: comparison of distinct pointer types ('NSDictionary *' and 'NSNull * _Nonnull') [-Wcompare-distinct-pointer-types]
+      150 |   if (options != [NSNull null]) {
+          |       ~~~~~~~ ^  ~~~~~~~~~~~~~
+    1 warning generated.
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OSFlutterInAppMessages.m:111:27: warning: incompatible pointer types sending 'OSFlutterInAppMessages *' to parameter of type 'NSObject<OSInAppMessageClickListener> * _Nullable' [-Wincompatible-pointer-types]
+      111 |       removeClickListener:OSFlutterInAppMessages.sharedInstance];
+          |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    In module 'OneSignalFramework' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterInAppMessages.h:30:
+    In module 'OneSignalCore' imported from /Users/george/smivo/app/build/ios/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignal/OneSignalFramework.framework/Headers/OneSignalFramework.h:46:
+    /Users/george/smivo/app/build/ios/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalCore/OneSignalCore.framework/Headers/OSInAppMessages.h:135:79: note: passing argument to parameter 'listener' here
+      135 | + (void)removeClickListener:(NSObject<OSInAppMessageClickListener> *_Nullable)listener NS_REFINED_FOR_SWIFT;
+          |                                                                               ^
+    /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/OSFlutterInAppMessages.m:113:24: warning: incompatible pointer types sending 'OSFlutterInAppMessages *' to parameter of type 'NSObject<OSInAppMessageClickListener> * _Nullable' [-Wincompatible-pointer-types]
+      113 |       addClickListener:OSFlutterInAppMessages.sharedInstance];
+          |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    In module 'OneSignalFramework' imported from /Users/george/.pub-cache/hosted/pub.dev/onesignal_flutter-5.5.2/ios/onesignal_flutter/Sources/onesignal_flutter/./include/onesignal_flutter/OSFlutterInAppMessages.h:30:
+    In module 'OneSignalCore' imported from /Users/george/smivo/app/build/ios/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignal/OneSignalFramework.framework/Headers/OneSignalFramework.h:46:
+    /Users/george/smivo/app/build/ios/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalCore/OneSignalCore.framework/Headers/OSInAppMessages.h:134:76: note: passing argument to parameter 'listener' here
+      134 | + (void)addClickListener:(NSObject<OSInAppMessageClickListener> *_Nullable)listener NS_REFINED_FOR_SWIFT;
+          |                                                                            ^
+    2 warnings generated.
+    libtool: warning: 'SqfliteDarwinDatabaseAdditions.o' has no symbols
+    libtool: warning: 'OSFlutterCategories.o' has no symbols
+    libtool: warning: 'NSBezierPath+SDRoundedCorners.o' has no symbols
+    libtool: warning: 'NSButton+WebCache.o' has no symbols
+    libtool: warning: 'NSData+ImageContentType.o' has no symbols
+    libtool: warning: 'NSImage+Compatibility.o' has no symbols
+    libtool: warning: 'SDAnimatedImageRep.o' has no symbols
+    libtool: warning: 'SDWebImageCompat.o' has no symbols
+    libtool: warning: 'UIColor+SDHexString.o' has no symbols
+    libtool: warning: 'UIImage+ExtendedCacheData.o' has no symbols
+    libtool: warning: 'UIImage+ForceDecode.o' has no symbols
+    libtool: warning: 'UIImage+GIF.o' has no symbols
+    libtool: warning: 'UIImage+MemoryCacheCost.o' has no symbols
+    libtool: warning: 'UIImage+MultiFormat.o' has no symbols
+    libtool: warning: 'UIView+WebCacheOperation.o' has no symbols
+    libtool: warning: 'UIImage+WebP.o' has no symbols
+    libtool: warning: 'NSArray+MTLManipulationAdditions.o' has no symbols
+    libtool: warning: 'NSDictionary+MTLJSONKeyPath.o' has no symbols
+    libtool: warning: 'NSDictionary+MTLManipulationAdditions.o' has no symbols
+    libtool: warning: 'NSDictionary+MTLMappingAdditions.o' has no symbols
+    libtool: warning: 'NSError+MTLModelException.o' has no symbols
+    libtool: warning: 'NSDictionary+SY.o' has no symbols
+    libtool: warning: 'UIImage+scale.o' has no symbols
+    lib/features/chat/screens/chat_list_screen.dart:461:39: Error: The getter 'onPrimaryContainer' isn't defined for the type 'SmivoColors'.
+     - 'SmivoColors' is from 'package:smivo/core/theme/smivo_colors.dart' ('lib/core/theme/smivo_colors.dart').
+    Try correcting the name to the name of an existing getter, or defining a getter or field named 'onPrimaryContainer'.
+                            color: colors.onPrimaryContainer,
+                                          ^^^^^^^^^^^^^^^^^^
+    Target kernel_snapshot_program failed: Exception
+    Failed to package /Users/george/smivo/app.
+    Command PhaseScriptExecution failed with a nonzero exit code
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignal/OneSignalFramework.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalCore/OneSignalCore.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalExtension/OneSignalExtension.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalInAppMessages/OneSignalInAppMessages.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalLiveActivities/OneSignalLiveActivities.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalLocation/OneSignalLocation.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalNotifications/OneSignalNotifications.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalOSCore/OneSignalOSCore.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalOutcomes/OneSignalOutcomes.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalUser/OneSignalUser.framework'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/Swift Compatibility Header/app_settings-Swift.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/flutter_app_badger/libflutter_app_badger.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/flutter_image_compress_common/libflutter_image_compress_common.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/flutter_native_splash/libflutter_native_splash.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/TOCropViewController/libTOCropViewController.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/Swift Compatibility Header/app_links-Swift.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/share_plus/libshare_plus.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/image_cropper/libimage_cropper.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/image_picker_ios/libimage_picker_ios.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/Swift Compatibility Header/sensors_plus-Swift.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/onesignal_flutter/libonesignal_flutter.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/Mantle/libMantle.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/libwebp/liblibwebp.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/app_settings-umbrella.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/Swift Compatibility Header/url_launcher_ios-Swift.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/app_links-umbrella.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/SDWebImage/libSDWebImage.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/Swift Compatibility Header/shared_preferences_foundation-Swift.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/libsensors_plus.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/app_settings.modulemap'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/liburl_launcher_ios.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/app_links.modulemap'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/libshared_preferences_foundation.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/sensors_plus-umbrella.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/app_settings.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/url_launcher_ios-umbrella.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/app_links.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/sensors_plus.modulemap'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/SDWebImageWebPCoder/libSDWebImageWebPCoder.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sqflite_darwin/libsqflite_darwin.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation-umbrella.h'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/app_links.swiftmodule/arm64-apple-ios.abi.json'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/share_plus/share_plus_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/app_links.swiftmodule/arm64-apple-ios.swiftdoc'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation.modulemap'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/url_launcher_ios.modulemap'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/libPods-Runner.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/sensors_plus.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/url_launcher_ios_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/app_links.swiftmodule/arm64-apple-ios.swiftmodule'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/sensors_plus_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/sensors_plus.swiftmodule/arm64-apple-ios.abi.json'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/url_launcher_ios.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/flutter_native_splash/flutter_native_splash_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/libapp_links.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Intermediates.noindex/Runner.build/Release-iphoneos/Runner.build/DerivedSources/Entitlements.plist'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/sensors_plus.swiftmodule/arm64-apple-ios.swiftdoc'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/url_launcher_ios.swiftmodule/arm64-apple-ios.abi.json'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/app_settings_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/image_picker_ios/image_picker_ios_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation.swiftmodule/arm64-apple-ios.abi.json'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/SDWebImage/SDWebImage.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/app_settings.swiftmodule/arm64-apple-ios.abi.json'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_links/app_links_ios_privacy.bundle'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Intermediates.noindex/Runner.build/Release-iphoneos/Runner.build/Runner.app.xcent'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/url_launcher_ios.swiftmodule/arm64-apple-ios.swiftdoc'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/sensors_plus/sensors_plus.swiftmodule/arm64-apple-ios.swiftmodule'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation.swiftmodule/arm64-apple-ios.swiftdoc'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/app_settings.swiftmodule/arm64-apple-ios.swiftdoc'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Intermediates.noindex/Runner.build/Release-iphoneos/Runner.build/Runner.app.xcent.der'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/url_launcher_ios/url_launcher_ios.swiftmodule/arm64-apple-ios.swiftmodule'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation.swiftmodule/arm64-apple-ios.swiftmodule'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/app_settings.swiftmodule/arm64-apple-ios.swiftmodule'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/app_settings/libapp_settings.a'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/Runner.app'
+
+    note: Removed stale file '/Users/george/Library/Developer/Xcode/DerivedData/Runner-gmoyxnjuepqjesaxzfkwgsqqcuyb/Build/Products/Release-iphoneos/TOCropViewController/TOCropViewControllerBundle.bundle'
+
+    note: Run script build phase 'Run Script' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'Runner' from project 'Runner')
+    note: Run script build phase 'Thin Binary' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'Runner' from project 'Runner')
+
+Encountered error while building for device.

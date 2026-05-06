@@ -58,81 +58,89 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
           maxWidth: 1200,
           child: Column(
             children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: TextField(
-              onChanged: (v) => setState(() => _searchQuery = v),
-              decoration: InputDecoration(
-                hintText: 'Search by name or email…',
-                prefixIcon: const Icon(Icons.search, size: 20),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(radius.md),
+                child: TextField(
+                  onChanged: (v) => setState(() => _searchQuery = v),
+                  decoration: InputDecoration(
+                    hintText: 'Search by name or email…',
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(radius.md),
+                    ),
+                    filled: true,
+                    fillColor: colors.surfaceContainerLow,
+                  ),
                 ),
-                filled: true,
-                fillColor: colors.surfaceContainerLow,
               ),
-            ),
-          ),
-          Expanded(
-            child: rolesState.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error:
-                  (err, _) => Center(
-                    child: Text(
-                      'Error: $err',
-                      style: TextStyle(color: colors.error),
-                    ),
-                  ),
-              data: (roles) {
-                var filtered = roles;
-                if (_searchQuery.isNotEmpty) {
-                  final q = _searchQuery.toLowerCase();
-                  filtered =
-                      roles
-                          .where(
-                            (r) =>
-                                (r.userName ?? '').toLowerCase().contains(q) ||
-                                (r.userEmail ?? '').toLowerCase().contains(q),
-                          )
-                          .toList();
-                }
-
-                if (filtered.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No roles found.',
-                      style: typo.bodyLarge.copyWith(
-                        color: colors.onSurfaceVariant,
+              Expanded(
+                child: rolesState.when(
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+                  error:
+                      (err, _) => Center(
+                        child: Text(
+                          'Error: $err',
+                          style: TextStyle(color: colors.error),
+                        ),
                       ),
-                    ),
-                  );
-                }
+                  data: (roles) {
+                    var filtered = roles;
+                    if (_searchQuery.isNotEmpty) {
+                      final q = _searchQuery.toLowerCase();
+                      filtered =
+                          roles
+                              .where(
+                                (r) =>
+                                    (r.userName ?? '').toLowerCase().contains(
+                                      q,
+                                    ) ||
+                                    (r.userEmail ?? '').toLowerCase().contains(
+                                      q,
+                                    ),
+                              )
+                              .toList();
+                    }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
-                  ),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final role = filtered[index];
-                    return _RoleCard(
-                      role: role,
-                      canWrite: canWrite,
-                      onEdit: () => _showEditDialog(context, role),
-                      onDelete: () => _confirmDelete(context, role),
+                    if (filtered.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No roles found.',
+                          style: typo.bodyLarge.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final role = filtered[index];
+                        return _RoleCard(
+                          role: role,
+                          canWrite: canWrite,
+                          onEdit: () => _showEditDialog(context, role),
+                          onDelete: () => _confirmDelete(context, role),
+                        );
+                      },
                     );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-          ],
-        ),
         ),
       ),
     );
@@ -342,17 +350,33 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
               initialValue: _role,
               decoration: const InputDecoration(labelText: 'Role'),
               items: const [
-                DropdownMenuItem(value: 'school_reviewer', child: Text('School Reviewer')),
-                DropdownMenuItem(value: 'school_admin', child: Text('School Admin')),
-                DropdownMenuItem(value: 'platform_reviewer', child: Text('Platform Reviewer')),
-                DropdownMenuItem(value: 'platform_admin', child: Text('Platform Admin')),
+                DropdownMenuItem(
+                  value: 'school_reviewer',
+                  child: Text('School Reviewer'),
+                ),
+                DropdownMenuItem(
+                  value: 'school_admin',
+                  child: Text('School Admin'),
+                ),
+                DropdownMenuItem(
+                  value: 'platform_reviewer',
+                  child: Text('Platform Reviewer'),
+                ),
+                DropdownMenuItem(
+                  value: 'platform_admin',
+                  child: Text('Platform Admin'),
+                ),
                 DropdownMenuItem(value: 'sysadmin', child: Text('Super Admin')),
               ],
               onChanged:
                   (v) => setState(() {
                     _role = v ?? 'school_reviewer';
                     // Platform-level roles auto-set scope to platform
-                    if (['sysadmin', 'platform_admin', 'platform_reviewer'].contains(_role)) {
+                    if ([
+                      'sysadmin',
+                      'platform_admin',
+                      'platform_reviewer',
+                    ].contains(_role)) {
                       _scopeType = 'platform';
                     }
                   }),
@@ -480,10 +504,22 @@ class _EditRoleDialogState extends ConsumerState<_EditRoleDialog> {
             initialValue: _role,
             decoration: const InputDecoration(labelText: 'Role'),
             items: const [
-              DropdownMenuItem(value: 'school_reviewer', child: Text('School Reviewer')),
-              DropdownMenuItem(value: 'school_admin', child: Text('School Admin')),
-              DropdownMenuItem(value: 'platform_reviewer', child: Text('Platform Reviewer')),
-              DropdownMenuItem(value: 'platform_admin', child: Text('Platform Admin')),
+              DropdownMenuItem(
+                value: 'school_reviewer',
+                child: Text('School Reviewer'),
+              ),
+              DropdownMenuItem(
+                value: 'school_admin',
+                child: Text('School Admin'),
+              ),
+              DropdownMenuItem(
+                value: 'platform_reviewer',
+                child: Text('Platform Reviewer'),
+              ),
+              DropdownMenuItem(
+                value: 'platform_admin',
+                child: Text('Platform Admin'),
+              ),
               DropdownMenuItem(value: 'sysadmin', child: Text('Super Admin')),
             ],
             onChanged: (v) => setState(() => _role = v ?? _role),

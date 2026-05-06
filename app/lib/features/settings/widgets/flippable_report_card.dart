@@ -62,18 +62,20 @@ class _FlippableReportCardState extends State<FlippableReportCard>
       child: AnimatedBuilder(
         animation: _animation,
         builder: (context, child) {
-          final transform = Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..rotateY(_animation.value * pi);
+          final transform =
+              Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(_animation.value * pi);
 
           final isFrontFacing = _animation.value < 0.5;
 
           return Transform(
             transform: transform,
             alignment: Alignment.center,
-            child: isFrontFacing
-                ? _buildFrontSide(context)
-                : _buildBackSide(context),
+            child:
+                isFrontFacing
+                    ? _buildFrontSide(context)
+                    : _buildBackSide(context),
           );
         },
       ),
@@ -87,11 +89,14 @@ class _FlippableReportCardState extends State<FlippableReportCard>
     final f = widget.report;
 
     final isListingReport = f.listingId != null;
-    final targetName = isListingReport
-        ? (f.listing?.title ?? 'Unknown Listing')
-        : (f.reportedUser?.displayName ?? 'Unknown User');
+    final targetName =
+        isListingReport
+            ? (f.listing?.title ?? 'Unknown Listing')
+            : (f.reportedUser?.displayName ?? 'Unknown User');
 
-    final dateStr = DateFormat('MMM d, yyyy HH:mm').format(f.createdAt.toLocal());
+    final dateStr = DateFormat(
+      'MMM d, yyyy HH:mm',
+    ).format(f.createdAt.toLocal());
 
     final (statusColor, statusBgColor, statusText) = _statusMeta(
       f.status,
@@ -139,8 +144,9 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                       ),
                       child: Text(
                         reportType,
-                        style: typo.labelSmall
-                            .copyWith(color: colors.onSurfaceVariant),
+                        style: typo.labelSmall.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -177,8 +183,9 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                   const SizedBox(height: 4),
                   Text(
                     dateStr,
-                    style: typo.labelSmall
-                        .copyWith(color: colors.onSurfaceVariant),
+                    style: typo.labelSmall.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -198,11 +205,11 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                     Expanded(
                       child: Text(
                         'Reason: ${f.reason}',
-                        style: typo.bodyMedium
-                            .copyWith(color: colors.onSurface),
+                        style: typo.bodyMedium.copyWith(
+                          color: colors.onSurface,
+                        ),
                         maxLines: _isExpanded ? null : 1,
-                        overflow:
-                            _isExpanded ? null : TextOverflow.ellipsis,
+                        overflow: _isExpanded ? null : TextOverflow.ellipsis,
                       ),
                     ),
                     if (!_isExpanded && _hasImageOrAvatar()) ...[
@@ -227,7 +234,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                 Flexible(
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: colors.success.withAlpha(20),
                       borderRadius: BorderRadius.circular(radius.md),
@@ -236,7 +246,11 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.star_rounded, size: 14, color: colors.success),
+                        Icon(
+                          Icons.star_rounded,
+                          size: 14,
+                          color: colors.success,
+                        ),
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
@@ -268,13 +282,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                     children: [
                       Text(
                         _isExpanded ? 'Show less' : 'Details',
-                        style: typo.labelSmall
-                            .copyWith(color: colors.primary),
+                        style: typo.labelSmall.copyWith(color: colors.primary),
                       ),
                       Icon(
-                        _isExpanded
-                            ? Icons.expand_less
-                            : Icons.expand_more,
+                        _isExpanded ? Icons.expand_less : Icons.expand_more,
                         color: colors.primary,
                         size: 20,
                       ),
@@ -301,9 +312,10 @@ class _FlippableReportCardState extends State<FlippableReportCard>
     final isListingReport = widget.report.listingId != null;
 
     if (isListingReport) {
-      final imageUrl = widget.report.listing?.images.isNotEmpty == true
-          ? widget.report.listing!.images.first.imageUrl
-          : null;
+      final imageUrl =
+          widget.report.listing?.images.isNotEmpty == true
+              ? widget.report.listing!.images.first.imageUrl
+              : null;
       if (imageUrl == null) return const SizedBox.shrink();
 
       return ClipRRect(
@@ -350,12 +362,14 @@ class _FlippableReportCardState extends State<FlippableReportCard>
     final radius = context.smivoRadius;
     final f = widget.report;
 
-    final responseDate =
-        DateFormat('MMM d, yyyy HH:mm').format(f.updatedAt.toLocal());
+    final responseDate = DateFormat(
+      'MMM d, yyyy HH:mm',
+    ).format(f.updatedAt.toLocal());
     final note = f.resolutionNote;
     final isPending = f.status == 'pending';
     final isDismissed = f.status == 'dismissed';
-    final isActioned = f.status == 'resolved' &&
+    final isActioned =
+        f.status == 'resolved' &&
         (f.actionTaken == 'warn' || f.actionTaken == 'restrict');
 
     final (statusColor, statusBgColor, statusText) = _statusMeta(
@@ -374,9 +388,7 @@ class _FlippableReportCardState extends State<FlippableReportCard>
         decoration: BoxDecoration(
           color: colors.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(radius.lg),
-          border: Border.all(
-            color: colors.outlineVariant.withAlpha(50),
-          ),
+          border: Border.all(color: colors.outlineVariant.withAlpha(50)),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -401,9 +413,7 @@ class _FlippableReportCardState extends State<FlippableReportCard>
                     const SizedBox(width: 8),
                     Text(
                       'Trust & Safety Team',
-                      style: typo.labelLarge.copyWith(
-                        color: colors.onSurface,
-                      ),
+                      style: typo.labelLarge.copyWith(color: colors.onSurface),
                     ),
                   ],
                 ),
@@ -494,12 +504,14 @@ class _ReporterOutcomeContent extends StatelessWidget {
     final radius = context.smivoRadius;
 
     final reportedName = report.reportedUser?.displayName ?? 'reported party';
-    final penaltyLabel = report.actionTaken == 'warn'
-        ? 'Action taken on $reportedName: Formal Warning'
-        : 'Action taken on $reportedName: Account Restriction';
-    final penaltyIcon = report.actionTaken == 'warn'
-        ? Icons.warning_amber_rounded
-        : Icons.block_rounded;
+    final penaltyLabel =
+        report.actionTaken == 'warn'
+            ? 'Action taken on $reportedName: Formal Warning'
+            : 'Action taken on $reportedName: Account Restriction';
+    final penaltyIcon =
+        report.actionTaken == 'warn'
+            ? Icons.warning_amber_rounded
+            : Icons.block_rounded;
     final penaltyColor =
         report.actionTaken == 'warn' ? colors.warning : colors.error;
 
@@ -544,9 +556,7 @@ class _ReporterOutcomeContent extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             report.resolutionNote!,
-            style: typo.bodySmall.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
+            style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
           ),
         ],
       ],
@@ -581,9 +591,10 @@ class _PenaltyCardState extends State<PenaltyCard>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    _animation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -608,16 +619,15 @@ class _PenaltyCardState extends State<PenaltyCard>
       child: AnimatedBuilder(
         animation: _animation,
         builder: (_, __) {
-          final transform = Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..rotateY(_animation.value * pi);
+          final transform =
+              Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(_animation.value * pi);
           final isFrontFacing = _animation.value < 0.5;
           return Transform(
             transform: transform,
             alignment: Alignment.center,
-            child: isFrontFacing
-                ? _buildFront(context)
-                : _buildBack(context),
+            child: isFrontFacing ? _buildFront(context) : _buildBack(context),
           );
         },
       ),
@@ -637,12 +647,12 @@ class _PenaltyCardState extends State<PenaltyCard>
         isWarn ? Icons.warning_amber_rounded : Icons.block_rounded;
 
     final isListingReport = f.listingId != null;
-    final contentLabel = isListingReport
-        ? 'Related to listing: ${f.listing?.title ?? 'Unknown'}'
-        : 'Related to a chat message';
+    final contentLabel =
+        isListingReport
+            ? 'Related to listing: ${f.listing?.title ?? 'Unknown'}'
+            : 'Related to a chat message';
 
-    final dateStr =
-        DateFormat('MMM d, yyyy').format(f.createdAt.toLocal());
+    final dateStr = DateFormat('MMM d, yyyy').format(f.createdAt.toLocal());
 
     return Container(
       constraints: const BoxConstraints(minHeight: 120),
@@ -761,10 +771,7 @@ class _PenaltyCardState extends State<PenaltyCard>
             const SizedBox(height: 12),
             // Penalty type chip
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: penaltyColor.withAlpha(20),
                 borderRadius: BorderRadius.circular(radius.sm),

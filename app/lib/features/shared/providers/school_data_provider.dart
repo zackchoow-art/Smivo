@@ -22,7 +22,7 @@ Future<List<SchoolCategory>> mySchoolCategories(Ref ref) async {
     final repo = ref.watch(schoolDataRepositoryProvider);
     final categories = await repo.fetchCategories(profile.schoolId);
     final active = categories.where((c) => c.isActive).toList();
-    
+
     // NOTE: Sort categories by displayOrder ascending as requested.
     active.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
@@ -70,20 +70,21 @@ List<SchoolCategory> _fallbackCategories() {
     'sports': 'Sports',
     'other': 'Others',
   };
-  final list = AppConstants.categories.asMap().entries.map((e) {
-    final slug = e.value;
-    return SchoolCategory(
-      id: 'fallback_${e.key}',
-      schoolId: '',
-      slug: slug,
-      name: fallbackNames[slug] ??
-          slug[0].toUpperCase() + slug.substring(1),
-      displayOrder: e.key,
-      isActive: true,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-  }).toList();
+  final list =
+      AppConstants.categories.asMap().entries.map((e) {
+        final slug = e.value;
+        return SchoolCategory(
+          id: 'fallback_${e.key}',
+          schoolId: '',
+          slug: slug,
+          name:
+              fallbackNames[slug] ?? slug[0].toUpperCase() + slug.substring(1),
+          displayOrder: e.key,
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+      }).toList();
   // Sort by displayOrder (which matches the original index in AppConstants.categories)
   list.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
   return list;
@@ -106,20 +107,21 @@ List<SchoolCondition> _fallbackConditions() {
     },
     {'slug': 'poor', 'name': 'Poor', 'desc': 'Heavy wear, may need repair'},
   ];
-  final list = fallback.asMap().entries.map((e) {
-    final item = e.value;
-    return SchoolCondition(
-      id: 'fallback_${e.key}',
-      schoolId: '',
-      slug: item['slug']!,
-      name: item['name']!,
-      description: item['desc'],
-      displayOrder: e.key,
-      isActive: true,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-  }).toList();
+  final list =
+      fallback.asMap().entries.map((e) {
+        final item = e.value;
+        return SchoolCondition(
+          id: 'fallback_${e.key}',
+          schoolId: '',
+          slug: item['slug']!,
+          name: item['name']!,
+          description: item['desc'],
+          displayOrder: e.key,
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+      }).toList();
   // Already sorted by displayOrder (index), but making it explicit
   list.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
   return list;

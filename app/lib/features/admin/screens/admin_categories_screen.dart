@@ -55,53 +55,56 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
           maxWidth: 1200,
           child: Column(
             children: [
-          // School selector
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: schoolsState.when(
-              data:
-                  (schools) => DropdownButtonFormField<String>(
-                    initialValue: _selectedSchoolId,
-                    decoration: InputDecoration(
-                      labelText: 'Select School',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(radius.sm),
-                      ),
-                      filled: true,
-                      fillColor: colors.surfaceContainerLow,
-                    ),
-                    items:
-                        schools
-                            .map(
-                              (s) => DropdownMenuItem(
-                                value: s.id,
-                                child: Text(s.name),
-                              ),
-                            )
-                            .toList(),
-                    onChanged: (v) => setState(() => _selectedSchoolId = v),
-                  ),
-              loading: () => const LinearProgressIndicator(),
-              error: (e, _) => Text('Error: $e'),
-            ),
-          ),
-
-          // Category list
-          Expanded(
-            child:
-                _selectedSchoolId == null
-                    ? Center(
-                      child: Text(
-                        'Select a school to manage its categories.',
-                        style: typo.bodyLarge.copyWith(
-                          color: colors.onSurfaceVariant,
+              // School selector
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
+                child: schoolsState.when(
+                  data:
+                      (schools) => DropdownButtonFormField<String>(
+                        initialValue: _selectedSchoolId,
+                        decoration: InputDecoration(
+                          labelText: 'Select School',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(radius.sm),
+                          ),
+                          filled: true,
+                          fillColor: colors.surfaceContainerLow,
                         ),
+                        items:
+                            schools
+                                .map(
+                                  (s) => DropdownMenuItem(
+                                    value: s.id,
+                                    child: Text(s.name),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (v) => setState(() => _selectedSchoolId = v),
                       ),
-                    )
-                    : _buildCategoryList(context, canWrite),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+              ),
+
+              // Category list
+              Expanded(
+                child:
+                    _selectedSchoolId == null
+                        ? Center(
+                          child: Text(
+                            'Select a school to manage its categories.',
+                            style: typo.bodyLarge.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        )
+                        : _buildCategoryList(context, canWrite),
+              ),
+            ],
           ),
-          ],
-        ),
         ),
       ),
     );

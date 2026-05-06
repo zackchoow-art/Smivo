@@ -34,7 +34,9 @@ class IkeaBuyerOrderCard extends StatelessWidget {
 
     final infoText =
         sectionTitle == 'Awaiting Delivery'
-            ? (order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : 'Unknown location')
+            ? (order.pickupLocation?.name != null
+                ? '${order.pickupLocation!.name}, ${order.school}'
+                : 'Unknown location')
             : (order.seller?.displayName ?? 'Seller');
 
     final dateStr = DateFormat('M/d HH:mm').format(order.createdAt);

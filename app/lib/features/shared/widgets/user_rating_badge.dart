@@ -34,10 +34,8 @@ class UserRatingBadge extends ConsumerWidget {
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           builder:
-              (context) => UserReviewsBottomSheet(
-                user: user,
-                initialRole: role,
-              ),
+              (context) =>
+                  UserReviewsBottomSheet(user: user, initialRole: role),
         );
       },
       child: Container(

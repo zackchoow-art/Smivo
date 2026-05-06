@@ -252,8 +252,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
 
   void _handleOrderTap(String orderId, bool hasUnread) {
     if (hasUnread) {
-      final notifications =
-          ref.read(notificationListProvider).value ?? [];
+      final notifications = ref.read(notificationListProvider).value ?? [];
       final unreadNotifs = notifications.where(
         (n) => !n.isRead && n.relatedOrderId == orderId,
       );

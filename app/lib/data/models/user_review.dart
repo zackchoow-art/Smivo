@@ -25,11 +25,13 @@ abstract class UserReview with _$UserReview {
     @JsonKey(name: 'tags') @Default([]) List<ReviewTag> tags,
   }) = _UserReview;
 
-  factory UserReview.fromJson(Map<String, dynamic> json) => _$UserReviewFromJson(json);
+  factory UserReview.fromJson(Map<String, dynamic> json) =>
+      _$UserReviewFromJson(json);
 
   factory UserReview.fromSupabase(Map<String, dynamic> json) {
     if (json['user_review_tag_links'] != null) {
-      final List<dynamic> links = json['user_review_tag_links'] as List<dynamic>;
+      final List<dynamic> links =
+          json['user_review_tag_links'] as List<dynamic>;
       json['tags'] = links.map((link) => link['review_tags']).toList();
     }
     return UserReview.fromJson(json);

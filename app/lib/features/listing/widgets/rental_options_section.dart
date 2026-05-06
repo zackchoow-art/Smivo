@@ -17,15 +17,60 @@ class RentalOptionsSection extends ConsumerWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final List<Widget> pricingCards = [];
+    void updateRateAndResetDates(String rate) {
+      ref.read(selectedRentalRateProvider.notifier).setRate(rate);
+
+      // NOTE: Apply the same today-clamp + fallback logic used in
+      // _DateRangePicker display. If the microtask from _initializeDates
+      // hasn't fired yet, rentalStartDateProvider still holds DateTime.now().
+      // Without this fallback, switching MONTH before the microtask fires
+      // would make _StepperConfigurator display today as the start date.
+      final today = DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+      );
+      final rawFirstValid = listing.availableDate ?? listing.createdAt;
+      final availableMidnight = DateTime(
+        rawFirstValid.year,
+        rawFirstValid.month,
+        rawFirstValid.day,
+      );
+      final firstValidDate =
+          availableMidnight.isAfter(today) ? availableMidnight : today;
+
+      final rawStart = ref.read(rentalStartDateProvider);
+      final rawStartMidnight = DateTime(
+        rawStart.year,
+        rawStart.month,
+        rawStart.day,
+      );
+      final currentStartDate = rawStartMidnight.isBefore(firstValidDate)
+          ? firstValidDate
+          : rawStartMidnight;
+
+      int daysToAdd = 1;
+      if (rate == 'WEEK') daysToAdd = 7;
+      if (rate == 'MONTH') daysToAdd = 30;
+
+      // Also write the corrected start date back to the provider so that
+      // _StepperConfigurator (which reads the provider directly) shows
+      // the right value even if the microtask hasn't fired yet.
+      ref
+          .read(rentalStartDateProvider.notifier)
+          .setDate(currentStartDate);
+      ref
+          .read(rentalEndDateProvider.notifier)
+          .setDate(currentStartDate.add(Duration(days: daysToAdd)));
+    }
+
     if ((listing.rentalDailyPrice ?? 0) > 0) {
       pricingCards.add(
         _PricingCard(
           label: 'DAY',
           price: listing.rentalDailyPrice!,
           isSelected: selectedRate == 'DAY',
-          onTap:
-              () =>
-                  ref.read(selectedRentalRateProvider.notifier).setRate('DAY'),
+          onTap: () => updateRateAndResetDates('DAY'),
         ),
       );
     }
@@ -35,9 +80,7 @@ class RentalOptionsSection extends ConsumerWidget {
           label: 'WEEK',
           price: listing.rentalWeeklyPrice!,
           isSelected: selectedRate == 'WEEK',
-          onTap:
-              () =>
-                  ref.read(selectedRentalRateProvider.notifier).setRate('WEEK'),
+          onTap: () => updateRateAndResetDates('WEEK'),
         ),
       );
     }
@@ -47,10 +90,7 @@ class RentalOptionsSection extends ConsumerWidget {
           label: 'MONTH',
           price: listing.rentalMonthlyPrice!,
           isSelected: selectedRate == 'MONTH',
-          onTap:
-              () => ref
-                  .read(selectedRentalRateProvider.notifier)
-                  .setRate('MONTH'),
+          onTap: () => updateRateAndResetDates('MONTH'),
         ),
       );
     }
@@ -221,12 +261,44 @@ class _DateRangePicker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final rawStartDate = ref.watch(rentalStartDateProvider);
     final rawEndDate = ref.watch(rentalEndDateProvider);
-    final startDate = DateTime(
+
+    // NOTE: Compute firstValidDate (same logic as the picker onTap and
+    // _initializeDates) so we can detect when providers still hold the
+    // DateTime.now() default and fall back to the correct initial value.
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    final rawFirstValid = listing.availableDate ?? listing.createdAt;
+    final availableMidnight = DateTime(
+      rawFirstValid.year,
+      rawFirstValid.month,
+      rawFirstValid.day,
+    );
+    final firstValidDate =
+        availableMidnight.isAfter(today) ? availableMidnight : today;
+
+    // Use firstValidDate as fallback when provider still holds stale default.
+    final rawStartMidnight = DateTime(
       rawStartDate.year,
       rawStartDate.month,
       rawStartDate.day,
     );
-    final endDate = DateTime(rawEndDate.year, rawEndDate.month, rawEndDate.day);
+    final startDate = rawStartMidnight.isBefore(firstValidDate)
+        ? firstValidDate
+        : rawStartMidnight;
+
+    final rawEndMidnight = DateTime(
+      rawEndDate.year,
+      rawEndDate.month,
+      rawEndDate.day,
+    );
+    // End date must be at least startDate + 1.
+    final minEndDate = startDate.add(const Duration(days: 1));
+    final endDate =
+        rawEndMidnight.isBefore(minEndDate) ? minEndDate : rawEndMidnight;
+
     final formatter = DateFormat('MM/dd/yyyy');
     // NOTE: Daily rental assumes 24-hour periods. Renting from 4th to 5th is 1 day.
     final durationDays = endDate.difference(startDate).inDays;
@@ -254,13 +326,14 @@ class _DateRangePicker extends ConsumerWidget {
                   _DateBox(
                     text: formatter.format(startDate),
                     onTap: () async {
+                      // NOTE: Reuse firstValidDate and startDate from build()
+                      // — they already have today-clamp and fallback applied.
+                      final initDate = startDate;
+
                       final picked = await showDatePicker(
                         context: context,
-                        initialDate:
-                            startDate.isBefore(DateTime.now())
-                                ? DateTime.now()
-                                : startDate,
-                        firstDate: DateTime.now(),
+                        initialDate: initDate,
+                        firstDate: firstValidDate,
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
                       if (picked != null) {
@@ -272,13 +345,11 @@ class _DateRangePicker extends ConsumerWidget {
                         ref
                             .read(rentalStartDateProvider.notifier)
                             .setDate(normalized);
-                        if (endDate.isBefore(
-                          normalized.add(const Duration(days: 1)),
-                        )) {
-                          ref
-                              .read(rentalEndDateProvider.notifier)
-                              .setDate(normalized.add(const Duration(days: 3)));
-                        }
+                        final int safeDays =
+                            durationDays > 0 ? durationDays : 1;
+                        ref
+                            .read(rentalEndDateProvider.notifier)
+                            .setDate(normalized.add(Duration(days: safeDays)));
                       }
                     },
                   ),
@@ -424,11 +495,32 @@ class _StepperConfigurator extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final duration = ref.watch(rentalDurationProvider);
     final rawStartDate = ref.watch(rentalStartDateProvider);
-    final startDate = DateTime(
+
+    // NOTE: Apply the same today-clamp + fallback used in _DateRangePicker
+    // so _StepperConfigurator never displays DateTime.now() when the provider
+    // default hasn't been overwritten yet by _initializeDates microtask.
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    final rawFirstValid = listing.availableDate ?? listing.createdAt;
+    final availableMidnight = DateTime(
+      rawFirstValid.year,
+      rawFirstValid.month,
+      rawFirstValid.day,
+    );
+    final firstValidDate =
+        availableMidnight.isAfter(today) ? availableMidnight : today;
+    final rawStartMidnight = DateTime(
       rawStartDate.year,
       rawStartDate.month,
       rawStartDate.day,
     );
+    final startDate = rawStartMidnight.isBefore(firstValidDate)
+        ? firstValidDate
+        : rawStartMidnight;
+
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -440,12 +532,8 @@ class _StepperConfigurator extends ConsumerWidget {
       calculatedEndDate = startDate.add(Duration(days: totalDays));
       totalRent = duration * (listing.rentalWeeklyPrice ?? 0.0);
     } else {
-      calculatedEndDate = DateTime(
-        startDate.year,
-        startDate.month + duration,
-        startDate.day,
-      );
-      totalDays = calculatedEndDate.difference(startDate).inDays;
+      totalDays = 30 * duration;
+      calculatedEndDate = startDate.add(Duration(days: totalDays));
       totalRent = duration * (listing.rentalMonthlyPrice ?? 0.0);
     }
     final formatter = DateFormat('MM/dd/yyyy');
@@ -469,13 +557,14 @@ class _StepperConfigurator extends ConsumerWidget {
                   _DateBox(
                     text: formatter.format(startDate),
                     onTap: () async {
+                      // NOTE: Reuse firstValidDate and startDate from build()
+                      // — they already have today-clamp and fallback applied.
+                      final initDate = startDate;
+
                       final picked = await showDatePicker(
                         context: context,
-                        initialDate:
-                            startDate.isBefore(DateTime.now())
-                                ? DateTime.now()
-                                : startDate,
-                        firstDate: DateTime.now(),
+                        initialDate: initDate,
+                        firstDate: firstValidDate,
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                       );
                       if (picked != null) {

@@ -37,7 +37,8 @@ class LastActiveBadge extends StatelessWidget {
         Text(
           isOnline ? 'Online' : timeago.format(lastActiveAt!),
           style: context.smivoTypo.labelSmall.copyWith(
-            color: isOnline ? Colors.green : context.smivoColors.onSurfaceVariant,
+            color:
+                isOnline ? Colors.green : context.smivoColors.onSurfaceVariant,
           ),
         ),
       ],

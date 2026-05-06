@@ -517,10 +517,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (!mounted) return;
     showDialog(
       context: context,
-      builder: (context) => ActionSuccessDialog(
-        title: 'Success',
-        message: 'Submitted successfully. Under platform review.',
-      ),
+      builder:
+          (context) => ActionSuccessDialog(
+            title: 'Success',
+            message: 'Submitted successfully. Under platform review.',
+          ),
     );
   }
 

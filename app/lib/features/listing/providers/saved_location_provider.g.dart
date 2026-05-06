@@ -45,7 +45,7 @@ final class SavedLocationsProvider
   SavedLocations create() => SavedLocations();
 }
 
-String _$savedLocationsHash() => r'22a11f075d6f76623488a2dded6482cbac6fa268';
+String _$savedLocationsHash() => r'a00a129e47c4f17e5d5f8e5f3f100119c2d654a6';
 
 /// Provides the list of user's custom saved pickup addresses.
 ///

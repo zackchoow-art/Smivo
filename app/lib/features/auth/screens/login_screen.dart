@@ -116,9 +116,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final activeSchoolsAsync = ref.watch(activeSchoolsProvider);
     final systemUrlsState = ref.watch(systemUrlsProvider);
     final systemUrls = systemUrlsState.value ?? {};
-    
+
     final safetyUrlStr = systemUrls['safety'] ?? 'https://smivo.io/safety';
-    final termsUrlStr = systemUrls['terms_of_service'] ?? 'https://smivo.io/terms';
+    final termsUrlStr =
+        systemUrls['terms_of_service'] ?? 'https://smivo.io/terms';
 
     final isLoading = authState.isLoading;
     final colors = context.smivoColors;
@@ -214,7 +215,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               Text(
                                 'Welcome back.',
                                 textAlign: TextAlign.center,
-                                style: typo.headlineLarge.copyWith(fontSize: 26),
+                                style: typo.headlineLarge.copyWith(
+                                  fontSize: 26,
+                                ),
                               ),
                               const SizedBox(height: 6),
                               Text(
@@ -229,51 +232,92 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 activeSchoolsAsync.when(
                                   data: (schools) {
                                     if (schools.isEmpty) {
-                                      return const Text('No schools available.');
+                                      return const Text(
+                                        'No schools available.',
+                                      );
                                     }
-                                    
+
                                     // Set default if null
                                     if (_selectedSchool == null) {
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        if (mounted) setState(() => _selectedSchool = schools.first);
-                                      });
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            if (mounted)
+                                              setState(
+                                                () =>
+                                                    _selectedSchool =
+                                                        schools.first,
+                                              );
+                                          });
                                     }
 
                                     return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                                          child: Text('SELECT SCHOOL', style: typo.labelUppercase),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                          child: Text(
+                                            'SELECT SCHOOL',
+                                            style: typo.labelUppercase,
+                                          ),
                                         ),
                                         const SizedBox(height: 8),
                                         DropdownButtonFormField<School>(
-                                          value: _selectedSchool ?? schools.first,
-                                          items: schools.map((s) => DropdownMenuItem(
-                                            value: s,
-                                            child: Text(s.name, style: typo.bodyMedium),
-                                          )).toList(),
+                                          value:
+                                              _selectedSchool ?? schools.first,
+                                          items:
+                                              schools
+                                                  .map(
+                                                    (s) => DropdownMenuItem(
+                                                      value: s,
+                                                      child: Text(
+                                                        s.name,
+                                                        style: typo.bodyMedium,
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
                                           onChanged: (val) {
                                             if (val != null) {
-                                              setState(() => _selectedSchool = val);
+                                              setState(
+                                                () => _selectedSchool = val,
+                                              );
                                             }
                                           },
                                           decoration: InputDecoration(
                                             filled: true,
-                                            fillColor: colors.surfaceContainerLow,
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                                            fillColor:
+                                                colors.surfaceContainerLow,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: 18,
+                                                ),
                                             border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(radius.input),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    radius.input,
+                                                  ),
                                               borderSide: BorderSide.none,
                                             ),
                                           ),
-                                          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.onSurfaceVariant),
+                                          icon: Icon(
+                                            Icons.arrow_drop_down_rounded,
+                                            color: colors.onSurfaceVariant,
+                                          ),
                                         ),
                                       ],
                                     );
                                   },
-                                  loading: () => const Center(child: CircularProgressIndicator()),
-                                  error: (err, st) => Text('Error loading schools: $err'),
+                                  loading:
+                                      () => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                  error:
+                                      (err, st) =>
+                                          Text('Error loading schools: $err'),
                                 ),
                                 const SizedBox(height: 16),
                               ],
@@ -439,7 +483,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                                     ),
                                   ),
-                              ],
+                                ],
                               ),
                               const SizedBox(height: 20),
 
@@ -494,13 +538,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       style: const TextStyle(
                                         decoration: TextDecoration.underline,
                                       ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () async {
-                                          final url = Uri.parse(safetyUrlStr);
-                                          if (await canLaunchUrl(url)) {
-                                            await launchUrl(url);
-                                          }
-                                        },
+                                      recognizer:
+                                          TapGestureRecognizer()
+                                            ..onTap = () async {
+                                              final url = Uri.parse(
+                                                safetyUrlStr,
+                                              );
+                                              if (await canLaunchUrl(url)) {
+                                                await launchUrl(url);
+                                              }
+                                            },
                                     ),
                                     const TextSpan(text: ' and '),
                                     TextSpan(
@@ -508,13 +555,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       style: const TextStyle(
                                         decoration: TextDecoration.underline,
                                       ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () async {
-                                          final url = Uri.parse(termsUrlStr);
-                                          if (await canLaunchUrl(url)) {
-                                            await launchUrl(url);
-                                          }
-                                        },
+                                      recognizer:
+                                          TapGestureRecognizer()
+                                            ..onTap = () async {
+                                              final url = Uri.parse(
+                                                termsUrlStr,
+                                              );
+                                              if (await canLaunchUrl(url)) {
+                                                await launchUrl(url);
+                                              }
+                                            },
                                     ),
                                     const TextSpan(text: '.'),
                                   ],

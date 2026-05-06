@@ -13,9 +13,7 @@ Future<UserReview?> orderReview(
   required String orderId,
   required String reviewerId,
 }) {
-  return ref
-      .read(reviewRepositoryProvider)
-      .getOrderReview(orderId, reviewerId);
+  return ref.read(reviewRepositoryProvider).getOrderReview(orderId, reviewerId);
 }
 
 @riverpod
@@ -44,7 +42,7 @@ class OrderReviewActions extends _$OrderReviewActions {
       if (currentComment != null && currentComment.isNotEmpty) {
         final filter = ref.read(sensitiveWordsProvider).value;
         final config = ref.read(filterConfigStateProvider).value;
-        
+
         if (filter != null && config != null) {
           final action = applyContentFilter(currentComment, filter, config);
           finalComment = action.processedText;
@@ -62,7 +60,7 @@ class OrderReviewActions extends _$OrderReviewActions {
             comment: finalComment,
             tagIds: tagIds,
           );
-          
+
       ref.invalidate(orderReviewProvider);
       state = const AsyncData(null);
     } catch (e, st) {

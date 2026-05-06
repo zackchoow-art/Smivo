@@ -82,8 +82,7 @@ class ChatRoomList extends _$ChatRoomList {
         .fetchChatRooms(user.id);
 
     // Filter out chat rooms where the other participant is blocked
-    final blockedUserIds =
-        ref.watch(blockedUsersProvider).value ?? <String>[];
+    final blockedUserIds = ref.watch(blockedUsersProvider).value ?? <String>[];
     final blockedSet = blockedUserIds.toSet();
 
     return allRooms.where((room) {

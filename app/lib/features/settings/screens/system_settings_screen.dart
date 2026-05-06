@@ -120,9 +120,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                                       selected: {currentTheme},
                                       onSelectionChanged: (selected) {
                                         ref
-                                            .read(
-                                              themeProvider.notifier,
-                                            )
+                                            .read(themeProvider.notifier)
                                             .setTheme(selected.first);
                                       },
                                       style: ButtonStyle(
@@ -199,15 +197,17 @@ class SystemSettingsScreen extends ConsumerWidget {
                           showDialog(
                             context: context,
                             barrierDismissible: false,
-                            builder: (context) => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
+                            builder:
+                                (context) => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
                           );
                           try {
                             // Clear image cache
                             PaintingBinding.instance.imageCache.clear();
-                            PaintingBinding.instance.imageCache.clearLiveImages();
-                            
+                            PaintingBinding.instance.imageCache
+                                .clearLiveImages();
+
                             // Invalidate providers to clear old data
                             ref.invalidate(profileProvider);
                             ref.invalidate(allOrdersProvider);
@@ -216,15 +216,19 @@ class SystemSettingsScreen extends ConsumerWidget {
                             ref.invalidate(mySavedListingsProvider);
                             ref.invalidate(myListingsProvider);
                             ref.invalidate(homeListingsProvider);
-                            
+
                             // Let the system settle
-                            await Future.delayed(const Duration(milliseconds: 800));
-                            
+                            await Future.delayed(
+                              const Duration(milliseconds: 800),
+                            );
+
                             if (context.mounted) {
                               Navigator.pop(context); // Close loading
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text('Local cache cleared successfully'),
+                                  content: const Text(
+                                    'Local cache cleared successfully',
+                                  ),
                                   backgroundColor: colors.primary,
                                 ),
                               );
@@ -279,7 +283,10 @@ class SystemSettingsScreen extends ConsumerWidget {
                                   ],
                                 ),
                               ),
-                              Icon(Icons.chevron_right, color: colors.onSurface),
+                              Icon(
+                                Icons.chevron_right,
+                                color: colors.onSurface,
+                              ),
                             ],
                           ),
                         ),
@@ -333,12 +340,16 @@ class SystemSettingsScreen extends ConsumerWidget {
                             ),
                             Consumer(
                               builder: (context, ref, child) {
-                                final isEnabled = ref.watch(shakeFeedbackProvider);
+                                final isEnabled = ref.watch(
+                                  shakeFeedbackProvider,
+                                );
                                 return Switch.adaptive(
                                   value: isEnabled,
                                   activeColor: colors.primary,
                                   onChanged: (value) {
-                                    ref.read(shakeFeedbackProvider.notifier).toggle(value);
+                                    ref
+                                        .read(shakeFeedbackProvider.notifier)
+                                        .toggle(value);
                                   },
                                 );
                               },
@@ -388,16 +399,15 @@ class SystemSettingsScreen extends ConsumerWidget {
                             ),
                             Consumer(
                               builder: (context, ref, _) {
-                                final isEnabled =
-                                    ref.watch(showFloatingNavProvider);
+                                final isEnabled = ref.watch(
+                                  showFloatingNavProvider,
+                                );
                                 return Switch.adaptive(
                                   value: isEnabled,
                                   activeColor: colors.primary,
                                   onChanged: (value) {
                                     ref
-                                        .read(
-                                          showFloatingNavProvider.notifier,
-                                        )
+                                        .read(showFloatingNavProvider.notifier)
                                         .set(value);
                                   },
                                 );
@@ -407,7 +417,9 @@ class SystemSettingsScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      if (ref.watch(adminContextProvider).maybeWhen(
+                      if (ref
+                          .watch(adminContextProvider)
+                          .maybeWhen(
                             data: (ctx) => ctx.isSysadmin,
                             orElse: () => false,
                           )) ...[
@@ -420,7 +432,8 @@ class SystemSettingsScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         GestureDetector(
-                          onTap: () => context.pushNamed(AppRoutes.settingsDebug),
+                          onTap:
+                              () => context.pushNamed(AppRoutes.settingsDebug),
                           child: SettingCardContainer(
                             child: Row(
                               children: [
@@ -440,7 +453,8 @@ class SystemSettingsScreen extends ConsumerWidget {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Debug Backend Data',
@@ -459,7 +473,10 @@ class SystemSettingsScreen extends ConsumerWidget {
                                     ],
                                   ),
                                 ),
-                                Icon(Icons.chevron_right, color: colors.onSurface),
+                                Icon(
+                                  Icons.chevron_right,
+                                  color: colors.onSurface,
+                                ),
                               ],
                             ),
                           ),

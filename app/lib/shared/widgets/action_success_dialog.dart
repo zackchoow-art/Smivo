@@ -33,16 +33,10 @@ class ActionSuccessDialog extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             title,
-            style: typo.headlineSmall.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: typo.headlineSmall.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: typo.bodyMedium,
-          ),
+          Text(message, textAlign: TextAlign.center, style: typo.bodyMedium),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,

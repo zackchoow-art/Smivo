@@ -28,21 +28,18 @@ class OrderRepository {
           ''')
           .or('buyer_id.eq.$userId,seller_id.eq.$userId')
           .order('created_at', ascending: false);
-          
-      return data
-          .map((json) => Order.fromJson(json))
-          .where((o) {
-            // 1. Always keep completed orders visible
-            if (o.status == 'completed') return true;
-            
-            // 2. Buyers should always see their own history (even if cancelled/missed in past cycles)
-            if (o.buyerId == userId) return true;
-            
-            // 3. For sellers, hide non-completed orders from previous listing cycles
-            // This ensures a "fresh start" when a listing is relisted.
-            return o.listingCycle == (o.listing?.listingCycle ?? o.listingCycle);
-          })
-          .toList();
+
+      return data.map((json) => Order.fromJson(json)).where((o) {
+        // 1. Always keep completed orders visible
+        if (o.status == 'completed') return true;
+
+        // 2. Buyers should always see their own history (even if cancelled/missed in past cycles)
+        if (o.buyerId == userId) return true;
+
+        // 3. For sellers, hide non-completed orders from previous listing cycles
+        // This ensures a "fresh start" when a listing is relisted.
+        return o.listingCycle == (o.listing?.listingCycle ?? o.listingCycle);
+      }).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -96,7 +93,7 @@ class OrderRepository {
           ''')
           .inFilter('id', orderIds)
           .order('created_at', ascending: false);
-      
+
       return data
           .map((json) => Order.fromJson(json))
           .where((o) => o.listingCycle == o.listing?.listingCycle)
@@ -364,13 +361,13 @@ class OrderRepository {
 
       // Now fetch full order details using the ID
       final order = await fetchOrder(data['id'] as String);
-      
-      // If the latest order is from a previous listing cycle, 
+
+      // If the latest order is from a previous listing cycle,
       // act as if the user has no active orders for this listing.
       if (order.listingCycle != order.listing?.listingCycle) {
         return null;
       }
-      
+
       return order;
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

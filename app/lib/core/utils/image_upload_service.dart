@@ -125,27 +125,28 @@ class ImageUploadService {
     return await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: colors.surfaceContainerLowest,
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!kIsWeb)
-                ListTile(
-                  leading: Icon(Icons.camera_alt, color: colors.primary),
-                  title: Text('Take a Photo', style: typo.bodyLarge),
-                  onTap: () => Navigator.pop(ctx, ImageSource.camera),
-                ),
-              ListTile(
-                leading: Icon(Icons.photo_library, color: colors.primary),
-                title: Text('Choose from Gallery', style: typo.bodyLarge),
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+      builder:
+          (ctx) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!kIsWeb)
+                    ListTile(
+                      leading: Icon(Icons.camera_alt, color: colors.primary),
+                      title: Text('Take a Photo', style: typo.bodyLarge),
+                      onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                    ),
+                  ListTile(
+                    leading: Icon(Icons.photo_library, color: colors.primary),
+                    title: Text('Choose from Gallery', style: typo.bodyLarge),
+                    onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 }

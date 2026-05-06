@@ -12,6 +12,7 @@ class ChatListItem extends StatelessWidget {
     this.onTogglePin,
     this.onToggleUnread,
     this.onArchive,
+    this.isSelected = false,
   });
 
   final ChatConversation conversation;
@@ -21,6 +22,7 @@ class ChatListItem extends StatelessWidget {
   final VoidCallback? onTogglePin;
   final VoidCallback? onToggleUnread;
   final VoidCallback? onArchive;
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -83,11 +85,17 @@ class ChatListItem extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                // NOTE: Pinned rooms get a slightly tinted background to stand out.
+                // NOTE: Selected or Pinned rooms get a slightly tinted background.
                 color:
-                    conversation.isPinned
-                        ? colors.primary.withValues(alpha: 0.07)
-                        : colors.surfaceContainerHigh,
+                    isSelected
+                        ? colors.primary.withValues(alpha: 0.12)
+                        : (conversation.isPinned
+                            ? colors.primary.withValues(alpha: 0.07)
+                            : colors.surfaceContainerHigh),
+                border:
+                    isSelected
+                        ? Border.all(color: colors.primary, width: 2)
+                        : null,
               ),
               child: Row(
                 children: [

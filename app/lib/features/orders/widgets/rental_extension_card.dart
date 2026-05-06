@@ -42,7 +42,8 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
         unitPrice: order.listing?.rentalDailyPrice ?? 0,
       );
     }
-    final daysDiff = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+    final daysDiff =
+        order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
     final days = daysDiff > 0 ? daysDiff : 1;
     final listing = order.listing;
 
@@ -381,10 +382,11 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
       if (mounted) {
         showDialog(
           context: context,
-          builder: (ctx) => const ActionSuccessDialog(
-            title: 'Success',
-            message: 'Submitted successfully. Under platform review.',
-          ),
+          builder:
+              (ctx) => const ActionSuccessDialog(
+                title: 'Success',
+                message: 'Submitted successfully. Under platform review.',
+              ),
         );
         _resetAdjustment();
       }
@@ -612,10 +614,11 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
       if (mounted) {
         showDialog(
           context: context,
-          builder: (ctx) => const ActionSuccessDialog(
-            title: 'Success',
-            message: 'Extension approved — dates and price updated.',
-          ),
+          builder:
+              (ctx) => const ActionSuccessDialog(
+                title: 'Success',
+                message: 'Extension approved — dates and price updated.',
+              ),
         );
       }
     }

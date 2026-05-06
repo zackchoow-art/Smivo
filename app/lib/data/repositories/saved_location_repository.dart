@@ -68,7 +68,10 @@ class SavedLocationRepository {
     try {
       await _client
           .from('user_saved_locations')
-          .update({'label': newLabel, 'updated_at': DateTime.now().toIso8601String()})
+          .update({
+            'label': newLabel,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
           .eq('user_id', userId)
           .eq('label', oldLabel);
     } on PostgrestException catch (e) {

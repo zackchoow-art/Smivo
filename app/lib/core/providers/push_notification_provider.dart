@@ -78,8 +78,12 @@ class PushNotificationManager extends _$PushNotificationManager {
 
       debugPrint('[Push] parsed chat_room_id = $chatRoomId');
 
-      if (activeRoomId != null && chatRoomId != null && chatRoomId == activeRoomId) {
-        debugPrint('[Push] Suppressing notification — user is in the active chat room.');
+      if (activeRoomId != null &&
+          chatRoomId != null &&
+          chatRoomId == activeRoomId) {
+        debugPrint(
+          '[Push] Suppressing notification — user is in the active chat room.',
+        );
         event.preventDefault();
         return;
       }

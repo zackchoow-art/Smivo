@@ -50,150 +50,157 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
           maxWidth: 1200,
           child: Column(
             children: [
-          // School filter + search
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Row(
-              children: [
-                // School filter
-                Expanded(
-                  flex: 2,
-                  child: schoolsState.when(
-                    data:
-                        (schools) => DropdownButtonFormField<String?>(
-                          initialValue: _selectedSchoolFilter,
-                          decoration: InputDecoration(
-                            labelText: 'Filter by School',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(radius.sm),
-                            ),
-                            filled: true,
-                            fillColor: colors.surfaceContainerLow,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                          ),
-                          items: [
-                            const DropdownMenuItem<String?>(
-                              value: null,
-                              child: Text('All Schools'),
-                            ),
-                            ...schools.map(
-                              (s) => DropdownMenuItem(
-                                value: s.name,
-                                child: Text(s.name),
+              // School filter + search
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    // School filter
+                    Expanded(
+                      flex: 2,
+                      child: schoolsState.when(
+                        data:
+                            (schools) => DropdownButtonFormField<String?>(
+                              initialValue: _selectedSchoolFilter,
+                              decoration: InputDecoration(
+                                labelText: 'Filter by School',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    radius.sm,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: colors.surfaceContainerLow,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
                               ),
+                              items: [
+                                const DropdownMenuItem<String?>(
+                                  value: null,
+                                  child: Text('All Schools'),
+                                ),
+                                ...schools.map(
+                                  (s) => DropdownMenuItem(
+                                    value: s.name,
+                                    child: Text(s.name),
+                                  ),
+                                ),
+                              ],
+                              onChanged:
+                                  (v) =>
+                                      setState(() => _selectedSchoolFilter = v),
                             ),
-                          ],
-                          onChanged:
-                              (v) => setState(() => _selectedSchoolFilter = v),
+                        loading: () => const LinearProgressIndicator(),
+                        error: (e, _) => Text('Error: $e'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Search bar
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        onChanged: (v) => setState(() => _searchQuery = v),
+                        decoration: InputDecoration(
+                          hintText: 'Search by name, email…',
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          suffixIcon:
+                              _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed:
+                                        () => setState(() => _searchQuery = ''),
+                                  )
+                                  : null,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(radius.sm),
+                          ),
+                          filled: true,
+                          fillColor: colors.surfaceContainerLow,
                         ),
-                    loading: () => const LinearProgressIndicator(),
-                    error: (e, _) => Text('Error: $e'),
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                // Search bar
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                    decoration: InputDecoration(
-                      hintText: 'Search by name, email…',
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      suffixIcon:
-                          _searchQuery.isNotEmpty
-                              ? IconButton(
-                                icon: const Icon(Icons.close, size: 18),
-                                onPressed:
-                                    () => setState(() => _searchQuery = ''),
+              ),
+              // User list
+              Expanded(
+                child: usersState.when(
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+                  error:
+                      (err, _) => Center(
+                        child: Text(
+                          'Error: $err',
+                          style: TextStyle(color: colors.error),
+                        ),
+                      ),
+                  data: (users) {
+                    var filtered = users;
+
+                    // School filter
+                    if (_selectedSchoolFilter != null) {
+                      filtered =
+                          filtered
+                              .where(
+                                (u) =>
+                                    (u['school_name'] ?? '').toString() ==
+                                    _selectedSchoolFilter,
                               )
-                              : null,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(radius.sm),
-                      ),
-                      filled: true,
-                      fillColor: colors.surfaceContainerLow,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // User list
-          Expanded(
-            child: usersState.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error:
-                  (err, _) => Center(
-                    child: Text(
-                      'Error: $err',
-                      style: TextStyle(color: colors.error),
-                    ),
-                  ),
-              data: (users) {
-                var filtered = users;
+                              .toList();
+                    }
 
-                // School filter
-                if (_selectedSchoolFilter != null) {
-                  filtered =
-                      filtered
-                          .where(
-                            (u) =>
-                                (u['school_name'] ?? '').toString() ==
-                                _selectedSchoolFilter,
-                          )
-                          .toList();
-                }
+                    // Text search
+                    if (_searchQuery.isNotEmpty) {
+                      final q = _searchQuery.toLowerCase();
+                      filtered =
+                          filtered.where((u) {
+                            return (u['display_name'] ?? '')
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains(q) ||
+                                (u['email'] ?? '')
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains(q);
+                          }).toList();
+                    }
 
-                // Text search
-                if (_searchQuery.isNotEmpty) {
-                  final q = _searchQuery.toLowerCase();
-                  filtered =
-                      filtered.where((u) {
-                        return (u['display_name'] ?? '')
-                                .toString()
-                                .toLowerCase()
-                                .contains(q) ||
-                            (u['email'] ?? '')
-                                .toString()
-                                .toLowerCase()
-                                .contains(q);
-                      }).toList();
-                }
+                    if (filtered.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No users found.',
+                          style: typo.bodyLarge.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      );
+                    }
 
-                if (filtered.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No users found.',
-                      style: typo.bodyLarge.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final user = filtered[index];
-                    return _UserCard(
-                      user: user,
-                      onTap: () => _showUserDetail(context, user),
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final user = filtered[index];
+                        return _UserCard(
+                          user: user,
+                          onTap: () => _showUserDetail(context, user),
+                        );
+                      },
                     );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-          ],
-        ),
         ),
       ),
     );

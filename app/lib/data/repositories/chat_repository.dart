@@ -149,7 +149,10 @@ class ChatRepository {
       return Message.fromJson(data);
     } on PostgrestException catch (e) {
       if (e.message.contains('row-level security policy')) {
-        throw DatabaseException('Action denied. Your account may be restricted.', e);
+        throw DatabaseException(
+          'Action denied. Your account may be restricted.',
+          e,
+        );
       }
       throw DatabaseException(e.message, e);
     }
@@ -177,7 +180,10 @@ class ChatRepository {
       return Message.fromJson(data);
     } on PostgrestException catch (e) {
       if (e.message.contains('row-level security policy')) {
-        throw DatabaseException('Action denied. Your account may be restricted.', e);
+        throw DatabaseException(
+          'Action denied. Your account may be restricted.',
+          e,
+        );
       }
       throw DatabaseException(e.message, e);
     }
@@ -258,7 +264,6 @@ class ChatRepository {
     }
   }
 
-
   /// Subscribes to changes in chat rooms for [userId].
   Stream<List<ChatRoom>> subscribeToChatRooms(String userId) {
     return _client
@@ -312,16 +317,14 @@ class ChatRepository {
     try {
       final result = await _client.rpc(
         'check_chat_eligibility',
-        params: {
-          'p_sender_id':    senderId,
-          'p_recipient_id': recipientId,
-        },
+        params: {'p_sender_id': senderId, 'p_recipient_id': recipientId},
       );
       return {
-        'isBlockedByRecipient': (result['is_blocked_by_recipient'] as bool?) ?? false,
-        'recipientIsMuted':     (result['recipient_is_muted']      as bool?) ?? false,
-        'recipientIsFrozen':    (result['recipient_is_frozen']      as bool?) ?? false,
-        'senderIsMuted':        (result['sender_is_muted']         as bool?) ?? false,
+        'isBlockedByRecipient':
+            (result['is_blocked_by_recipient'] as bool?) ?? false,
+        'recipientIsMuted': (result['recipient_is_muted'] as bool?) ?? false,
+        'recipientIsFrozen': (result['recipient_is_frozen'] as bool?) ?? false,
+        'senderIsMuted': (result['sender_is_muted'] as bool?) ?? false,
       };
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -339,14 +342,11 @@ class ChatRepository {
     required String chatRoomId,
   }) async {
     try {
-      await _client.from('user_active_sessions').upsert(
-        {
-          'user_id': userId,
-          'chat_room_id': chatRoomId,
-          'updated_at': DateTime.now().toUtc().toIso8601String(),
-        },
-        onConflict: 'user_id',
-      );
+      await _client.from('user_active_sessions').upsert({
+        'user_id': userId,
+        'chat_room_id': chatRoomId,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }, onConflict: 'user_id');
     } on PostgrestException catch (e) {
       // NOTE: Non-critical — if this fails, the user may receive a push
       // while in the chat room. Log but do not rethrow.
@@ -374,7 +374,6 @@ class ChatRepository {
     }
   }
 }
-
 
 @riverpod
 ChatRepository chatRepository(Ref ref) =>

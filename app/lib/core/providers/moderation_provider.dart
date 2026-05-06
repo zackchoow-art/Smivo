@@ -118,7 +118,7 @@ class ModerationActions extends _$ModerationActions {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(moderationRepositoryProvider);
-      
+
       final hasReported = await repo.hasAlreadyReported(
         reporterId: user.id,
         reportedUserId: reportedUserId,
@@ -217,4 +217,3 @@ class FlaggedImageUrls extends _$FlaggedImageUrls {
     state = AsyncData({...?state.value, url});
   }
 }
-

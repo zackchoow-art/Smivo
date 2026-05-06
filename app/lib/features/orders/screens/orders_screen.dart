@@ -257,10 +257,7 @@ class _HubCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: colors.error,
                         borderRadius: BorderRadius.circular(radius.full),
-                        border: Border.all(
-                          color: gradient.last,
-                          width: 2,
-                        ),
+                        border: Border.all(color: gradient.last, width: 2),
                       ),
                       child: Text(
                         badgeCount > 99 ? '99+' : badgeCount.toString(),

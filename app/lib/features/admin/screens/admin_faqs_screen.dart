@@ -65,232 +65,244 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
           maxWidth: 1200,
           child: Column(
             children: [
-          // School filter + search
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Row(
-              children: [
-                // School filter chip
-                Expanded(
-                  flex: 2,
-                  child: schoolsState.when(
-                    data:
-                        (schools) => DropdownButtonFormField<String?>(
-                          initialValue: _selectedSchoolId,
-                          decoration: InputDecoration(
-                            labelText: 'Filter by School',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(radius.sm),
-                            ),
-                            filled: true,
-                            fillColor: colors.surfaceContainerLow,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                          ),
-                          items: [
-                            const DropdownMenuItem<String?>(
-                              value: null,
-                              child: Text('All Schools'),
-                            ),
-                            ...schools.map(
-                              (s) => DropdownMenuItem(
-                                value: s.id,
-                                child: Text(s.name),
-                              ),
-                            ),
-                          ],
-                          onChanged:
-                              (v) => setState(() => _selectedSchoolId = v),
-                        ),
-                    loading: () => const LinearProgressIndicator(),
-                    error: (e, _) => Text('Error: $e'),
-                  ),
+              // School filter + search
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
                 ),
-                const SizedBox(width: 12),
-                // Search
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                    decoration: InputDecoration(
-                      hintText: 'Search questions…',
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(radius.sm),
-                      ),
-                      filled: true,
-                      fillColor: colors.surfaceContainerLow,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // FAQ list
-          Expanded(
-            child: faqsState.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error:
-                  (e, _) => Center(
-                    child: Text(
-                      'Error: $e',
-                      style: TextStyle(color: colors.error),
-                    ),
-                  ),
-              data: (allFaqs) {
-                // Filter by school
-                var faqs = allFaqs;
-                if (_selectedSchoolId != null) {
-                  faqs =
-                      faqs
-                          .where(
-                            (f) =>
-                                f.schoolId == _selectedSchoolId ||
-                                f.schoolId == null,
-                          )
-                          .toList();
-                }
-
-                // Filter by search
-                if (_searchQuery.isNotEmpty) {
-                  final q = _searchQuery.toLowerCase();
-                  faqs =
-                      faqs
-                          .where(
-                            (f) =>
-                                f.question.toLowerCase().contains(q) ||
-                                f.answer.toLowerCase().contains(q) ||
-                                f.category.toLowerCase().contains(q),
-                          )
-                          .toList();
-                }
-
-                if (faqs.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No FAQs found.',
-                      style: typo.bodyLarge.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
-                  ),
-                  itemCount: faqs.length,
-                  itemBuilder: (context, index) {
-                    final faq = faqs[index];
-                    final isGlobal = faq.schoolId == null;
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(radius.sm),
-                        border: Border.all(
-                          color: colors.outlineVariant.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: ListTile(
-                        leading: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFFEA580C,
-                            ).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.help_outline,
-                            color: Color(0xFFEA580C),
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          faq.question,
-                          style: typo.titleMedium.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Row(
-                          children: [
-                            Text(
-                              '${faq.category} • #${faq.displayOrder}',
-                              style: typo.bodySmall.copyWith(
-                                color: colors.onSurfaceVariant,
-                              ),
-                            ),
-                            if (isGlobal) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'Global',
-                                  style: typo.labelSmall.copyWith(
-                                    color: colors.primary,
-                                    fontWeight: FontWeight.bold,
+                child: Row(
+                  children: [
+                    // School filter chip
+                    Expanded(
+                      flex: 2,
+                      child: schoolsState.when(
+                        data:
+                            (schools) => DropdownButtonFormField<String?>(
+                              initialValue: _selectedSchoolId,
+                              decoration: InputDecoration(
+                                labelText: 'Filter by School',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    radius.sm,
                                   ),
                                 ),
+                                filled: true,
+                                fillColor: colors.surfaceContainerLow,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
                               ),
-                            ],
-                          ],
-                        ),
-                        trailing:
-                            canWrite
-                                ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.edit,
-                                        size: 20,
-                                        color: colors.primary,
-                                      ),
-                                      onPressed:
-                                          () => _showFaqDialog(context, faq),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.delete,
-                                        size: 20,
-                                        color: colors.error,
-                                      ),
-                                      onPressed:
-                                          () => _confirmDelete(context, faq),
-                                    ),
-                                  ],
-                                )
-                                : null,
+                              items: [
+                                const DropdownMenuItem<String?>(
+                                  value: null,
+                                  child: Text('All Schools'),
+                                ),
+                                ...schools.map(
+                                  (s) => DropdownMenuItem(
+                                    value: s.id,
+                                    child: Text(s.name),
+                                  ),
+                                ),
+                              ],
+                              onChanged:
+                                  (v) => setState(() => _selectedSchoolId = v),
+                            ),
+                        loading: () => const LinearProgressIndicator(),
+                        error: (e, _) => Text('Error: $e'),
                       ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Search
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        onChanged: (v) => setState(() => _searchQuery = v),
+                        decoration: InputDecoration(
+                          hintText: 'Search questions…',
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(radius.sm),
+                          ),
+                          filled: true,
+                          fillColor: colors.surfaceContainerLow,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // FAQ list
+              Expanded(
+                child: faqsState.when(
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+                  error:
+                      (e, _) => Center(
+                        child: Text(
+                          'Error: $e',
+                          style: TextStyle(color: colors.error),
+                        ),
+                      ),
+                  data: (allFaqs) {
+                    // Filter by school
+                    var faqs = allFaqs;
+                    if (_selectedSchoolId != null) {
+                      faqs =
+                          faqs
+                              .where(
+                                (f) =>
+                                    f.schoolId == _selectedSchoolId ||
+                                    f.schoolId == null,
+                              )
+                              .toList();
+                    }
+
+                    // Filter by search
+                    if (_searchQuery.isNotEmpty) {
+                      final q = _searchQuery.toLowerCase();
+                      faqs =
+                          faqs
+                              .where(
+                                (f) =>
+                                    f.question.toLowerCase().contains(q) ||
+                                    f.answer.toLowerCase().contains(q) ||
+                                    f.category.toLowerCase().contains(q),
+                              )
+                              .toList();
+                    }
+
+                    if (faqs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No FAQs found.',
+                          style: typo.bodyLarge.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
+                      itemCount: faqs.length,
+                      itemBuilder: (context, index) {
+                        final faq = faqs[index];
+                        final isGlobal = faq.schoolId == null;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(radius.sm),
+                            border: Border.all(
+                              color: colors.outlineVariant.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
+                          ),
+                          child: ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFEA580C,
+                                ).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.help_outline,
+                                color: Color(0xFFEA580C),
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              faq.question,
+                              style: typo.titleMedium.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Row(
+                              children: [
+                                Text(
+                                  '${faq.category} • #${faq.displayOrder}',
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                ),
+                                if (isGlobal) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: colors.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      'Global',
+                                      style: typo.labelSmall.copyWith(
+                                        color: colors.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            trailing:
+                                canWrite
+                                    ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.edit,
+                                            size: 20,
+                                            color: colors.primary,
+                                          ),
+                                          onPressed:
+                                              () =>
+                                                  _showFaqDialog(context, faq),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            size: 20,
+                                            color: colors.error,
+                                          ),
+                                          onPressed:
+                                              () =>
+                                                  _confirmDelete(context, faq),
+                                        ),
+                                      ],
+                                    )
+                                    : null,
+                          ),
+                        );
+                      },
                     );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-          ],
-        ),
         ),
       ),
     );

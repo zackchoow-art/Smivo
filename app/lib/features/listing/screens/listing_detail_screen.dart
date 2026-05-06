@@ -13,7 +13,6 @@ import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/features/listing/providers/saved_listing_provider.dart';
-import 'package:smivo/features/shared/providers/system_urls_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/data/models/listing.dart';
@@ -29,7 +28,6 @@ import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/data/repositories/moderation_repository.dart';
 import 'package:smivo/shared/widgets/report_dialog.dart';
 import 'package:smivo/shared/widgets/pickup_address_selector.dart';
-
 
 /// Resolves a condition slug to a display label.
 /// Accepts an optional conditions list from DB for dynamic lookup.
@@ -66,15 +64,24 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
 
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   // State for the buyer's address change section.
-  String? _buyerResolvedAddress;  // The address the buyer typed or selected
+  String? _buyerResolvedAddress; // The address the buyer typed or selected
   String? _buyerResolvedPickupId; // null = custom text
   final GlobalKey<PickupAddressSelectorState> _buyerSelectorKey =
       GlobalKey<PickupAddressSelectorState>();
   bool _showChangeAddress = false;
+  bool _datesInitialized = false;
 
   @override
   void dispose() {
     _buyerSelectorKey.currentState?.saveIfSpecifying();
+    // NOTE: These providers are keepAlive:true to survive widget-tree
+    // transitions (e.g. MONTH→DAY rate switch). Reset them on dispose so
+    // navigating to a different listing always starts from a clean state.
+    ref.invalidate(rentalStartDateProvider);
+    ref.invalidate(rentalEndDateProvider);
+    ref.invalidate(saleStartDateProvider);
+    ref.invalidate(selectedRentalRateProvider);
+    ref.invalidate(rentalDurationProvider);
     super.dispose();
   }
 
@@ -89,6 +96,40 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             onPressed: () => Navigator.of(ctx).pop(),
           ),
     );
+  }
+
+  void _initializeDates(Listing listing) {
+    if (_datesInitialized) return;
+    _datesInitialized = true;
+
+    // NOTE: Clamp to midnight-today so the date picker's firstDate is never
+    // in the past. If availableDate is in the future, use it; otherwise use
+    // today. Both are truncated to midnight for picker compatibility.
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    final rawInitial = listing.availableDate ?? listing.createdAt;
+    final availableMidnight = DateTime(
+      rawInitial.year,
+      rawInitial.month,
+      rawInitial.day,
+    );
+    final initialDate =
+        availableMidnight.isAfter(today) ? availableMidnight : today;
+
+    // NOTE: Use Future.microtask so the provider state is written immediately
+    // after the current build frame completes, before the next paint.
+    // Providers are keepAlive:true so they won't be disposed during this gap.
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.read(rentalStartDateProvider.notifier).setDate(initialDate);
+      ref
+          .read(rentalEndDateProvider.notifier)
+          .setDate(initialDate.add(const Duration(days: 1)));
+      ref.read(saleStartDateProvider.notifier).setDate(initialDate);
+    });
   }
 
   void _showDelistDialog(BuildContext context, WidgetRef ref, Listing listing) {
@@ -134,6 +175,22 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final listingAsync = ref.watch(listingDetailProvider(widget.id));
+
+    // Initialize dates immediately if data is already available (cached)
+    if (listingAsync.hasValue) {
+      _initializeDates(listingAsync.value!);
+    }
+
+    // Also listen for data arriving asynchronously
+    ref.listen<AsyncValue<Listing>>(
+      listingDetailProvider(widget.id),
+      (previous, next) {
+        if (next.value != null) {
+          _initializeDates(next.value!);
+        }
+      },
+    );
+
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -163,6 +220,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           final currentUserId = ref.watch(authStateProvider).value?.id;
           final isOwnListing =
               currentUserId != null && currentUserId == listing.sellerId;
+
+          // NOTE: Date initialization is handled by _initializeDates() which
+          // is called above (lines 154-165) and uses addPostFrameCallback.
+          // No secondary init block needed here.
+
           final existingOrder = ref.watch(
             existingBuyerOrderProvider(listing.id),
           );
@@ -247,20 +309,31 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                   ),
                                 ],
                                 const SizedBox(height: 24),
-                                Text(
-                                  'DESCRIPTION',
-                                  style: typo.labelSmall.copyWith(
-                                    color: colors.onSurface.withValues(
-                                      alpha: 0.5,
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.description_outlined,
+                                      size: 18,
+                                      color: colors.onSurface,
                                     ),
-                                    letterSpacing: 0.5,
-                                  ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Description',
+                                      style: typo.labelLarge.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: colors.onSurface,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 8),
-                                Text(
-                                  listing.description ??
-                                      'No description provided.',
-                                  style: typo.bodyLarge,
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 24),
+                                  child: Text(
+                                    listing.description ??
+                                        'No description provided.',
+                                    style: typo.bodyMedium,
+                                  ),
                                 ),
                                 const SizedBox(height: 24),
                                 if (listing.moderationStatus == 'rejected' ||
@@ -402,87 +475,163 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
-                                      Icons.location_on_outlined,
-                                      color: colors.priceAccent,
-                                    ),
-                                    const SizedBox(width: 8),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            'Pickup Location',
-                                            style: typo.labelLarge.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: colors.onSurface,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          // Display the listing's address as plain text.
-                                          // Prefer customPickupNote (free-text address);
-                                          // fall back to the preset location name.
-                                          Text(
-                                            listing.customPickupNote ??
-                                                listing.pickupLocation?.name ??
-                                                'Not specified',
-                                            style: typo.bodyLarge.copyWith(
-                                              color: colors.onSurface,
-                                            ),
-                                          ),
-                                          // School name for the listing's campus.
-                                          // Displayed separately from address for
-                                          // multi-school readiness.
-                                          Builder(builder: (ctx) {
-                                            final schoolName = activeSchools
-                                                .where((s) =>
-                                                    s.id == listing.schoolId)
-                                                .firstOrNull
-                                                ?.name;
-                                            if (schoolName == null) {
-                                              return const SizedBox.shrink();
-                                            }
-                                            return Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 4),
-                                              child: Text(
-                                                'Campus: $schoolName',
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.location_on_outlined,
+                                                size: 18,
+                                                color: colors.onSurface,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                'Pickup Location',
                                                 style: typo.labelLarge.copyWith(
                                                   fontWeight: FontWeight.bold,
                                                   color: colors.onSurface,
                                                 ),
                                               ),
-                                            );
-                                          }),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          // Display the listing's address as plain text.
+                                          // Prefer customPickupNote (free-text address);
+                                          // fall back to the preset location name.
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 24,
+                                            ),
+                                            child: Text(
+                                              listing.customPickupNote ??
+                                                  listing
+                                                      .pickupLocation
+                                                      ?.name ??
+                                                  'Not specified',
+                                              style: typo.bodyMedium.copyWith(
+                                                color: colors.onSurface,
+                                              ),
+                                            ),
+                                          ),
+                                          // School name for the listing's campus.
+                                          // Displayed separately from address for
+                                          // multi-school readiness.
+                                          Builder(
+                                            builder: (ctx) {
+                                              final schoolName =
+                                                  activeSchools
+                                                      .where(
+                                                        (s) =>
+                                                            s.id ==
+                                                            listing.schoolId,
+                                                      )
+                                                      .firstOrNull
+                                                      ?.name;
+                                              if (schoolName == null) {
+                                                return const SizedBox.shrink();
+                                              }
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                  top: 4,
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.school_outlined,
+                                                      size: 18,
+                                                      color: colors.onSurface,
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Text(
+                                                      'Campus: $schoolName',
+                                                      style: typo.labelLarge
+                                                          .copyWith(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color:
+                                                                colors
+                                                                    .onSurface,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          const SizedBox(height: 24),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.calendar_today_outlined,
+                                                size: 18,
+                                                color: colors.onSurface,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                'Available Date',
+                                                style: typo.labelLarge.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: colors.onSurface,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 24,
+                                            ),
+                                            child: Text(
+                                              DateFormat('MM/dd/yyyy').format(
+                                                listing.availableDate ??
+                                                    listing.createdAt,
+                                              ),
+                                              style: typo.bodyMedium.copyWith(
+                                                color: colors.onSurface,
+                                              ),
+                                            ),
+                                          ),
                                           // ── Buyer address-change section ──
                                           if (listing.allowPickupChange &&
                                               !isOwnListing) ...[
                                             const SizedBox(height: 12),
                                             GestureDetector(
-                                              onTap: () => setState(
-                                                () => _showChangeAddress =
-                                                    !_showChangeAddress,
-                                              ),
+                                              onTap:
+                                                  () => setState(
+                                                    () =>
+                                                        _showChangeAddress =
+                                                            !_showChangeAddress,
+                                                  ),
                                               child: Row(
                                                 children: [
-                                                  Icon(
-                                                    _showChangeAddress
-                                                        ? Icons.expand_less
-                                                        : Icons
-                                                            .edit_location_alt_outlined,
-                                                    size: 16,
-                                                    color: colors.primary,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    _showChangeAddress
-                                                        ? 'Cancel address change'
-                                                        : 'Change pickup address',
-                                                    style: typo.labelLarge.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: colors.onSurface,
-                                                    ),
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        _showChangeAddress
+                                                            ? Icons.expand_less
+                                                            : Icons
+                                                                .edit_location_alt_outlined,
+                                                        size: 18,
+                                                        color: Colors.blue,
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Text(
+                                                        _showChangeAddress
+                                                            ? 'Cancel address change'
+                                                            : 'Change pickup address',
+                                                        style: typo.labelLarge
+                                                            .copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.blue,
+                                                            ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
@@ -494,14 +643,18 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                               // + 'Specify Address' in one widget.
                                               PickupAddressSelector(
                                                 key: _buyerSelectorKey,
-                                                onPickupIdChanged: (id) =>
-                                                    setState(() =>
-                                                        _buyerResolvedPickupId =
-                                                            id),
-                                                onAddressChanged: (addr) =>
-                                                    setState(() =>
-                                                        _buyerResolvedAddress =
-                                                            addr),
+                                                onPickupIdChanged:
+                                                    (id) => setState(
+                                                      () =>
+                                                          _buyerResolvedPickupId =
+                                                              id,
+                                                    ),
+                                                onAddressChanged:
+                                                    (addr) => setState(
+                                                      () =>
+                                                          _buyerResolvedAddress =
+                                                              addr,
+                                                    ),
                                               ),
                                               // Buyer's school name — shown below
                                               // the address selector they chose.
@@ -510,25 +663,48 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                   final schoolAsync = ref2
                                                       .watch(mySchoolProvider);
                                                   return schoolAsync.when(
-                                                    loading: () =>
-                                                        const SizedBox.shrink(),
-                                                    error: (_, __) =>
-                                                        const SizedBox.shrink(),
+                                                    loading:
+                                                        () =>
+                                                            const SizedBox.shrink(),
+                                                    error:
+                                                        (_, __) =>
+                                                            const SizedBox.shrink(),
                                                     data: (school) {
                                                       if (school == null) {
-                                                        return const SizedBox
-                                                            .shrink();
+                                                        return const SizedBox.shrink();
                                                       }
                                                       return Padding(
                                                         padding:
-                                                            const EdgeInsets
-                                                                .only(top: 6),
-                                                        child: Text(
-                                                          'Campus: ${school.name}',
-                                                          style: typo.labelLarge.copyWith(
-                                                            fontWeight: FontWeight.bold,
-                                                            color: colors.onSurface,
-                                                          ),
+                                                            const EdgeInsets.only(
+                                                              top: 6,
+                                                            ),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .school_outlined,
+                                                              size: 18,
+                                                              color:
+                                                                  colors
+                                                                      .onSurface,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 6,
+                                                            ),
+                                                            Text(
+                                                              'Campus: ${school.name}',
+                                                              style: typo
+                                                                  .labelLarge
+                                                                  .copyWith(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color:
+                                                                        colors
+                                                                            .onSurface,
+                                                                  ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       );
                                                     },
@@ -621,14 +797,22 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                 const SizedBox(height: 24),
                                 // Stats Section — only visible on own listing
                                 if (isOwnListing) ...[
-                                  Text(
-                                    'LISTING STATS',
-                                    style: typo.labelSmall.copyWith(
-                                      color: colors.onSurface.withValues(
-                                        alpha: 0.5,
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.bar_chart_outlined,
+                                        size: 18,
+                                        color: colors.onSurface,
                                       ),
-                                      letterSpacing: 0.5,
-                                    ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Listing Stats',
+                                        style: typo.labelLarge.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: colors.onSurface,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
@@ -1014,298 +1198,480 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                         );
                                       }
 
+                                      // Sale Delivery Date Picker Section
+                                      final Widget? saleDatePicker =
+                                          (isSale &&
+                                                  listing.status == 'active' &&
+                                                  !isOwnListing)
+                                              ? Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .local_shipping_outlined,
+                                                        size: 18,
+                                                        color: colors.onSurface,
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Text(
+                                                        'Expected Delivery/Pickup',
+                                                        style: typo.labelLarge
+                                                            .copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  colors
+                                                                      .onSurface,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 12),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                left: 24,
+                                                              ),
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              _SaleDateBox(
+                                                                listing:
+                                                                    listing,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const Spacer(),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 24),
+                                                ],
+                                              )
+                                              : null;
+
                                       final isSubmitting =
                                           ref
                                               .watch(orderActionsProvider)
                                               .isLoading;
-                                      return SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton(
-                                          onPressed:
-                                              isSubmitting
-                                                  ? null
-                                                  : () async {
-                                                    final user =
-                                                        ref
-                                                            .read(
-                                                              authStateProvider,
-                                                            )
-                                                            .value;
-                                                    if (user == null) {
-                                                      context.pushNamed(
-                                                        AppRoutes.login,
-                                                      );
-                                                      return;
-                                                    }
-                                                    if (user.emailConfirmedAt ==
-                                                        null) {
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text(
-                                                            'Please verify your email first',
-                                                          ),
-                                                        ),
-                                                      );
-                                                      return;
-                                                    }
-                                                    if (user.id ==
-                                                        listing.sellerId) {
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text(
-                                                            'You cannot buy your own listing',
-                                                          ),
-                                                        ),
-                                                      );
-                                                      return;
-                                                    }
-                                                    final isRental =
-                                                        listing.transactionType
-                                                            .toLowerCase() ==
-                                                        'rental';
-                                                    double orderPrice;
-                                                    DateTime? rentalStart,
-                                                        rentalEnd;
-                                                    if (isRental) {
-                                                      final selectedRate = ref.read(
-                                                        selectedRentalRateProvider,
-                                                      );
-                                                      final startDate = ref.read(
-                                                        rentalStartDateProvider,
-                                                      );
-                                                      if (selectedRate ==
-                                                          'DAY') {
-                                                        final endDate = ref.read(
-                                                          rentalEndDateProvider,
-                                                        );
-                                                        final daysDiff = endDate.difference(startDate).inDays;
-                                                        final days = daysDiff > 0 ? daysDiff : 1;
-                                                        orderPrice =
-                                                            (listing.rentalDailyPrice ??
-                                                                0) *
-                                                            days;
-                                                        rentalStart = startDate;
-                                                        rentalEnd = endDate;
-                                                      } else if (selectedRate ==
-                                                          'WEEK') {
-                                                        final duration = ref.read(
-                                                          rentalDurationProvider,
-                                                        );
-                                                        orderPrice =
-                                                            (listing.rentalWeeklyPrice ??
-                                                                0) *
-                                                            duration;
-                                                        rentalStart = startDate;
-                                                        rentalEnd = startDate
-                                                            .add(
-                                                              Duration(
-                                                                days:
-                                                                    7 *
-                                                                    duration,
-                                                              ),
-                                                            );
-                                                      } else {
-                                                        final duration = ref.read(
-                                                          rentalDurationProvider,
-                                                        );
-                                                        orderPrice =
-                                                            (listing.rentalMonthlyPrice ??
-                                                                0) *
-                                                            duration;
-                                                        rentalStart = startDate;
-                                                        rentalEnd = DateTime(
-                                                          startDate.year,
-                                                          startDate.month +
-                                                              duration,
-                                                          startDate.day,
-                                                        );
-                                                      }
-                                                      if (orderPrice <= 0) {
-                                                        ScaffoldMessenger.of(
-                                                          context,
-                                                        ).showSnackBar(
-                                                          const SnackBar(
-                                                            content: Text(
-                                                              'Invalid rental configuration. Please select a valid rate and period.',
-                                                            ),
-                                                          ),
-                                                        );
-                                                        return;
-                                                      }
-                                                    } else {
-                                                      orderPrice =
-                                                          listing.price;
-                                                    }
-                                                    try {
-                                                      // NOTE: Buyer address-change priority:
-                                                      // 1. If buyer changed address: use buyer-selected address
-                                                      //    + buyer's school name (text snapshot).
-                                                      // 2. Otherwise: use listing's address + listing's school.
-                                                      // Both values are snapshotted as text fields in the order.
-                                                      final buyerChangedAddress =
-                                                          _showChangeAddress &&
-                                                          _buyerResolvedAddress !=
-                                                              null &&
-                                                          _buyerResolvedAddress!
-                                                              .isNotEmpty;
-
-                                                      final effectivePickupId =
-                                                          buyerChangedAddress
-                                                          ? _buyerResolvedPickupId
-                                                          : listing
-                                                              .pickupLocationId;
-
-                                                      final effectivePickupName =
-                                                          buyerChangedAddress
-                                                          ? _buyerResolvedAddress!
-                                                          : (listing
-                                                                  .customPickupNote ??
-                                                              listing
-                                                                  .pickupLocation
-                                                                  ?.name ??
-                                                              'Unknown Address');
-
-                                                      // Write buyer's school when address changed,
-                                                      // otherwise write the listing's school.
-                                                      final String schoolName;
-                                                      if (buyerChangedAddress) {
-                                                        final buyerSchool =
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (saleDatePicker != null)
+                                            saleDatePicker,
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton(
+                                              onPressed:
+                                                  isSubmitting
+                                                      ? null
+                                                      : () async {
+                                                        final user =
                                                             ref
                                                                 .read(
-                                                                  mySchoolProvider,
+                                                                  authStateProvider,
                                                                 )
                                                                 .value;
-                                                        schoolName =
-                                                            buyerSchool?.name ??
-                                                            'Unknown School';
-                                                      } else {
-                                                        schoolName = activeSchools
-                                                            .where(
-                                                              (s) =>
-                                                                  s.id ==
-                                                                  listing
-                                                                      .schoolId,
-                                                            )
-                                                            .firstOrNull
-                                                            ?.name ??
-                                                            'Unknown School';
-                                                      }
-
-                                                      await ref
-                                                          .read(
-                                                            orderActionsProvider
-                                                                .notifier,
-                                                          )
-                                                          .createOrder(
-                                                            listingId:
-                                                                listing.id,
-                                                            sellerId:
-                                                                listing
-                                                                    .sellerId,
-                                                            price: orderPrice,
-                                                            orderType:
-                                                                isRental
-                                                                    ? 'rental'
-                                                                    : 'sale',
-                                                            rentalStartDate:
-                                                                rentalStart,
-                                                            rentalEndDate:
-                                                                rentalEnd,
-                                                            depositAmount:
-                                                                listing
-                                                                    .depositAmount,
-                                                            pickupLocationId:
-                                                                effectivePickupId,
-                                                            pickupLocationName:
-                                                                effectivePickupName,
-                                                            school: schoolName,
+                                                        if (user == null) {
+                                                          context.pushNamed(
+                                                            AppRoutes.login,
                                                           );
-                                                      if (!context.mounted)
-                                                        return;
-                                                      await _showOrderSuccessDialog(
-                                                        context,
-                                                      );
-                                                      if (!context.mounted)
-                                                        return;
-                                                      context.goNamed(
-                                                        AppRoutes.home,
-                                                      );
-                                                    } catch (e) {
-                                                      if (!context.mounted)
-                                                        return;
-
-                                                      if (e.toString().contains('in_progress')) {
-                                                        return;
-                                                      }
-
-                                                      // Handle duplicate order submission gracefully
-                                                      final isDuplicate = e
-                                                          .toString()
-                                                          .contains(
-                                                            'unique_pending_order_per_buyer_listing',
+                                                          return;
+                                                        }
+                                                        if (user.emailConfirmedAt ==
+                                                            null) {
+                                                          ScaffoldMessenger.of(
+                                                            context,
+                                                          ).showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                'Please verify your email first',
+                                                              ),
+                                                            ),
                                                           );
-                                                      final errorMessage =
-                                                          isDuplicate
-                                                              ? 'You already have a pending application for this item.'
-                                                              : 'Failed to place order: ${e.toString()}';
+                                                          return;
+                                                        }
+                                                        if (user.id ==
+                                                            listing.sellerId) {
+                                                          ScaffoldMessenger.of(
+                                                            context,
+                                                          ).showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                'You cannot buy your own listing',
+                                                              ),
+                                                            ),
+                                                          );
+                                                          return;
+                                                        }
+                                                        final isRental =
+                                                            listing
+                                                                .transactionType
+                                                                .toLowerCase() ==
+                                                            'rental';
+                                                        double orderPrice;
+                                                        DateTime? rentalStart,
+                                                            rentalEnd;
+                                                        if (isRental) {
+                                                          final selectedRate =
+                                                              ref.read(
+                                                                selectedRentalRateProvider,
+                                                              );
+                                                          final startDate = ref
+                                                              .read(
+                                                                rentalStartDateProvider,
+                                                              );
+                                                          if (selectedRate ==
+                                                              'DAY') {
+                                                            final endDate = ref
+                                                                .read(
+                                                                  rentalEndDateProvider,
+                                                                );
+                                                            final daysDiff =
+                                                                endDate
+                                                                    .difference(
+                                                                      startDate,
+                                                                    )
+                                                                    .inDays;
+                                                            final days =
+                                                                daysDiff > 0
+                                                                    ? daysDiff
+                                                                    : 1;
+                                                            orderPrice =
+                                                                (listing.rentalDailyPrice ??
+                                                                    0) *
+                                                                days;
+                                                            rentalStart =
+                                                                startDate;
+                                                            rentalEnd = endDate;
+                                                          } else if (selectedRate ==
+                                                              'WEEK') {
+                                                            final duration = ref
+                                                                .read(
+                                                                  rentalDurationProvider,
+                                                                );
+                                                            orderPrice =
+                                                                (listing.rentalWeeklyPrice ??
+                                                                    0) *
+                                                                duration;
+                                                            rentalStart =
+                                                                startDate;
+                                                            rentalEnd =
+                                                                startDate.add(
+                                                                  Duration(
+                                                                    days:
+                                                                        7 *
+                                                                        duration,
+                                                                  ),
+                                                                );
+                                                          } else {
+                                                            final duration = ref
+                                                                .read(
+                                                                  rentalDurationProvider,
+                                                                );
+                                                            orderPrice =
+                                                                (listing.rentalMonthlyPrice ??
+                                                                    0) *
+                                                                duration;
+                                                            rentalStart =
+                                                                startDate;
+                                                            rentalEnd =
+                                                                startDate.add(
+                                                                  Duration(
+                                                                    days:
+                                                                        30 *
+                                                                        duration,
+                                                                  ),
+                                                                );
+                                                          }
+                                                          if (orderPrice <= 0) {
+                                                            ScaffoldMessenger.of(
+                                                              context,
+                                                            ).showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                  'Invalid rental configuration. Please select a valid rate and period.',
+                                                                ),
+                                                              ),
+                                                            );
+                                                            return;
+                                                          }
+                                                        } else {
+                                                          orderPrice =
+                                                              listing.price;
+                                                          rentalStart = ref.read(
+                                                            saleStartDateProvider,
+                                                          );
+                                                        }
 
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            errorMessage,
-                                                          ),
-                                                          backgroundColor:
+                                                        // Pre-submission date validation based on available_date
+                                                        if (listing.availableDate !=
+                                                                null &&
+                                                            rentalStart !=
+                                                                null) {
+                                                          final normalizedAvailableDate =
+                                                              DateTime(
+                                                                listing
+                                                                    .availableDate!
+                                                                    .year,
+                                                                listing
+                                                                    .availableDate!
+                                                                    .month,
+                                                                listing
+                                                                    .availableDate!
+                                                                    .day,
+                                                              );
+                                                          final normalizedRentalStart =
+                                                              DateTime(
+                                                                rentalStart!
+                                                                    .year,
+                                                                rentalStart!
+                                                                    .month,
+                                                                rentalStart!
+                                                                    .day,
+                                                              );
+
+                                                          if (normalizedRentalStart
+                                                              .isBefore(
+                                                                normalizedAvailableDate,
+                                                              )) {
+                                                            ScaffoldMessenger.of(
+                                                              context,
+                                                            ).showSnackBar(
+                                                              SnackBar(
+                                                                content: Text(
+                                                                  isRental
+                                                                      ? 'Rental start date cannot be earlier than available date (${DateFormat('MM/dd').format(normalizedAvailableDate)})'
+                                                                      : 'Delivery date cannot be earlier than available date (${DateFormat('MM/dd').format(normalizedAvailableDate)})',
+                                                                ),
+                                                                backgroundColor:
+                                                                    colors
+                                                                        .error,
+                                                              ),
+                                                            );
+                                                            return;
+                                                          }
+                                                        }
+
+                                                        // Rental duration validation
+                                                        if (isRental &&
+                                                            rentalEnd != null &&
+                                                            rentalStart !=
+                                                                null) {
+                                                          if (rentalEnd!
+                                                                  .isBefore(
+                                                                    rentalStart!,
+                                                                  ) ||
+                                                              rentalEnd!
+                                                                  .isAtSameMomentAs(
+                                                                    rentalStart!,
+                                                                  )) {
+                                                            ScaffoldMessenger.of(
+                                                              context,
+                                                            ).showSnackBar(
+                                                              SnackBar(
+                                                                content: const Text(
+                                                                  'Rental end date must be after the start date',
+                                                                ),
+                                                                backgroundColor:
+                                                                    colors
+                                                                        .error,
+                                                              ),
+                                                            );
+                                                            return;
+                                                          }
+                                                        }
+
+                                                        try {
+                                                          // NOTE: Buyer address-change priority:
+                                                          // 1. If buyer changed address: use buyer-selected address
+                                                          //    + buyer's school name (text snapshot).
+                                                          // 2. Otherwise: use listing's address + listing's school.
+                                                          // Both values are snapshotted as text fields in the order.
+                                                          final buyerChangedAddress =
+                                                              _showChangeAddress &&
+                                                              _buyerResolvedAddress !=
+                                                                  null &&
+                                                              _buyerResolvedAddress!
+                                                                  .isNotEmpty;
+
+                                                          final effectivePickupId =
+                                                              buyerChangedAddress
+                                                                  ? _buyerResolvedPickupId
+                                                                  : listing
+                                                                      .pickupLocationId;
+
+                                                          final effectivePickupName =
+                                                              buyerChangedAddress
+                                                                  ? _buyerResolvedAddress!
+                                                                  : (listing
+                                                                          .customPickupNote ??
+                                                                      listing
+                                                                          .pickupLocation
+                                                                          ?.name ??
+                                                                      'Unknown Address');
+
+                                                          // Write buyer's school when address changed,
+                                                          // otherwise write the listing's school.
+                                                          final String
+                                                          schoolName;
+                                                          if (buyerChangedAddress) {
+                                                            final buyerSchool =
+                                                                ref
+                                                                    .read(
+                                                                      mySchoolProvider,
+                                                                    )
+                                                                    .value;
+                                                            schoolName =
+                                                                buyerSchool
+                                                                    ?.name ??
+                                                                'Unknown School';
+                                                          } else {
+                                                            schoolName =
+                                                                activeSchools
+                                                                    .where(
+                                                                      (s) =>
+                                                                          s.id ==
+                                                                          listing
+                                                                              .schoolId,
+                                                                    )
+                                                                    .firstOrNull
+                                                                    ?.name ??
+                                                                'Unknown School';
+                                                          }
+
+                                                          await ref
+                                                              .read(
+                                                                orderActionsProvider
+                                                                    .notifier,
+                                                              )
+                                                              .createOrder(
+                                                                listingId:
+                                                                    listing.id,
+                                                                sellerId:
+                                                                    listing
+                                                                        .sellerId,
+                                                                price:
+                                                                    orderPrice,
+                                                                orderType:
+                                                                    isRental
+                                                                        ? 'rental'
+                                                                        : 'sale',
+                                                                rentalStartDate:
+                                                                    rentalStart,
+                                                                rentalEndDate:
+                                                                    rentalEnd,
+                                                                depositAmount:
+                                                                    listing
+                                                                        .depositAmount,
+                                                                pickupLocationId:
+                                                                    effectivePickupId,
+                                                                pickupLocationName:
+                                                                    effectivePickupName,
+                                                                school:
+                                                                    schoolName,
+                                                              );
+                                                          if (!context.mounted)
+                                                            return;
+                                                          await _showOrderSuccessDialog(
+                                                            context,
+                                                          );
+                                                          if (!context.mounted)
+                                                            return;
+                                                          context.goNamed(
+                                                            AppRoutes.home,
+                                                          );
+                                                        } catch (e) {
+                                                          if (!context.mounted)
+                                                            return;
+
+                                                          if (e
+                                                              .toString()
+                                                              .contains(
+                                                                'in_progress',
+                                                              )) {
+                                                            return;
+                                                          }
+
+                                                          // Handle duplicate order submission gracefully
+                                                          final isDuplicate = e
+                                                              .toString()
+                                                              .contains(
+                                                                'unique_pending_order_per_buyer_listing',
+                                                              );
+                                                          final errorMessage =
                                                               isDuplicate
-                                                                  ? colors
-                                                                      .primary
-                                                                  : colors
-                                                                      .error,
-                                                        ),
-                                                      );
-                                                    }
-                                                  },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: colors.primary,
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 16,
+                                                                  ? 'You already have a pending application for this item.'
+                                                                  : 'Failed to place order: ${e.toString()}';
+
+                                                          ScaffoldMessenger.of(
+                                                            context,
+                                                          ).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                errorMessage,
+                                                              ),
+                                                              backgroundColor:
+                                                                  isDuplicate
+                                                                      ? colors
+                                                                          .primary
+                                                                      : colors
+                                                                          .error,
+                                                            ),
+                                                          );
+                                                        }
+                                                      },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: colors.primary,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 16,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        radius.button,
+                                                      ),
+                                                ),
+                                                elevation: 0,
+                                              ),
+                                              child:
+                                                  isSubmitting
+                                                      ? SizedBox(
+                                                        height: 20,
+                                                        width: 20,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2.5,
+                                                              color:
+                                                                  colors
+                                                                      .onPrimary,
+                                                            ),
+                                                      )
+                                                      : Text(
+                                                        isSale
+                                                            ? 'Request to Buy'
+                                                            : 'Request to Rent',
+                                                        style: typo.titleMedium
+                                                            .copyWith(
+                                                              color:
+                                                                  colors
+                                                                      .onPrimary,
+                                                            ),
+                                                      ),
                                             ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    radius.button,
-                                                  ),
-                                            ),
-                                            elevation: 0,
                                           ),
-                                          child:
-                                              isSubmitting
-                                                  ? SizedBox(
-                                                    height: 20,
-                                                    width: 20,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          strokeWidth: 2.5,
-                                                          color:
-                                                              colors.onPrimary,
-                                                        ),
-                                                  )
-                                                  : Text(
-                                                    isSale
-                                                        ? 'Request to Buy'
-                                                        : 'Request to Rent',
-                                                    style: typo.titleMedium
-                                                        .copyWith(
-                                                          color:
-                                                              colors.onPrimary,
-                                                        ),
-                                                  ),
-                                        ),
+                                        ],
                                       );
                                     },
                                   ),
@@ -1368,29 +1734,39 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           ),
                         ],
                       ),
-                      child: Consumer(
-                        builder: (context, ref, _) {
-                          final urls =
-                              ref.watch(systemUrlsProvider).value ?? {};
-                          final websiteUrl =
-                              urls['website'] ?? 'https://smivo.io';
-
-                          return IconButton(
-                            icon: Icon(
-                              Icons.ios_share,
-                              color: colors.onSurface,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.ios_share,
+                          color: colors.onSurface,
+                        ),
+                        onPressed: () {
+                          // NOTE: Always use smivo.io as the share URL base.
+                          // smivo.io hosts the AASA / App Links files, so
+                          // Universal Links on iOS and App Links on Android
+                          // intercept smivo.io/listing/* and open the app.
+                          // smivo.app (GitHub Pages) does NOT have these files.
+                          const baseUrl = 'https://smivo.io';
+                          final listingUrl = '$baseUrl/listing/${listing.id}';
+                          final subject = isSale
+                              ? '${listing.title} — \$${listing.price.toStringAsFixed(0)} on Smivo'
+                              : '${listing.title} on Smivo';
+                          final body = isSale
+                              ? 'Check out ${listing.title} for \$${listing.price.toStringAsFixed(0)} on Smivo!\n\n$listingUrl'
+                              : 'Check out ${listing.title} on Smivo!\n\n$listingUrl';
+                          // NOTE: share_plus 13.x throws ArgumentError if both
+                          // `text` and `uri` are provided simultaneously. We
+                          // pass only `text` (which already contains the full
+                          // URL) so iOS/Android recognise it as a tappable link.
+                          SharePlus.instance.share(
+                            ShareParams(
+                              subject: subject,
+                              text: body,
                             ),
-                            onPressed: () {
-                              final shareText =
-                                  isSale
-                                      ? 'Check out ${listing.title} for \$${listing.price.toStringAsFixed(0)} on Smivo!\n\n$websiteUrl/listing/${listing.id}'
-                                      : 'Check out ${listing.title} on Smivo!\n\n$websiteUrl/listing/${listing.id}';
-                              Share.share(shareText);
-                            },
                           );
                         },
                       ),
                     ),
+
                     if (!isOwnListing) ...[
                       const SizedBox(width: 8),
                       Consumer(
@@ -1681,10 +2057,84 @@ String _formatRentalSummary(Order order) {
   if (order.rentalStartDate == null || order.rentalEndDate == null) {
     return 'Total: \$${order.totalPrice.toStringAsFixed(0)}';
   }
-  final daysDiff = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+  final daysDiff =
+      order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
   final duration = daysDiff > 0 ? daysDiff : 1;
   final unitLabel = duration == 1 ? 'Day' : 'Days';
   return '$duration $unitLabel, Total: \$${order.totalPrice.toStringAsFixed(0)}';
+}
+
+class _SaleDateBox extends ConsumerWidget {
+  const _SaleDateBox({required this.listing});
+  final Listing listing;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    final providerDate = ref.watch(saleStartDateProvider);
+    final formatter = DateFormat('MM/dd/yyyy');
+
+    // NOTE: Compute the correct firstValidDate (same logic as the picker onTap)
+    // so we can use it as a display fallback when the provider still holds the
+    // DateTime.now() default (i.e., microtask hasn't fired yet on first frame).
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    final rawFirstValid = listing.availableDate ?? listing.createdAt;
+    final availableMidnight = DateTime(
+      rawFirstValid.year,
+      rawFirstValid.month,
+      rawFirstValid.day,
+    );
+    final firstValidDate =
+        availableMidnight.isAfter(today) ? availableMidnight : today;
+    // If the provider date is before the earliest valid date, it's still the
+    // stale default — show firstValidDate so the user sees the correct value
+    // from the very first frame without waiting for the microtask.
+    final startDate =
+        providerDate.isBefore(firstValidDate) ? firstValidDate : providerDate;
+
+    return GestureDetector(
+      onTap: () async {
+        // NOTE: Reuse firstValidDate and startDate computed in build() above —
+        // they already apply the today-clamp and provider-fallback logic.
+        final initDate =
+            startDate.isBefore(firstValidDate) ? firstValidDate : startDate;
+
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: initDate,
+          firstDate: firstValidDate,
+          lastDate: DateTime.now().add(const Duration(days: 365)),
+        );
+        if (picked != null) {
+          ref.read(saleStartDateProvider.notifier).setDate(
+            DateTime(picked.year, picked.month, picked.day),
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: colors.outlineVariant.withValues(alpha: 0.3),
+          ),
+          borderRadius: BorderRadius.circular(radius.input),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(formatter.format(startDate), style: typo.bodyMedium),
+            const Icon(Icons.calendar_today_outlined, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _StatCard extends StatelessWidget {

@@ -51,7 +51,11 @@ class ListingRepository {
           // NOTE: Exclude listings that have been rejected or taken down by admin.
           // moderation_status can be: auto_approved, pending_review, approved, rejected, taken_down.
           // We only show listings NOT in rejected/taken_down state.
-          .not('moderation_status', 'in', '("rejected","taken_down","pending_review")');
+          .not(
+            'moderation_status',
+            'in',
+            '("rejected","taken_down","pending_review")',
+          );
 
       if (category != null) {
         // NOTE: DB CHECK constraint uses lowercase values; always
@@ -113,7 +117,11 @@ class ListingRepository {
           .eq('status', AppConstants.listingActive)
           // NOTE: Same moderation_status filter as fetchListings —
           // rejected/taken_down items must never appear in search results.
-          .not('moderation_status', 'in', '("rejected","taken_down","pending_review")');
+          .not(
+            'moderation_status',
+            'in',
+            '("rejected","taken_down","pending_review")',
+          );
 
       if (category != null) {
         dbQuery = dbQuery.eq('category', category.toLowerCase());
@@ -332,7 +340,10 @@ class ListingRepository {
       // the bucket does not accumulate unreachable files.
       await _deleteUploadedPhotos(uploadedPaths);
       if (e.message.contains('row-level security policy')) {
-        throw DatabaseException('Action denied. Your account may be restricted.', e);
+        throw DatabaseException(
+          'Action denied. Your account may be restricted.',
+          e,
+        );
       }
       throw DatabaseException(e.message, e);
     } on StorageException catch (e) {
@@ -364,7 +375,10 @@ class ListingRepository {
       return Listing.fromJson(data);
     } on PostgrestException catch (e) {
       if (e.message.contains('row-level security policy')) {
-        throw DatabaseException('Action denied. Your account may be restricted.', e);
+        throw DatabaseException(
+          'Action denied. Your account may be restricted.',
+          e,
+        );
       }
       throw DatabaseException(e.message, e);
     }
@@ -417,15 +431,11 @@ class ListingRepository {
   /// History for record-keeping but won't inflate the new inquiry count.
   Future<void> relistListing(String id) async {
     try {
-      await _client.rpc(
-        'relist_listing',
-        params: {'p_listing_id': id},
-      );
+      await _client.rpc('relist_listing', params: {'p_listing_id': id});
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
   }
-
 
   /// Records a view event for a listing.
   ///

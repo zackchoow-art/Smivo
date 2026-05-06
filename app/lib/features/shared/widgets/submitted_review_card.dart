@@ -3,10 +3,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/user_review.dart';
 
 class SubmittedReviewCard extends StatelessWidget {
-  const SubmittedReviewCard({
-    super.key,
-    required this.review,
-  });
+  const SubmittedReviewCard({super.key, required this.review});
 
   final UserReview review;
 
@@ -44,7 +41,9 @@ class SubmittedReviewCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
               return Icon(
-                index < review.rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                index < review.rating
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
                 color: colors.primary,
                 size: 32,
               );
@@ -55,20 +54,24 @@ class SubmittedReviewCard extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: review.tags.map((tag) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: colors.primary.withValues(alpha: 0.1),
-                    border: Border.all(color: colors.primary),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    tag.name,
-                    style: typo.labelSmall.copyWith(color: colors.primary),
-                  ),
-                );
-              }).toList(),
+              children:
+                  review.tags.map((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.primary.withValues(alpha: 0.1),
+                        border: Border.all(color: colors.primary),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        tag.name,
+                        style: typo.labelSmall.copyWith(color: colors.primary),
+                      ),
+                    );
+                  }).toList(),
             ),
           ],
           if (review.comment != null && review.comment!.trim().isNotEmpty) ...[

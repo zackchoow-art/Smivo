@@ -18,7 +18,7 @@ class SystemUrls extends _$SystemUrls {
     final prefs = await SharedPreferences.getInstance();
 
     final cachedStr = prefs.getString(_urlCacheKey);
-    
+
     if (cachedStr != null) {
       _syncInBackground(client, prefs);
       try {
@@ -32,7 +32,10 @@ class SystemUrls extends _$SystemUrls {
     return urls;
   }
 
-  Future<void> _syncInBackground(SupabaseClient client, SharedPreferences prefs) async {
+  Future<void> _syncInBackground(
+    SupabaseClient client,
+    SharedPreferences prefs,
+  ) async {
     try {
       final urls = await _fetchFromSupabase(client);
       await prefs.setString(_urlCacheKey, jsonEncode(urls));

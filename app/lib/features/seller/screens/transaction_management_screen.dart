@@ -531,10 +531,7 @@ class _SavesTab extends ConsumerWidget {
                                 label: const Text('Chat'),
                                 onPressed: () async {
                                   final currentUserId =
-                                      ref
-                                          .read(authStateProvider)
-                                          .value
-                                          ?.id;
+                                      ref.read(authStateProvider).value?.id;
                                   if (currentUserId == null ||
                                       save.userId.isEmpty) {
                                     return;

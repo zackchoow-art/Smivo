@@ -51,337 +51,352 @@ class AdminDashboardScreen extends ConsumerWidget {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Metrics cards
-            Text(
-              'Platform Overview',
-              style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 20),
-            metricsState.when(
-              data:
-                  (metrics) => Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: [
-                      _MetricCard(
-                        title: 'Total Users',
-                        value: metrics.totalUsers.toString(),
-                        icon: Icons.people,
-                        color: const Color(0xFF4F46E5),
-                      ),
-                      _MetricCard(
-                        title: 'Active Listings',
-                        value: metrics.activeListings.toString(),
-                        subtitle: '${metrics.totalListings} total',
-                        icon: Icons.storefront,
-                        color: const Color(0xFF059669),
-                      ),
-                      _MetricCard(
-                        title: 'Pending Orders',
-                        value: metrics.pendingOrders.toString(),
-                        icon: Icons.hourglass_empty,
-                        color: const Color(0xFFD97706),
-                      ),
-                      _MetricCard(
-                        title: 'Completed Orders',
-                        value: metrics.completedOrders.toString(),
-                        subtitle: '${metrics.totalOrders} total',
-                        icon: Icons.check_circle,
-                        color: const Color(0xFF7C3AED),
-                      ),
-                      _MetricCard(
-                        title: 'Schools',
-                        value: metrics.totalSchools.toString(),
-                        icon: Icons.school,
-                        color: const Color(0xFF0891B2),
-                      ),
-                      _MetricCard(
-                        title: 'Categories',
-                        value: metrics.totalCategories.toString(),
-                        icon: Icons.category,
-                        color: const Color(0xFFDB2777),
-                      ),
-                    ],
-                  ),
-              loading:
-                  () => const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-              error:
-                  (err, _) =>
-                      _ErrorCard(message: 'Error loading metrics: $err'),
-            ),
-
-            const SizedBox(height: 40),
-
-            // Quick actions
-            Text(
-              'Quick Actions',
-              style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _QuickActionChip(
-                  icon: Icons.school,
-                  label: 'Manage Schools',
-                  onTap: () => context.goNamed(AppRoutes.adminSchools),
+                // Metrics cards
+                Text(
+                  'Platform Overview',
+                  style: typo.headlineMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                _QuickActionChip(
-                  icon: Icons.category,
-                  label: 'Categories',
-                  onTap: () => context.goNamed(AppRoutes.adminCategories),
-                ),
-                _QuickActionChip(
-                  icon: Icons.help,
-                  label: 'FAQs',
-                  onTap: () => context.goNamed(AppRoutes.adminFaqs),
-                ),
-                _QuickActionChip(
-                  icon: Icons.book,
-                  label: 'Dictionary',
-                  onTap: () => context.goNamed(AppRoutes.adminDictionary),
-                ),
-                _QuickActionChip(
-                  icon: Icons.security,
-                  label: 'Roles',
-                  onTap: () => context.goNamed(AppRoutes.adminRoles),
-                ),
-                _QuickActionChip(
-                  icon: Icons.campaign,
-                  label: 'Broadcast',
-                  onTap: () => _showBroadcastDialog(context, ref),
-                ),
-                _QuickActionChip(
-                  icon: Icons.label,
-                  label: 'Tags',
-                  onTap: () => context.goNamed(AppRoutes.adminTags),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 40),
-
-            // Danger Zone — only for admin/sysadmin
-            Builder(
-              builder: (context) {
-                final adminCtx = ref.watch(adminContextProvider).value;
-                final canWrite =
-                    adminCtx?.canWrite(AdminModule.dashboard) ?? false;
-                if (!canWrite) return const SizedBox.shrink();
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Danger Zone',
-                      style: typo.headlineMedium.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: colors.error,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: colors.error.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(radius.sm),
-                        border: Border.all(
-                          color: colors.error.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
+                const SizedBox(height: 20),
+                metricsState.when(
+                  data:
+                      (metrics) => Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
                         children: [
-                          Icon(
-                            Icons.warning_amber_rounded,
-                            color: colors.error,
-                            size: 28,
+                          _MetricCard(
+                            title: 'Total Users',
+                            value: metrics.totalUsers.toString(),
+                            icon: Icons.people,
+                            color: const Color(0xFF4F46E5),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Clear All Test Data',
-                                  style: typo.titleMedium.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Delete all orders, listings, messages, chat rooms, notifications, and saved listings. System config (schools, categories, etc.) will be preserved.',
-                                  style: typo.bodySmall.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          _MetricCard(
+                            title: 'Active Listings',
+                            value: metrics.activeListings.toString(),
+                            subtitle: '${metrics.totalListings} total',
+                            icon: Icons.storefront,
+                            color: const Color(0xFF059669),
                           ),
-                          const SizedBox(width: 16),
-                          FilledButton.icon(
-                            onPressed: () => _showClearDataDialog(context, ref),
-                            icon: const Icon(Icons.delete_forever, size: 18),
-                            label: const Text('Clear Data'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: colors.error,
-                              foregroundColor: Colors.white,
-                            ),
+                          _MetricCard(
+                            title: 'Pending Orders',
+                            value: metrics.pendingOrders.toString(),
+                            icon: Icons.hourglass_empty,
+                            color: const Color(0xFFD97706),
+                          ),
+                          _MetricCard(
+                            title: 'Completed Orders',
+                            value: metrics.completedOrders.toString(),
+                            subtitle: '${metrics.totalOrders} total',
+                            icon: Icons.check_circle,
+                            color: const Color(0xFF7C3AED),
+                          ),
+                          _MetricCard(
+                            title: 'Schools',
+                            value: metrics.totalSchools.toString(),
+                            icon: Icons.school,
+                            color: const Color(0xFF0891B2),
+                          ),
+                          _MetricCard(
+                            title: 'Categories',
+                            value: metrics.totalCategories.toString(),
+                            icon: Icons.category,
+                            color: const Color(0xFFDB2777),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                  ],
-                );
-              },
-            ),
-
-            // Recent activity
-            Text(
-              'Recent Orders',
-              style: typo.headlineMedium.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 20),
-            recentState.when(
-              data: (orders) {
-                if (orders.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Text(
-                        'No recent orders.',
-                        style: typo.bodyLarge.copyWith(
-                          color: colors.onSurfaceVariant,
+                  loading:
+                      () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: CircularProgressIndicator(),
                         ),
                       ),
-                    ),
-                  );
-                }
+                  error:
+                      (err, _) =>
+                          _ErrorCard(message: 'Error loading metrics: $err'),
+                ),
 
-                return Container(
-                  decoration: BoxDecoration(
-                    color: colors.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(radius.md),
-                    border: Border.all(
-                      color: colors.outlineVariant.withValues(alpha: 0.3),
-                    ),
+                const SizedBox(height: 40),
+
+                // Quick actions
+                Text(
+                  'Quick Actions',
+                  style: typo.headlineMedium.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                  child: Column(
-                    children:
-                        orders.asMap().entries.map((entry) {
-                          final order = entry.value;
-                          final isLast = entry.key == orders.length - 1;
-                          final status = order['status'] ?? '';
-                          final createdAt =
-                              order['created_at'] != null
-                                  ? DateFormat(
-                                    'MMM d, yyyy HH:mm',
-                                  ).format(DateTime.parse(order['created_at']))
-                                  : '-';
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _QuickActionChip(
+                      icon: Icons.school,
+                      label: 'Manage Schools',
+                      onTap: () => context.goNamed(AppRoutes.adminSchools),
+                    ),
+                    _QuickActionChip(
+                      icon: Icons.category,
+                      label: 'Categories',
+                      onTap: () => context.goNamed(AppRoutes.adminCategories),
+                    ),
+                    _QuickActionChip(
+                      icon: Icons.help,
+                      label: 'FAQs',
+                      onTap: () => context.goNamed(AppRoutes.adminFaqs),
+                    ),
+                    _QuickActionChip(
+                      icon: Icons.book,
+                      label: 'Dictionary',
+                      onTap: () => context.goNamed(AppRoutes.adminDictionary),
+                    ),
+                    _QuickActionChip(
+                      icon: Icons.security,
+                      label: 'Roles',
+                      onTap: () => context.goNamed(AppRoutes.adminRoles),
+                    ),
+                    _QuickActionChip(
+                      icon: Icons.campaign,
+                      label: 'Broadcast',
+                      onTap: () => _showBroadcastDialog(context, ref),
+                    ),
+                    _QuickActionChip(
+                      icon: Icons.label,
+                      label: 'Tags',
+                      onTap: () => context.goNamed(AppRoutes.adminTags),
+                    ),
+                  ],
+                ),
 
-                          // NOTE: Use DB-driven status colors via StatusResolver
-                          final resolver =
-                              ref.watch(statusResolverProvider).value;
-                          final statusColor =
-                              resolver?.orderColor(status) ??
-                              colors.onSurfaceVariant;
+                const SizedBox(height: 40),
 
-                          return Column(
+                // Danger Zone — only for admin/sysadmin
+                Builder(
+                  builder: (context) {
+                    final adminCtx = ref.watch(adminContextProvider).value;
+                    final canWrite =
+                        adminCtx?.canWrite(AdminModule.dashboard) ?? false;
+                    if (!canWrite) return const SizedBox.shrink();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Danger Zone',
+                          style: typo.headlineMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colors.error,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: colors.error.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(radius.sm),
+                            border: Border.all(
+                              color: colors.error.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
                             children: [
-                              ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 4,
-                                ),
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    status == 'completed'
-                                        ? Icons.check_circle_outline
-                                        : status == 'pending'
-                                        ? Icons.schedule
-                                        : status == 'cancelled'
-                                        ? Icons.cancel_outlined
-                                        : Icons.receipt_long,
-                                    color: statusColor,
-                                    size: 20,
-                                  ),
-                                ),
-                                title: Text(
-                                  order['listing_title'] ?? 'Unknown Item',
-                                  style: typo.titleMedium.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 14,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: Text(
-                                  '${order['buyer_name'] ?? 'Unknown'} • ${order['order_type'] ?? 'sale'} • $createdAt',
-                                  style: typo.bodySmall.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                ),
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    resolver?.orderLabel(status) ??
-                                        status.toUpperCase(),
-                                    style: typo.labelSmall.copyWith(
-                                      color: statusColor,
-                                      fontWeight: FontWeight.bold,
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: colors.error,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Clear All Test Data',
+                                      style: typo.titleMedium.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Delete all orders, listings, messages, chat rooms, notifications, and saved listings. System config (schools, categories, etc.) will be preserved.',
+                                      style: typo.bodySmall.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              if (!isLast)
-                                Divider(
-                                  height: 1,
-                                  indent: 20,
-                                  endIndent: 20,
-                                  color: colors.outlineVariant.withValues(
-                                    alpha: 0.3,
-                                  ),
+                              const SizedBox(width: 16),
+                              FilledButton.icon(
+                                onPressed:
+                                    () => _showClearDataDialog(context, ref),
+                                icon: const Icon(
+                                  Icons.delete_forever,
+                                  size: 18,
                                 ),
+                                label: const Text('Clear Data'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: colors.error,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
                             ],
-                          );
-                        }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    );
+                  },
+                ),
+
+                // Recent activity
+                Text(
+                  'Recent Orders',
+                  style: typo.headlineMedium.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                );
-              },
-              loading:
-                  () => const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-              error:
-                  (err, _) =>
-                      _ErrorCard(message: 'Error loading recent orders: $err'),
+                ),
+                const SizedBox(height: 20),
+                recentState.when(
+                  data: (orders) {
+                    if (orders.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Text(
+                            'No recent orders.',
+                            style: typo.bodyLarge.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: colors.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(radius.md),
+                        border: Border.all(
+                          color: colors.outlineVariant.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Column(
+                        children:
+                            orders.asMap().entries.map((entry) {
+                              final order = entry.value;
+                              final isLast = entry.key == orders.length - 1;
+                              final status = order['status'] ?? '';
+                              final createdAt =
+                                  order['created_at'] != null
+                                      ? DateFormat('MMM d, yyyy HH:mm').format(
+                                        DateTime.parse(order['created_at']),
+                                      )
+                                      : '-';
+
+                              // NOTE: Use DB-driven status colors via StatusResolver
+                              final resolver =
+                                  ref.watch(statusResolverProvider).value;
+                              final statusColor =
+                                  resolver?.orderColor(status) ??
+                                  colors.onSurfaceVariant;
+
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 4,
+                                    ),
+                                    leading: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: statusColor.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        status == 'completed'
+                                            ? Icons.check_circle_outline
+                                            : status == 'pending'
+                                            ? Icons.schedule
+                                            : status == 'cancelled'
+                                            ? Icons.cancel_outlined
+                                            : Icons.receipt_long,
+                                        color: statusColor,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      order['listing_title'] ?? 'Unknown Item',
+                                      style: typo.titleMedium.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    subtitle: Text(
+                                      '${order['buyer_name'] ?? 'Unknown'} • ${order['order_type'] ?? 'sale'} • $createdAt',
+                                      style: typo.bodySmall.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    trailing: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: statusColor.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        resolver?.orderLabel(status) ??
+                                            status.toUpperCase(),
+                                        style: typo.labelSmall.copyWith(
+                                          color: statusColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  if (!isLast)
+                                    Divider(
+                                      height: 1,
+                                      indent: 20,
+                                      endIndent: 20,
+                                      color: colors.outlineVariant.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    ),
+                                ],
+                              );
+                            }).toList(),
+                      ),
+                    );
+                  },
+                  loading:
+                      () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                  error:
+                      (err, _) => _ErrorCard(
+                        message: 'Error loading recent orders: $err',
+                      ),
+                ),
+              ],
             ),
-          ],
-        ),
           ),
         ),
       ),

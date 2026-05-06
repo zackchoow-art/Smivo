@@ -23,9 +23,14 @@ import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
-  const ChatRoomScreen({super.key, required this.chatRoomId});
+  const ChatRoomScreen({
+    super.key,
+    required this.chatRoomId,
+    this.showBackButton = true,
+  });
 
   final String chatRoomId;
+  final bool showBackButton;
 
   @override
   ConsumerState<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -52,7 +57,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final userId = ref.read(authStateProvider).value?.id;
-      debugPrint('[Chat] Setting activeChatRoomProvider = ${widget.chatRoomId}');
+      debugPrint(
+        '[Chat] Setting activeChatRoomProvider = ${widget.chatRoomId}',
+      );
       // Update in-memory state for client-side Foreground Listener suppression.
       ref.read(activeChatRoomProvider.notifier).setActive(widget.chatRoomId);
       // Update DB for server-side Edge Function suppression.
@@ -69,12 +76,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _writeActiveSession(String userId) {
-    ref.read(chatRepositoryProvider).setActiveSession(
-      userId: userId,
-      chatRoomId: widget.chatRoomId,
-    ).catchError((e) {
-      debugPrint('[Chat] setActiveSession failed (non-critical): $e');
-    });
+    ref
+        .read(chatRepositoryProvider)
+        .setActiveSession(userId: userId, chatRoomId: widget.chatRoomId)
+        .catchError((e) {
+          debugPrint('[Chat] setActiveSession failed (non-critical): $e');
+        });
   }
 
   @override
@@ -90,7 +97,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     // Clear DB state so Edge Function resumes push delivery immediately.
     final userId = ref.read(authStateProvider).value?.id;
     if (userId != null) {
-      ref.read(chatRepositoryProvider).clearActiveSession(userId).catchError((e) {
+      ref.read(chatRepositoryProvider).clearActiveSession(userId).catchError((
+        e,
+      ) {
         debugPrint('[Chat] clearActiveSession failed (non-critical): $e');
       });
     }
@@ -115,20 +124,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   /// Checks eligibility and returns the result map, or null if the check
   /// could not be performed (recipient ID unknown, network error, etc.).
   Future<Map<String, bool>?> _checkEligibility() async {
-    final senderId   = ref.read(authStateProvider).value?.id;
+    final senderId = ref.read(authStateProvider).value?.id;
     final recipientId = await _getRecipientId();
     if (senderId == null || recipientId == null) return null;
-    return ref.read(chatRepositoryProvider).checkChatEligibility(
-      senderId:    senderId,
-      recipientId: recipientId,
-    );
+    return ref
+        .read(chatRepositoryProvider)
+        .checkChatEligibility(senderId: senderId, recipientId: recipientId);
   }
 
   void _showBlockedSnackBar() {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Message failed: You have been blocked by the recipient'),
+        content: const Text(
+          'Message failed: You have been blocked by the recipient',
+        ),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
       ),
@@ -143,7 +153,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final reason = isFrozen ? 'frozen' : 'muted';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Message sent, but the recipient is currently $reason by the platform and may not receive it'),
+        content: Text(
+          'Message sent, but the recipient is currently $reason by the platform and may not receive it',
+        ),
         backgroundColor: Colors.orange.shade700,
         behavior: SnackBarBehavior.floating,
       ),
@@ -154,7 +166,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('You are currently muted by the platform and cannot send messages'),
+        content: const Text(
+          'You are currently muted by the platform and cannot send messages',
+        ),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
       ),
@@ -205,16 +219,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       }
 
       // Warn if the recipient has a platform restriction.
-      final isMuted  = eligibility?['recipientIsMuted']  == true;
+      final isMuted = eligibility?['recipientIsMuted'] == true;
       final isFrozen = eligibility?['recipientIsFrozen'] == true;
       if (isMuted || isFrozen) {
         _showRecipientRestrictedSnackBar(isMuted: isMuted, isFrozen: isFrozen);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Send failed: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Send failed: ${e.toString()}')));
       }
     } finally {
       if (mounted) setState(() => _isSending = false);
@@ -260,7 +274,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .sendImage(bytes, image.name);
       _scrollToBottom();
 
-      final isMuted  = eligibility?['recipientIsMuted']  == true;
+      final isMuted = eligibility?['recipientIsMuted'] == true;
       final isFrozen = eligibility?['recipientIsFrozen'] == true;
       if (isMuted || isFrozen) {
         _showRecipientRestrictedSnackBar(isMuted: isMuted, isFrozen: isFrozen);
@@ -315,85 +329,91 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       appBar: AppBar(
         backgroundColor: colors.surfaceContainerLowest,
         elevation: 0,
-        leading: _selectionMode
-            ? IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () {
-                  setState(() {
-                    _selectionMode = false;
-                    _selectedMessageIds.clear();
-                  });
-                },
-              )
-            : const BackButton(),
-        title: _selectionMode
-            ? Text(
-                '${_selectedMessageIds.length} Selected',
-                style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700),
-              )
-            : roomAsync.when(
-          loading: () => const SizedBox(),
-          error: (_, __) => const Text('Error'),
-          data: (room) {
-            final otherUser =
-                room.buyerId == currentUserId ? room.seller : room.buyer;
-            return Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: colors.surfaceContainerHigh,
-                  backgroundImage:
-                      otherUser?.avatarUrl != null &&
-                              otherUser!.avatarUrl!.trim().isNotEmpty
-                          ? NetworkImage(otherUser.avatarUrl!)
-                          : null,
-                  child:
-                      otherUser?.avatarUrl == null ||
-                              otherUser!.avatarUrl!.trim().isEmpty
-                          ? Icon(
-                            Icons.person,
-                            color: colors.onSurface.withValues(alpha: 0.5),
-                            size: 18,
-                          )
-                          : null,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        otherUser?.displayName ?? 'User',
-                        style: typo.titleMedium.copyWith(
-                          fontWeight: FontWeight.w700,
+        leading:
+            _selectionMode
+                ? IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    setState(() {
+                      _selectionMode = false;
+                      _selectedMessageIds.clear();
+                    });
+                  },
+                )
+                : (widget.showBackButton ? const BackButton() : null),
+        title:
+            _selectionMode
+                ? Text(
+                  '${_selectedMessageIds.length} Selected',
+                  style: typo.titleMedium.copyWith(fontWeight: FontWeight.w700),
+                )
+                : roomAsync.when(
+                  loading: () => const SizedBox(),
+                  error: (_, __) => const Text('Error'),
+                  data: (room) {
+                    final otherUser =
+                        room.buyerId == currentUserId
+                            ? room.seller
+                            : room.buyer;
+                    return Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: colors.surfaceContainerHigh,
+                          backgroundImage:
+                              otherUser?.avatarUrl != null &&
+                                      otherUser!.avatarUrl!.trim().isNotEmpty
+                                  ? NetworkImage(otherUser.avatarUrl!)
+                                  : null,
+                          child:
+                              otherUser?.avatarUrl == null ||
+                                      otherUser!.avatarUrl!.trim().isEmpty
+                                  ? Icon(
+                                    Icons.person,
+                                    color: colors.onSurface.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    size: 18,
+                                  )
+                                  : null,
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (otherUser?.email != null)
-                        Text(
-                          otherUser!.email,
-                          style: typo.bodySmall.copyWith(
-                            color: colors.onSurfaceVariant,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                otherUser?.displayName ?? 'User',
+                                style: typo.titleMedium.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (otherUser?.email != null)
+                                Text(
+                                  otherUser!.email,
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              const SizedBox(height: 4),
+                              if (otherUser != null)
+                                UserRatingBadge(
+                                  user: otherUser,
+                                  role:
+                                      room.buyerId == currentUserId
+                                          ? 'seller'
+                                          : 'buyer',
+                                ),
+                            ],
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      const SizedBox(height: 4),
-                      if (otherUser != null)
-                        UserRatingBadge(
-                          user: otherUser,
-                          role:
-                              room.buyerId == currentUserId
-                                  ? 'seller'
-                                  : 'buyer',
-                        ),
-                    ],
-                  ),
+                      ],
+                    );
+                  },
                 ),
-              ],
-            );
-          },
-        ),
         titleSpacing: 0,
         actions: [
           roomAsync.when(
@@ -402,15 +422,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             data: (room) {
               if (_selectionMode) {
                 return TextButton(
-                  onPressed: _selectedMessageIds.isEmpty
-                      ? null
-                      : () => _handleReportSelection(room),
+                  onPressed:
+                      _selectedMessageIds.isEmpty
+                          ? null
+                          : () => _handleReportSelection(room),
                   child: Text(
                     'Report',
                     style: typo.labelLarge.copyWith(
-                      color: _selectedMessageIds.isEmpty
-                          ? colors.onSurfaceVariant
-                          : colors.error,
+                      color:
+                          _selectedMessageIds.isEmpty
+                              ? colors.onSurfaceVariant
+                              : colors.error,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -487,69 +509,69 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             // independently. This avoids nested async and prevents
             // the listing preview from flickering when room refreshes.
             _buildListingPreview(context, roomAsync),
-          Expanded(
-            child: messagesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err')),
-              data: (messages) {
-                if (messages.isEmpty) {
-                  return const Center(
-                    child: Text('No messages yet. Say hello!'),
-                  );
-                }
-                // NOTE: On desktop the message list is constrained to 720px
-                // for readability. ContentWidthConstraint centers it.
-                final listView = ListView.builder(
-                  controller: _scrollController,
-                  reverse: true,
-                  padding: const EdgeInsets.all(12),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = messages[messages.length - 1 - index];
-                    final isMine = msg.senderId == currentUserId;
-                    return _MessageBubble(
-                      message: msg,
-                      isMine: isMine,
-                      isSelected: _selectedMessageIds.contains(msg.id),
-                      selectionMode: _selectionMode,
-                      onSelect: (id) {
-                        setState(() {
-                          if (_selectedMessageIds.contains(id)) {
-                            _selectedMessageIds.remove(id);
-                            if (_selectedMessageIds.isEmpty) {
-                              _selectionMode = false;
-                            }
-                          } else {
-                            _selectedMessageIds.add(id);
-                          }
-                        });
-                      },
-                      onLongPress: (id) {
-                        if (!_selectionMode) {
-                          setState(() {
-                            _selectionMode = true;
-                            _selectedMessageIds.add(id);
-                          });
-                        }
-                      },
+            Expanded(
+              child: messagesAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Center(child: Text('Error: $err')),
+                data: (messages) {
+                  if (messages.isEmpty) {
+                    return const Center(
+                      child: Text('No messages yet. Say hello!'),
                     );
-                  },
-                );
-                return isDesktop
-                    ? ContentWidthConstraint(maxWidth: 720, child: listView)
-                    : listView;
-              },
+                  }
+                  // NOTE: On desktop the message list is constrained to 720px
+                  // for readability. ContentWidthConstraint centers it.
+                  final listView = ListView.builder(
+                    controller: _scrollController,
+                    reverse: true,
+                    padding: const EdgeInsets.all(12),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[messages.length - 1 - index];
+                      final isMine = msg.senderId == currentUserId;
+                      return _MessageBubble(
+                        message: msg,
+                        isMine: isMine,
+                        isSelected: _selectedMessageIds.contains(msg.id),
+                        selectionMode: _selectionMode,
+                        onSelect: (id) {
+                          setState(() {
+                            if (_selectedMessageIds.contains(id)) {
+                              _selectedMessageIds.remove(id);
+                              if (_selectedMessageIds.isEmpty) {
+                                _selectionMode = false;
+                              }
+                            } else {
+                              _selectedMessageIds.add(id);
+                            }
+                          });
+                        },
+                        onLongPress: (id) {
+                          if (!_selectionMode) {
+                            setState(() {
+                              _selectionMode = true;
+                              _selectedMessageIds.add(id);
+                            });
+                          }
+                        },
+                      );
+                    },
+                  );
+                  return isDesktop
+                      ? ContentWidthConstraint(maxWidth: 720, child: listView)
+                      : listView;
+                },
+              ),
             ),
-          ),
-          // NOTE: Input bar also constrained on desktop for visual consistency.
-          isDesktop
-              ? ContentWidthConstraint(maxWidth: 720, child: _buildInputBar())
-              : _buildInputBar(),
-        ],
+            // NOTE: Input bar also constrained on desktop for visual consistency.
+            isDesktop
+                ? ContentWidthConstraint(maxWidth: 720, child: _buildInputBar())
+                : _buildInputBar(),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   /// Builds the listing preview bar independently from the room
   /// async state to avoid nested loading flicker.
@@ -786,10 +808,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 if (context.mounted) {
                   showDialog(
                     context: context,
-                    builder: (ctx) => const ActionSuccessDialog(
-                      title: 'Success',
-                      message: 'Submitted successfully. Under platform review.',
-                    ),
+                    builder:
+                        (ctx) => const ActionSuccessDialog(
+                          title: 'Success',
+                          message:
+                              'Submitted successfully. Under platform review.',
+                        ),
                   );
                 }
               } catch (e) {
@@ -868,7 +892,6 @@ class _MessageBubble extends StatelessWidget {
     }
 
     return GestureDetector(
-
       onLongPress: () => onLongPress?.call(message.id),
       onTap: () {
         if (selectionMode) {
@@ -906,7 +929,9 @@ class _MessageBubble extends StatelessWidget {
                             ),
                     decoration: BoxDecoration(
                       color:
-                          isMine ? colors.chatBubbleSelf : colors.chatBubbleOther,
+                          isMine
+                              ? colors.chatBubbleSelf
+                              : colors.chatBubbleOther,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(radius.lg),
                         topRight: Radius.circular(radius.lg),
@@ -919,7 +944,8 @@ class _MessageBubble extends StatelessWidget {
                       ),
                     ),
                     child:
-                        message.messageType == 'image' && message.imageUrl != null
+                        message.messageType == 'image' &&
+                                message.imageUrl != null
                             ? GestureDetector(
                               onTap:
                                   () => showDialog(
@@ -947,8 +973,9 @@ class _MessageBubble extends StatelessWidget {
                                                     size: 30,
                                                   ),
                                                   onPressed:
-                                                      () =>
-                                                          Navigator.pop(context),
+                                                      () => Navigator.pop(
+                                                        context,
+                                                      ),
                                                 ),
                                               ),
                                             ],
@@ -956,7 +983,9 @@ class _MessageBubble extends StatelessWidget {
                                         ),
                                   ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(radius.card),
+                                borderRadius: BorderRadius.circular(
+                                  radius.card,
+                                ),
                                 child: Image.network(
                                   message.imageUrl!,
                                   width: 200,

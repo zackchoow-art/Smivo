@@ -263,7 +263,9 @@ class FlatSellerOrderCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : 'Unknown location',
+                order.pickupLocation?.name != null
+                    ? '${order.pickupLocation!.name}, ${order.school}'
+                    : 'Unknown location',
                 style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -421,7 +423,9 @@ class FlatSellerOrderCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(radius.full),
                     ),
                     child: Text(
-                      historyItem.isCompleted ? 'Done' : (historyItem.isDelisted ? 'Delisted' : 'Cancelled'),
+                      historyItem.isCompleted
+                          ? 'Done'
+                          : (historyItem.isDelisted ? 'Delisted' : 'Cancelled'),
                       style: typo.labelSmall.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -476,12 +480,15 @@ class FlatSellerOrderCard extends StatelessWidget {
     final radius = context.smivoRadius;
     final isRejected = listing.moderationStatus == 'rejected';
     final isTakenDown = listing.moderationStatus == 'taken_down';
-    final statusColor = (isRejected || isTakenDown)
-        ? Theme.of(context).colorScheme.error
-        : Colors.amber.shade700;
-    final statusLabel = isTakenDown ? 'Taken Down' : (isRejected ? 'Rejected' : 'Under Review');
+    final statusColor =
+        (isRejected || isTakenDown)
+            ? Theme.of(context).colorScheme.error
+            : Colors.amber.shade700;
+    final statusLabel =
+        isTakenDown ? 'Taken Down' : (isRejected ? 'Rejected' : 'Under Review');
 
-    final imageUrl = listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
+    final imageUrl =
+        listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -494,53 +501,76 @@ class FlatSellerOrderCard extends StatelessWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 1.3,
-                  child: imageUrl != null
-                      ? Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            ImageFiltered(
-                              imageFilter: listing.images.first.moderationStatus == 'rejected'
-                                  ? ImageFilter.blur(sigmaX: 5, sigmaY: 5)
-                                  : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                              child: Image.network(
-                                imageUrl,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            if (listing.images.first.moderationStatus == 'rejected')
-                              Positioned.fill(
-                                child: Container(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.all(2),
-                                  child: Text(
-                                    (listing.images.first.moderationReasons ?? 'Violation')
-                                        .replaceAll(RegExp(r'^automatically rejected by (open ai|openai):\s*', caseSensitive: false), '')
-                                        .replaceAll(RegExp(r'^AI:\s*', caseSensitive: false), ''),
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.1,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                  child:
+                      imageUrl != null
+                          ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ImageFiltered(
+                                imageFilter:
+                                    listing.images.first.moderationStatus ==
+                                            'rejected'
+                                        ? ImageFilter.blur(sigmaX: 5, sigmaY: 5)
+                                        : ImageFilter.blur(
+                                          sigmaX: 0,
+                                          sigmaY: 0,
+                                        ),
+                                child: Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                          ],
-                        )
-                      : Container(
-                          color: colors.surfaceContainerHigh,
-                          child: const Icon(Icons.image),
-                        ),
+                              if (listing.images.first.moderationStatus ==
+                                  'rejected')
+                                Positioned.fill(
+                                  child: Container(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.all(2),
+                                    child: Text(
+                                      (listing.images.first.moderationReasons ??
+                                              'Violation')
+                                          .replaceAll(
+                                            RegExp(
+                                              r'^automatically rejected by (open ai|openai):\s*',
+                                              caseSensitive: false,
+                                            ),
+                                            '',
+                                          )
+                                          .replaceAll(
+                                            RegExp(
+                                              r'^AI:\s*',
+                                              caseSensitive: false,
+                                            ),
+                                            '',
+                                          ),
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1.1,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          )
+                          : Container(
+                            color: colors.surfaceContainerHigh,
+                            child: const Icon(Icons.image),
+                          ),
                 ),
                 Positioned(
                   top: 6,
                   right: 6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor,
                       borderRadius: BorderRadius.circular(radius.full),
@@ -574,7 +604,13 @@ class FlatSellerOrderCard extends StatelessWidget {
                 const SizedBox(height: 1),
                 Text(
                   listing.moderationNote!
-                      .replaceAll(RegExp(r'^automatically rejected by (open ai|openai):\s*', caseSensitive: false), '')
+                      .replaceAll(
+                        RegExp(
+                          r'^automatically rejected by (open ai|openai):\s*',
+                          caseSensitive: false,
+                        ),
+                        '',
+                      )
                       .replaceAll(RegExp(r'^AI:\s*', caseSensitive: false), ''),
                   style: typo.bodySmall.copyWith(
                     color: statusColor,

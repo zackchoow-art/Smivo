@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smivo/core/providers/nav_scroll_provider.dart';
 import 'package:smivo/core/providers/theme_provider.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
@@ -56,6 +57,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Initialize heartbeat manager (only active when user is logged in)
     ref.watch(heartbeatManagerProvider);
 
+    // NOTE: Listen for scroll-to-top signal from ResponsiveScaffold.
+    // Triggered when the user taps the Home nav button while already on Home.
+    // Using ref.listen (not ref.watch) so this is a side-effect, not a rebuild.
+    ref.listen<int>(homeScrollTriggerProvider, (_, __) => scrollToTop());
+
     final listingsAsync = ref.watch(homeListingsProvider);
     final themeVariant = ref.watch(themeProvider);
     final colors = context.smivoColors;
@@ -64,17 +70,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return HomeScrollControllerScope(
       controller: _scrollController,
       child: Scaffold(
-      backgroundColor: colors.background,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
+        backgroundColor: colors.background,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
               final contentWidth = 800.0;
               final screenWidth = constraints.maxWidth;
               // Calculate horizontal padding to constrain content to max 800px
-              final paddingX = screenWidth > contentWidth
-                  ? (screenWidth - contentWidth) / 2
-                  : 0.0;
-              
+              final paddingX =
+                  screenWidth > contentWidth
+                      ? (screenWidth - contentWidth) / 2
+                      : 0.0;
+
               final content = RefreshIndicator(
                 onRefresh: () async {
                   try {
@@ -90,71 +97,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // work correctly by associating our controller as the primary.
                   controller: _scrollController,
                   child: CustomScrollView(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: paddingX),
-                      sliver: const SliverToBoxAdapter(child: HomeHeader()),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: paddingX),
-                      sliver: SliverPersistentHeader(
-                        pinned: true,
-                        delegate: _StickySearchBarDelegate(
-                          backgroundColor: colors.background,
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: paddingX),
+                        sliver: const SliverToBoxAdapter(child: HomeHeader()),
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: paddingX),
+                        sliver: SliverPersistentHeader(
+                          pinned: true,
+                          delegate: _StickySearchBarDelegate(
+                            backgroundColor: colors.background,
+                          ),
                         ),
                       ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                    // Category chips stay full width
-                    const SliverToBoxAdapter(child: HomeCategoryChips()),
-                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: paddingX),
-                      sliver: listingsAsync.when(
-                        loading:
-                            () => const SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: Center(child: CircularProgressIndicator()),
-                            ),
-                        error:
-                            (error, stack) => SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: Center(
-                                child: Text(
-                                  'Error loading listings',
-                                  style: typo.bodyMedium.copyWith(
-                                    color: colors.error,
+                      const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                      // Category chips stay full width
+                      const SliverToBoxAdapter(child: HomeCategoryChips()),
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: paddingX),
+                        sliver: listingsAsync.when(
+                          loading:
+                              () => const SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                          error:
+                              (error, stack) => SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: Center(
+                                  child: Text(
+                                    'Error loading listings',
+                                    style: typo.bodyMedium.copyWith(
+                                      color: colors.error,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                        data: (listings) {
-                          if (listings.isEmpty) {
-                            return SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: Center(
-                                child: Text(
-                                  'No listings found.',
-                                  style: typo.bodyLarge,
+                          data: (listings) {
+                            if (listings.isEmpty) {
+                              return SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: Center(
+                                  child: Text(
+                                    'No listings found.',
+                                    style: typo.bodyLarge,
+                                  ),
                                 ),
-                              ),
-                            );
-                          }
+                              );
+                            }
 
-                          if (themeVariant == SmivoThemeVariant.flat) {
-                            return _buildFlatLayout(context, listings);
-                          }
+                            if (themeVariant == SmivoThemeVariant.flat) {
+                              return _buildFlatLayout(context, listings);
+                            }
 
-                          return _buildTealLayout(listings);
-                        },
+                            return _buildTealLayout(listings);
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
                 ),
               );
 

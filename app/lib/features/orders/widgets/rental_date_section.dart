@@ -56,7 +56,8 @@ class RentalDateSection extends StatelessWidget {
     if (order.rentalStartDate == null || order.rentalEndDate == null) {
       return '—';
     }
-    final daysDiff = order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
+    final daysDiff =
+        order.rentalEndDate!.difference(order.rentalStartDate!).inDays;
     final days = daysDiff > 0 ? daysDiff : 1;
     if (days >= 30 && days % 30 == 0) {
       final months = days ~/ 30;

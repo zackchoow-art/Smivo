@@ -80,9 +80,10 @@ class ModerationAwareImage extends ConsumerWidget {
       },
     );
 
-    final widget = borderRadius != null
-        ? ClipRRect(borderRadius: borderRadius!, child: image)
-        : image;
+    final widget =
+        borderRadius != null
+            ? ClipRRect(borderRadius: borderRadius!, child: image)
+            : image;
 
     if (!isFlagged) return widget;
 

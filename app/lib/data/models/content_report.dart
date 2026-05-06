@@ -27,7 +27,9 @@ abstract class ContentReport with _$ContentReport {
     // action_taken = null -> dismissed or not yet resolved.
     @JsonKey(name: 'action_taken') String? actionTaken,
     // Points awarded to the reporter for a valid report.
-    @JsonKey(name: 'reporter_reward_points') @Default(0) int reporterRewardPoints,
+    @JsonKey(name: 'reporter_reward_points')
+    @Default(0)
+    int reporterRewardPoints,
 
     // Joined data for display
     @JsonKey(name: 'reported_user') UserProfile? reportedUser,

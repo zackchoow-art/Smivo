@@ -109,12 +109,12 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
 
                     return Wrap(
                       children: [
-                        // 1. Listed date
+                        // 1. Order Date
                         SizedBox(
                           width: itemWidth,
                           child: _infoRow(
                             context,
-                            'Listed',
+                            'Order Date',
                             _formatDate(widget.order.createdAt),
                           ),
                         ),
@@ -137,13 +137,26 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
                           ),
                         ),
                         // 4. Pickup location
-                        if (widget.order.pickupLocationName != null || widget.order.pickupLocation != null)
+                        if (widget.order.pickupLocationName != null ||
+                            widget.order.pickupLocation != null)
                           SizedBox(
                             width: itemWidth,
                             child: _infoRow(
                               context,
                               'Pickup',
                               '${widget.order.pickupLocationName ?? widget.order.pickupLocation?.name ?? 'Unknown'}, ${widget.order.school}',
+                            ),
+                          ),
+                        // Delivery Date for sale orders
+                        if (!isRental && widget.order.rentalStartDate != null)
+                          SizedBox(
+                            width: itemWidth,
+                            child: _infoRow(
+                              context,
+                              'Delivery Date',
+                              DateFormat(
+                                'MMM d, yyyy',
+                              ).format(widget.order.rentalStartDate!.toLocal()),
                             ),
                           ),
                         // 5. Price / Rental Total

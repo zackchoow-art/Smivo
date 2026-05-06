@@ -27,10 +27,12 @@ class UserReviewsBottomSheet extends ConsumerStatefulWidget {
   final String initialRole;
 
   @override
-  ConsumerState<UserReviewsBottomSheet> createState() => _UserReviewsBottomSheetState();
+  ConsumerState<UserReviewsBottomSheet> createState() =>
+      _UserReviewsBottomSheetState();
 }
 
-class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet> with SingleTickerProviderStateMixin {
+class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -87,10 +89,7 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
             labelColor: colors.primary,
             unselectedLabelColor: colors.onSurfaceVariant,
             indicatorColor: colors.primary,
-            tabs: const [
-              Tab(text: 'As Buyer'),
-              Tab(text: 'As Seller'),
-            ],
+            tabs: const [Tab(text: 'As Buyer'), Tab(text: 'As Seller')],
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -98,7 +97,11 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
               controller: _tabController,
               children: [
                 _buildRoleTab('buyer', user.buyerRating, user.buyerRatingCount),
-                _buildRoleTab('seller', user.sellerRating, user.sellerRatingCount),
+                _buildRoleTab(
+                  'seller',
+                  user.sellerRating,
+                  user.sellerRatingCount,
+                ),
               ],
             ),
           ),
@@ -153,8 +156,9 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
                   tagCounts[tag.name] = (tagCounts[tag.name] ?? 0) + 1;
                 }
               }
-              final sortedTags = tagCounts.entries.toList()
-                ..sort((a, b) => b.value.compareTo(a.value));
+              final sortedTags =
+                  tagCounts.entries.toList()
+                    ..sort((a, b) => b.value.compareTo(a.value));
 
               return CustomScrollView(
                 slivers: [
@@ -165,27 +169,34 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: sortedTags.map((e) => Chip(
-                            label: Text('${e.key} (${e.value})'),
-                            backgroundColor: colors.surfaceContainerHigh,
-                            labelStyle: typo.labelSmall.copyWith(color: colors.onSurface),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(radius.sm),
-                            ),
-                            side: BorderSide.none,
-                          )).toList(),
+                          children:
+                              sortedTags
+                                  .map(
+                                    (e) => Chip(
+                                      label: Text('${e.key} (${e.value})'),
+                                      backgroundColor:
+                                          colors.surfaceContainerHigh,
+                                      labelStyle: typo.labelSmall.copyWith(
+                                        color: colors.onSurface,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          radius.sm,
+                                        ),
+                                      ),
+                                      side: BorderSide.none,
+                                    ),
+                                  )
+                                  .toList(),
                         ),
                       ),
                     ),
                   ],
                   SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final review = reviews[index];
-                        return _buildReviewCard(context, review);
-                      },
-                      childCount: reviews.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final review = reviews[index];
+                      return _buildReviewCard(context, review);
+                    }, childCount: reviews.length),
                   ),
                 ],
               );
@@ -217,14 +228,20 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
               CircleAvatar(
                 radius: 16,
                 backgroundColor: colors.surfaceContainerHigh,
-                backgroundImage: review.reviewer?.avatarUrl != null &&
-                        review.reviewer!.avatarUrl!.trim().isNotEmpty
-                    ? NetworkImage(review.reviewer!.avatarUrl!)
-                    : null,
-                child: review.reviewer?.avatarUrl == null ||
-                        review.reviewer!.avatarUrl!.trim().isEmpty
-                    ? Icon(Icons.person, color: colors.onSurface.withValues(alpha: 0.5), size: 16)
-                    : null,
+                backgroundImage:
+                    review.reviewer?.avatarUrl != null &&
+                            review.reviewer!.avatarUrl!.trim().isNotEmpty
+                        ? NetworkImage(review.reviewer!.avatarUrl!)
+                        : null,
+                child:
+                    review.reviewer?.avatarUrl == null ||
+                            review.reviewer!.avatarUrl!.trim().isEmpty
+                        ? Icon(
+                          Icons.person,
+                          color: colors.onSurface.withValues(alpha: 0.5),
+                          size: 16,
+                        )
+                        : null,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -233,11 +250,15 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
                   children: [
                     Text(
                       review.reviewer?.displayName ?? 'User',
-                      style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                      style: typo.labelLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       DateFormat.yMMMd().format(review.createdAt),
-                      style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant),
+                      style: typo.labelSmall.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -245,7 +266,9 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
               Row(
                 children: List.generate(5, (index) {
                   return Icon(
-                    index < review.rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                    index < review.rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
                     color: Colors.amber,
                     size: 16,
                   );

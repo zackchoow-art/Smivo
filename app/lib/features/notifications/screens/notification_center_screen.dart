@@ -10,7 +10,9 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NotificationCenterScreen extends ConsumerStatefulWidget {
-  const NotificationCenterScreen({super.key});
+  const NotificationCenterScreen({super.key, this.showBackButton = true});
+
+  final bool showBackButton;
 
   @override
   ConsumerState<NotificationCenterScreen> createState() =>
@@ -37,20 +39,23 @@ class _NotificationCenterScreenState
         backgroundColor: colors.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            size: 20,
-            color: colors.onSurface,
-          ),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.goNamed(AppRoutes.home);
-            }
-          },
-        ),
+        leading:
+            widget.showBackButton
+                ? IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new,
+                    size: 20,
+                    color: colors.onSurface,
+                  ),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.goNamed(AppRoutes.home);
+                    }
+                  },
+                )
+                : null,
         title: Text(
           'Notifications',
           style: typo.headlineSmall.copyWith(
@@ -65,17 +70,7 @@ class _NotificationCenterScreenState
             },
             child: Text(
               'Mark Read',
-              style: typo.labelSmall.copyWith(color: colors.primary),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              // Clear all: mark all notifications as read then delete them
-              await ref.read(notificationListProvider.notifier).clearAll();
-            },
-            child: Text(
-              'Clear All',
-              style: typo.labelSmall.copyWith(color: colors.error),
+              style: typo.labelLarge.copyWith(color: colors.primary),
             ),
           ),
         ],
@@ -99,7 +94,9 @@ class _NotificationCenterScreenState
                           padding: const EdgeInsets.only(top: 100),
                           child: Text(
                             'Error loading notifications',
-                            style: typo.bodyMedium.copyWith(color: colors.error),
+                            style: typo.bodyMedium.copyWith(
+                              color: colors.error,
+                            ),
                           ),
                         ),
                       ),
@@ -118,7 +115,9 @@ class _NotificationCenterScreenState
                   final yesterdayStart = todayStart.subtract(
                     const Duration(days: 1),
                   );
-                  final weekStart = todayStart.subtract(const Duration(days: 7));
+                  final weekStart = todayStart.subtract(
+                    const Duration(days: 7),
+                  );
 
                   for (final n in notifications) {
                     if (!n.isRead) {
@@ -257,25 +256,18 @@ class _NotificationCenterScreenState
                   ),
                 ),
                 const Spacer(),
-                TextButton(
-                  onPressed: () {
+                IconButton(
+                  icon: Icon(
+                    Icons.cleaning_services,
+                    size: 20,
+                    color: colors.onSurface,
+                  ),
+                  onPressed: () async {
                     final ids = items.map((e) => e.id).toList();
-                    ref
+                    await ref
                         .read(notificationListProvider.notifier)
                         .deleteNotifications(ids);
                   },
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Text(
-                    'Clear',
-                    style: typo.labelSmall.copyWith(color: colors.error),
-                  ),
                 ),
               ],
             ),
@@ -306,7 +298,7 @@ class _NotificationCenterScreenState
               Icon(
                 Icons.notifications_none_outlined,
                 size: 64,
-                color: colors.outlineVariant.withValues(alpha: 0.5),
+                color: colors.onSurfaceVariant.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 12),
               Text(

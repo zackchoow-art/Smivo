@@ -74,7 +74,9 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                               _searchQuery = value;
                             });
                           },
-                          style: typo.bodyLarge.copyWith(color: colors.onSurface),
+                          style: typo.bodyLarge.copyWith(
+                            color: colors.onSurface,
+                          ),
                           decoration: InputDecoration(
                             icon: Icon(
                               Icons.search,
@@ -138,8 +140,12 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                   return faq.question.toLowerCase().contains(
                                         query,
                                       ) ||
-                                      faq.answer.toLowerCase().contains(query) ||
-                                      faq.category.toLowerCase().contains(query);
+                                      faq.answer.toLowerCase().contains(
+                                        query,
+                                      ) ||
+                                      faq.category.toLowerCase().contains(
+                                        query,
+                                      );
                                 }).toList();
 
                         if (filteredFaqs.isEmpty) {
@@ -180,7 +186,9 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                           if (_expandedCategories.contains(
                                             category,
                                           )) {
-                                            _expandedCategories.remove(category);
+                                            _expandedCategories.remove(
+                                              category,
+                                            );
                                           } else {
                                             _expandedCategories.add(category);
                                           }
@@ -206,19 +214,20 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                                 style: typo.headlineSmall
                                                     .copyWith(
                                                       color: colors.onSurface,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                               ),
                                             ),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 2,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: colors.onSurface.withValues(
-                                                  alpha: 0.1,
-                                                ),
+                                                color: colors.onSurface
+                                                    .withValues(alpha: 0.1),
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                               ),
@@ -253,7 +262,8 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                             child: Container(
                                               decoration: BoxDecoration(
                                                 color:
-                                                    colors.surfaceContainerLowest,
+                                                    colors
+                                                        .surfaceContainerLowest,
                                                 borderRadius:
                                                     BorderRadius.circular(
                                                       radius.sm,
@@ -276,9 +286,10 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                                               child: Column(
                                                 children: [
                                                   Padding(
-                                                    padding: const EdgeInsets.all(
-                                                      20,
-                                                    ),
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                          20,
+                                                        ),
                                                     child: Row(
                                                       children: [
                                                         Expanded(

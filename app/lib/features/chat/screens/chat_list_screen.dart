@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:smivo/core/providers/nav_scroll_provider.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/chat_room.dart';
@@ -14,6 +15,7 @@ import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
+import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
 
 class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
@@ -29,6 +31,23 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // NOTE: On desktop, tracks which chat room is shown in the right panel
   // of the ChatSplitView. Null means no conversation selected yet.
   String? _selectedChatRoomId;
+
+  // NOTE: Explicit ScrollController lets us scroll to top programmatically
+  // when the user taps the Chat nav button while already on this screen.
+  // Mirrors the same pattern used in HomeScreen + HomeScrollControllerScope.
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   /// Transforms a [ChatRoom] into a [ChatConversation] display model.
   ///
@@ -94,6 +113,19 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     // renders inline on the right, avoiding full-screen navigation.
     final isDesktop = Breakpoints.isDesktop(screenWidth);
 
+    // NOTE: Listen for scroll-to-top signal from ResponsiveScaffold.
+    // Triggered when the user taps the Chat nav button while already on Chat.
+    // Using ref.listen (not ref.watch) so this is a side-effect, not a rebuild.
+    ref.listen<int>(chatScrollTriggerProvider, (_, __) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    });
+
     final listScaffold = Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
       body: SafeArea(
@@ -104,17 +136,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             await ref.read(chatRoomListProvider.future);
           },
           child: CustomScrollView(
+            // NOTE: Bind our ScrollController so the ref.listen callback
+            // above can animate it to the top on nav-tab re-tap.
+            controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              // ── Notification Banner (B4) ─────────────────────────────
-              // Shows the most recent unread notification as a tappable
-              // banner. Tap navigates to the notification center.
-              // Hidden when there are no unread notifications.
-              SliverToBoxAdapter(
-                child: _NotificationBanner(
-                  useWidthConstraint: useWidthConstraint,
-                ),
-              ),
+              // Banner removed, using System Messages item below
               SliverPadding(
                 padding: const EdgeInsets.only(left: 24, right: 24, top: 12),
                 sliver: SliverToBoxAdapter(
@@ -152,6 +179,19 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             )
                             : _buildSearchField(context, typo, colors, radius),
                   ),
+                ),
+              ),
+              // 置顶的系统消息卡片
+              SliverToBoxAdapter(
+                child: _SystemMessagesItem(
+                  useWidthConstraint: useWidthConstraint,
+                  onSelect: () {
+                    if (isDesktop) {
+                      setState(() => _selectedChatRoomId = 'notifications');
+                    } else {
+                      context.pushNamed(AppRoutes.notificationCenter);
+                    }
+                  },
                 ),
               ),
               chatRoomsAsync.when(
@@ -207,18 +247,23 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                 conv.latestMessage.toLowerCase().contains(q);
                           }).toList();
 
-                  // Step 3: Sort — pinned rooms always at top
+                  // Step 3: Sort — pinned rooms always at top, then by latest message time
                   searchFiltered.sort((a, b) {
                     if (a.isPinned && !b.isPinned) return -1;
                     if (!a.isPinned && b.isPinned) return 1;
-                    return 0;
+
+                    final aTime = a.lastMessageAt ?? a.createdAt;
+                    final bTime = b.lastMessageAt ?? b.createdAt;
+                    return bTime.compareTo(aTime);
                   });
 
                   if (searchFiltered.isEmpty) {
                     // NOTE: If the selected chat room is no longer in the
                     // filtered list (e.g. after blocking/filtering), clear
                     // the desktop panel selection so the ghost panel disappears.
-                    if (_selectedChatRoomId != null) {
+                    // Notifications screen is exempt from this cleanup.
+                    if (_selectedChatRoomId != null &&
+                        _selectedChatRoomId != 'notifications') {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         if (mounted) setState(() => _selectedChatRoomId = null);
                       });
@@ -243,7 +288,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   // NOTE: When the list is non-empty but the currently selected
                   // chat room has been filtered out (e.g. blocked user's room
                   // disappears), clear the desktop panel selection.
+                  // Notifications screen is exempt from this cleanup.
                   if (_selectedChatRoomId != null &&
+                      _selectedChatRoomId != 'notifications' &&
                       !searchFiltered.any((r) => r.id == _selectedChatRoomId)) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) setState(() => _selectedChatRoomId = null);
@@ -256,7 +303,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     padding: const EdgeInsets.only(
                       left: 24,
                       right: 24,
-                      bottom: 80,
+                      bottom: 120,
                     ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
@@ -271,6 +318,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         Widget item = ChatListItem(
                           conversation: conversation,
                           isArchiveView: _showArchived,
+                          isSelected: _selectedChatRoomId == room.id,
                           onTap: () {
                             if (isDesktop) {
                               // NOTE: On desktop, select the room inline
@@ -320,10 +368,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         chatList: listScaffold,
         chatRoom:
             _selectedChatRoomId != null
-                ? ChatRoomScreen(
-                  key: ValueKey(_selectedChatRoomId),
-                  chatRoomId: _selectedChatRoomId!,
-                )
+                ? (_selectedChatRoomId == 'notifications'
+                    ? const NotificationCenterScreen(showBackButton: false)
+                    : ChatRoomScreen(
+                      key: ValueKey(_selectedChatRoomId),
+                      chatRoomId: _selectedChatRoomId!,
+                      showBackButton: false,
+                    ))
                 : null,
       );
     }
@@ -398,29 +449,19 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   }
 }
 
-// ── Notification Banner Widget ─────────────────────────────────────────────
-/// Shows the most recent unread notification as a compact tappable banner.
-///
-/// Dismissible by the user for the current session (local state only).
-/// Navigates to the notification center on tap.
-class _NotificationBanner extends ConsumerStatefulWidget {
-  const _NotificationBanner({required this.useWidthConstraint});
+// ── System Messages Item Widget ─────────────────────────────────────────────
+/// Shows the system notifications entry point.
+class _SystemMessagesItem extends ConsumerWidget {
+  const _SystemMessagesItem({
+    required this.useWidthConstraint,
+    required this.onSelect,
+  });
 
   final bool useWidthConstraint;
+  final VoidCallback onSelect;
 
   @override
-  ConsumerState<_NotificationBanner> createState() =>
-      _NotificationBannerState();
-}
-
-class _NotificationBannerState extends ConsumerState<_NotificationBanner> {
-  // NOTE: Tracks dismissed notification IDs for the current session.
-  // We only hide the banner locally — the underlying notification is
-  // not marked as read until the user visits the notification center.
-  final Set<String> _dismissed = {};
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationListProvider);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -430,56 +471,52 @@ class _NotificationBannerState extends ConsumerState<_NotificationBanner> {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
       data: (notifications) {
-        // Pick the most recent unread notification that hasn't been dismissed.
-        final latest = notifications
-            .where((n) => !n.isRead && !_dismissed.contains(n.id))
-            .firstOrNull;
+        final unreadCount = notifications.where((n) => !n.isRead).length;
 
-        if (latest == null) return const SizedBox.shrink();
-
-        final banner = Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        final item = Padding(
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 8),
           child: Material(
-            // NOTE: Use a slightly elevated card so the banner stands out
-            // without being visually heavy on the list.
-            color: colors.primaryContainer,
-            borderRadius: BorderRadius.circular(radius.card),
+            // Use primaryContainer for a distinct background color
+            color: colors.primaryContainer.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(radius.md),
             child: InkWell(
-              borderRadius: BorderRadius.circular(radius.card),
-              onTap: () => context.goNamed(AppRoutes.notificationCenter),
+              borderRadius: BorderRadius.circular(radius.md),
+              onTap: onSelect,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
+                  horizontal: 16,
+                  vertical: 12,
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.notifications_outlined,
-                      size: 18,
-                      color: colors.onPrimary,
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(shape: BoxShape.circle),
+                      child: Icon(
+                        Icons.notifications_active_rounded,
+                        color: colors.primary,
+                        size: 24,
+                      ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            latest.title,
-                            style: typo.labelLarge.copyWith(
-                              color: colors.onPrimary,
-                              fontWeight: FontWeight.w600,
+                            'System Messages',
+                            style: typo.titleMedium.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: colors.onSurface,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            latest.body,
-                            style: typo.labelSmall.copyWith(
-                              color: colors.onPrimary.withValues(
-                                alpha: 0.8,
-                              ),
+                            unreadCount > 0
+                                ? 'You have $unreadCount unread notifications'
+                                : 'No new notifications',
+                            style: typo.bodyMedium.copyWith(
+                              color: colors.onSurfaceVariant,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -487,16 +524,24 @@ class _NotificationBannerState extends ConsumerState<_NotificationBanner> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    // Dismiss button — hides for this session only.
-                    GestureDetector(
-                      onTap: () => setState(() => _dismissed.add(latest.id)),
-                      child: Icon(
-                        Icons.close,
-                        size: 16,
-                        color: colors.onPrimary.withValues(alpha: 0.7),
+                    if (unreadCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.error,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          unreadCount > 99 ? '99+' : unreadCount.toString(),
+                          style: typo.labelSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -504,8 +549,8 @@ class _NotificationBannerState extends ConsumerState<_NotificationBanner> {
           ),
         );
 
-        if (!widget.useWidthConstraint) return banner;
-        return ContentWidthConstraint(maxWidth: 768, child: banner);
+        if (!useWidthConstraint) return item;
+        return ContentWidthConstraint(maxWidth: 768, child: item);
       },
     );
   }

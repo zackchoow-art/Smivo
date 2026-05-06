@@ -84,7 +84,8 @@ class _AvatarCustomizationDialogState extends State<AvatarCustomizationDialog> {
             items:
                 _styles.entries
                     .map(
-                      (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                      (e) =>
+                          DropdownMenuItem(value: e.key, child: Text(e.value)),
                     )
                     .toList(),
             onChanged: (val) {

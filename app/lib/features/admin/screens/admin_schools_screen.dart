@@ -36,118 +36,128 @@ class AdminSchoolsScreen extends ConsumerWidget {
         child: ContentWidthConstraint(
           maxWidth: 1200,
           child: schoolsState.when(
-        data: (schools) {
-          if (schools.isEmpty) {
-            return const Center(child: Text('No schools found.'));
-          }
+            data: (schools) {
+              if (schools.isEmpty) {
+                return const Center(child: Text('No schools found.'));
+              }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            itemCount: schools.length,
-            itemBuilder: (context, index) {
-              final school = schools[index];
-              final radius = context.smivoRadius;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(radius.sm),
-                  border: Border.all(
-                    color: colors.outlineVariant.withValues(alpha: 0.3),
-                  ),
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
                 ),
-                child: ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
+                itemCount: schools.length,
+                itemBuilder: (context, index) {
+                  final school = schools[index];
+                  final radius = context.smivoRadius;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: colors.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(radius.sm),
+                      border: Border.all(
+                        color: colors.outlineVariant.withValues(alpha: 0.3),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.school,
-                      color: Color(0xFF2563EB),
-                      size: 20,
-                    ),
-                  ),
-                  title: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          school.name,
-                          style: typo.titleMedium.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                    child: ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.school,
+                          color: Color(0xFF2563EB),
+                          size: 20,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      if (school.isActive)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Active',
-                            style: typo.labelSmall.copyWith(
-                              color: colors.primary,
-                              fontWeight: FontWeight.bold,
+                      title: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              school.name,
+                              style: typo.titleMedium.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  subtitle: Text(
-                    '@${school.emailDomain} • ${school.slug}${school.city != null ? ' • ${school.city}' : ''}',
-                    style: typo.bodySmall.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                  trailing:
-                      canWrite
-                          ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  size: 20,
+                          const SizedBox(width: 8),
+                          if (school.isActive)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Active',
+                                style: typo.labelSmall.copyWith(
                                   color: colors.primary,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                onPressed:
-                                    () =>
-                                        _showSchoolDialog(context, ref, school),
                               ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.delete,
-                                  size: 20,
-                                  color: colors.error,
-                                ),
-                                onPressed:
-                                    () => _confirmDelete(context, ref, school),
-                              ),
-                            ],
-                          )
-                          : null,
-                ),
+                            ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        '@${school.emailDomain} • ${school.slug}${school.city != null ? ' • ${school.city}' : ''}',
+                        style: typo.bodySmall.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                      trailing:
+                          canWrite
+                              ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.edit,
+                                      size: 20,
+                                      color: colors.primary,
+                                    ),
+                                    onPressed:
+                                        () => _showSchoolDialog(
+                                          context,
+                                          ref,
+                                          school,
+                                        ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.delete,
+                                      size: 20,
+                                      color: colors.error,
+                                    ),
+                                    onPressed:
+                                        () => _confirmDelete(
+                                          context,
+                                          ref,
+                                          school,
+                                        ),
+                                  ),
+                                ],
+                              )
+                              : null,
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error:
-            (err, stack) => Center(
-              child: Text(
-                'Error loading schools: $err',
-                style: TextStyle(color: colors.error),
-              ),
-            ),
-        ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error:
+                (err, stack) => Center(
+                  child: Text(
+                    'Error loading schools: $err',
+                    style: TextStyle(color: colors.error),
+                  ),
+                ),
+          ),
         ),
       ),
       floatingActionButton:

@@ -4,6 +4,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/shared/providers/order_review_provider.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
+
 class OrderReviewSection extends ConsumerStatefulWidget {
   const OrderReviewSection({
     super.key,
@@ -51,10 +52,11 @@ class _OrderReviewSectionState extends ConsumerState<OrderReviewSection> {
       } else if (!next.hasError && !next.isLoading && next.hasValue) {
         showDialog(
           context: context,
-          builder: (ctx) => const ActionSuccessDialog(
-            title: 'Success',
-            message: 'Submitted successfully. Under platform review.',
-          ),
+          builder:
+              (ctx) => const ActionSuccessDialog(
+                title: 'Success',
+                message: 'Submitted successfully. Under platform review.',
+              ),
         );
         // Clear form after successful submit (since it's inline now)
         setState(() {
@@ -181,7 +183,12 @@ class _OrderReviewSectionState extends ConsumerState<OrderReviewSection> {
             child:
                 isSubmitting
                     ? const SizedBox(
-                      height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                     : const Text('Submit Review'),
           ),

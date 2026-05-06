@@ -38,8 +38,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
 
   void _handleOrderTap(String orderId, bool hasUnread) {
     if (hasUnread) {
-      final notifications =
-          ref.read(notificationListProvider).value ?? [];
+      final notifications = ref.read(notificationListProvider).value ?? [];
       final unreadNotifs = notifications.where(
         (n) => !n.isRead && n.relatedOrderId == orderId,
       );
@@ -139,14 +138,18 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       child: Center(child: Text('Error: $e')),
                     ),
                 data: (listings) {
-                  final allActiveListings = listings
-                      .where(
-                        (l) =>
-                            l.status == 'active' &&
-                            !['rejected', 'pending_review', 'taken_down']
-                                .contains(l.moderationStatus),
-                      )
-                      .toList();
+                  final allActiveListings =
+                      listings
+                          .where(
+                            (l) =>
+                                l.status == 'active' &&
+                                ![
+                                  'rejected',
+                                  'pending_review',
+                                  'taken_down',
+                                ].contains(l.moderationStatus),
+                          )
+                          .toList();
                   final activeListings =
                       _searchQuery.isEmpty
                           ? allActiveListings
@@ -315,14 +318,21 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
 
               // 1b. FLAGGED ITEMS Section (Rejected or Pending Review)
               listingsAsync.when(
-                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                error: (e, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                loading:
+                    () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error:
+                    (e, _) =>
+                        const SliverToBoxAdapter(child: SizedBox.shrink()),
                 data: (listings) {
-                  final flaggedListings = listings.where((l) =>
-                    l.moderationStatus == 'rejected' ||
-                    l.moderationStatus == 'pending_review' ||
-                    l.moderationStatus == 'taken_down'
-                  ).toList();
+                  final flaggedListings =
+                      listings
+                          .where(
+                            (l) =>
+                                l.moderationStatus == 'rejected' ||
+                                l.moderationStatus == 'pending_review' ||
+                                l.moderationStatus == 'taken_down',
+                          )
+                          .toList();
 
                   if (flaggedListings.isEmpty) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -337,9 +347,12 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         sliver: SliverToBoxAdapter(
                           child: InkWell(
                             borderRadius: BorderRadius.circular(radius.sm),
-                            onTap: () => setState(
-                              () => _expandedSections['Flagged Items'] = !isExpanded,
-                            ),
+                            onTap:
+                                () => setState(
+                                  () =>
+                                      _expandedSections['Flagged Items'] =
+                                          !isExpanded,
+                                ),
                             child: Row(
                               children: [
                                 Icon(
@@ -352,7 +365,8 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                   child: Text(
                                     'Flagged Items (${flaggedListings.length})',
                                     style: typo.titleMedium.copyWith(
-                                      color: Theme.of(context).colorScheme.error,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -362,7 +376,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                       ? Icons.keyboard_arrow_up
                                       : Icons.keyboard_arrow_down,
                                   size: 20,
-                                  color: colors.onSurface.withValues(alpha: 0.5),
+                                  color: colors.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                               ],
                             ),
@@ -372,63 +388,79 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       if (isExpanded)
                         Builder(
                           builder: (context) {
-                            final isFlat = colors.primary == const Color(0xFF004181);
+                            final isFlat =
+                                colors.primary == const Color(0xFF004181);
                             final sw = MediaQuery.of(context).size.width;
                             final useConstraint = Breakpoints.isDesktop(sw);
                             final maxW = isFlat ? 1280.0 : 960.0;
                             final sliver = SliverPadding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
-                              sliver: isFlat
-                                  ? SliverResponsiveGrid(
-                                      itemCount: flaggedListings.length,
-                                      mobileColumns: 2,
-                                      tabletColumns: 3,
-                                      desktopColumns: 4,
-                                      crossAxisSpacing: 24,
-                                      mainAxisSpacing: 12,
-                                      childAspectRatio: 0.72,
-                                      itemBuilder: (context, index) {
-                                        final listing = flaggedListings[index];
-                                        return FlatSellerOrderCard(
-                                          cardType: FlatSellerCardType.flaggedItem,
-                                          listing: listing,
-                                          hasUnread: false,
-                                          onTap: () => context.pushNamed(
-                                            AppRoutes.listingDetail,
-                                            pathParameters: {'id': listing.id},
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  : SliverList(
-                                      delegate: SliverChildBuilderDelegate(
-                                        (context, index) {
-                                          final listing = flaggedListings[index];
-                                          final isRejected = listing.moderationStatus == 'rejected';
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              sliver:
+                                  isFlat
+                                      ? SliverResponsiveGrid(
+                                        itemCount: flaggedListings.length,
+                                        mobileColumns: 2,
+                                        tabletColumns: 3,
+                                        desktopColumns: 4,
+                                        crossAxisSpacing: 24,
+                                        mainAxisSpacing: 12,
+                                        childAspectRatio: 0.72,
+                                        itemBuilder: (context, index) {
+                                          final listing =
+                                              flaggedListings[index];
+                                          return FlatSellerOrderCard(
+                                            cardType:
+                                                FlatSellerCardType.flaggedItem,
+                                            listing: listing,
+                                            hasUnread: false,
+                                            onTap:
+                                                () => context.pushNamed(
+                                                  AppRoutes.listingDetail,
+                                                  pathParameters: {
+                                                    'id': listing.id,
+                                                  },
+                                                ),
+                                          );
+                                        },
+                                      )
+                                      : SliverList(
+                                        delegate: SliverChildBuilderDelegate((
+                                          context,
+                                          index,
+                                        ) {
+                                          final listing =
+                                              flaggedListings[index];
+                                          final isRejected =
+                                              listing.moderationStatus ==
+                                              'rejected';
                                           return _FlaggedListingTile(
                                             listing: listing,
                                             isRejected: isRejected,
-                                            onTap: () => context.pushNamed(
-                                              AppRoutes.listingDetail,
-                                              pathParameters: {'id': listing.id},
-                                            ),
+                                            onTap:
+                                                () => context.pushNamed(
+                                                  AppRoutes.listingDetail,
+                                                  pathParameters: {
+                                                    'id': listing.id,
+                                                  },
+                                                ),
                                           );
-                                        },
-                                        childCount: flaggedListings.length,
+                                        }, childCount: flaggedListings.length),
                                       ),
-                                    ),
                             );
                             return useConstraint
                                 ? SliverToBoxAdapter(
-                                    child: ContentWidthConstraint(
-                                      maxWidth: maxW,
-                                      child: CustomScrollView(
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        slivers: [sliver],
-                                      ),
+                                  child: ContentWidthConstraint(
+                                    maxWidth: maxW,
+                                    child: CustomScrollView(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      slivers: [sliver],
                                     ),
-                                  )
+                                  ),
+                                )
                                 : sliver;
                           },
                         ),
@@ -1036,11 +1068,11 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                               final hasUnread =
                                                   item.orderId != null
                                                       ? notifications.any(
-                                                          (n) =>
-                                                              !n.isRead &&
-                                                              n.relatedOrderId ==
-                                                                  item.orderId,
-                                                        )
+                                                        (n) =>
+                                                            !n.isRead &&
+                                                            n.relatedOrderId ==
+                                                                item.orderId,
+                                                      )
                                                       : false;
                                               return FlatSellerOrderCard(
                                                 cardType:
@@ -1063,11 +1095,11 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                               final hasUnread =
                                                   item.orderId != null
                                                       ? notifications.any(
-                                                          (n) =>
-                                                              !n.isRead &&
-                                                              n.relatedOrderId ==
-                                                                  item.orderId,
-                                                        )
+                                                        (n) =>
+                                                            !n.isRead &&
+                                                            n.relatedOrderId ==
+                                                                item.orderId,
+                                                      )
                                                       : false;
                                               final dateStr = DateFormat(
                                                 'M/d/yyyy HH:mm',
@@ -1619,8 +1651,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                           ),
                         ),
                         TextSpan(
-                          text:
-                              ' · ${order.buyer?.displayName ?? 'Buyer'}',
+                          text: ' · ${order.buyer?.displayName ?? 'Buyer'}',
                         ),
                       ],
                     ),
@@ -1815,7 +1846,10 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final radius = context.smivoRadius;
 
     final bgColor = item.isCompleted ? colors.success : colors.statusCancelled;
-    final label = item.isCompleted ? 'Done' : (item.isDelisted ? 'Delisted' : 'Cancelled');
+    final label =
+        item.isCompleted
+            ? 'Done'
+            : (item.isDelisted ? 'Delisted' : 'Cancelled');
 
     return Container(
       constraints: const BoxConstraints(minWidth: 72),
@@ -1868,7 +1902,6 @@ class _HistoryItem {
   final String? listingId;
 }
 
-
 /// Tile for displaying a flagged or rejected listing in the Seller Center.
 class _FlaggedListingTile extends StatelessWidget {
   const _FlaggedListingTile({
@@ -1888,18 +1921,21 @@ class _FlaggedListingTile extends StatelessWidget {
     final radius = context.smivoRadius;
 
     final isTakenDown = listing.moderationStatus == 'taken_down';
-    final statusColor = (isRejected || isTakenDown)
-        ? Theme.of(context).colorScheme.error
-        : Colors.amber.shade700;
-    final statusBg = (isRejected || isTakenDown)
-        ? Theme.of(context).colorScheme.error.withValues(alpha: 0.08)
-        : Colors.amber.withValues(alpha: 0.08);
-    final statusLabel = isTakenDown ? 'Taken Down' : (isRejected ? 'Rejected' : 'Under Review');
-    final statusIcon = (isRejected || isTakenDown) ? Icons.block : Icons.hourglass_top;
+    final statusColor =
+        (isRejected || isTakenDown)
+            ? Theme.of(context).colorScheme.error
+            : Colors.amber.shade700;
+    final statusBg =
+        (isRejected || isTakenDown)
+            ? Theme.of(context).colorScheme.error.withValues(alpha: 0.08)
+            : Colors.amber.withValues(alpha: 0.08);
+    final statusLabel =
+        isTakenDown ? 'Taken Down' : (isRejected ? 'Rejected' : 'Under Review');
+    final statusIcon =
+        (isRejected || isTakenDown) ? Icons.block : Icons.hourglass_top;
 
-    final imageUrl = listing.images.isNotEmpty
-        ? listing.images.first.imageUrl
-        : null;
+    final imageUrl =
+        listing.images.isNotEmpty ? listing.images.first.imageUrl : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -1916,56 +1952,85 @@ class _FlaggedListingTile extends StatelessWidget {
                 // Thumbnail
                 ClipRRect(
                   borderRadius: BorderRadius.circular(radius.sm),
-                  child: imageUrl != null
-                      ? Stack(
-                          children: [
-                            ImageFiltered(
-                              imageFilter: listing.images.first.moderationStatus == 'rejected'
-                                  ? ImageFilter.blur(sigmaX: 5, sigmaY: 5)
-                                  : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                              child: Image.network(
-                                imageUrl,
-                                width: 48,
-                                height: 48,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
+                  child:
+                      imageUrl != null
+                          ? Stack(
+                            children: [
+                              ImageFiltered(
+                                imageFilter:
+                                    listing.images.first.moderationStatus ==
+                                            'rejected'
+                                        ? ImageFilter.blur(sigmaX: 5, sigmaY: 5)
+                                        : ImageFilter.blur(
+                                          sigmaX: 0,
+                                          sigmaY: 0,
+                                        ),
+                                child: Image.network(
+                                  imageUrl,
                                   width: 48,
                                   height: 48,
-                                  color: colors.surfaceContainerLowest,
-                                  child: Icon(Icons.image, color: colors.onSurface.withValues(alpha: 0.3)),
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (_, __, ___) => Container(
+                                        width: 48,
+                                        height: 48,
+                                        color: colors.surfaceContainerLowest,
+                                        child: Icon(
+                                          Icons.image,
+                                          color: colors.onSurface.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                        ),
+                                      ),
                                 ),
                               ),
-                            ),
-                            if (listing.images.first.moderationStatus == 'rejected')
-                              Positioned.fill(
-                                child: Container(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.all(2),
-                                  child: Text(
-                                    (listing.images.first.moderationReasons ?? 'Violation')
-                                        .replaceAll(RegExp(r'^automatically rejected by (open ai|openai):\s*', caseSensitive: false), '')
-                                        .replaceAll(RegExp(r'^AI:\s*', caseSensitive: false), ''),
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.1,
+                              if (listing.images.first.moderationStatus ==
+                                  'rejected')
+                                Positioned.fill(
+                                  child: Container(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.all(2),
+                                    child: Text(
+                                      (listing.images.first.moderationReasons ??
+                                              'Violation')
+                                          .replaceAll(
+                                            RegExp(
+                                              r'^automatically rejected by (open ai|openai):\s*',
+                                              caseSensitive: false,
+                                            ),
+                                            '',
+                                          )
+                                          .replaceAll(
+                                            RegExp(
+                                              r'^AI:\s*',
+                                              caseSensitive: false,
+                                            ),
+                                            '',
+                                          ),
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1.1,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                              ),
-                          ],
-                        )
-                      : Container(
-                          width: 48,
-                          height: 48,
-                          color: colors.surfaceContainerLowest,
-                          child: Icon(Icons.image, color: colors.onSurface.withValues(alpha: 0.3)),
-                        ),
+                            ],
+                          )
+                          : Container(
+                            width: 48,
+                            height: 48,
+                            color: colors.surfaceContainerLowest,
+                            child: Icon(
+                              Icons.image,
+                              color: colors.onSurface.withValues(alpha: 0.3),
+                            ),
+                          ),
                 ),
                 const SizedBox(width: 12),
                 // Title + note
@@ -1986,8 +2051,17 @@ class _FlaggedListingTile extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           listing.moderationNote!
-                              .replaceAll(RegExp(r'^automatically rejected by (open ai|openai):\s*', caseSensitive: false), '')
-                              .replaceAll(RegExp(r'^AI:\s*', caseSensitive: false), ''),
+                              .replaceAll(
+                                RegExp(
+                                  r'^automatically rejected by (open ai|openai):\s*',
+                                  caseSensitive: false,
+                                ),
+                                '',
+                              )
+                              .replaceAll(
+                                RegExp(r'^AI:\s*', caseSensitive: false),
+                                '',
+                              ),
                           style: typo.bodySmall.copyWith(
                             color: statusColor,
                             fontSize: 11,
@@ -2002,7 +2076,10 @@ class _FlaggedListingTile extends StatelessWidget {
                 const SizedBox(width: 8),
                 // Status chip
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusBg,
                     borderRadius: BorderRadius.circular(radius.full),

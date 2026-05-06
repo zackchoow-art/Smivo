@@ -452,9 +452,10 @@ class RentalOrderDetailScreen extends ConsumerWidget {
         label: 'Delivered',
         date: delivered ? order.updatedAt : null,
         isCompleted: delivered,
-        subtitle: (order.pickupLocationName != null || order.pickupLocation != null)
-            ? '${order.pickupLocationName ?? order.pickupLocation?.name ?? 'Unknown'}, ${order.school}'
-            : null,
+        subtitle:
+            (order.pickupLocationName != null || order.pickupLocation != null)
+                ? '${order.pickupLocationName ?? order.pickupLocation?.name ?? 'Unknown'}, ${order.school}'
+                : null,
       ),
     ];
 
@@ -499,12 +500,13 @@ class RentalOrderDetailScreen extends ConsumerWidget {
           date: order.updatedAt,
           isCompleted: true,
           isCancelled: true,
-          trailing: (isSeller && order.listingId.isNotEmpty)
-              ? _RelistButton(
-                  listingId: order.listingId,
-                  initialStatus: order.listing?.status ?? 'active',
-                )
-              : null,
+          trailing:
+              (isSeller && order.listingId.isNotEmpty)
+                  ? _RelistButton(
+                    listingId: order.listingId,
+                    initialStatus: order.listing?.status ?? 'active',
+                  )
+                  : null,
         ),
       );
     }
@@ -623,12 +625,9 @@ class RentalOrderDetailScreen extends ConsumerWidget {
 
     final targetUserId = isBuyer ? order.sellerId : order.buyerId;
     final roleToRate = isBuyer ? 'seller' : 'buyer';
-    
+
     final orderReviewAsync = ref.watch(
-      orderReviewProvider(
-        orderId: order.id,
-        reviewerId: currentUserId ?? '',
-      ),
+      orderReviewProvider(orderId: order.id, reviewerId: currentUserId ?? ''),
     );
 
     return orderReviewAsync.when(
@@ -641,7 +640,7 @@ class RentalOrderDetailScreen extends ConsumerWidget {
             child: SubmittedReviewCard(review: review),
           );
         }
-        
+
         return Padding(
           padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
           child: CollapsibleSection(
@@ -1040,50 +1039,52 @@ class _RelistButtonState extends ConsumerState<_RelistButton> {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      onPressed: isDisabled
-          ? null
-          : () async {
-              setState(() => _isRelisting = true);
-              try {
-                await ref
-                    .read(relistActionsProvider.notifier)
-                    .relist(widget.listingId);
-                // NOTE: Mark as relisted locally so the button stays
-                // disabled even before the provider invalidation
-                // propagates through the widget tree.
-                if (mounted) {
-                  setState(() {
-                    _relisted = true;
-                    _isRelisting = false;
-                  });
-                }
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Item relisted — it\'s live on the marketplace again.',
+      onPressed:
+          isDisabled
+              ? null
+              : () async {
+                setState(() => _isRelisting = true);
+                try {
+                  await ref
+                      .read(relistActionsProvider.notifier)
+                      .relist(widget.listingId);
+                  // NOTE: Mark as relisted locally so the button stays
+                  // disabled even before the provider invalidation
+                  // propagates through the widget tree.
+                  if (mounted) {
+                    setState(() {
+                      _relisted = true;
+                      _isRelisting = false;
+                    });
+                  }
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Item relisted — it\'s live on the marketplace again.',
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  }
+                } catch (_) {
+                  if (mounted) setState(() => _isRelisting = false);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to relist. Please try again.'),
+                      ),
+                    );
+                  }
                 }
-              } catch (_) {
-                if (mounted) setState(() => _isRelisting = false);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to relist. Please try again.'),
-                    ),
-                  );
-                }
-              }
-            },
-      icon: _isRelisting
-          ? SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Icon(Icons.refresh, size: 18),
+              },
+      icon:
+          _isRelisting
+              ? SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+              : Icon(Icons.refresh, size: 18),
       label: Text(
         _isRelisting ? 'Relisting...' : 'Relist',
         style: typo.labelLarge.copyWith(fontWeight: FontWeight.bold),

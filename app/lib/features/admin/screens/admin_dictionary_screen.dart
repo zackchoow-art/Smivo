@@ -62,208 +62,219 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
           maxWidth: 1200,
           child: Column(
             children: [
-          // Type filter
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: typesState.when(
-              data:
-                  (types) => Row(
-                    children: [
-                      Text('Filter: ', style: typo.labelLarge),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              _filterChip('All', 'all', colors),
-                              ...types.map((t) => _filterChip(t, t, colors)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-              loading: () => const LinearProgressIndicator(),
-              error: (e, _) => Text('Error: $e'),
-            ),
-          ),
-
-          // Dictionary entries
-          Expanded(
-            child: dictState.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error:
-                  (e, _) => Center(
-                    child: Text(
-                      'Error: $e',
-                      style: TextStyle(color: colors.error),
-                    ),
-                  ),
-              data: (entries) {
-                final filtered =
-                    _selectedType == 'all'
-                        ? entries
-                        : entries
-                            .where((d) => d.dictType == _selectedType)
-                            .toList();
-
-                if (filtered.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No entries.',
-                      style: typo.bodyLarge.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  );
-                }
-
-                // Group by dict_type
-                final grouped = <String, List<SystemDictionary>>{};
-                for (final d in filtered) {
-                  grouped.putIfAbsent(d.dictType, () => []).add(d);
-                }
-
-                return ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
-                  ),
-                  children:
-                      grouped.entries.map((group) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+              // Type filter
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
+                child: typesState.when(
+                  data:
+                      (types) => Row(
+                        children: [
+                          Text('Filter: ', style: typo.labelLarge),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
                               child: Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colors.primary.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      group.key,
-                                      style: typo.labelLarge.copyWith(
-                                        color: colors.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${group.value.length} entries',
-                                    style: typo.bodySmall.copyWith(
-                                      color: colors.onSurfaceVariant,
-                                    ),
+                                  _filterChip('All', 'all', colors),
+                                  ...types.map(
+                                    (t) => _filterChip(t, t, colors),
                                   ),
                                 ],
                               ),
                             ),
-                            ...group.value.map(
-                              (dict) => Container(
-                                margin: const EdgeInsets.only(bottom: 6),
-                                decoration: BoxDecoration(
-                                  color: colors.surfaceContainerLow,
-                                  borderRadius: BorderRadius.circular(
-                                    radius.sm,
+                          ),
+                        ],
+                      ),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+              ),
+
+              // Dictionary entries
+              Expanded(
+                child: dictState.when(
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+                  error:
+                      (e, _) => Center(
+                        child: Text(
+                          'Error: $e',
+                          style: TextStyle(color: colors.error),
+                        ),
+                      ),
+                  data: (entries) {
+                    final filtered =
+                        _selectedType == 'all'
+                            ? entries
+                            : entries
+                                .where((d) => d.dictType == _selectedType)
+                                .toList();
+
+                    if (filtered.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No entries.',
+                          style: typo.bodyLarge.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      );
+                    }
+
+                    // Group by dict_type
+                    final grouped = <String, List<SystemDictionary>>{};
+                    for (final d in filtered) {
+                      grouped.putIfAbsent(d.dictType, () => []).add(d);
+                    }
+
+                    return ListView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
+                      children:
+                          grouped.entries.map((group) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
                                   ),
-                                  border: Border.all(
-                                    color: colors.outlineVariant.withValues(
-                                      alpha: 0.3,
-                                    ),
-                                  ),
-                                ),
-                                child: ListTile(
-                                  dense: true,
-                                  title: Row(
+                                  child: Row(
                                     children: [
-                                      // Color swatch from extra
-                                      if (dict.extra != null &&
-                                          dict.extra!['color'] != null)
-                                        Container(
-                                          width: 12,
-                                          height: 12,
-                                          margin: const EdgeInsets.only(
-                                            right: 8,
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: colors.primary.withValues(
+                                            alpha: 0.1,
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: _parseColor(
-                                              dict.extra!['color'],
-                                            ),
-                                            shape: BoxShape.circle,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
                                           ),
                                         ),
+                                        child: Text(
+                                          group.key,
+                                          style: typo.labelLarge.copyWith(
+                                            color: colors.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
                                       Text(
-                                        '${dict.dictKey} → ${dict.dictValue}',
-                                        style: typo.titleMedium.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
+                                        '${group.value.length} entries',
+                                        style: typo.bodySmall.copyWith(
+                                          color: colors.onSurfaceVariant,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  subtitle:
-                                      dict.description != null
-                                          ? Text(
-                                            dict.description!,
-                                            style: typo.bodySmall.copyWith(
-                                              color: colors.onSurfaceVariant,
-                                            ),
-                                          )
-                                          : null,
-                                  trailing:
-                                      canWrite
-                                          ? Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              IconButton(
-                                                icon: Icon(
-                                                  Icons.edit,
-                                                  size: 18,
-                                                  color: colors.primary,
-                                                ),
-                                                onPressed:
-                                                    () => _showDialog(
-                                                      context,
-                                                      dict,
-                                                    ),
-                                              ),
-                                              IconButton(
-                                                icon: Icon(
-                                                  Icons.delete,
-                                                  size: 18,
-                                                  color: colors.error,
-                                                ),
-                                                onPressed:
-                                                    () => _confirmDelete(
-                                                      context,
-                                                      dict,
-                                                    ),
-                                              ),
-                                            ],
-                                          )
-                                          : null,
                                 ),
-                              ),
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                );
-              },
-            ),
+                                ...group.value.map(
+                                  (dict) => Container(
+                                    margin: const EdgeInsets.only(bottom: 6),
+                                    decoration: BoxDecoration(
+                                      color: colors.surfaceContainerLow,
+                                      borderRadius: BorderRadius.circular(
+                                        radius.sm,
+                                      ),
+                                      border: Border.all(
+                                        color: colors.outlineVariant.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                      ),
+                                    ),
+                                    child: ListTile(
+                                      dense: true,
+                                      title: Row(
+                                        children: [
+                                          // Color swatch from extra
+                                          if (dict.extra != null &&
+                                              dict.extra!['color'] != null)
+                                            Container(
+                                              width: 12,
+                                              height: 12,
+                                              margin: const EdgeInsets.only(
+                                                right: 8,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: _parseColor(
+                                                  dict.extra!['color'],
+                                                ),
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                          Text(
+                                            '${dict.dictKey} → ${dict.dictValue}',
+                                            style: typo.titleMedium.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      subtitle:
+                                          dict.description != null
+                                              ? Text(
+                                                dict.description!,
+                                                style: typo.bodySmall.copyWith(
+                                                  color:
+                                                      colors.onSurfaceVariant,
+                                                ),
+                                              )
+                                              : null,
+                                      trailing:
+                                          canWrite
+                                              ? Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      Icons.edit,
+                                                      size: 18,
+                                                      color: colors.primary,
+                                                    ),
+                                                    onPressed:
+                                                        () => _showDialog(
+                                                          context,
+                                                          dict,
+                                                        ),
+                                                  ),
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      Icons.delete,
+                                                      size: 18,
+                                                      color: colors.error,
+                                                    ),
+                                                    onPressed:
+                                                        () => _confirmDelete(
+                                                          context,
+                                                          dict,
+                                                        ),
+                                                  ),
+                                                ],
+                                              )
+                                              : null,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-          ],
-        ),
         ),
       ),
     );

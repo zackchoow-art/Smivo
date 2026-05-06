@@ -100,8 +100,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
   Future<String?> _getRecipientId() async {
     final currentUserId = ref.read(authStateProvider).value?.id;
     if (currentUserId == null) return null;
-    final chatRoom =
-        await ref.read(chatRoomProvider(widget.chatRoomId).future);
+    final chatRoom = await ref.read(chatRoomProvider(widget.chatRoomId).future);
     return chatRoom.buyerId == currentUserId
         ? chatRoom.sellerId
         : chatRoom.buyerId;
@@ -115,10 +114,9 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     final senderId = ref.read(authStateProvider).value?.id;
     final recipientId = await _getRecipientId();
     if (senderId == null || recipientId == null) return null;
-    return ref.read(chatRepositoryProvider).checkChatEligibility(
-      senderId: senderId,
-      recipientId: recipientId,
-    );
+    return ref
+        .read(chatRepositoryProvider)
+        .checkChatEligibility(senderId: senderId, recipientId: recipientId);
   }
 
   void _showSnackBar(String message, {required Color color}) {
@@ -316,9 +314,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                   child: Consumer(
                     builder: (context, ref, child) {
                       final room =
-                          ref
-                              .watch(chatRoomProvider(widget.chatRoomId))
-                              .value;
+                          ref.watch(chatRoomProvider(widget.chatRoomId)).value;
                       return GestureDetector(
                         onTap: () {
                           if (room == null) return;

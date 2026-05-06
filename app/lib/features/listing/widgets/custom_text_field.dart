@@ -6,6 +6,7 @@ class CustomTextField extends StatelessWidget {
   const CustomTextField({
     super.key,
     required this.label,
+    this.icon,
     required this.hintText,
     this.maxLines = 1,
     this.prefixText,
@@ -15,6 +16,7 @@ class CustomTextField extends StatelessWidget {
   });
 
   final String label;
+  final IconData? icon;
   final String hintText;
   final int maxLines;
   final String? prefixText;
@@ -31,12 +33,20 @@ class CustomTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: typo.labelLarge.copyWith(
-            fontWeight: FontWeight.bold,
-            color: colors.onSurface,
-          ),
+        Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 18, color: colors.onSurface),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style: typo.labelLarge.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colors.onSurface,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         TextField(

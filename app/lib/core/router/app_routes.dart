@@ -33,7 +33,7 @@ class AppRoutes {
   static const String buyerCenter = 'buyerCenter';
   static const String transactionManagement = 'transactionManagement';
   static const String notificationCenter = 'notificationCenter';
-  
+
   static const String myFeedbacks = 'myFeedbacks';
   static const String myFeedbacksPath = 'feedbacks';
   static const String submitFeedback = 'submitFeedback';

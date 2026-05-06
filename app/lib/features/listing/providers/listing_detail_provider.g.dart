@@ -29,7 +29,7 @@ final class SelectedRentalRateProvider
         argument: null,
         retry: null,
         name: r'selectedRentalRateProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -51,7 +51,7 @@ final class SelectedRentalRateProvider
 }
 
 String _$selectedRentalRateHash() =>
-    r'0c444cb1063da1555318c40dcba4f21ce0ae31fd';
+    r'976feda20eece2b1625727d6a07dbadf895182a1';
 
 /// State for the selected rental rate (DAY, WEEK, MONTH).
 ///
@@ -90,7 +90,7 @@ final class RentalDurationProvider
         argument: null,
         retry: null,
         name: r'rentalDurationProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -111,7 +111,7 @@ final class RentalDurationProvider
   }
 }
 
-String _$rentalDurationHash() => r'62604c48adfb3516ef753d97c78d83a7d454efba';
+String _$rentalDurationHash() => r'5fcd25470d5e4fa1f4a93bcf099131c22dc1452f';
 
 /// State for the rental duration stepper (e.g., number of months).
 
@@ -148,7 +148,7 @@ final class RentalStartDateProvider
         argument: null,
         retry: null,
         name: r'rentalStartDateProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -169,7 +169,7 @@ final class RentalStartDateProvider
   }
 }
 
-String _$rentalStartDateHash() => r'd67d0d05098bab1c0ee6b6be17e2bf1a3e257658';
+String _$rentalStartDateHash() => r'18a95333f63699b9bd293e49e6d3f86c8016efe9';
 
 /// State for the selected rental start date.
 
@@ -206,7 +206,7 @@ final class RentalEndDateProvider
         argument: null,
         retry: null,
         name: r'rentalEndDateProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -227,11 +227,69 @@ final class RentalEndDateProvider
   }
 }
 
-String _$rentalEndDateHash() => r'76e9032b9f4ae8d55d573e3b2db5759a2cb49271';
+String _$rentalEndDateHash() => r'0d976bf0c9f713bee2e66c8b0c1dcbcbc151223a';
 
 /// State for the selected rental end date.
 
 abstract class _$RentalEndDate extends $Notifier<DateTime> {
+  DateTime build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<DateTime, DateTime>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<DateTime, DateTime>,
+              DateTime,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
+/// State for the selected sale delivery/pickup start date.
+
+@ProviderFor(SaleStartDate)
+final saleStartDateProvider = SaleStartDateProvider._();
+
+/// State for the selected sale delivery/pickup start date.
+final class SaleStartDateProvider
+    extends $NotifierProvider<SaleStartDate, DateTime> {
+  /// State for the selected sale delivery/pickup start date.
+  SaleStartDateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'saleStartDateProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$saleStartDateHash();
+
+  @$internal
+  @override
+  SaleStartDate create() => SaleStartDate();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DateTime value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DateTime>(value),
+    );
+  }
+}
+
+String _$saleStartDateHash() => r'c6636a1c86fd8ee6f586350bccae7ceee50014c0';
+
+/// State for the selected sale delivery/pickup start date.
+
+abstract class _$SaleStartDate extends $Notifier<DateTime> {
   DateTime build();
   @$mustCallSuper
   @override

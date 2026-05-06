@@ -47,10 +47,7 @@ class ImageModerationService {
       final configs = await _client
           .from('system_configs')
           .select('config_key, config_value')
-          .inFilter('config_key', [
-            'backend_review.enabled',
-            'ai_provider',
-          ]);
+          .inFilter('config_key', ['backend_review.enabled', 'ai_provider']);
 
       // Parse config rows into a simple key→value map.
       final configMap = <String, String>{};
@@ -64,7 +61,9 @@ class ImageModerationService {
       // Respect the global kill-switch for backend review.
       final enabled = configMap['backend_review.enabled'];
       if (enabled == 'false' || enabled == 'False') {
-        debugPrint('[ImageModeration] backend_review.enabled=false — skipping.');
+        debugPrint(
+          '[ImageModeration] backend_review.enabled=false — skipping.',
+        );
         return;
       }
 
@@ -72,7 +71,9 @@ class ImageModerationService {
       // Default to google_vision for backward compatibility.
       final provider = configMap['ai_provider'] ?? 'google';
       final functionName =
-          provider == 'openai' ? 'moderate-image-openai' : 'moderate-image-google';
+          provider == 'openai'
+              ? 'moderate-image-openai'
+              : 'moderate-image-google';
 
       // Call the Edge Function (non-blocking).
       final response = await _client.functions.invoke(

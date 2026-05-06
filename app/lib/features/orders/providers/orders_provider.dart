@@ -186,8 +186,24 @@ class OrderActions extends _$OrderActions {
         school: school,
         totalPrice: totalPrice,
         depositAmount: depositAmount,
-        rentalStartDate: rentalStartDate,
-        rentalEndDate: rentalEndDate,
+        rentalStartDate:
+            rentalStartDate != null
+                ? DateTime.utc(
+                  rentalStartDate.year,
+                  rentalStartDate.month,
+                  rentalStartDate.day,
+                  12,
+                )
+                : null,
+        rentalEndDate:
+            rentalEndDate != null
+                ? DateTime.utc(
+                  rentalEndDate.year,
+                  rentalEndDate.month,
+                  rentalEndDate.day,
+                  12,
+                )
+                : null,
         pickupLocationId: pickupLocationId,
         pickupLocationName: pickupLocationName,
         createdAt: now,
@@ -291,9 +307,7 @@ class OrderActions extends _$OrderActions {
           throw StateError('Only the buyer can confirm a sale pickup');
         }
 
-        await ref
-            .read(orderRepositoryProvider)
-            .confirmSaleDelivery(order.id);
+        await ref.read(orderRepositoryProvider).confirmSaleDelivery(order.id);
       } else {
         // Rental: keep dual confirmation
         final role = isBuyer ? 'buyer' : 'seller';

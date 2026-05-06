@@ -278,6 +278,12 @@ class _BackSide extends StatelessWidget {
               'RENTAL\nPERIOD',
               '${order.rentalStartDate.toString().split(' ')[0]} - ${order.rentalEndDate?.toString().split(' ')[0] ?? 'N/A'}',
             ),
+          if (order.orderType == 'sale' && order.rentalStartDate != null)
+            _buildInfoRow(
+              context,
+              'DELIVERY\nDATE',
+              order.rentalStartDate.toString().split(' ')[0],
+            ),
           _buildInfoRow(context, 'STATUS', _getStatusText(status)),
 
           // Pickup Location row
@@ -299,7 +305,9 @@ class _BackSide extends StatelessWidget {
                 ),
                 Expanded(
                   child: Text(
-                    order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : order.school,
+                    order.pickupLocation?.name != null
+                        ? '${order.pickupLocation!.name}, ${order.school}'
+                        : order.school,
                     style: typo.bodyMedium.copyWith(
                       color: colors.onSurface,
                       fontWeight: FontWeight.w500,

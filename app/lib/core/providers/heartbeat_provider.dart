@@ -40,7 +40,10 @@ class HeartbeatManager extends _$HeartbeatManager {
     // Send immediately, then every 5 minutes
     _sendHeartbeat();
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(minutes: 5), (_) => _sendHeartbeat());
+    _timer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _sendHeartbeat(),
+    );
   }
 
   void _stopHeartbeat() {
@@ -53,10 +56,9 @@ class HeartbeatManager extends _$HeartbeatManager {
     if (user == null) return;
 
     try {
-      await ref.read(profileRepositoryProvider).sendHeartbeat(
-        userId: user.id,
-        platform: _getPlatform(),
-      );
+      await ref
+          .read(profileRepositoryProvider)
+          .sendHeartbeat(userId: user.id, platform: _getPlatform());
     } catch (_) {
       // Heartbeat failure is non-critical — silently ignore
     }

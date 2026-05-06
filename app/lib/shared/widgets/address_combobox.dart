@@ -107,21 +107,23 @@ class AddressComboBoxState extends ConsumerState<AddressComboBox> {
             builder: (context, ref, _) {
               final savedAsync = ref.watch(savedLocationsProvider);
               return savedAsync.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+                loading:
+                    () => const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                 error: (_, __) => const SizedBox.shrink(),
                 data: (saved) {
                   if (saved.isEmpty) return const SizedBox.shrink();
 
                   // Filter by current text input for a search-as-you-type feel.
                   final query = widget.controller.text.trim().toLowerCase();
-                  final filtered = query.isEmpty
-                      ? saved
-                      : saved
-                          .where((a) => a.toLowerCase().contains(query))
-                          .toList();
+                  final filtered =
+                      query.isEmpty
+                          ? saved
+                          : saved
+                              .where((a) => a.toLowerCase().contains(query))
+                              .toList();
 
                   if (filtered.isEmpty) return const SizedBox.shrink();
 

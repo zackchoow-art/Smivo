@@ -10,7 +10,7 @@ part 'listing_detail_provider.g.dart';
 /// State for the selected rental rate (DAY, WEEK, MONTH).
 ///
 /// Defaults to 'MONTH' as per the primary design.
-@riverpod
+@Riverpod(keepAlive: true)
 class SelectedRentalRate extends _$SelectedRentalRate {
   @override
   // NOTE: Default to DAY as it's the most commonly enabled rate.
@@ -23,7 +23,7 @@ class SelectedRentalRate extends _$SelectedRentalRate {
 }
 
 /// State for the rental duration stepper (e.g., number of months).
-@riverpod
+@Riverpod(keepAlive: true)
 class RentalDuration extends _$RentalDuration {
   @override
   int build() => 1;
@@ -38,7 +38,7 @@ class RentalDuration extends _$RentalDuration {
 }
 
 /// State for the selected rental start date.
-@riverpod
+@Riverpod(keepAlive: true)
 class RentalStartDate extends _$RentalStartDate {
   @override
   DateTime build() => DateTime.now();
@@ -49,10 +49,21 @@ class RentalStartDate extends _$RentalStartDate {
 }
 
 /// State for the selected rental end date.
-@riverpod
+@Riverpod(keepAlive: true)
 class RentalEndDate extends _$RentalEndDate {
   @override
   DateTime build() => DateTime.now().add(const Duration(days: 1));
+
+  void setDate(DateTime date) {
+    state = date;
+  }
+}
+
+/// State for the selected sale delivery/pickup start date.
+@Riverpod(keepAlive: true)
+class SaleStartDate extends _$SaleStartDate {
+  @override
+  DateTime build() => DateTime.now();
 
   void setDate(DateTime date) {
     state = date;

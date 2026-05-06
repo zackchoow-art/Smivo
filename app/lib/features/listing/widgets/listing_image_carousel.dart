@@ -70,9 +70,10 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                         fit: StackFit.expand,
                         children: [
                           ImageFiltered(
-                            imageFilter: isRejected
-                                ? ImageFilter.blur(sigmaX: 10, sigmaY: 10)
-                                : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                            imageFilter:
+                                isRejected
+                                    ? ImageFilter.blur(sigmaX: 10, sigmaY: 10)
+                                    : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                             child: Image.network(
                               img.imageUrl,
                               fit: BoxFit.cover,
@@ -85,7 +86,9 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                               child: Container(
                                 color: Colors.black.withValues(alpha: 0.4),
                                 alignment: Alignment.center,
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
                                 child: Text(
                                   img.moderationReasons ?? 'Policy Violation',
                                   textAlign: TextAlign.center,

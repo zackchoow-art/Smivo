@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/providers/preferences_provider.dart';
 import 'core/providers/push_notification_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/providers/shake_feedback_provider.dart';
 import 'core/router/router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/breakpoints.dart';
+import 'shared/widgets/floating_quick_nav.dart';
 
 import 'dart:async';
 import 'package:app_links/app_links.dart';
@@ -62,11 +65,14 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
     }
 
     // Handle link when app is in warm state (foreground or background)
-    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
-      _handleDeepLink(uri);
-    }, onError: (err) {
-      debugPrint('Error handling incoming deep link: $err');
-    });
+    _linkSubscription = _appLinks.uriLinkStream.listen(
+      (uri) {
+        _handleDeepLink(uri);
+      },
+      onError: (err) {
+        debugPrint('Error handling incoming deep link: $err');
+      },
+    );
   }
 
   void _handleDeepLink(Uri uri) {
@@ -93,20 +99,63 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
     final themeVariant = ref.watch(themeProvider);
     final isShakeFeedbackEnabled = ref.watch(shakeFeedbackProvider);
 
+    final showFloating = ref.watch(showFloatingNavProvider);
+
     final app = MaterialApp.router(
       title: 'Smivo',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.buildTheme(themeVariant),
       routerConfig: router,
+      builder: (context, child) {
+        final content = child ?? const SizedBox.shrink();
+        final width = MediaQuery.of(context).size.width;
+        final isMobile = Breakpoints.isMobile(width);
+
+        // NOTE: Only overlay on mobile when the user hasn't disabled it.
+        if (!isMobile || !showFloating) return content;
+
+        // NOTE: MaterialApp.builder is NOT re-invoked on route changes.
+        // Wrap with ValueListenableBuilder so the FloatingQuickNav
+        // reactively appears/disappears as the user navigates.
+        return ValueListenableBuilder<RouteInformation>(
+          valueListenable: router.routeInformationProvider,
+          builder: (context, routeInfo, _) {
+            final location = routeInfo.uri.path;
+            if (_isShellOrExcludedRoute(location)) return content;
+
+            return Stack(
+              children: [content, const FloatingQuickNav()],
+            );
+          },
+        );
+      },
     );
 
     if (isShakeFeedbackEnabled) {
-      return BetterFeedback(
-        child: _ShakeWrapper(child: app),
-      );
+      return BetterFeedback(child: _ShakeWrapper(child: app));
     }
 
     return app;
+  }
+
+  /// Routes where the floating nav should NOT appear — either because
+  /// they already have bottom navigation (shell tabs) or because showing
+  /// a nav shortcut is inappropriate (auth / admin flows).
+  static bool _isShellOrExcludedRoute(String path) {
+    const excluded = {
+      '/home',
+      '/chats',
+      '/orders',
+      '/login',
+      '/register',
+      '/verify-email',
+      '/forgot-password',
+      '/profile-setup',
+    };
+    if (excluded.contains(path)) return true;
+    // Admin routes all start with /admin
+    if (path.startsWith('/admin')) return true;
+    return false;
   }
 }
 
@@ -124,9 +173,7 @@ class _ShakeWrapperState extends ConsumerState<_ShakeWrapper> {
   @override
   void initState() {
     super.initState();
-    _detector = ShakeDetector.autoStart(
-      onPhoneShake: _onShake,
-    );
+    _detector = ShakeDetector.autoStart(onPhoneShake: _onShake);
   }
 
   /// Shows a SnackBar via GoRouter's navigator key.
@@ -139,9 +186,9 @@ class _ShakeWrapperState extends ConsumerState<_ShakeWrapper> {
     final navContext =
         ref.read(routerProvider).routerDelegate.navigatorKey.currentContext;
     if (navContext == null) return;
-    ScaffoldMessenger.of(navContext).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      navContext,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _onShake(ShakeEvent event) {

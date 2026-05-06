@@ -28,8 +28,8 @@ class ContentFilter {
   ContentFilter({
     required List<String> blockWords,
     required List<String> warnWords,
-  })  : _blockWords = blockWords,
-        _warnWords = warnWords;
+  }) : _blockWords = blockWords,
+       _warnWords = warnWords;
 
   /// Checks [text] against the sensitive word lists.
   ContentFilterResult check(String text) {
@@ -38,7 +38,7 @@ class ContentFilter {
     }
 
     final lowerText = text.toLowerCase();
-    
+
     List<String> findMatches(List<String> dictionary) {
       final matched = <String>[];
       for (final word in dictionary) {
@@ -78,9 +78,12 @@ class ContentFilter {
       if (!isAscii || word.contains(' ')) {
         pattern = RegExp(RegExp.escape(word), caseSensitive: false);
       } else {
-        pattern = RegExp(r'\b' + RegExp.escape(word) + r'\b', caseSensitive: false);
+        pattern = RegExp(
+          r'\b' + RegExp.escape(word) + r'\b',
+          caseSensitive: false,
+        );
       }
-      
+
       result = result.replaceAllMapped(pattern, (match) {
         final matchedString = match.group(0)!;
         return '*' * matchedString.length;

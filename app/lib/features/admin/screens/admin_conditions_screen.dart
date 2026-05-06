@@ -55,51 +55,54 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
           maxWidth: 1200,
           child: Column(
             children: [
-          // School selector
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: schoolsState.when(
-              data:
-                  (schools) => DropdownButtonFormField<String>(
-                    initialValue: _selectedSchoolId,
-                    decoration: InputDecoration(
-                      labelText: 'Select School',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(radius.sm),
-                      ),
-                      filled: true,
-                      fillColor: colors.surfaceContainerLow,
-                    ),
-                    items:
-                        schools
-                            .map(
-                              (s) => DropdownMenuItem(
-                                value: s.id,
-                                child: Text(s.name),
-                              ),
-                            )
-                            .toList(),
-                    onChanged: (v) => setState(() => _selectedSchoolId = v),
-                  ),
-              loading: () => const LinearProgressIndicator(),
-              error: (e, _) => Text('Error: $e'),
-            ),
-          ),
-          Expanded(
-            child:
-                _selectedSchoolId == null
-                    ? Center(
-                      child: Text(
-                        'Select a school to manage its conditions.',
-                        style: typo.bodyLarge.copyWith(
-                          color: colors.onSurfaceVariant,
+              // School selector
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
+                child: schoolsState.when(
+                  data:
+                      (schools) => DropdownButtonFormField<String>(
+                        initialValue: _selectedSchoolId,
+                        decoration: InputDecoration(
+                          labelText: 'Select School',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(radius.sm),
+                          ),
+                          filled: true,
+                          fillColor: colors.surfaceContainerLow,
                         ),
+                        items:
+                            schools
+                                .map(
+                                  (s) => DropdownMenuItem(
+                                    value: s.id,
+                                    child: Text(s.name),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (v) => setState(() => _selectedSchoolId = v),
                       ),
-                    )
-                    : _buildList(context, canWrite),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+              ),
+              Expanded(
+                child:
+                    _selectedSchoolId == null
+                        ? Center(
+                          child: Text(
+                            'Select a school to manage its conditions.',
+                            style: typo.bodyLarge.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        )
+                        : _buildList(context, canWrite),
+              ),
+            ],
           ),
-          ],
-        ),
         ),
       ),
     );

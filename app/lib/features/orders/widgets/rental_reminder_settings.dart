@@ -83,10 +83,11 @@ class _RentalReminderSettingsState
       if (mounted) {
         showDialog(
           context: context,
-          builder: (ctx) => const ActionSuccessDialog(
-            title: 'Success',
-            message: 'Reminder preferences saved.',
-          ),
+          builder:
+              (ctx) => const ActionSuccessDialog(
+                title: 'Success',
+                message: 'Reminder preferences saved.',
+              ),
         );
       }
     } finally {
@@ -235,11 +236,7 @@ class _RentalReminderSettingsState
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.update_rounded,
-                      size: 18,
-                      color: colors.primary,
-                    ),
+                    Icon(Icons.update_rounded, size: 18, color: colors.primary),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

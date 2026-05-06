@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smivo/core/providers/preferences_provider.dart';
+import 'package:smivo/core/providers/nav_scroll_provider.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/shared/widgets/bottom_nav_bar.dart';
-import 'package:smivo/shared/widgets/floating_quick_nav.dart';
 import 'package:smivo/shared/widgets/navigation_rail_bar.dart';
 
-/// Provides a [ScrollController] down the widget tree so that the
-/// ResponsiveScaffold can trigger scroll-to-top when the user taps the
-/// Home nav item while already on the Home branch.
+// NOTE: HomeScrollControllerScope is kept here because HomeScreen still wraps
+// itself with it for PrimaryScrollController / iOS status-bar tap-to-top
+// behaviour. It is no longer used by ResponsiveScaffold's own tap logic
+// (which now uses Riverpod providers instead — see nav_scroll_provider.dart).
+/// Provides a [ScrollController] down the widget tree.
+/// Primarily used so iOS status-bar taps can find the Home scroll view.
 class HomeScrollControllerScope extends InheritedWidget {
   const HomeScrollControllerScope({
     super.key,
@@ -35,37 +37,44 @@ class HomeScrollControllerScope extends InheritedWidget {
 /// - **Tablet** (600–1024px): Left NavigationRail (compact icons + labels)
 /// - **Desktop** (> 1024px): Left NavigationRail extended (icons + text labels)
 ///
-/// This widget replaces the original [AppShell] to provide responsive
-/// navigation across all device classes while preserving the existing
-/// GoRouter shell-branch architecture.
+/// ## Scroll-to-top on re-tap
+/// When the user taps a nav button they are already on, instead of navigating,
+/// this widget increments [homeScrollTriggerProvider] or
+/// [chatScrollTriggerProvider]. The target screen listens to that provider
+/// and animates its list to the top.
+///
+/// NOTE: We use Riverpod providers (not InheritedWidget) because
+/// InheritedWidget.maybeOf() only traverses UP the widget tree, but the
+/// scroll controllers live BELOW ResponsiveScaffold (inside navigationShell).
 class ResponsiveScaffold extends ConsumerWidget {
   const ResponsiveScaffold({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
-  void _onTap(BuildContext context, int index) {
-    // NOTE: If the user taps Home while already on Home, scroll back to top
-    // instead of re-navigating (which would be a no-op from GoRouter).
-    if (index == 0 && navigationShell.currentIndex == 0) {
-      final scope = HomeScrollControllerScope.maybeOf(context);
-      if (scope != null && scope.controller.hasClients) {
-        scope.controller.animateTo(
-          0,
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.easeOutCubic,
-        );
-        return;
-      }
-    }
-    navigationShell.goBranch(
-      index,
-      initialLocation: index == navigationShell.currentIndex,
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showFloating = ref.watch(showFloatingNavProvider);
+
+    // NOTE: Defined inside build() so it can close over `ref` without
+    // converting ResponsiveScaffold to a StatefulWidget.
+    void onTap(int index) {
+      // If the user taps Home while already on Home, signal HomeScreen
+      // to scroll to top via the provider — do NOT re-navigate.
+      if (index == 0 && navigationShell.currentIndex == 0) {
+        ref.read(homeScrollTriggerProvider.notifier).trigger();
+        return;
+      }
+      // If the user taps Chat while already on Chat, signal ChatListScreen
+      // to scroll to top via the provider — do NOT re-navigate.
+      if (index == 1 && navigationShell.currentIndex == 1) {
+        ref.read(chatScrollTriggerProvider.notifier).trigger();
+        return;
+      }
+      navigationShell.goBranch(
+        index,
+        initialLocation: index == navigationShell.currentIndex,
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
@@ -73,18 +82,11 @@ class ResponsiveScaffold extends ConsumerWidget {
         // --- Mobile: original bottom nav layout ---
         if (Breakpoints.isMobile(width)) {
           return Scaffold(
-            body: Stack(
-              children: [
-                navigationShell,
-                // NOTE: FloatingQuickNav is only shown when the user
-                // has not disabled it in System Settings.
-                if (showFloating) const FloatingQuickNav(),
-              ],
-            ),
+            body: navigationShell,
             extendBody: true,
             bottomNavigationBar: BottomNavBar(
               currentIndex: navigationShell.currentIndex,
-              onTap: (index) => _onTap(context, index),
+              onTap: onTap,
             ),
           );
         }
@@ -99,7 +101,7 @@ class ResponsiveScaffold extends ConsumerWidget {
               // to visually separate it from the main content area.
               NavigationRailBar(
                 currentIndex: _shellToRailIndex(navigationShell.currentIndex),
-                onTap: (index) => _onTap(context, index),
+                onTap: onTap,
                 extended: isDesktop,
               ),
               // Vertical divider between rail and content

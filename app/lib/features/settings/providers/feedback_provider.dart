@@ -13,7 +13,10 @@ part 'feedback_provider.g.dart';
 Future<DateTime?> userFeedbackBan(Ref ref) async {
   final user = ref.watch(authStateProvider).value;
   if (user == null) return null;
-  return ref.watch(profileRepositoryProvider).getActiveBan(user.id, ['feedback_ban', 'account_freeze']);
+  return ref.watch(profileRepositoryProvider).getActiveBan(user.id, [
+    'feedback_ban',
+    'account_freeze',
+  ]);
 }
 
 @riverpod
@@ -49,7 +52,7 @@ class SubmitFeedbackAction extends _$SubmitFeedbackAction {
       }
 
       final repo = ref.read(feedbackRepositoryProvider);
-      
+
       final todayCount = await repo.getTodayFeedbackCount(user.id);
       if (todayCount >= 5) {
         throw StateError('Daily submission limit reached');

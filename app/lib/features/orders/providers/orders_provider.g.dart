@@ -409,7 +409,7 @@ final class OrderActionsProvider
   }
 }
 
-String _$orderActionsHash() => r'2caeb3e2d8af3e3422075389f37187a1c6f69d83';
+String _$orderActionsHash() => r'120f12ab8df794c91b8a5f9737079e9b5d187029';
 
 /// Handles order actions (cancel, confirm delivery, request return, etc.).
 

@@ -86,7 +86,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (_isDebugMode) {
       await ref.read(authProvider.notifier).signUpDebug(emailValue, password);
     } else {
-      await ref.read(authProvider.notifier).signUp(emailValue, _selectedSchool!.emailDomain, password);
+      await ref
+          .read(authProvider.notifier)
+          .signUp(emailValue, _selectedSchool!.emailDomain, password);
     }
 
     // Navigation is reactive via router.dart watching authStateProvider.
@@ -126,10 +128,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final activeSchoolsAsync = ref.watch(activeSchoolsProvider);
     final systemUrlsState = ref.watch(systemUrlsProvider);
     final systemUrls = systemUrlsState.value ?? {};
-    
-    final zeroToleranceUrlStr = systemUrls['zero_tolerance'] ?? 'https://smivo.io/safety#zero-tolerance';
-    final termsUrlStr = systemUrls['terms_of_service'] ?? 'https://smivo.io/terms';
-    
+
+    final zeroToleranceUrlStr =
+        systemUrls['zero_tolerance'] ??
+        'https://smivo.io/safety#zero-tolerance';
+    final termsUrlStr =
+        systemUrls['terms_of_service'] ?? 'https://smivo.io/terms';
+
     final isLoading = authState.isLoading;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -155,7 +160,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         // We navigate manually because Supabase doesn't issue a session immediately
         // for unverified emails, so router.dart won't pick it up automatically yet.
         final emailPrefix = _emailController.text.trim();
-        final fullEmail = _isDebugMode ? emailPrefix : '$emailPrefix@${_selectedSchool!.emailDomain}';
+        final fullEmail =
+            _isDebugMode
+                ? emailPrefix
+                : '$emailPrefix@${_selectedSchool!.emailDomain}';
         // GoRouter redirect doesn't trigger, so we manually go to verification screen.
         context.goNamed(
           AppRoutes.emailVerification,
@@ -244,51 +252,92 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 activeSchoolsAsync.when(
                                   data: (schools) {
                                     if (schools.isEmpty) {
-                                      return const Text('No schools available.');
+                                      return const Text(
+                                        'No schools available.',
+                                      );
                                     }
-                                    
+
                                     // Set default if null
                                     if (_selectedSchool == null) {
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        if (mounted) setState(() => _selectedSchool = schools.first);
-                                      });
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            if (mounted)
+                                              setState(
+                                                () =>
+                                                    _selectedSchool =
+                                                        schools.first,
+                                              );
+                                          });
                                     }
 
                                     return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                                          child: Text('SELECT SCHOOL', style: typo.labelUppercase),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                          child: Text(
+                                            'SELECT SCHOOL',
+                                            style: typo.labelUppercase,
+                                          ),
                                         ),
                                         const SizedBox(height: 8),
                                         DropdownButtonFormField<School>(
-                                          value: _selectedSchool ?? schools.first,
-                                          items: schools.map((s) => DropdownMenuItem(
-                                            value: s,
-                                            child: Text(s.name, style: typo.bodyMedium),
-                                          )).toList(),
+                                          value:
+                                              _selectedSchool ?? schools.first,
+                                          items:
+                                              schools
+                                                  .map(
+                                                    (s) => DropdownMenuItem(
+                                                      value: s,
+                                                      child: Text(
+                                                        s.name,
+                                                        style: typo.bodyMedium,
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
                                           onChanged: (val) {
                                             if (val != null) {
-                                              setState(() => _selectedSchool = val);
+                                              setState(
+                                                () => _selectedSchool = val,
+                                              );
                                             }
                                           },
                                           decoration: InputDecoration(
                                             filled: true,
-                                            fillColor: colors.surfaceContainerLow,
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                                            fillColor:
+                                                colors.surfaceContainerLow,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: 18,
+                                                ),
                                             border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(radius.input),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    radius.input,
+                                                  ),
                                               borderSide: BorderSide.none,
                                             ),
                                           ),
-                                          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.onSurfaceVariant),
+                                          icon: Icon(
+                                            Icons.arrow_drop_down_rounded,
+                                            color: colors.onSurfaceVariant,
+                                          ),
                                         ),
                                       ],
                                     );
                                   },
-                                  loading: () => const Center(child: CircularProgressIndicator()),
-                                  error: (err, st) => Text('Error loading schools: $err'),
+                                  loading:
+                                      () => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                  error:
+                                      (err, st) =>
+                                          Text('Error loading schools: $err'),
                                 ),
                                 const SizedBox(height: 24),
                               ],
@@ -303,7 +352,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     _isDebugMode
                                         ? 'test@smivo.dev'
                                         : 'username',
-                                suffixText: _isDebugMode ? null : (_selectedSchool != null ? '@${_selectedSchool!.emailDomain}' : '@edu'),
+                                suffixText:
+                                    _isDebugMode
+                                        ? null
+                                        : (_selectedSchool != null
+                                            ? '@${_selectedSchool!.emailDomain}'
+                                            : '@edu'),
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 validator:
@@ -380,17 +434,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                               color: colors.primary,
                                               fontWeight: FontWeight.w600,
                                               height: 1.4,
-                                              decoration: TextDecoration.underline,
+                                              decoration:
+                                                  TextDecoration.underline,
                                             ),
-                                            recognizer: TapGestureRecognizer()
-                                              ..onTap = () async {
-                                                final url = Uri.parse(termsUrlStr);
-                                                if (await canLaunchUrl(url)) {
-                                                  await launchUrl(url);
-                                                }
-                                              },
+                                            recognizer:
+                                                TapGestureRecognizer()
+                                                  ..onTap = () async {
+                                                    final url = Uri.parse(
+                                                      termsUrlStr,
+                                                    );
+                                                    if (await canLaunchUrl(
+                                                      url,
+                                                    )) {
+                                                      await launchUrl(url);
+                                                    }
+                                                  },
                                           ),
-                                          const TextSpan(text: ' and acknowledge that there is '),
+                                          const TextSpan(
+                                            text:
+                                                ' and acknowledge that there is ',
+                                          ),
                                           TextSpan(
                                             text:
                                                 'zero tolerance for objectionable content or abusive users',
@@ -491,8 +554,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                           ),
                                 ),
                               ),
-
-
 
                               const SizedBox(height: 32),
 

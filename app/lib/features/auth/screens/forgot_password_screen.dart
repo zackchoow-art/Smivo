@@ -17,7 +17,8 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
@@ -80,13 +81,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (_isDebugMode) {
       await ref.read(authProvider.notifier).resetPasswordDebug(emailValue);
     } else {
-      await ref.read(authProvider.notifier).resetPassword(emailValue, _selectedSchool!.emailDomain);
+      await ref
+          .read(authProvider.notifier)
+          .resetPassword(emailValue, _selectedSchool!.emailDomain);
     }
 
     if (mounted && !ref.read(authProvider).hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Password reset email sent. Please check your inbox.'),
+          content: const Text(
+            'Password reset email sent. Please check your inbox.',
+          ),
           backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
@@ -197,62 +202,117 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                 activeSchoolsAsync.when(
                                   data: (schools) {
                                     if (schools.isEmpty) {
-                                      return const Text('No schools available.');
+                                      return const Text(
+                                        'No schools available.',
+                                      );
                                     }
-                                    
+
                                     if (_selectedSchool == null) {
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        if (mounted) setState(() => _selectedSchool = schools.first);
-                                      });
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            if (mounted)
+                                              setState(
+                                                () =>
+                                                    _selectedSchool =
+                                                        schools.first,
+                                              );
+                                          });
                                     }
 
                                     return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                                          child: Text('SELECT SCHOOL', style: typo.labelUppercase),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                          child: Text(
+                                            'SELECT SCHOOL',
+                                            style: typo.labelUppercase,
+                                          ),
                                         ),
                                         const SizedBox(height: 8),
                                         DropdownButtonFormField<School>(
-                                          value: _selectedSchool ?? schools.first,
-                                          items: schools.map((s) => DropdownMenuItem(
-                                            value: s,
-                                            child: Text(s.name, style: typo.bodyMedium),
-                                          )).toList(),
+                                          value:
+                                              _selectedSchool ?? schools.first,
+                                          items:
+                                              schools
+                                                  .map(
+                                                    (s) => DropdownMenuItem(
+                                                      value: s,
+                                                      child: Text(
+                                                        s.name,
+                                                        style: typo.bodyMedium,
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
                                           onChanged: (val) {
                                             if (val != null) {
-                                              setState(() => _selectedSchool = val);
+                                              setState(
+                                                () => _selectedSchool = val,
+                                              );
                                             }
                                           },
                                           decoration: InputDecoration(
                                             filled: true,
-                                            fillColor: colors.surfaceContainerLow,
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                                            fillColor:
+                                                colors.surfaceContainerLow,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: 18,
+                                                ),
                                             border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(radius.input),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    radius.input,
+                                                  ),
                                               borderSide: BorderSide.none,
                                             ),
                                           ),
-                                          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.onSurfaceVariant),
+                                          icon: Icon(
+                                            Icons.arrow_drop_down_rounded,
+                                            color: colors.onSurfaceVariant,
+                                          ),
                                         ),
                                       ],
                                     );
                                   },
-                                  loading: () => const Center(child: CircularProgressIndicator()),
-                                  error: (err, st) => Text('Error loading schools: $err'),
+                                  loading:
+                                      () => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                  error:
+                                      (err, st) =>
+                                          Text('Error loading schools: $err'),
                                 ),
                                 const SizedBox(height: 24),
                               ],
 
                               // ── Email Field ───────────────────────────────
                               AppTextField(
-                                label: _isDebugMode ? 'Test Email' : 'University Username',
-                                hintText: _isDebugMode ? 'test@smivo.dev' : 'username',
-                                suffixText: _isDebugMode ? null : (_selectedSchool != null ? '@${_selectedSchool!.emailDomain}' : '@edu'),
+                                label:
+                                    _isDebugMode
+                                        ? 'Test Email'
+                                        : 'University Username',
+                                hintText:
+                                    _isDebugMode
+                                        ? 'test@smivo.dev'
+                                        : 'username',
+                                suffixText:
+                                    _isDebugMode
+                                        ? null
+                                        : (_selectedSchool != null
+                                            ? '@${_selectedSchool!.emailDomain}'
+                                            : '@edu'),
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                validator: _isDebugMode ? Validators.eduEmail : Validators.emailPrefix,
+                                validator:
+                                    _isDebugMode
+                                        ? Validators.eduEmail
+                                        : Validators.emailPrefix,
                               ),
                               const SizedBox(height: 32),
 
@@ -261,7 +321,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                 height: 60,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(radius.xl),
+                                  borderRadius: BorderRadius.circular(
+                                    radius.xl,
+                                  ),
                                   gradient: LinearGradient(
                                     colors: [
                                       colors.gradientStart,
@@ -272,7 +334,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: colors.primary.withValues(alpha: 0.2),
+                                      color: colors.primary.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       blurRadius: 15,
                                       offset: const Offset(0, 10),
                                     ),
@@ -284,36 +348,40 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(radius.xl),
+                                      borderRadius: BorderRadius.circular(
+                                        radius.xl,
+                                      ),
                                     ),
                                   ),
-                                  child: isLoading
-                                      ? SizedBox(
-                                        height: 24,
-                                        width: 24,
-                                        child: CircularProgressIndicator(
-                                          color: colors.onPrimary,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                      : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'Send Reset Link',
-                                            style: typo.labelLarge.copyWith(
+                                  child:
+                                      isLoading
+                                          ? SizedBox(
+                                            height: 24,
+                                            width: 24,
+                                            child: CircularProgressIndicator(
                                               color: colors.onPrimary,
-                                              fontSize: 18,
+                                              strokeWidth: 2,
                                             ),
+                                          )
+                                          : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Send Reset Link',
+                                                style: typo.labelLarge.copyWith(
+                                                  color: colors.onPrimary,
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Icon(
+                                                Icons.email_outlined,
+                                                size: 18,
+                                                color: colors.onPrimary,
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(width: 8),
-                                          Icon(
-                                            Icons.email_outlined,
-                                            size: 18,
-                                            color: colors.onPrimary,
-                                          ),
-                                        ],
-                                      ),
                                 ),
                               ),
                             ],

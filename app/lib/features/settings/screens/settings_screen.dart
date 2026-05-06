@@ -8,17 +8,16 @@ import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 
-final _settingsConfigProvider = FutureProvider.autoDispose<Map<String, bool>>((ref) async {
+final _settingsConfigProvider = FutureProvider.autoDispose<Map<String, bool>>((
+  ref,
+) async {
   final supabase = ref.watch(supabaseClientProvider);
   final res = await supabase
       .from('system_settings')
       .select('key, value')
       .inFilter('key', ['feedback.enabled', 'plaza.enabled']);
 
-  final map = {
-    'feedback.enabled': true,
-    'plaza.enabled': false,
-  };
+  final map = {'feedback.enabled': true, 'plaza.enabled': false};
   for (final row in res) {
     final key = row['key'] as String;
     final val = row['value'];
@@ -120,7 +119,8 @@ class SettingsScreen extends ConsumerWidget {
                               title: 'Feedback',
                               subtitle: 'Tell us about\nissues',
                               onTap:
-                                  () => context.pushNamed(AppRoutes.myFeedbacks),
+                                  () =>
+                                      context.pushNamed(AppRoutes.myFeedbacks),
                             ),
                           if (plazaEnabled)
                             _buildMenuCard(
@@ -129,7 +129,9 @@ class SettingsScreen extends ConsumerWidget {
                               title: 'My\nContributions',
                               subtitle: 'View your\npoints & level',
                               onTap:
-                                  () => context.pushNamed(AppRoutes.myContributions),
+                                  () => context.pushNamed(
+                                    AppRoutes.myContributions,
+                                  ),
                             ),
                         ],
                       ),
