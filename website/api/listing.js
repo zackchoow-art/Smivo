@@ -91,41 +91,56 @@ export default async function handler(request) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{--primary:#1a3a6b;--primary-light:#2a5298;--accent:#e8b630;--text:#1e293b;--text-light:#64748b;--bg:#fff;--surface:#f8fafc;--border:#e2e8f0;}
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
-    .card{background:#fff;border:1px solid var(--border);border-radius:24px;padding:40px 32px;max-width:480px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.08);}
-    .logo{font-size:2rem;font-weight:800;color:var(--primary);margin-bottom:4px;}
-    .logo-sub{font-size:.85rem;color:var(--text-light);margin-bottom:28px;}
-    .product-img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-bottom:16px;display:none;}
-    .listing-title{font-size:1.25rem;font-weight:700;margin-bottom:4px;}
-    .listing-price{font-size:1.1rem;font-weight:600;color:var(--primary);margin-bottom:20px;}
-    .divider{height:1px;background:var(--border);margin:20px 0;}
-    .cta-label{font-size:.9rem;color:var(--text-light);margin-bottom:14px;}
-    .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:12px;font-size:1rem;font-weight:600;text-decoration:none;width:100%;margin-bottom:10px;transition:transform .15s,box-shadow .15s;border:none;cursor:pointer;}
-    .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.12);}
-    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;}
-    .btn-secondary{background:var(--surface);color:var(--primary);border:1px solid var(--border);}
-    .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-font-smoothing:antialiased;}
+    .card{width:100%;max-width:420px;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);position:relative;background:#0f172a;}
+    .img-wrap{position:relative;width:100%;aspect-ratio:4/3;background:#1e293b;overflow:hidden;}
+    .img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+    .scrim{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 60%,transparent 100%);}
+    .badge{position:absolute;top:14px;right:14px;padding:5px 14px;border-radius:8px;font-size:.8rem;font-weight:700;color:#fff;}
+    .badge-sale{background:#2563eb;}
+    .badge-rent{background:#0d9488;}
+    .logo-pill{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:100px;padding:5px 14px;font-size:.8rem;font-weight:800;color:#fff;}
+    .overlay-text{position:absolute;bottom:0;left:0;right:0;padding:14px 18px;}
+    .ot-title{font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 4px rgba(0,0,0,.5);}
+    .ot-price{font-size:1.4rem;font-weight:800;color:#fff;letter-spacing:-.5px;text-shadow:0 1px 4px rgba(0,0,0,.5);}
+    .actions{padding:20px 18px 18px;display:flex;flex-direction:column;gap:10px;}
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:12px;font-size:.95rem;font-weight:600;text-decoration:none;transition:transform .15s,box-shadow .15s;}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3);}
+    .btn-primary{background:linear-gradient(135deg,#1a3a6b,#2a5298);color:#fff;}
+    .btn-secondary{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.15);}
+    .footer{text-align:center;font-size:.75rem;color:rgba(255,255,255,.3);padding-bottom:18px;}
   </style>
 </head>
 <body>
 <div class="card">
-  <div class="logo">Smivo</div>
-  <div class="logo-sub">Campus Marketplace</div>
+  <!-- Product image with scrim + overlay text -->
+  <div class="img-wrap">
+    <img id="product-img" src="https://smivo.io/og-image.png" alt="${esc(title)}">
+    <div class="scrim"></div>
+    <div class="logo-pill">Smivo</div>
+    ${badge ? `<div class="badge badge-${badge.toLowerCase()}">${esc(badge)}</div>` : ''}
+    <div class="overlay-text">
+      <div class="ot-title">${esc(title)}</div>
+      ${priceText ? `<div class="ot-price">${esc(priceText)}</div>` : ''}
+    </div>
+  </div>
 
-  <img id="product-img" class="product-img" alt="">
-  <div id="listing-title" class="listing-title">${esc(title)}</div>
-  <div id="listing-price" class="listing-price">${esc(priceText)}</div>
-
-  <div class="divider"></div>
-  <p class="cta-label">Open in the Smivo app for the full experience</p>
-  <a href="https://apps.apple.com/us/app/smivo/id6764173442"
-     class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-    📱 Download on App Store
-  </a>
-  <a href="/" class="btn btn-secondary">Browse on Smivo.io</a>
+  <!-- Action buttons -->
+  <div class="actions">
+    <a href="https://apps.apple.com/us/app/smivo/id6764173442"
+       class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+      📱 Download on App Store
+    </a>
+    <!-- NOTE: Link to smivo.app (Flutter web app on GitHub Pages) with
+         the listing path so users can view the item without installing. -->
+    <a id="btn-webapp"
+       href="https://smivo.app/listing/${esc(id)}"
+       class="btn btn-secondary">
+      🌐 Open Web App
+    </a>
+  </div>
+  <div class="footer">smivo.io · Campus Marketplace</div>
 </div>
 
 <script>

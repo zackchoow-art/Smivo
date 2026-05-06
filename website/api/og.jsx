@@ -2,8 +2,6 @@ import { ImageResponse } from '@vercel/og';
 
 export const config = { runtime: 'edge' };
 
-// NOTE: Public anon key — safe to include here since it's already
-// embedded in the Flutter app and Supabase RLS still applies.
 const SUPABASE_URL = 'https://cpavunhkwsrmomhktklb.supabase.co';
 const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwYXZ1bmhrd3NybW9taGt0a2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2MjI0OTIsImV4cCI6MjA1OTE5ODQ5Mn0.A0d4-qzWsIJtggZdGfT7b7YCn5VJyiIuAqY_vN7OmT8';
@@ -50,9 +48,10 @@ export default async function handler(request) {
     }
   }
 
-  // NOTE: OG image is 1200×630 (standard). Design mirrors the Flat-theme
-  // listing card: full-width photo top, white content strip bottom,
-  // Sale/Rent badge overlaid on the photo top-right corner.
+  // NOTE: YouTube-style OG card: 1200×630, product image fills the entire
+  // card (full bleed), dark gradient overlay rises from the bottom covering
+  // ~45% of the height. Title, price, and branding sit on top of the
+  // gradient so they remain legible against any photo colour.
   return new ImageResponse(
     (
       <div
@@ -60,128 +59,185 @@ export default async function handler(request) {
           width: '1200px',
           height: '630px',
           display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: '#ffffff',
+          position: 'relative',
           overflow: 'hidden',
+          backgroundColor: '#0f172a',
           fontFamily:
             '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
         }}
       >
-        {/* ── Photo area (top 67 %) ─────────────────────────────────── */}
+        {/* ── Full-bleed product photo ───────────────────────────────── */}
+        {productImageUrl ? (
+          <img
+            src={productImageUrl}
+            width={1200}
+            height={630}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '1200px',
+              height: '630px',
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          // Fallback: brand gradient when listing has no photo
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '1200px',
+              height: '630px',
+              background:
+                'linear-gradient(135deg,#1a3a6b 0%,#2a5298 55%,#3b82f6 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <span
+              style={{ fontSize: '110px', color: 'white', fontWeight: '800' }}
+            >
+              Smivo
+            </span>
+          </div>
+        )}
+
+        {/* ── Bottom gradient scrim (dark → transparent, YouTube style) ─ */}
         <div
           style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
             width: '1200px',
-            height: '420px',
-            position: 'relative',
+            height: '320px',
+            background:
+              'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 55%, transparent 100%)',
             display: 'flex',
-            backgroundColor: '#f1f5f9',
-            overflow: 'hidden',
           }}
-        >
-          {productImageUrl ? (
-            <img
-              src={productImageUrl}
-              width={1200}
-              height={420}
-              style={{ objectFit: 'cover', width: '1200px', height: '420px' }}
-            />
-          ) : (
-            // Fallback gradient when no product image
-            <div
-              style={{
-                width: '1200px',
-                height: '420px',
-                background: 'linear-gradient(135deg,#1a3a6b 0%,#2a5298 60%,#3b82f6 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <span style={{ fontSize: '96px', color: 'white', fontWeight: '800' }}>
-                Smivo
-              </span>
-            </div>
-          )}
+        />
 
-          {/* Sale / Rent badge — top-right, matching Flat card */}
-          {badge ? (
-            <div
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                backgroundColor: '#1a3a6b',
-                color: '#ffffff',
-                padding: '8px 22px',
-                borderRadius: '10px',
-                fontSize: '30px',
-                fontWeight: '700',
-                display: 'flex',
-                letterSpacing: '-0.3px',
-              }}
-            >
-              {badge}
-            </div>
-          ) : null}
-        </div>
-
-        {/* ── Content strip (bottom 33 %) ───────────────────────────── */}
+        {/* ── Top-left: Smivo logo pill ──────────────────────────────── */}
         <div
           style={{
-            flex: 1,
-            padding: '0 40px',
+            position: 'absolute',
+            top: '24px',
+            left: '28px',
+            backgroundColor: 'rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.25)',
+            borderRadius: '100px',
+            padding: '8px 20px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            borderTop: '1px solid #e2e8f0',
+            gap: '8px',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {/* Title */}
+          <span
+            style={{ fontSize: '26px', color: 'white', fontWeight: '800' }}
+          >
+            Smivo
+          </span>
+        </div>
+
+        {/* ── Top-right: Sale / Rent badge ──────────────────────────── */}
+        {badge ? (
+          <div
+            style={{
+              position: 'absolute',
+              top: '24px',
+              right: '28px',
+              // NOTE: Blue for Sale, teal/green tint for Rent to match
+              // the Flat theme's colour convention.
+              backgroundColor: badge === 'Sale' ? '#2563eb' : '#0d9488',
+              borderRadius: '10px',
+              padding: '8px 24px',
+              display: 'flex',
+            }}
+          >
             <span
+              style={{ fontSize: '28px', color: 'white', fontWeight: '700' }}
+            >
+              {badge}
+            </span>
+          </div>
+        ) : null}
+
+        {/* ── Bottom content area (on top of scrim) ─────────────────── */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '1200px',
+            padding: '0 40px 36px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}
+        >
+          {/* Title — single line, clipped if too long */}
+          <span
+            style={{
+              fontSize: '44px',
+              fontWeight: '700',
+              color: '#ffffff',
+              maxWidth: '1000px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              lineHeight: 1.2,
+              textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            }}
+          >
+            {title}
+          </span>
+
+          {/* Price row */}
+          {priceText ? (
+            <div
               style={{
-                fontSize: '38px',
-                fontWeight: '600',
-                color: '#1e293b',
-                maxWidth: '900px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
             >
-              {title}
-            </span>
-            {/* Price */}
-            {priceText ? (
               <span
                 style={{
-                  fontSize: '46px',
+                  fontSize: '52px',
                   fontWeight: '800',
-                  color: '#1e293b',
-                  letterSpacing: '-1px',
+                  color: '#ffffff',
+                  letterSpacing: '-1.5px',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                 }}
               >
                 {priceText}
               </span>
-            ) : null}
-          </div>
-
-          {/* Arrow + branding column */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-              gap: '8px',
-            }}
-          >
-            <span style={{ fontSize: '52px', color: '#94a3b8' }}>→</span>
+              {/* smivo.io watermark bottom-right */}
+              <span
+                style={{
+                  fontSize: '22px',
+                  color: 'rgba(255,255,255,0.6)',
+                  fontWeight: '500',
+                }}
+              >
+                smivo.io
+              </span>
+            </div>
+          ) : (
             <span
-              style={{ fontSize: '22px', color: '#94a3b8', fontWeight: '600' }}
+              style={{
+                fontSize: '22px',
+                color: 'rgba(255,255,255,0.6)',
+                fontWeight: '500',
+                alignSelf: 'flex-end',
+              }}
             >
               smivo.io
             </span>
-          </div>
+          )}
         </div>
       </div>
     ),
