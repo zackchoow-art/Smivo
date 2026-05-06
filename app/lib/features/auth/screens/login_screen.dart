@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
@@ -59,14 +60,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
+    // NOTE: Commit autofill result to iOS Keychain BEFORE the await so
+    // the system can prompt to save the password.
+    TextInput.finishAutofillContext();
+
     if (_isDebugMode) {
       await ref.read(authProvider.notifier).loginDebug(emailValue, password);
     } else {
-      await ref.read(authProvider.notifier).login(emailValue, _selectedSchool!.emailDomain, password);
+      await ref
+          .read(authProvider.notifier)
+          .login(emailValue, _selectedSchool!.emailDomain, password);
     }
 
-    // NOTE: Navigation is handled reactively by router.dart watching authStateProvider.
-    // We don't need to manually context.go() here.
+    // NOTE: GoRouter's refreshListenable (AppRouterNotifier) should handle
+    // the redirect reactively, but we add a manual fallback here in case
+    // the stream timing causes redirect() to be evaluated before the auth
+    // state settles to a non-loading value.
+    if (!mounted) return;
+    final hasError = ref.read(authProvider).hasError;
+    if (!hasError) {
+      context.goNamed(AppRoutes.home);
+    }
   }
 
   void _toggleDebugMode() {
@@ -264,32 +278,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 const SizedBox(height: 16),
                               ],
 
-                              // ── Email Field ───────────────────────────────
-                              AppTextField(
-                                label: _isDebugMode ? 'Test Email' : null,
-                                hintText:
-                                    _isDebugMode
-                                        ? 'test@smivo.dev'
-                                        : 'username',
-                                suffixText: _isDebugMode ? null : (_selectedSchool != null ? '@${_selectedSchool!.emailDomain}' : '@edu'),
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                validator:
-                                    _isDebugMode
-                                        ? Validators.eduEmail
-                                        : Validators.emailPrefix,
-                              ),
-                              const SizedBox(height: 16),
+                              // ── Email + Password (AutofillGroup for iOS Keychain) ──
+                              AutofillGroup(
+                                child: Column(
+                                  children: [
+                                    // ── Email Field ─────────────────────────────
+                                    AppTextField(
+                                      label: _isDebugMode ? 'Test Email' : null,
+                                      hintText:
+                                          _isDebugMode
+                                              ? 'test@smivo.dev'
+                                              : 'username',
+                                      suffixText:
+                                          _isDebugMode
+                                              ? null
+                                              : (_selectedSchool != null
+                                                  ? '@${_selectedSchool!.emailDomain}'
+                                                  : '@edu'),
+                                      controller: _emailController,
+                                      keyboardType: TextInputType.emailAddress,
+                                      validator:
+                                          _isDebugMode
+                                              ? Validators.eduEmail
+                                              : Validators.emailPrefix,
+                                      // NOTE: username hint maps to the email
+                                      // prefix field; iOS Keychain stores the
+                                      // full email but fills only the prefix.
+                                      autofillHints: const [
+                                        AutofillHints.username,
+                                        AutofillHints.email,
+                                      ],
+                                      textInputAction: TextInputAction.next,
+                                    ),
+                                    const SizedBox(height: 16),
 
-                              // ── Password Field ────────────────────────────
-                              AppTextField(
-                                hintText: '••••••••',
-                                controller: _passwordController,
-                                obscureText: true,
-                                prefixIcon: Icon(
-                                  Icons.lock_outline_rounded,
-                                  size: 16,
-                                  color: colors.onSurfaceVariant,
+                                    // ── Password Field ──────────────────────
+                                    AppTextField(
+                                      hintText: '••••••••',
+                                      controller: _passwordController,
+                                      obscureText: true,
+                                      prefixIcon: Icon(
+                                        Icons.lock_outline_rounded,
+                                        size: 16,
+                                        color: colors.onSurfaceVariant,
+                                      ),
+                                      autofillHints: const [
+                                        AutofillHints.password,
+                                      ],
+                                      textInputAction: TextInputAction.done,
+                                      onFieldSubmitted: (_) => _handleLogin(),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 12),

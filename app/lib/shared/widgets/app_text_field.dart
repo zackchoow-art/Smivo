@@ -17,6 +17,10 @@ class AppTextField extends StatelessWidget {
     this.headerAction,
     this.initialValue,
     this.enabled = true,
+    // iOS Keychain / autofill support
+    this.autofillHints,
+    this.textInputAction,
+    this.onFieldSubmitted,
   });
 
   final String? label;
@@ -32,6 +36,15 @@ class AppTextField extends StatelessWidget {
   final Widget? headerAction;
   final String? initialValue;
   final bool enabled;
+
+  /// Pass [AutofillHints.username], [AutofillHints.password], etc.
+  /// to enable iOS Keychain / Android Autofill save & fill.
+  final Iterable<String>? autofillHints;
+
+  /// Controls the keyboard action button (next / done / go).
+  final TextInputAction? textInputAction;
+
+  final void Function(String)? onFieldSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +69,7 @@ class AppTextField extends StatelessWidget {
               if (headerAction != null) headerAction!,
             ],
           ),
-        if (label != null || headerAction != null)
-          const SizedBox(height: 8),
+        if (label != null || headerAction != null) const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           initialValue: initialValue,
@@ -66,6 +78,9 @@ class AppTextField extends StatelessWidget {
           keyboardType: keyboardType,
           validator: validator,
           onChanged: onChanged,
+          autofillHints: autofillHints,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onFieldSubmitted,
           style: typo.bodyMedium,
           decoration: InputDecoration(
             hintText: hintText,
