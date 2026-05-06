@@ -18,6 +18,14 @@ import 'package:smivo/data/repositories/feedback_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:uuid/uuid.dart';
 
+/// Global navigator key so BetterFeedback callbacks (which run outside the
+/// MaterialApp widget tree) can access ScaffoldMessenger correctly.
+///
+/// NOTE: BetterFeedback wraps MaterialApp, meaning its callback context has
+/// no ScaffoldMessenger ancestor. We retrieve the navigator key from GoRouter
+/// directly (routerDelegate.navigatorKey) rather than injecting a custom key.
+// Intentionally not using a custom key here — see _showSnackBar() for pattern.
+
 /// Root application widget.
 ///
 /// Uses MaterialApp.router with GoRouter for declarative navigation.
@@ -42,7 +50,7 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
 
   Future<void> _initDeepLinks() async {
     _appLinks = AppLinks();
-    
+
     // Check initial link if app was in cold state (terminated)
     try {
       final initialUri = await _appLinks.getInitialLink();
@@ -121,10 +129,25 @@ class _ShakeWrapperState extends ConsumerState<_ShakeWrapper> {
     );
   }
 
+  /// Shows a SnackBar via GoRouter's navigator key.
+  ///
+  /// NOTE: We cannot use ScaffoldMessenger.of(context) here because
+  /// _ShakeWrapper sits OUTSIDE MaterialApp (it wraps it). GoRouter's
+  /// routerDelegate.navigatorKey.currentContext IS inside MaterialApp
+  /// and therefore has a ScaffoldMessenger ancestor.
+  void _showSnackBar(String message) {
+    final navContext =
+        ref.read(routerProvider).routerDelegate.navigatorKey.currentContext;
+    if (navContext == null) return;
+    ScaffoldMessenger.of(navContext).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   void _onShake(ShakeEvent event) {
     // Prevent multiple triggers if feedback panel is already visible.
-    // Typing on the keyboard can sometimes cause micro-shakes that trigger this
-    // again while the panel is open, corrupting the transform matrix (causing the app to be stuck shifted to bottom right).
+    // Typing on the keyboard can sometimes cause micro-shakes that trigger
+    // again while the panel is open, corrupting the transform matrix.
     if (BetterFeedback.of(context).isVisible) {
       return;
     }
@@ -134,11 +157,7 @@ class _ShakeWrapperState extends ConsumerState<_ShakeWrapper> {
       try {
         final authUser = ref.read(authStateProvider).value;
         if (authUser == null) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Please log in to submit feedback.')),
-            );
-          }
+          _showSnackBar('Please log in to submit feedback.');
           return;
         }
 
@@ -165,22 +184,20 @@ class _ShakeWrapperState extends ConsumerState<_ShakeWrapper> {
           userId: authUser.id,
           type: 'bug',
           title: 'Shake Feedback',
-          description: feedback.text.isEmpty ? 'Screenshot attached' : feedback.text,
+          description:
+              feedback.text.isEmpty ? 'Screenshot attached' : feedback.text,
           screenshotUrl: url,
         );
 
+        // Close the feedback panel after successful submission
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Feedback submitted successfully! Thank you!')),
-          );
+          BetterFeedback.of(context).hide();
         }
+
+        _showSnackBar('Feedback submitted! Thank you 🙌');
       } catch (e) {
         debugPrint('Error submitting feedback: $e');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to submit feedback. Please try again.')),
-          );
-        }
+        _showSnackBar('Failed to submit feedback. Please try again.');
       }
     });
   }
