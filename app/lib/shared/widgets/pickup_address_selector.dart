@@ -10,7 +10,7 @@ import 'package:smivo/features/shared/providers/school_provider.dart';
 // ── Sentinel value used to signal "Specify Address" selection ─────────────────
 const _kSpecifyKey = '__specify__';
 
-/// A structured address dropdown for listing creation / editing.
+/// A structured address dropdown for listing creation / editing / buyer changes.
 ///
 /// Dropdown structure (in order):
 ///   1. School preset locations  (from [myPickupLocationsProvider])
@@ -20,14 +20,16 @@ const _kSpecifyKey = '__specify__';
 /// Behaviour:
 /// - Defaults to last used item ([lastPickupLocationIdProvider]) or the
 ///   first item in the list if nothing was saved yet.
-/// - School names are intentionally NOT shown next to addresses so the
-///   widget stays clean for single-campus use and ready for multi-school.
-/// - When "Specify Address" is selected a text field is revealed; on
-///   focus-loss or submit the value is auto-saved to [savedLocationsProvider].
+/// - School names are NOT shown next to addresses — kept for multi-school
+///   readiness; callers display the school name separately.
+/// - When "Specify Address" is selected, a text field is revealed.
+///   Saving occurs ONLY on keyboard submit (Enter / Done) — not on focus-loss.
+///   On submit: deduplication check → save → auto-select the new entry →
+///   hide the text field.
 /// - [onAddressChanged] is called whenever the effective resolved address
-///   string changes (preset name OR custom typed text).
+///   string changes (preset name OR confirmed custom text).
 /// - [onPickupIdChanged] is called with the preset [PickupLocation.id] when
-///   a preset is selected, or null when "Specify Address" is chosen.
+///   a preset is selected, or null when custom text is active.
 class PickupAddressSelector extends ConsumerStatefulWidget {
   const PickupAddressSelector({
     super.key,
@@ -43,11 +45,11 @@ class PickupAddressSelector extends ConsumerStatefulWidget {
   /// Pre-fill the selector with a known preset pickup location ID.
   final String? initialPickupId;
 
-  /// Called whenever the resolved address text changes.
+  /// Called whenever the resolved address text is confirmed.
   final ValueChanged<String>? onAddressChanged;
 
   /// Called whenever the selected preset pickup ID changes.
-  /// Null means "Specify Address" (custom text) is active.
+  /// Null means custom text / "Specify Address" is active.
   final ValueChanged<String?>? onPickupIdChanged;
 
   @override
@@ -59,81 +61,109 @@ class PickupAddressSelectorState
     extends ConsumerState<PickupAddressSelector> {
   // Currently selected dropdown key:
   //   • A PickupLocation.id for presets
-  //   • A saved-address label (prefixed '_custom_') for user custom items
-  //   • _kSpecifyKey for the "Specify Address" row
+  //   • '_custom_' + label  for user custom items
+  //   • _kSpecifyKey  for the "Specify Address" row
   String? _selectedKey;
 
   final _specifyController = TextEditingController();
   final _specifyFocus = FocusNode();
   bool _initialized = false;
+  // Whether the Specify text field is currently visible.
+  bool _showSpecifyField = false;
 
   @override
   void initState() {
     super.initState();
-    _specifyFocus.addListener(_onSpecifyFocusChange);
+    // NOTE: No focus-loss listener — we only save on keyboard submit.
   }
 
   @override
   void dispose() {
     _specifyController.dispose();
-    _specifyFocus.removeListener(_onSpecifyFocusChange);
     _specifyFocus.dispose();
     super.dispose();
   }
 
-  void _onSpecifyFocusChange() {
-    if (!_specifyFocus.hasFocus) {
-      _autoSaveSpecify();
-    }
+  // ── Public API ─────────────────────────────────────────────────────────────
+
+  /// Called by parent before form submission as a safety net.
+  /// Does nothing unless "Specify Address" is visible with non-empty text.
+  void saveIfSpecifying() {
+    if (_showSpecifyField) _onSpecifySubmit(_specifyController.text);
   }
 
-  void _autoSaveSpecify() {
-    final text = _specifyController.text.trim();
+  // ── Callbacks ──────────────────────────────────────────────────────────────
+
+  /// Handles keyboard submit from the Specify field.
+  /// 1. Trim input.
+  /// 2. Deduplicate against current custom list.
+  /// 3. Save if new, then select & notify.
+  /// 4. Hide the text field.
+  Future<void> _onSpecifySubmit(String rawValue) async {
+    final text = rawValue.trim();
     if (text.isEmpty) return;
-    ref.read(savedLocationsProvider.notifier).save(text);
-    widget.onAddressChanged?.call(text);
-  }
 
-  /// Public API: force-save the current specify field value.
-  /// Call this before form submission as a safety net.
-  void saveIfSpecifying() => _autoSaveSpecify();
+    final customs =
+        ref.read(savedLocationsProvider).value ?? <String>[];
 
-  /// Public API: return the currently resolved address string.
-  String get currentAddress {
-    if (_selectedKey == _kSpecifyKey || _selectedKey == null) {
-      return _specifyController.text.trim();
+    // Check for duplicates (case-insensitive).
+    final isDuplicate = customs
+        .any((c) => c.toLowerCase() == text.toLowerCase());
+
+    if (!isDuplicate) {
+      // Persist new entry.
+      await ref.read(savedLocationsProvider.notifier).save(text);
+      // Wait for provider to refresh so the new entry appears in the list.
+      await ref.read(savedLocationsProvider.future);
     }
-    // Could be a preset ID or a custom label.
-    return _selectedKey!.startsWith('_custom_')
-        ? _selectedKey!.substring('_custom_'.length)
-        : _selectedKey!; // caller resolves preset name via ID
+
+    // Auto-select the address (use canonical casing from saved list when dup).
+    final canonical = isDuplicate
+        ? customs.firstWhere((c) => c.toLowerCase() == text.toLowerCase())
+        : text;
+
+    widget.onPickupIdChanged?.call(null);
+    widget.onAddressChanged?.call(canonical);
+
+    setState(() {
+      _selectedKey = '_custom_$canonical';
+      _showSpecifyField = false;
+    });
+
+    _specifyController.clear();
   }
 
   void _onDropdownChanged(
     String? key,
     List<PickupLocation> presets,
-    List<String> customs,
   ) {
     if (key == null) return;
-    setState(() => _selectedKey = key);
 
     if (key == _kSpecifyKey) {
+      setState(() {
+        _selectedKey = key;
+        _showSpecifyField = true;
+      });
       widget.onPickupIdChanged?.call(null);
-      // Emit the current specify text immediately if non-empty.
-      final text = _specifyController.text.trim();
-      if (text.isNotEmpty) widget.onAddressChanged?.call(text);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _specifyFocus.requestFocus();
       });
     } else if (key.startsWith('_custom_')) {
-      // Custom address selected — no preset ID.
       final label = key.substring('_custom_'.length);
+      setState(() {
+        _selectedKey = key;
+        _showSpecifyField = false;
+      });
       widget.onPickupIdChanged?.call(null);
       widget.onAddressChanged?.call(label);
-      // Persist last used (we re-use the upsert to bump last_used_at).
+      // Bump last_used_at so this entry stays at the top.
       ref.read(savedLocationsProvider.notifier).save(label);
     } else {
       // Preset selected.
+      setState(() {
+        _selectedKey = key;
+        _showSpecifyField = false;
+      });
       widget.onPickupIdChanged?.call(key);
       final preset = presets.where((p) => p.id == key).firstOrNull;
       if (preset != null) widget.onAddressChanged?.call(preset.name);
@@ -152,17 +182,19 @@ class PickupAddressSelectorState
 
     return presetsAsync.when(
       loading: () => const SizedBox(
-        height: 56,
+        height: 48,
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (e, _) => Text('Failed to load locations: $e'),
+      error: (e, _) =>
+          Text('Failed to load locations: $e', style: typo.bodySmall),
       data: (presets) {
         return customsAsync.when(
           loading: () => const SizedBox(
-            height: 56,
+            height: 48,
             child: Center(child: CircularProgressIndicator()),
           ),
-          error: (_, __) => _buildDropdown(context, presets, [], colors, typo, radius),
+          error: (_, __) =>
+              _buildDropdown(context, presets, [], colors, typo, radius),
           data: (customs) =>
               _buildDropdown(context, presets, customs, colors, typo, radius),
         );
@@ -178,23 +210,18 @@ class PickupAddressSelectorState
     dynamic typo,
     dynamic radius,
   ) {
-    // ── One-time initialisation: determine default selection ──────────────────
+    // ── One-time initialisation ───────────────────────────────────────────────
     if (!_initialized) {
       _initialized = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _initializeSelection(presets, customs);
+        if (mounted) _initializeSelection(presets, customs);
       });
     }
 
-    // Determine if "Specify Address" is currently active.
-    final isSpecify =
-        _selectedKey == null || _selectedKey == _kSpecifyKey;
-
-    // Build dropdown items ────────────────────────────────────────────────────
+    // ── Build dropdown items ──────────────────────────────────────────────────
     final items = <DropdownMenuItem<String>>[];
 
-    // Group 1: School presets (excluding any 'other' sentinel rows from DB)
+    // Group 1: School presets
     for (final loc in presets) {
       if (loc.name.toLowerCase().startsWith('other')) continue;
       items.add(
@@ -205,15 +232,16 @@ class PickupAddressSelectorState
       );
     }
 
-    // Divider between groups — only shown when both groups are non-empty
+    // Thin divider between presets and custom addresses.
     if (items.isNotEmpty && customs.isNotEmpty) {
       items.add(
         DropdownMenuItem<String>(
           value: '_divider_',
           enabled: false,
-          child: Divider(
-            color: colors.outlineVariant,
+          // NOTE: height=1 + zero padding keeps the divider visually thin.
+          child: SizedBox(
             height: 1,
+            child: Divider(color: colors.outlineVariant, height: 1),
           ),
         ),
       );
@@ -226,11 +254,7 @@ class PickupAddressSelectorState
           value: '_custom_$addr',
           child: Row(
             children: [
-              Icon(
-                Icons.history,
-                size: 14,
-                color: colors.onSurfaceVariant,
-              ),
+              Icon(Icons.history, size: 13, color: colors.onSurfaceVariant),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -245,13 +269,16 @@ class PickupAddressSelectorState
       );
     }
 
-    // Divider before "Specify Address"
+    // Thin divider before "Specify Address".
     if (items.isNotEmpty) {
       items.add(
         DropdownMenuItem<String>(
           value: '_divider2_',
           enabled: false,
-          child: Divider(color: colors.outlineVariant, height: 1),
+          child: SizedBox(
+            height: 1,
+            child: Divider(color: colors.outlineVariant, height: 1),
+          ),
         ),
       );
     }
@@ -263,7 +290,7 @@ class PickupAddressSelectorState
         child: Row(
           children: [
             Icon(Icons.edit_location_alt_outlined,
-                size: 16, color: colors.primary),
+                size: 15, color: colors.primary),
             const SizedBox(width: 6),
             Text(
               'Specify Address',
@@ -274,7 +301,7 @@ class PickupAddressSelectorState
       ),
     );
 
-    // Resolve the current dropdown value — must be a valid key in items.
+    // Resolve the current dropdown value — must be a valid key.
     final validKeys = items
         .where((i) => i.enabled != false)
         .map((i) => i.value)
@@ -287,7 +314,7 @@ class PickupAddressSelectorState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Main Dropdown ──────────────────────────────────────────────────
+        // ── Main Dropdown ────────────────────────────────────────────────────
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
@@ -300,34 +327,38 @@ class PickupAddressSelectorState
               isExpanded: true,
               hint: Text(
                 'Select pickup location',
-                style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+                style: typo.bodyMedium
+                    .copyWith(color: colors.onSurfaceVariant),
               ),
-              icon: Icon(Icons.arrow_drop_down, color: colors.onSurfaceVariant),
+              icon:
+                  Icon(Icons.arrow_drop_down, color: colors.onSurfaceVariant),
               style: typo.bodyMedium.copyWith(color: colors.onSurface),
-              onChanged: (key) => _onDropdownChanged(key, presets, customs),
+              onChanged: (key) => _onDropdownChanged(key, presets),
               items: items,
             ),
           ),
         ),
 
-        // ── Specify Address text field (shown when isSpecify) ─────────────
-        if (isSpecify) ...[
+        // ── Specify Address text field ────────────────────────────────────────
+        if (_showSpecifyField) ...[
           const SizedBox(height: 10),
           TextField(
             controller: _specifyController,
             focusNode: _specifyFocus,
             textInputAction: TextInputAction.done,
             style: typo.bodyMedium.copyWith(color: colors.onSurface),
-            onChanged: (v) => widget.onAddressChanged?.call(v.trim()),
-            onSubmitted: (_) => _autoSaveSpecify(),
+            // NOTE: No onChanged notification — we only notify on confirmed submit.
+            onSubmitted: _onSpecifySubmit,
             decoration: InputDecoration(
               hintText: 'Type a specific meeting spot…',
               hintStyle:
                   typo.bodyMedium.copyWith(color: colors.onSurfaceVariant),
               filled: true,
               fillColor: colors.surfaceContainerLow,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(radius.input),
                 borderSide: BorderSide.none,
@@ -353,59 +384,68 @@ class PickupAddressSelectorState
     List<PickupLocation> presets,
     List<String> customs,
   ) {
+    // NOTE: Strict priority order. Each branch returns immediately so only
+    // the highest-priority match sets the state.
+
     // 1. Honour explicit initialPickupId (edit-listing mode).
     if (widget.initialPickupId != null) {
       final match =
           presets.where((p) => p.id == widget.initialPickupId).firstOrNull;
       if (match != null) {
         setState(() => _selectedKey = match.id);
-        return;
-      }
-    }
-
-    // 2. Honour initialAddress that matches a custom saved entry.
-    if (widget.initialAddress != null) {
-      final customMatch =
-          customs.where((c) => c == widget.initialAddress).firstOrNull;
-      if (customMatch != null) {
-        setState(() => _selectedKey = '_custom_$customMatch');
-        return;
-      }
-      // 3. Initial address provided but not in history → show specify field.
-      setState(() {
-        _selectedKey = _kSpecifyKey;
-        _specifyController.text = widget.initialAddress!;
-      });
-      return;
-    }
-
-    // 4. Use last-used preset ID from SharedPreferences.
-    final lastId = ref.read(lastPickupLocationIdProvider);
-    if (lastId != null) {
-      final match = presets.where((p) => p.id == lastId).firstOrNull;
-      if (match != null) {
-        setState(() => _selectedKey = match.id);
         widget.onPickupIdChanged?.call(match.id);
         widget.onAddressChanged?.call(match.name);
         return;
       }
-      // Last used was a custom — check customs list.
-      if (customs.isNotEmpty) {
-        // lastId may be a label stored as lastPickupLocationId (old behaviour);
-        // try matching by label.
-        final customMatch = customs.where((c) => c == lastId).firstOrNull;
-        if (customMatch != null) {
-          setState(() => _selectedKey = '_custom_$customMatch');
-          widget.onPickupIdChanged?.call(null);
-          widget.onAddressChanged?.call(customMatch);
-          return;
-        }
+    }
+
+    // 2. Honour initialAddress — check if it matches a saved custom entry.
+    if (widget.initialAddress != null && widget.initialAddress!.isNotEmpty) {
+      final customMatch = customs
+          .where((c) => c.toLowerCase() == widget.initialAddress!.toLowerCase())
+          .firstOrNull;
+      if (customMatch != null) {
+        setState(() => _selectedKey = '_custom_$customMatch');
+        widget.onPickupIdChanged?.call(null);
+        widget.onAddressChanged?.call(customMatch);
+        return;
+      }
+      // Initial address provided but not in history → show specify field.
+      setState(() {
+        _selectedKey = _kSpecifyKey;
+        _showSpecifyField = true;
+        _specifyController.text = widget.initialAddress!;
+      });
+      widget.onPickupIdChanged?.call(null);
+      widget.onAddressChanged?.call(widget.initialAddress!);
+      return;
+    }
+
+    // 3. Use last-used preset ID from SharedPreferences.
+    final lastId = ref.read(lastPickupLocationIdProvider);
+    if (lastId != null && lastId.isNotEmpty) {
+      // Try matching as a preset ID.
+      final presetMatch = presets.where((p) => p.id == lastId).firstOrNull;
+      if (presetMatch != null) {
+        setState(() => _selectedKey = presetMatch.id);
+        widget.onPickupIdChanged?.call(presetMatch.id);
+        widget.onAddressChanged?.call(presetMatch.name);
+        return;
+      }
+      // Try matching as a custom label (legacy storage).
+      final customMatch = customs.where((c) => c == lastId).firstOrNull;
+      if (customMatch != null) {
+        setState(() => _selectedKey = '_custom_$customMatch');
+        widget.onPickupIdChanged?.call(null);
+        widget.onAddressChanged?.call(customMatch);
+        return;
       }
     }
 
-    // 5. Fall back to first available preset.
-    final firstPreset =
-        presets.where((p) => !p.name.toLowerCase().startsWith('other')).firstOrNull;
+    // 4. Fall back to first available preset (excluding 'other' sentinels).
+    final firstPreset = presets
+        .where((p) => !p.name.toLowerCase().startsWith('other'))
+        .firstOrNull;
     if (firstPreset != null) {
       setState(() => _selectedKey = firstPreset.id);
       widget.onPickupIdChanged?.call(firstPreset.id);
@@ -413,7 +453,7 @@ class PickupAddressSelectorState
       return;
     }
 
-    // 6. Fall back to first custom address.
+    // 5. Fall back to first custom address.
     if (customs.isNotEmpty) {
       setState(() => _selectedKey = '_custom_${customs.first}');
       widget.onPickupIdChanged?.call(null);
@@ -421,7 +461,10 @@ class PickupAddressSelectorState
       return;
     }
 
-    // 7. Nothing available → default to "Specify Address".
-    setState(() => _selectedKey = _kSpecifyKey);
+    // 6. Nothing available → default to "Specify Address".
+    setState(() {
+      _selectedKey = _kSpecifyKey;
+      _showSpecifyField = true;
+    });
   }
 }

@@ -432,6 +432,42 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                               color: colors.onSurface,
                                             ),
                                           ),
+                                          // School name for the listing's campus.
+                                          // Displayed separately from address for
+                                          // multi-school readiness.
+                                          Builder(builder: (ctx) {
+                                            final schoolName = activeSchools
+                                                .where((s) =>
+                                                    s.id == listing.schoolId)
+                                                .firstOrNull
+                                                ?.name;
+                                            if (schoolName == null) {
+                                              return const SizedBox.shrink();
+                                            }
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 4),
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.school_outlined,
+                                                    size: 13,
+                                                    color:
+                                                        colors.onSurfaceVariant,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    '校园：$schoolName',
+                                                    style:
+                                                        typo.bodySmall.copyWith(
+                                                      color: colors
+                                                          .onSurfaceVariant,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }),
                                           // ── Buyer address-change section ──
                                           if (listing.allowPickupChange &&
                                               !isOwnListing) ...[
@@ -446,7 +482,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                   Icon(
                                                     _showChangeAddress
                                                         ? Icons.expand_less
-                                                        : Icons.edit_location_alt_outlined,
+                                                        : Icons
+                                                            .edit_location_alt_outlined,
                                                     size: 16,
                                                     color: colors.primary,
                                                   ),
@@ -457,10 +494,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                         : 'Change pickup address',
                                                     style: typo.labelSmall
                                                         .copyWith(
-                                                          color: colors.primary,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
+                                                      color: colors.primary,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -474,10 +511,59 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                 key: _buyerSelectorKey,
                                                 onPickupIdChanged: (id) =>
                                                     setState(() =>
-                                                        _buyerResolvedPickupId = id),
+                                                        _buyerResolvedPickupId =
+                                                            id),
                                                 onAddressChanged: (addr) =>
                                                     setState(() =>
-                                                        _buyerResolvedAddress = addr),
+                                                        _buyerResolvedAddress =
+                                                            addr),
+                                              ),
+                                              // Buyer's school name — shown below
+                                              // the address selector they chose.
+                                              Consumer(
+                                                builder: (ctx2, ref2, _) {
+                                                  final schoolAsync = ref2
+                                                      .watch(mySchoolProvider);
+                                                  return schoolAsync.when(
+                                                    loading: () =>
+                                                        const SizedBox.shrink(),
+                                                    error: (_, __) =>
+                                                        const SizedBox.shrink(),
+                                                    data: (school) {
+                                                      if (school == null) {
+                                                        return const SizedBox
+                                                            .shrink();
+                                                      }
+                                                      return Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(top: 6),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .school_outlined,
+                                                              size: 13,
+                                                              color: colors
+                                                                  .onSurfaceVariant,
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 4),
+                                                            Text(
+                                                              '校园：${school.name}',
+                                                              style: typo
+                                                                  .bodySmall
+                                                                  .copyWith(
+                                                                color: colors
+                                                                    .onSurfaceVariant,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
                                               ),
                                             ],
                                           ],
@@ -1086,23 +1172,58 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                     }
                                                     try {
                                                       // NOTE: Buyer address-change priority:
-                                                      // 1. Buyer resolved address from PickupAddressSelector
-                                                      //    (typed custom text OR preset name via callback)
-                                                      // 2. Listing's original pickup location as fallback
-                                                      final effectivePickupId =
-                                                          _buyerResolvedPickupId ??
-                                                          listing.pickupLocationId;
-                                                      final effectivePickupName =
-                                                          (_buyerResolvedAddress != null &&
-                                                              _buyerResolvedAddress!.isNotEmpty)
-                                                          ? _buyerResolvedAddress!
-                                                          : (listing.customPickupNote ??
-                                                             listing.pickupLocation?.name ??
-                                                             'Unknown Address');
-                                                      final schoolName = activeSchools
-                                                          .where((s) => s.id == listing.schoolId)
-                                                          .firstOrNull?.name ?? 'Unknown School';
+                                                      // 1. If buyer changed address: use buyer-selected address
+                                                      //    + buyer's school name (text snapshot).
+                                                      // 2. Otherwise: use listing's address + listing's school.
+                                                      // Both values are snapshotted as text fields in the order.
+                                                      final buyerChangedAddress =
+                                                          _showChangeAddress &&
+                                                          _buyerResolvedAddress !=
+                                                              null &&
+                                                          _buyerResolvedAddress!
+                                                              .isNotEmpty;
 
+                                                      final effectivePickupId =
+                                                          buyerChangedAddress
+                                                          ? _buyerResolvedPickupId
+                                                          : listing
+                                                              .pickupLocationId;
+
+                                                      final effectivePickupName =
+                                                          buyerChangedAddress
+                                                          ? _buyerResolvedAddress!
+                                                          : (listing
+                                                                  .customPickupNote ??
+                                                              listing
+                                                                  .pickupLocation
+                                                                  ?.name ??
+                                                              'Unknown Address');
+
+                                                      // Write buyer's school when address changed,
+                                                      // otherwise write the listing's school.
+                                                      final String schoolName;
+                                                      if (buyerChangedAddress) {
+                                                        final buyerSchool =
+                                                            ref
+                                                                .read(
+                                                                  mySchoolProvider,
+                                                                )
+                                                                .value;
+                                                        schoolName =
+                                                            buyerSchool?.name ??
+                                                            'Unknown School';
+                                                      } else {
+                                                        schoolName = activeSchools
+                                                            .where(
+                                                              (s) =>
+                                                                  s.id ==
+                                                                  listing
+                                                                      .schoolId,
+                                                            )
+                                                            .firstOrNull
+                                                            ?.name ??
+                                                            'Unknown School';
+                                                      }
 
                                                       await ref
                                                           .read(

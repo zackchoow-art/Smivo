@@ -4,16 +4,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/listing/providers/saved_location_provider.dart';
 
-/// Inline section on the Profile page for managing custom pickup addresses.
+/// Collapsible section on the Profile / Edit Profile page for managing
+/// custom pickup addresses.
 ///
-/// Displays the user's saved address list with Add / Edit / Delete actions.
-/// All operations go through [savedLocationsProvider], which persists to the
-/// `user_saved_locations` database table via [SavedLocationRepository].
-class AddressManagementSection extends ConsumerWidget {
+/// - Tap the header to expand / collapse.
+/// - Add / Edit: opens an inline AlertDialog.
+/// - Delete: first tap turns the icon red (pending confirmation);
+///   second tap executes the delete. Tapping elsewhere cancels.
+class AddressManagementSection extends ConsumerStatefulWidget {
   const AddressManagementSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AddressManagementSection> createState() =>
+      _AddressManagementSectionState();
+}
+
+class _AddressManagementSectionState
+    extends ConsumerState<AddressManagementSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
@@ -22,7 +33,6 @@ class AddressManagementSection extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(radius.xl),
@@ -35,184 +45,231 @@ class AddressManagementSection extends ConsumerWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Section header ────────────────────────────────────────────────
-          Row(
-            children: [
-              Icon(
-                Icons.location_on_outlined,
-                color: colors.settingsIcon,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Saved Addresses',
-                  style: typo.titleMedium.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colors.onSurface,
-                  ),
-                ),
-              ),
-              // Add button
-              IconButton(
-                icon: Icon(Icons.add_circle_outline, color: colors.primary),
-                tooltip: 'Add new address',
-                onPressed: () => _showEditDialog(context, ref, null),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'These addresses appear as quick-select options when you post a listing.',
-            style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
-          ),
-          const SizedBox(height: 16),
-
-          // ── Address list ──────────────────────────────────────────────────
-          savedAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text(
-              'Failed to load addresses: $e',
-              style: typo.bodySmall.copyWith(color: colors.error),
+          // ── Collapsible header ──────────────────────────────────────────────
+          InkWell(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(radius.xl),
+              bottom: _expanded
+                  ? Radius.zero
+                  : Radius.circular(radius.xl),
             ),
-            data: (saved) {
-              if (saved.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'No saved addresses yet. Tap + to add one.',
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.location_on_outlined,
+                    color: colors.settingsIcon,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Saved Addresses',
+                      style: typo.titleMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.onSurface,
+                      ),
+                    ),
+                  ),
+                  // Add button — only visible when expanded
+                  if (_expanded)
+                    IconButton(
+                      icon: Icon(
+                        Icons.add_circle_outline,
+                        color: colors.primary,
+                        size: 20,
+                      ),
+                      tooltip: 'Add new address',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () =>
+                          _showEditDialog(context, existing: null),
+                    ),
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: colors.onSurfaceVariant,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Expanded body ───────────────────────────────────────────────────
+          if (_expanded) ...[
+            Divider(
+              color: colors.outlineVariant,
+              height: 1,
+              indent: 20,
+              endIndent: 20,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  Text(
+                    'These addresses appear as quick-select options when you post a listing.',
                     style: typo.bodySmall
                         .copyWith(color: colors.onSurfaceVariant),
                   ),
-                );
-              }
-
-              return Column(
-                children: saved.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  final addr = entry.value;
-                  final isLast = idx == saved.length - 1;
-
-                  return Column(
-                    children: [
-                      _AddressRow(
-                        address: addr,
-                        onEdit: () =>
-                            _showEditDialog(context, ref, addr),
-                        onDelete: () =>
-                            _showDeleteConfirm(context, ref, addr),
-                      ),
-                      if (!isLast)
-                        Divider(
-                          color: colors.outlineVariant,
-                          height: 1,
-                          indent: 0,
-                        ),
-                    ],
-                  );
-                }).toList(),
-              );
-            },
-          ),
+                  const SizedBox(height: 12),
+                  savedAsync.when(
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                    error: (e, _) => Text(
+                      'Failed to load addresses: $e',
+                      style:
+                          typo.bodySmall.copyWith(color: colors.error),
+                    ),
+                    data: (saved) {
+                      if (saved.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            'No saved addresses yet. Tap + to add one.',
+                            style: typo.bodySmall.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        );
+                      }
+                      return Column(
+                        children: saved.asMap().entries.map((entry) {
+                          final idx = entry.key;
+                          final addr = entry.value;
+                          final isLast = idx == saved.length - 1;
+                          return Column(
+                            children: [
+                              _AddressRow(
+                                address: addr,
+                                onEdit: () => _showEditDialog(
+                                  context,
+                                  existing: addr,
+                                ),
+                                onDeleteConfirmed: () => ref
+                                    .read(savedLocationsProvider.notifier)
+                                    .delete(addr),
+                              ),
+                              if (!isLast)
+                                Divider(
+                                  color: colors.outlineVariant,
+                                  height: 1,
+                                ),
+                            ],
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  // ── Dialogs ────────────────────────────────────────────────────────────────
+  // ── Helpers ─────────────────────────────────────────────────────────────────
 
-  /// Opens an edit dialog. If [existing] is null it's in add mode.
-  void _showEditDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String? existing,
-  ) {
+  void _showEditDialog(BuildContext context, {required String? existing}) {
     showDialog<void>(
       context: context,
       builder: (ctx) => _AddressEditDialog(existing: existing),
     );
   }
-
-  void _showDeleteConfirm(
-    BuildContext context,
-    WidgetRef ref,
-    String address,
-  ) {
-    final colors = context.smivoColors;
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Address'),
-        content: Text('Remove "$address" from your saved addresses?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: colors.error),
-            onPressed: () {
-              ref.read(savedLocationsProvider.notifier).delete(address);
-              Navigator.pop(ctx);
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// ── Row widget ──────────────────────────────────────────────────────────────
+// ── Address row with inline two-tap delete confirmation ─────────────────────
 
-class _AddressRow extends ConsumerWidget {
+class _AddressRow extends ConsumerStatefulWidget {
   const _AddressRow({
     required this.address,
     required this.onEdit,
-    required this.onDelete,
+    required this.onDeleteConfirmed,
   });
 
   final String address;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback onDeleteConfirmed;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_AddressRow> createState() => _AddressRowState();
+}
+
+class _AddressRowState extends ConsumerState<_AddressRow> {
+  /// Whether the user has tapped delete once (pending confirmation).
+  bool _pendingDelete = false;
+
+  @override
+  Widget build(BuildContext context) {
     final typo = context.smivoTypo;
     final colors = context.smivoColors;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(
-            Icons.place_outlined,
-            size: 16,
-            color: colors.onSurfaceVariant,
-          ),
+          Icon(Icons.place_outlined, size: 15, color: colors.onSurfaceVariant),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              address,
+              widget.address,
               style: typo.bodyMedium.copyWith(color: colors.onSurface),
             ),
           ),
-          IconButton(
-            icon: Icon(Icons.edit_outlined,
-                size: 18, color: colors.onSurfaceVariant),
-            tooltip: 'Edit',
-            visualDensity: VisualDensity.compact,
-            onPressed: onEdit,
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_outline,
-                size: 18, color: colors.onSurfaceVariant),
-            tooltip: 'Delete',
-            visualDensity: VisualDensity.compact,
-            onPressed: onDelete,
-          ),
+
+          // Edit button — hidden during pending-delete to avoid accidents.
+          if (!_pendingDelete)
+            IconButton(
+              icon: Icon(Icons.edit_outlined,
+                  size: 17, color: colors.onSurfaceVariant),
+              tooltip: 'Edit',
+              visualDensity: VisualDensity.compact,
+              onPressed: widget.onEdit,
+            ),
+
+          // Delete / Confirm delete button (two-tap pattern).
+          _pendingDelete
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Cancel
+                    IconButton(
+                      icon: Icon(Icons.close,
+                          size: 17, color: colors.onSurfaceVariant),
+                      tooltip: 'Cancel',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () =>
+                          setState(() => _pendingDelete = false),
+                    ),
+                    // Confirm
+                    IconButton(
+                      icon: Icon(Icons.check,
+                          size: 17, color: colors.error),
+                      tooltip: 'Confirm delete',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () {
+                        setState(() => _pendingDelete = false);
+                        widget.onDeleteConfirmed();
+                      },
+                    ),
+                  ],
+                )
+              : IconButton(
+                  icon: Icon(Icons.delete_outline,
+                      size: 17, color: colors.onSurfaceVariant),
+                  tooltip: 'Delete',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => setState(() => _pendingDelete = true),
+                ),
         ],
       ),
     );
