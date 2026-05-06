@@ -28,6 +28,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/data/repositories/moderation_repository.dart';
 import 'package:smivo/shared/widgets/report_dialog.dart';
+import 'package:smivo/shared/widgets/address_combobox.dart';
+import 'package:smivo/core/providers/preferences_provider.dart';
 
 /// Resolves a condition slug to a display label.
 /// Accepts an optional conditions list from DB for dynamic lookup.
@@ -63,7 +65,18 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
-  String? _selectedPickupLocationId;
+  // State for the buyer's address change section.
+  String? _buyerSelectedPickupId;
+  final _changeAddressController = TextEditingController();
+  final GlobalKey<AddressComboBoxState> _changeAddressComboKey =
+      GlobalKey<AddressComboBoxState>();
+  bool _showChangeAddress = false;
+
+  @override
+  void dispose() {
+    _changeAddressController.dispose();
+    super.dispose();
+  }
 
   Future<void> _showOrderSuccessDialog(BuildContext context) {
     return showDialog(
@@ -385,7 +398,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                   ],
                                   const SizedBox(height: 24),
                                 ],
-                                // Pickup Location Selector
+                                // ── Pickup Location Section ──────────────────
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -399,163 +412,215 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'PICKUP LOCATION',
-                                                style: typo.labelSmall.copyWith(
-                                                  color: colors.onSurface
-                                                      .withValues(alpha: 0.5),
-                                                  letterSpacing: 0.5,
-                                                ),
+                                          Text(
+                                            'PICKUP LOCATION',
+                                            style: typo.labelSmall.copyWith(
+                                              color: colors.onSurface
+                                                  .withValues(alpha: 0.5),
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          // Display the listing's address as plain text.
+                                          // Prefer customPickupNote (free-text address);
+                                          // fall back to the preset location name.
+                                          Text(
+                                            listing.customPickupNote ??
+                                                listing.pickupLocation?.name ??
+                                                'Not specified',
+                                            style: typo.bodyLarge.copyWith(
+                                              color: colors.onSurface,
+                                            ),
+                                          ),
+                                          // ── Buyer address-change section ──
+                                          if (listing.allowPickupChange &&
+                                              !isOwnListing) ...[
+                                            const SizedBox(height: 12),
+                                            GestureDetector(
+                                              onTap: () => setState(
+                                                () => _showChangeAddress =
+                                                    !_showChangeAddress,
                                               ),
-                                              if (listing.allowPickupChange &&
-                                                  !isOwnListing)
-                                                GestureDetector(
-                                                  onTap: () {},
-                                                  child: Text(
-                                                    'Change Location',
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    _showChangeAddress
+                                                        ? Icons.expand_less
+                                                        : Icons.edit_location_alt_outlined,
+                                                    size: 16,
+                                                    color: colors.primary,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    _showChangeAddress
+                                                        ? 'Cancel address change'
+                                                        : 'Change pickup address',
                                                     style: typo.labelSmall
                                                         .copyWith(
                                                           color: colors.primary,
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          decoration:
-                                                              TextDecoration
-                                                                  .underline,
                                                         ),
                                                   ),
-                                                ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
+                                                ],
+                                              ),
                                             ),
-                                            decoration: BoxDecoration(
-                                              color: colors.surfaceContainerLow,
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    radius.input,
-                                                  ),
-                                            ),
-                                            child:
-                                                !listing.allowPickupChange ||
-                                                        isOwnListing
-                                                    ? Container(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      height: 48,
-                                                      child: Text(
-                                                        listing.pickupLocation?.name != null
-                                                              ? '${listing.pickupLocation!.name}, ${activeSchools.where((s) => s.id == listing.schoolId).firstOrNull?.name ?? 'Unknown'}'
-                                                              : 'Not specified',
-                                                        style: typo.titleMedium
-                                                            .copyWith(
-                                                              color:
-                                                                  colors
-                                                                      .onSurface,
+                                            if (_showChangeAddress) ...[
+                                              const SizedBox(height: 12),
+                                              // Preset dropdown
+                                              Consumer(
+                                                builder: (
+                                                  context,
+                                                  ref,
+                                                  _,
+                                                ) {
+                                                  final pickupsAsync = ref
+                                                      .watch(
+                                                        myPickupLocationsProvider,
+                                                      );
+                                                  final savedId = ref.read(
+                                                    lastPickupLocationIdProvider,
+                                                  );
+                                                  return pickupsAsync.when(
+                                                    loading:
+                                                        () =>
+                                                            const SizedBox(
+                                                              height: 48,
+                                                              child: Center(
+                                                                child:
+                                                                    CircularProgressIndicator(),
+                                                              ),
                                                             ),
-                                                      ),
-                                                    )
-                                                    : DropdownButtonHideUnderline(
-                                                      child: Consumer(
-                                                        builder: (
-                                                          context,
-                                                          ref,
-                                                          _,
-                                                        ) {
-                                                          final pickupsAsync =
-                                                              ref.watch(
-                                                                myPickupLocationsProvider,
-                                                              );
-                                                          return pickupsAsync.when(
-                                                            loading:
-                                                                () => const SizedBox(
-                                                                  height: 48,
-                                                                  child: Center(
-                                                                    child:
-                                                                        CircularProgressIndicator(),
-                                                                  ),
-                                                                ),
-                                                            error:
-                                                                (
-                                                                  err,
-                                                                  _,
-                                                                ) => Container(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .centerLeft,
-                                                                  height: 48,
-                                                                  child: Text(
-                                                                    listing.pickupLocation?.name != null
-                                                                        ? '${listing.pickupLocation!.name}, ${activeSchools.where((s) => s.id == listing.schoolId).firstOrNull?.name ?? 'Unknown'}'
-                                                                        : 'Unable to load',
-                                                                    style:
-                                                                        typo.bodyMedium,
-                                                                  ),
-                                                                ),
-                                                            data: (locations) {
-                                                              final selectedId =
-                                                                  _selectedPickupLocationId ??
-                                                                  listing
-                                                                      .pickupLocationId;
-                                                              return DropdownButton<
-                                                                String
-                                                              >(
-                                                                value:
-                                                                    selectedId,
-                                                                isExpanded:
-                                                                    true,
-                                                                icon: Icon(
-                                                                  Icons
-                                                                      .arrow_drop_down,
-                                                                  color:
-                                                                      colors
-                                                                          .primary,
-                                                                ),
-                                                                style: typo
-                                                                    .titleMedium
-                                                                    .copyWith(
-                                                                      color:
-                                                                          colors
-                                                                              .onSurface,
-                                                                    ),
-                                                                onChanged:
-                                                                    (
-                                                                      String?
-                                                                      newId,
-                                                                    ) => setState(
+                                                    error:
+                                                        (_, __) =>
+                                                            const SizedBox
+                                                                .shrink(),
+                                                    data: (locations) {
+                                                      // Auto-select last used
+                                                      // preset if not yet set.
+                                                      if (_buyerSelectedPickupId ==
+                                                          null) {
+                                                        final match = savedId !=
+                                                                null
+                                                            ? locations
+                                                                .where(
+                                                                  (l) =>
+                                                                      l.id ==
+                                                                      savedId,
+                                                                )
+                                                                .firstOrNull
+                                                            : null;
+                                                        if (match != null) {
+                                                          WidgetsBinding
+                                                              .instance
+                                                              .addPostFrameCallback(
+                                                                (_) {
+                                                                  if (mounted) {
+                                                                    setState(
                                                                       () =>
-                                                                          _selectedPickupLocationId =
-                                                                              newId,
-                                                                    ),
-                                                                items:
-                                                                    locations
-                                                                        .map(
-                                                                          (
-                                                                            loc,
-                                                                          ) => DropdownMenuItem<
-                                                                            String
-                                                                          >(
-                                                                            value:
-                                                                                loc.id,
-                                                                            child: Text(
-                                                                              '${loc.name}, ${activeSchools.where((s) => s.id == loc.schoolId).firstOrNull?.name ?? 'Unknown'}',
-                                                                            ),
-                                                                          ),
-                                                                        )
-                                                                        .toList(),
+                                                                          _buyerSelectedPickupId =
+                                                                              match.id,
+                                                                    );
+                                                                  }
+                                                                },
                                                               );
+                                                        }
+                                                      }
+                                                      return Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 12,
+                                                        ),
+                                                        decoration: BoxDecoration(
+                                                          color: colors
+                                                              .surfaceContainerLow,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                            radius.input,
+                                                          ),
+                                                        ),
+                                                        child:
+                                                            DropdownButtonHideUnderline(
+                                                          child:
+                                                              DropdownButton<
+                                                            String
+                                                          >(
+                                                            value:
+                                                                _buyerSelectedPickupId,
+                                                            isExpanded: true,
+                                                            hint: const Text(
+                                                              'Select a preset location',
+                                                            ),
+                                                            icon: Icon(
+                                                              Icons
+                                                                  .arrow_drop_down,
+                                                              color: colors
+                                                                  .onSurfaceVariant,
+                                                            ),
+                                                            style: typo
+                                                                .bodyMedium
+                                                                .copyWith(
+                                                              color: colors
+                                                                  .onSurface,
+                                                            ),
+                                                            onChanged: (v) {
+                                                              setState(
+                                                                () =>
+                                                                    _buyerSelectedPickupId =
+                                                                        v,
+                                                              );
+                                                              if (v != null) {
+                                                                ref
+                                                                    .read(
+                                                                      lastPickupLocationIdProvider
+                                                                          .notifier,
+                                                                    )
+                                                                    .save(v);
+                                                              }
                                                             },
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                          ),
+                                                            items: locations
+                                                                .map(
+                                                                  (loc) =>
+                                                                      DropdownMenuItem<
+                                                                    String
+                                                                  >(
+                                                                    value:
+                                                                        loc.id,
+                                                                    child: Text(
+                                                                      loc.name
+                                                                              .toLowerCase()
+                                                                              .startsWith(
+                                                                                'other',
+                                                                              )
+                                                                          ? 'Specify Address'
+                                                                          : '${loc.name}, ${activeSchools.where((s) => s.id == loc.schoolId).firstOrNull?.name ?? 'Unknown'}',
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                                .toList(),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                              const SizedBox(height: 8),
+                                              // Custom address combobox
+                                              AddressComboBox(
+                                                key: _changeAddressComboKey,
+                                                controller:
+                                                    _changeAddressController,
+                                                hintText:
+                                                    'Or type a custom address...',
+                                                onChanged: (_) => setState(
+                                                  () {},
+                                                ),
+                                              ),
+                                            ],
+                                          ],
                                         ],
                                       ),
                                     ),
@@ -1160,14 +1225,28 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                           listing.price;
                                                     }
                                                     try {
+                                                      // NOTE: Buyer address-change priority:
+                                                      // 1. Custom text typed in AddressComboBox
+                                                      // 2. Preset location selected from dropdown
+                                                      // 3. Listing's original pickup location
+                                                      final buyerCustomText =
+                                                          _changeAddressController
+                                                              .text
+                                                              .trim();
                                                       final effectivePickupId =
-                                                          _selectedPickupLocationId ??
-                                                          listing
-                                                              .pickupLocationId;
+                                                          buyerCustomText
+                                                                  .isNotEmpty
+                                                              ? null
+                                                              : (_buyerSelectedPickupId ??
+                                                                  listing
+                                                                      .pickupLocationId);
                                                       final pickups = ref.read(myPickupLocationsProvider).value ?? [];
                                                       final selectedPickup = pickups.where((p) => p.id == effectivePickupId).firstOrNull;
-                                                      final effectivePickupName = selectedPickup?.name ?? listing.pickupLocation?.name ?? 'Unknown Address';
+                                                      final effectivePickupName = buyerCustomText.isNotEmpty
+                                                          ? buyerCustomText
+                                                          : selectedPickup?.name ?? listing.customPickupNote ?? listing.pickupLocation?.name ?? 'Unknown Address';
                                                       final schoolName = activeSchools.where((s) => s.id == listing.schoolId).firstOrNull?.name ?? 'Unknown School';
+
 
                                                       await ref
                                                           .read(
