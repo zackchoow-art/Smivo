@@ -28,8 +28,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/data/repositories/moderation_repository.dart';
 import 'package:smivo/shared/widgets/report_dialog.dart';
-import 'package:smivo/shared/widgets/address_combobox.dart';
-import 'package:smivo/core/providers/preferences_provider.dart';
+import 'package:smivo/shared/widgets/pickup_address_selector.dart';
+
 
 /// Resolves a condition slug to a display label.
 /// Accepts an optional conditions list from DB for dynamic lookup.
@@ -66,15 +66,15 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
 
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   // State for the buyer's address change section.
-  String? _buyerSelectedPickupId;
-  final _changeAddressController = TextEditingController();
-  final GlobalKey<AddressComboBoxState> _changeAddressComboKey =
-      GlobalKey<AddressComboBoxState>();
+  String? _buyerResolvedAddress;  // The address the buyer typed or selected
+  String? _buyerResolvedPickupId; // null = custom text
+  final GlobalKey<PickupAddressSelectorState> _buyerSelectorKey =
+      GlobalKey<PickupAddressSelectorState>();
   bool _showChangeAddress = false;
 
   @override
   void dispose() {
-    _changeAddressController.dispose();
+    _buyerSelectorKey.currentState?.saveIfSpecifying();
     super.dispose();
   }
 
@@ -467,157 +467,17 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                             ),
                                             if (_showChangeAddress) ...[
                                               const SizedBox(height: 12),
-                                              // Preset dropdown
-                                              Consumer(
-                                                builder: (
-                                                  context,
-                                                  ref,
-                                                  _,
-                                                ) {
-                                                  final pickupsAsync = ref
-                                                      .watch(
-                                                        myPickupLocationsProvider,
-                                                      );
-                                                  final savedId = ref.read(
-                                                    lastPickupLocationIdProvider,
-                                                  );
-                                                  return pickupsAsync.when(
-                                                    loading:
-                                                        () =>
-                                                            const SizedBox(
-                                                              height: 48,
-                                                              child: Center(
-                                                                child:
-                                                                    CircularProgressIndicator(),
-                                                              ),
-                                                            ),
-                                                    error:
-                                                        (_, __) =>
-                                                            const SizedBox
-                                                                .shrink(),
-                                                    data: (locations) {
-                                                      // Auto-select last used
-                                                      // preset if not yet set.
-                                                      if (_buyerSelectedPickupId ==
-                                                          null) {
-                                                        final match = savedId !=
-                                                                null
-                                                            ? locations
-                                                                .where(
-                                                                  (l) =>
-                                                                      l.id ==
-                                                                      savedId,
-                                                                )
-                                                                .firstOrNull
-                                                            : null;
-                                                        if (match != null) {
-                                                          WidgetsBinding
-                                                              .instance
-                                                              .addPostFrameCallback(
-                                                                (_) {
-                                                                  if (mounted) {
-                                                                    setState(
-                                                                      () =>
-                                                                          _buyerSelectedPickupId =
-                                                                              match.id,
-                                                                    );
-                                                                  }
-                                                                },
-                                                              );
-                                                        }
-                                                      }
-                                                      return Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          horizontal: 12,
-                                                        ),
-                                                        decoration: BoxDecoration(
-                                                          color: colors
-                                                              .surfaceContainerLow,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                            radius.input,
-                                                          ),
-                                                        ),
-                                                        child:
-                                                            DropdownButtonHideUnderline(
-                                                          child:
-                                                              DropdownButton<
-                                                            String
-                                                          >(
-                                                            value:
-                                                                _buyerSelectedPickupId,
-                                                            isExpanded: true,
-                                                            hint: const Text(
-                                                              'Select a preset location',
-                                                            ),
-                                                            icon: Icon(
-                                                              Icons
-                                                                  .arrow_drop_down,
-                                                              color: colors
-                                                                  .onSurfaceVariant,
-                                                            ),
-                                                            style: typo
-                                                                .bodyMedium
-                                                                .copyWith(
-                                                              color: colors
-                                                                  .onSurface,
-                                                            ),
-                                                            onChanged: (v) {
-                                                              setState(
-                                                                () =>
-                                                                    _buyerSelectedPickupId =
-                                                                        v,
-                                                              );
-                                                              if (v != null) {
-                                                                ref
-                                                                    .read(
-                                                                      lastPickupLocationIdProvider
-                                                                          .notifier,
-                                                                    )
-                                                                    .save(v);
-                                                              }
-                                                            },
-                                                            items: locations
-                                                                .map(
-                                                                  (loc) =>
-                                                                      DropdownMenuItem<
-                                                                    String
-                                                                  >(
-                                                                    value:
-                                                                        loc.id,
-                                                                    child: Text(
-                                                                      loc.name
-                                                                              .toLowerCase()
-                                                                              .startsWith(
-                                                                                'other',
-                                                                              )
-                                                                          ? 'Specify Address'
-                                                                          : '${loc.name}, ${activeSchools.where((s) => s.id == loc.schoolId).firstOrNull?.name ?? 'Unknown'}',
-                                                                    ),
-                                                                  ),
-                                                                )
-                                                                .toList(),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                              ),
-                                              const SizedBox(height: 8),
-                                              // Custom address combobox
-                                              AddressComboBox(
-                                                key: _changeAddressComboKey,
-                                                controller:
-                                                    _changeAddressController,
-                                                hintText:
-                                                    'Or type a custom address...',
-                                                onChanged: (_) => setState(
-                                                  () {},
-                                                ),
+                                              // NOTE: PickupAddressSelector
+                                              // handles preset + custom history
+                                              // + 'Specify Address' in one widget.
+                                              PickupAddressSelector(
+                                                key: _buyerSelectorKey,
+                                                onPickupIdChanged: (id) =>
+                                                    setState(() =>
+                                                        _buyerResolvedPickupId = id),
+                                                onAddressChanged: (addr) =>
+                                                    setState(() =>
+                                                        _buyerResolvedAddress = addr),
                                               ),
                                             ],
                                           ],
@@ -1226,26 +1086,22 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                     }
                                                     try {
                                                       // NOTE: Buyer address-change priority:
-                                                      // 1. Custom text typed in AddressComboBox
-                                                      // 2. Preset location selected from dropdown
-                                                      // 3. Listing's original pickup location
-                                                      final buyerCustomText =
-                                                          _changeAddressController
-                                                              .text
-                                                              .trim();
+                                                      // 1. Buyer resolved address from PickupAddressSelector
+                                                      //    (typed custom text OR preset name via callback)
+                                                      // 2. Listing's original pickup location as fallback
                                                       final effectivePickupId =
-                                                          buyerCustomText
-                                                                  .isNotEmpty
-                                                              ? null
-                                                              : (_buyerSelectedPickupId ??
-                                                                  listing
-                                                                      .pickupLocationId);
-                                                      final pickups = ref.read(myPickupLocationsProvider).value ?? [];
-                                                      final selectedPickup = pickups.where((p) => p.id == effectivePickupId).firstOrNull;
-                                                      final effectivePickupName = buyerCustomText.isNotEmpty
-                                                          ? buyerCustomText
-                                                          : selectedPickup?.name ?? listing.customPickupNote ?? listing.pickupLocation?.name ?? 'Unknown Address';
-                                                      final schoolName = activeSchools.where((s) => s.id == listing.schoolId).firstOrNull?.name ?? 'Unknown School';
+                                                          _buyerResolvedPickupId ??
+                                                          listing.pickupLocationId;
+                                                      final effectivePickupName =
+                                                          (_buyerResolvedAddress != null &&
+                                                              _buyerResolvedAddress!.isNotEmpty)
+                                                          ? _buyerResolvedAddress!
+                                                          : (listing.customPickupNote ??
+                                                             listing.pickupLocation?.name ??
+                                                             'Unknown Address');
+                                                      final schoolName = activeSchools
+                                                          .where((s) => s.id == listing.schoolId)
+                                                          .firstOrNull?.name ?? 'Unknown School';
 
 
                                                       await ref

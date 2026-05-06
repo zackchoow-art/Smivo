@@ -39,4 +39,16 @@ class SavedLocations extends _$SavedLocations {
     await repo.deleteSavedLocation(user.id, label);
     ref.invalidateSelf();
   }
+
+  /// Renames [oldLabel] to [newLabel] and refreshes.
+  Future<void> rename(String oldLabel, String newLabel) async {
+    final trimmed = newLabel.trim();
+    if (trimmed.isEmpty || trimmed == oldLabel) return;
+    final user = ref.read(authStateProvider).value;
+    if (user == null) return;
+
+    final repo = ref.read(savedLocationRepositoryProvider);
+    await repo.renameLocation(user.id, oldLabel, trimmed);
+    ref.invalidateSelf();
+  }
 }

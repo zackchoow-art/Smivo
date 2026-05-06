@@ -5,18 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/shared/providers/school_data_provider.dart';
-import 'package:smivo/data/models/pickup_location.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/features/listing/providers/create_listing_provider.dart';
 import 'package:smivo/features/listing/widgets/custom_text_field.dart';
 import 'package:smivo/features/listing/widgets/photo_picker_section.dart';
-import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
-import 'package:smivo/core/providers/preferences_provider.dart';
-import 'package:smivo/features/listing/providers/saved_location_provider.dart';
-import 'package:smivo/shared/widgets/address_combobox.dart';
+import 'package:smivo/shared/widgets/pickup_address_selector.dart';
 
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
@@ -32,13 +28,12 @@ class CreateListingFormScreen extends ConsumerStatefulWidget {
 class _CreateListingFormScreenState
     extends ConsumerState<CreateListingFormScreen> {
   late dynamic modeProvider;
-  PickupLocation? _selectedPickup;
-  String _customLocationNote = '';   // Custom address when 'Specify Address' is selected
-  // NOTE: Default true — sellers are expected to allow buyers to suggest
-  // alternative meetup spots. Users can opt out if needed.
-  bool _allowBuyerToSuggest = true;
-  final GlobalKey<AddressComboBoxState> _addressComboKey =
-      GlobalKey<AddressComboBoxState>();
+  // NOTE: Resolved by PickupAddressSelector via callbacks.
+  String? _selectedPickupId;     // null = custom address / 'Specify Address'
+  String _customLocationNote = '';  // Effective address text
+  bool _allowBuyerToSuggest = true; // Default true per UX guidelines
+  final GlobalKey<PickupAddressSelectorState> _addressSelectorKey =
+      GlobalKey<PickupAddressSelectorState>();
   bool _isSubmitting = false;
   String _selectedCondition = 'good';
   // C2: Available date — null means "available now" or not specified.
@@ -422,183 +417,26 @@ class _CreateListingFormScreenState
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final pickupsAsync = ref.watch(
-                            myPickupLocationsProvider,
-                          );
-                          final activeSchools = ref.watch(activeSchoolsProvider).value ?? [];
-                          return pickupsAsync.when(
-                            loading:
-                                () => const SizedBox(
-                                  height: 56,
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                ),
-                            error:
-                                (err, _) =>
-                                    Text('Failed to load locations: $err'),
-                            data: (locations) {
-                              if (locations.isEmpty) {
-                                return const Text(
-                                  'No pickup locations available',
-                                );
-                              }
-
-                              // Auto-select the last used pickup location
-                              // when the list first loads and nothing is
-                              // selected yet. Uses WidgetsBinding to defer
-                              // the setState until after build completes.
-                              if (_selectedPickup == null) {
-                                final savedId = ref.read(
-                                  lastPickupLocationIdProvider,
-                                );
-                                if (savedId != null) {
-                                  final match = locations.where(
-                                    (l) => l.id == savedId,
-                                  ).firstOrNull;
-                                  if (match != null) {
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      if (mounted) {
-                                        setState(() => _selectedPickup = match);
-                                      }
-                                    });
-                                  }
-                                }
-                              }
-
-                              // Build the base dropdown widget.
-                              final dropdownWidget = Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.surfaceContainerLow,
-                                  borderRadius: BorderRadius.circular(
-                                    radius.input,
-                                  ),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<PickupLocation>(
-                                    value: _selectedPickup,
-                                    hint: const Text('Select pickup location'),
-                                    isExpanded: true,
-                                    icon: Icon(
-                                      Icons.arrow_drop_down,
-                                      color: colors.onSurfaceVariant,
-                                    ),
-                                    style: typo.titleMedium.copyWith(
-                                      color: colors.onSurface,
-                                    ),
-                                    onChanged: (v) {
-                                      setState(() {
-                                        _selectedPickup = v;
-                                        // Reset custom note when switching
-                                        // away from 'Specify Address' option.
-                                        if (v != null &&
-                                            !v.name
-                                                .toLowerCase()
-                                                .startsWith('other')) {
-                                          _customLocationNote = '';
-                                          _customLocationController.clear();
-                                        }
-                                      });
-                                      if (v != null) {
-                                        ref
-                                            .read(
-                                              lastPickupLocationIdProvider
-                                                  .notifier,
-                                            )
-                                            .save(v.id);
-                                      }
-                                    },
-                                    items: locations
-                                        .map(
-                                          (loc) =>
-                                              DropdownMenuItem<PickupLocation>(
-                                            value: loc,
-                                            child: Text(
-                                              // Rename the DB 'Other …' item
-                                              // to the user-facing label.
-                                              loc.name
-                                                      .toLowerCase()
-                                                      .startsWith('other')
-                                                  ? 'Specify Address'
-                                                  : '${loc.name}, ${activeSchools.where((s) => s.id == loc.schoolId).firstOrNull?.name ?? 'Unknown'}',
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                  ),
-                                ),
-                              );
-
-                              // NOTE: Default to the 'Specify Address' (Other)
-                              // item on first load if no saved preference exists.
-                              // Detected by name prefix to keep it DB-driven.
-                              final isOther = _selectedPickup == null ||
-                                  _selectedPickup!.name
-                                      .toLowerCase()
-                                      .startsWith('other');
-
-                              if (_selectedPickup == null) {
-                                // Auto-select last used OR default to 'Other'.
-                                final savedId = ref.read(
-                                  lastPickupLocationIdProvider,
-                                );
-                                final target = savedId != null
-                                    ? locations
-                                        .where((l) => l.id == savedId)
-                                        .firstOrNull
-                                    : locations
-                                        .where(
-                                          (l) => l.name
-                                              .toLowerCase()
-                                              .startsWith('other'),
-                                        )
-                                        .firstOrNull;
-                                if (target != null) {
-                                  WidgetsBinding.instance
-                                      .addPostFrameCallback((_) {
-                                    if (mounted) {
-                                      setState(() => _selectedPickup = target);
-                                    }
-                                  });
-                                }
-                              }
-
-                              if (!isOther) return dropdownWidget;
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  dropdownWidget,
-                                  const SizedBox(height: 12),
-                                  // Combobox: history dropdown + free-text input
-                                  AddressComboBox(
-                                    key: _addressComboKey,
-                                    controller: _customLocationController,
-                                    hintText: 'Enter a meeting spot or select from history...',
-                                    onChanged: (v) =>
-                                        setState(() => _customLocationNote = v),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
+                      // NOTE: PickupAddressSelector handles:
+                      //  1. School preset locations
+                      //  2. User custom history
+                      //  3. 'Specify Address' free-text entry + auto-save
+                      PickupAddressSelector(
+                        key: _addressSelectorKey,
+                        initialPickupId: _selectedPickupId,
+                        initialAddress: _customLocationNote.isNotEmpty
+                            ? _customLocationNote
+                            : null,
+                        onPickupIdChanged: (id) =>
+                            setState(() => _selectedPickupId = id),
+                        onAddressChanged: (addr) =>
+                            setState(() => _customLocationNote = addr),
                       ),
                       CheckboxListTile(
-                        title: const Text(
-                          'Allow buyer to change pickup address',
-                        ),
+                        title: const Text('Allow buyer to change pickup address'),
                         value: _allowBuyerToSuggest,
-                        onChanged:
-                            (v) => setState(
-                              () => _allowBuyerToSuggest = v ?? false,
-                            ),
+                        onChanged: (v) =>
+                            setState(() => _allowBuyerToSuggest = v ?? false),
                         controlAffinity: ListTileControlAffinity.leading,
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -915,15 +753,10 @@ class _CreateListingFormScreenState
             weeklyRate: weeklyRate,
             monthlyRate: monthlyRate,
             depositAmount: deposit,
-            pickupLocationId: _selectedPickup?.id,
+            pickupLocationId: _selectedPickupId,
             customPickupNote: () {
-              // If 'Specify Address' (Other) is selected, use the typed
-              // text as the effective address. If a preset is chosen, use
-              // its name so the detail page can display a clean text label.
-              if (_selectedPickup != null &&
-                  !_selectedPickup!.name.toLowerCase().startsWith('other')) {
-                return _selectedPickup!.name;
-              }
+              // _customLocationNote is always the resolved address text:
+              // it may come from a preset name callback or typed free text.
               final note = _customLocationNote.trim();
               return note.isEmpty ? null : note;
             }(),
@@ -938,15 +771,11 @@ class _CreateListingFormScreenState
       // can cause a "provider disposed" exception even though the listing was
       // successfully created.
       if (!mounted) return;
-      // Force save the combobox current value before clearing state,
-      // in case the user typed but did not dismiss the keyboard.
-      _addressComboKey.currentState?.saveCurrentValue();
-      // NOTE: Save is also handled by the combobox on focus-loss;
+      // Force save the selector's current 'Specify Address' value before
+      // clearing state, in case the user typed but did not dismiss the keyboard.
+      _addressSelectorKey.currentState?.saveIfSpecifying();
+      // NOTE: The selector also auto-saves on focus-loss;
       // this is a redundant safety net for the form-submit path.
-      final note = _customLocationNote.trim();
-      if (note.isNotEmpty) {
-        ref.read(savedLocationsProvider.notifier).save(note);
-      }
       ref.invalidate(homeListingsProvider);
       ref.read(listingPhotosProvider.notifier).clear();
       ref.read(selectedListingCategoryProvider.notifier).clear();

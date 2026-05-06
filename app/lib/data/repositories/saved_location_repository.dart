@@ -56,6 +56,25 @@ class SavedLocationRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  /// Renames a saved location from [oldLabel] to [newLabel].
+  /// No-op if [newLabel] is identical to [oldLabel].
+  Future<void> renameLocation(
+    String userId,
+    String oldLabel,
+    String newLabel,
+  ) async {
+    if (oldLabel == newLabel) return;
+    try {
+      await _client
+          .from('user_saved_locations')
+          .update({'label': newLabel, 'updated_at': DateTime.now().toIso8601String()})
+          .eq('user_id', userId)
+          .eq('label', oldLabel);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod

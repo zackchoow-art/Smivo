@@ -13,6 +13,7 @@ import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
+import 'package:smivo/features/settings/widgets/address_management_section.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -343,6 +344,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 ],
                               ),
                             ),
+                            const SizedBox(height: 24),
+
+                            // ── Address Management ─────────────────────────
+                            const AddressManagementSection(),
+
                             const SizedBox(height: 32),
                             // Delete Account — destructive action with confirmation dialog
                             Center(
