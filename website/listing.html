@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- NOTE: Title and OG tags are populated by JS below.
+       Crawlers that execute JS (e.g., Telegram, Slack) will see the real
+       product data; crawlers that don't (iMessage, older WhatsApp) will fall
+       back to the generic Smivo branding set here. -->
+  <title>Smivo — Campus Marketplace</title>
+
+  <!-- Default OG (fallback for non-JS crawlers) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Smivo">
+  <meta property="og:image" content="https://smivo.io/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:title" content="Check out this item on Smivo">
+  <meta property="og:description" content="Buy, sell, and rent items within your campus community. Verified .edu accounts only.">
+  <meta property="og:url" content="https://smivo.io">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://smivo.io/og-image.png">
+  <meta name="twitter:title" content="Check out this item on Smivo">
+  <meta name="twitter:description" content="Buy, sell, and rent within your campus community.">
+
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- NOTE: Apple Universal Links — iOS reads AASA from smivo.io/.well-known/
+       and intercepts smivo.io/listing/* before the browser even loads this page.
+       This page is only shown when the app is NOT installed. -->
+
+  <style>
+    :root {
+      --primary: #1a3a6b;
+      --primary-light: #2a5298;
+      --accent: #e8b630;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --border: #e2e8f0;
+      --radius: 16px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 32px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-sub {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-bottom: 32px;
+    }
+
+    .listing-image {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      background: var(--surface);
+      display: none; /* shown by JS when image loads */
+    }
+
+    .listing-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .listing-price {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 24px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    .cta-label {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      width: 100%;
+      margin-bottom: 12px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading-state { display: block; }
+    #content-state { display: none; }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; border-radius: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">Smivo</div>
+  <div class="logo-sub">Campus Marketplace</div>
+
+  <!-- Loading state -->
+  <div id="loading-state">
+    <div class="spinner"></div>
+    <p style="color: var(--text-light); font-size: 0.9rem;">Opening listing…</p>
+  </div>
+
+  <!-- Content state (shown after JS loads) -->
+  <div id="content-state">
+    <img id="listing-img" class="listing-image" alt="Listing photo">
+    <div id="listing-title" class="listing-title">View this item on Smivo</div>
+    <div id="listing-price" class="listing-price"></div>
+
+    <div class="divider"></div>
+    <p class="cta-label">Open in the Smivo app for the full experience</p>
+
+    <a id="btn-appstore" href="https://apps.apple.com/us/app/smivo/id6764173442"
+       class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+      📱 Download on App Store
+    </a>
+    <a href="/" class="btn btn-secondary">
+      Browse on Smivo.io
+    </a>
+  </div>
+</div>
+
+<script>
+  // NOTE: Extract listing ID from the URL path (/listing/<id>).
+  // This page is served for all smivo.io/listing/* paths via Vercel rewrite.
+  const pathParts = window.location.pathname.split('/');
+  const listingId = pathParts[pathParts.length - 1];
+
+  const SUPABASE_URL = 'https://cpavunhkwsrmomhktklb.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwYXZ1bmhrd3NybW9taGt0a2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2MjI0OTIsImV4cCI6MjA1OTE5ODQ5Mn0.A0d4-qzWsIJtggZdGfT7b7YCn5VJyiIuAqY_vN7OmT8';
+
+  async function loadListing() {
+    if (!listingId || listingId === 'listing') {
+      showContent(null);
+      return;
+    }
+
+    try {
+      // NOTE: Fetch basic listing data using the public anon key.
+      // RLS allows reading active listings without auth.
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/listings?id=eq.${listingId}&select=id,title,price,rental_type,listing_images(image_url,display_order)&limit=1`,
+        { headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' } }
+      );
+      const data = await res.json();
+      showContent(data && data.length > 0 ? data[0] : null);
+    } catch (e) {
+      showContent(null);
+    }
+  }
+
+  function showContent(listing) {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('content-state').style.display = 'block';
+
+    if (listing) {
+      // Update title and price
+      document.getElementById('listing-title').textContent = listing.title || 'View this item on Smivo';
+      const price = listing.rental_type === 'rent'
+        ? 'For Rent'
+        : listing.price ? `$${parseFloat(listing.price).toFixed(0)}` : '';
+      document.getElementById('listing-price').textContent = price;
+
+      // Show first listing image if available
+      const images = listing.listing_images || [];
+      images.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      if (images.length > 0 && images[0].image_url) {
+        const img = document.getElementById('listing-img');
+        img.src = images[0].image_url;
+        img.style.display = 'block';
+
+        // NOTE: Update OG meta dynamically so JS-capable crawlers
+        // (Telegram, Slack, Discord) see the real product image.
+        setMeta('og:image', images[0].image_url);
+        setMeta('og:title', listing.title || 'Check out this item on Smivo');
+        setMeta('og:description', price ? `${price} — Available on Smivo` : 'Available on Smivo');
+        setMeta('og:url', window.location.href);
+      }
+
+      document.title = listing.title ? `${listing.title} — Smivo` : 'Smivo — Campus Marketplace';
+    }
+
+    // NOTE: On iOS, Universal Links intercept the smivo.io/listing/* URL
+    // before this page is shown. This page only appears when the app is not
+    // installed. Deep-link attempt via custom scheme as last resort for
+    // Android webviews that don't support App Links in some contexts.
+    const deepLinkUrl = `com.smivo://listing/${listingId}`;
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = deepLinkUrl;
+    document.body.appendChild(iframe);
+    setTimeout(() => document.body.removeChild(iframe), 2000);
+  }
+
+  function setMeta(property, content) {
+    let el = document.querySelector(`meta[property="${property}"]`);
+    if (!el) { el = document.createElement('meta'); el.setAttribute('property', property); document.head.appendChild(el); }
+    el.setAttribute('content', content);
+  }
+
+  loadListing();
+</script>
+
+</body>
+</html>

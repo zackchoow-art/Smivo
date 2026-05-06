@@ -1,9 +1,8 @@
 {
-  "redirects": [
+  "rewrites": [
     {
       "source": "/listing/:id",
-      "destination": "https://smivo.app/listing/:id",
-      "permanent": false
+      "destination": "/api/listing?id=:id"
     }
   ]
 }

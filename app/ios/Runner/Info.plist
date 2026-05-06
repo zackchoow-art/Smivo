@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<!-- NOTE: Required for GoRouter to receive Universal Links from iOS.
+		     Without this key, iOS intercepts the link but does NOT pass it
+		     to the Flutter engine — GoRouter never sees it and the app opens
+		     on the home screen instead of the target listing. -->
+		<key>FlutterDeepLinkingEnabled</key>
+		<true/>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>
