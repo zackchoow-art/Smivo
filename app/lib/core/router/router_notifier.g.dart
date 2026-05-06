@@ -17,6 +17,10 @@ part of 'router_notifier.dart';
 /// preserved. The old pattern (ref.watch inside the router provider) was
 /// wrong because it caused GoRouter to be fully recreated on every auth
 /// event, clearing the navigation stack and dropping the user to home.
+// NOTE: keepAlive: true is CRITICAL — this notifier holds the single
+// GoRouter listener (VoidCallback). If auto-disposed and recreated,
+// _routerListener is reset to null, GoRouter loses the subscription,
+// and redirect() is never called after sign-in / sign-out.
 
 @ProviderFor(AppRouterNotifier)
 final appRouterProvider = AppRouterNotifierProvider._();
@@ -30,8 +34,12 @@ final appRouterProvider = AppRouterNotifierProvider._();
 /// preserved. The old pattern (ref.watch inside the router provider) was
 /// wrong because it caused GoRouter to be fully recreated on every auth
 /// event, clearing the navigation stack and dropping the user to home.
+// NOTE: keepAlive: true is CRITICAL — this notifier holds the single
+// GoRouter listener (VoidCallback). If auto-disposed and recreated,
+// _routerListener is reset to null, GoRouter loses the subscription,
+// and redirect() is never called after sign-in / sign-out.
 final class AppRouterNotifierProvider
-    extends $AsyncNotifierProvider<AppRouterNotifier, void> {
+    extends $NotifierProvider<AppRouterNotifier, void> {
   /// Bridges Riverpod auth/profile state into GoRouter's redirect mechanism
   /// WITHOUT recreating the GoRouter instance.
   ///
@@ -41,13 +49,17 @@ final class AppRouterNotifierProvider
   /// preserved. The old pattern (ref.watch inside the router provider) was
   /// wrong because it caused GoRouter to be fully recreated on every auth
   /// event, clearing the navigation stack and dropping the user to home.
+  // NOTE: keepAlive: true is CRITICAL — this notifier holds the single
+  // GoRouter listener (VoidCallback). If auto-disposed and recreated,
+  // _routerListener is reset to null, GoRouter loses the subscription,
+  // and redirect() is never called after sign-in / sign-out.
   AppRouterNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'appRouterProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -58,9 +70,17 @@ final class AppRouterNotifierProvider
   @$internal
   @override
   AppRouterNotifier create() => AppRouterNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(void value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<void>(value),
+    );
+  }
 }
 
-String _$appRouterNotifierHash() => r'26b7b4627a5974e146ffd2d5f50990dbc4f6bfe6';
+String _$appRouterNotifierHash() => r'fc8f4c39546c7c6c5c1f66f2e922508d309c55fd';
 
 /// Bridges Riverpod auth/profile state into GoRouter's redirect mechanism
 /// WITHOUT recreating the GoRouter instance.
@@ -71,18 +91,22 @@ String _$appRouterNotifierHash() => r'26b7b4627a5974e146ffd2d5f50990dbc4f6bfe6';
 /// preserved. The old pattern (ref.watch inside the router provider) was
 /// wrong because it caused GoRouter to be fully recreated on every auth
 /// event, clearing the navigation stack and dropping the user to home.
+// NOTE: keepAlive: true is CRITICAL — this notifier holds the single
+// GoRouter listener (VoidCallback). If auto-disposed and recreated,
+// _routerListener is reset to null, GoRouter loses the subscription,
+// and redirect() is never called after sign-in / sign-out.
 
-abstract class _$AppRouterNotifier extends $AsyncNotifier<void> {
-  FutureOr<void> build();
+abstract class _$AppRouterNotifier extends $Notifier<void> {
+  void build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<void>, void>;
+    final ref = this.ref as $Ref<void, void>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<void>, void>,
-              AsyncValue<void>,
+              AnyNotifier<void, void>,
+              void,
               Object?,
               Object?
             >;

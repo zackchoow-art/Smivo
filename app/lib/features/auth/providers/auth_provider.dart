@@ -157,12 +157,16 @@ class Auth extends _$Auth {
   }
 
   /// Signs out and resets state.
+  ///
+  /// NOTE: Provider invalidations MUST happen before signOut(). Once signOut()
+  /// is called, Supabase fires an auth state change which can cause Riverpod
+  /// to dispose this notifier. Any ref usage after that async gap throws
+  /// "Cannot use Ref after it has been disposed".
   Future<void> logout() async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(authRepositoryProvider).signOut();
-      
-      // Invalidate user-specific state to prevent data leakage across accounts
+      // 1. Invalidate user-specific providers BEFORE signOut so ref is still
+      //    valid. This also prevents stale data from leaking between sessions.
       ref.invalidate(profileProvider);
       ref.invalidate(allOrdersProvider);
       ref.invalidate(chatRoomListProvider);
@@ -170,9 +174,16 @@ class Auth extends _$Auth {
       ref.invalidate(mySavedListingsProvider);
       ref.invalidate(myListingsProvider);
       ref.invalidate(homeListingsProvider);
-      
+
+      // 2. Sign out LAST — this triggers the Supabase auth stream which
+      //    cascades into rebuilds/disposals of other providers.
+      await ref.read(authRepositoryProvider).signOut();
+
+      // 3. Guard against disposal before updating state.
+      if (!ref.mounted) return;
       state = const AsyncValue.data(null);
     } catch (e, st) {
+      if (!ref.mounted) return;
       state = AsyncValue.error(_mapError(e, st), st);
     }
   }

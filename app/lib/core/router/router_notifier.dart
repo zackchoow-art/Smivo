@@ -16,13 +16,17 @@ part 'router_notifier.g.dart';
 /// preserved. The old pattern (ref.watch inside the router provider) was
 /// wrong because it caused GoRouter to be fully recreated on every auth
 /// event, clearing the navigation stack and dropping the user to home.
-@riverpod
+// NOTE: keepAlive: true is CRITICAL — this notifier holds the single
+// GoRouter listener (VoidCallback). If auto-disposed and recreated,
+// _routerListener is reset to null, GoRouter loses the subscription,
+// and redirect() is never called after sign-in / sign-out.
+@Riverpod(keepAlive: true)
 class AppRouterNotifier extends _$AppRouterNotifier implements Listenable {
   /// The single callback GoRouter registers via addListener().
   VoidCallback? _routerListener;
 
   @override
-  Future<void> build() async {
+  void build() {
     // Watch both providers so this notifier rebuilds when either changes.
     // NOTE: We do NOT use the values here — they are read inside redirect()
     // which is called synchronously by GoRouter after we call the listener.
@@ -30,6 +34,8 @@ class AppRouterNotifier extends _$AppRouterNotifier implements Listenable {
     ref.watch(profileProvider);
 
     // Notify GoRouter to re-evaluate redirect() with fresh state.
+    // NOTE: Synchronous build() guarantees this fires immediately when
+    // auth/profile state changes — no async gap that could lose the call.
     _routerListener?.call();
   }
 
