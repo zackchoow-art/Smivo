@@ -3,15 +3,23 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Non-blocking image moderation service.
 ///
-/// Calls the `moderate-image-google` Edge Function after an image is uploaded.
+/// Calls an AI moderation Edge Function after an image is uploaded.
 /// This is fire-and-forget — business flow is NEVER blocked or terminated.
 ///
-/// If the image is flagged:
-///   - A record is inserted into `backend_moderation_logs` for admin review.
-///   - The `listing_images` row (if applicable) is updated with
-///     moderation_status = 'rejected' so the UI blur widget can pick it up.
-///   - For other image types (evidence, chat, feedback), the log is sufficient
-///     for admin review; the app-side blur is applied via [ModerationAwareImage].
+/// Engine selection: reads `system_configs` at runtime to decide which
+/// Edge Function to invoke:
+///   - ai_provider = 'google' → moderate-image-google (Google Vision)
+///   - ai_provider = 'openai' → moderate-image-openai (OpenAI)
+///   - backend_review.enabled = false → skip entirely
+///
+/// If the image is flagged, a record is inserted into `backend_moderation_logs`
+/// by the Edge Function. The client reads this table via [ModerationAwareImage]
+/// to blur flagged images without re-fetching.
+///
+/// NOTE: Only listing images and order evidence photos use this service.
+/// Chat images and feedback screenshots are NOT moderated client-side:
+///   - Chat images: handled entirely server-side via DB trigger → moderate-content
+///   - Feedback/bug screenshots: no AI moderation (internal data, not public UGC)
 class ImageModerationService {
   const ImageModerationService(this._client);
 
@@ -21,7 +29,7 @@ class ImageModerationService {
   ///
   /// Parameters:
   ///   [imageUrl]    – the public URL of the uploaded image.
-  ///   [targetType]  – 'listing_image' | 'evidence' | 'chat_image' | 'feedback'
+  ///   [targetType]  – 'listing_image' | 'evidence'
   ///   [targetId]    – ID of the related record (listing ID, order ID, etc.)
   ///   [userId]      – uploader's user ID.
   ///
@@ -34,16 +42,53 @@ class ImageModerationService {
     required String userId,
   }) async {
     try {
-      // Call the Google Vision edge function (non-blocking).
+      // Read system config to determine whether AI review is enabled
+      // and which engine provider to use.
+      final configs = await _client
+          .from('system_configs')
+          .select('config_key, config_value')
+          .inFilter('config_key', [
+            'backend_review.enabled',
+            'ai_provider',
+          ]);
+
+      // Parse config rows into a simple key→value map.
+      final configMap = <String, String>{};
+      for (final row in configs as List) {
+        final key = row['config_key'] as String;
+        // config_value is stored as jsonb; strip surrounding quotes for strings.
+        final raw = row['config_value']?.toString() ?? '';
+        configMap[key] = raw.replaceAll(RegExp(r'^"|"$'), '');
+      }
+
+      // Respect the global kill-switch for backend review.
+      final enabled = configMap['backend_review.enabled'];
+      if (enabled == 'false' || enabled == 'False') {
+        debugPrint('[ImageModeration] backend_review.enabled=false — skipping.');
+        return;
+      }
+
+      // Determine which Edge Function to call based on ai_provider config.
+      // Default to google_vision for backward compatibility.
+      final provider = configMap['ai_provider'] ?? 'google';
+      final functionName =
+          provider == 'openai' ? 'moderate-image-openai' : 'moderate-image-google';
+
+      // Call the Edge Function (non-blocking).
       final response = await _client.functions.invoke(
-        'moderate-image-google',
-        body: {'image_url': imageUrl},
+        functionName,
+        body: {
+          'image_url': imageUrl,
+          'target_type': targetType,
+          'target_id': targetId,
+          'user_id': userId,
+        },
       );
 
       if (response.status != 200) {
         // Quota exhausted or config error — log and bail silently.
         debugPrint(
-          '[ImageModeration] Edge function returned ${response.status}: skipping.',
+          '[ImageModeration] Edge function $functionName returned ${response.status}: skipping.',
         );
         return;
       }
@@ -52,46 +97,11 @@ class ImageModerationService {
       if (data == null) return;
 
       final flagged = data['flagged'] as bool? ?? false;
-      final reasons = (data['reasons'] as List?)?.cast<String>() ?? [];
-
-      // Always log the result for admin visibility.
-      await _client.from('backend_moderation_logs').insert({
-        'target_type': targetType,
-        'target_id': targetId,
-        'user_id': userId,
-        'engine': 'google_vision',
-        'review_mode': 'ai',
-        'result': flagged ? 'fail' : 'pass',
-        'action_taken': flagged ? 'image_flagged' : 'none',
-        'content_snapshot': imageUrl,
-        'image_details': [
-          {
-            'url': imageUrl,
-            'flagged': flagged,
-            'reasons': reasons,
-            'safe_search': data['safe_search'],
-          },
-        ],
-      });
-
-      if (!flagged) return;
-
-      // For listing images specifically: update moderation_status to 'rejected'
-      // so the UI blur widget (which reads listing_images.moderation_status)
-      // can react. Other types are handled client-side via ModerationAwareImage.
-      if (targetType == 'listing_image') {
-        await _client
-            .from('listing_images')
-            .update({
-              'moderation_status': 'rejected',
-              'moderation_reasons': reasons.join(', '),
-            })
-            .eq('image_url', imageUrl);
+      if (flagged) {
+        debugPrint(
+          '[ImageModeration] Flagged ($targetType/$targetId) by $functionName',
+        );
       }
-
-      debugPrint(
-        '[ImageModeration] Flagged ($targetType/$targetId): ${reasons.join(', ')}',
-      );
     } catch (e) {
       // NOTE: Swallow all errors — moderation is advisory-only.
       // A moderation failure must never block or break the user workflow.

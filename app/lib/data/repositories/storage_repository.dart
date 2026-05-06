@@ -13,9 +13,12 @@ part 'storage_repository.g.dart';
 
 /// Handles file upload/delete operations via Supabase Storage.
 ///
-/// NOTE: All upload methods call [ImageModerationService.moderateAsync]
-/// after a successful upload. This is fire-and-forget — the business flow
-/// is never blocked or terminated due to moderation.
+/// Moderation policy (fire-and-forget, never blocks business flow):
+///   - Listing images  → client-side moderateAsync (respects system_configs)
+///   - Evidence photos → client-side moderateAsync (respects system_configs)
+///   - Chat images     → NO client-side moderation; server-side only via
+///                        DB trigger → moderation_tasks → moderate-content
+///   - Feedback/bug screenshots → NO moderation (internal data, not public UGC)
 class StorageRepository {
   const StorageRepository(this._client, this._moderation);
 
@@ -99,17 +102,9 @@ class StorageRepository {
           .from(AppConstants.bucketOrderFiles)
           .getPublicUrl(basePath);
 
-      // Moderate chat images if we have a user ID.
-      if (userId != null) {
-        unawaited(
-          _moderation.moderateAsync(
-            imageUrl: url,
-            targetType: 'chat_image',
-            targetId: orderId ?? chatRoomId,
-            userId: userId,
-          ),
-        );
-      }
+      // NOTE: Chat images are moderated server-side only.
+      // The DB trigger on messages → moderation_tasks → moderate-content
+      // Edge Function handles AI review asynchronously. No client-side call.
 
       return url;
     } on StorageException catch (e) {
@@ -175,14 +170,10 @@ class StorageRepository {
           .from(AppConstants.bucketOrderFiles)
           .getPublicUrl(path);
 
-      unawaited(
-        _moderation.moderateAsync(
-          imageUrl: url,
-          targetType: 'feedback',
-          targetId: userId,
-          userId: userId,
-        ),
-      );
+      // NOTE: Feedback and shake-to-report screenshots are NOT moderated.
+      // They are internal user reports / bug submissions, not public UGC.
+      // If future moderation is needed, add a DB-level trigger only — no
+      // app code changes required.
 
       return url;
     } on StorageException catch (e) {
