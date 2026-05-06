@@ -124,6 +124,7 @@ class PickupAddressSelectorState
 
     widget.onPickupIdChanged?.call(null);
     widget.onAddressChanged?.call(canonical);
+    ref.read(lastPickupLocationIdProvider.notifier).save(canonical);
 
     setState(() {
       _selectedKey = '_custom_$canonical';
@@ -158,6 +159,7 @@ class PickupAddressSelectorState
       widget.onAddressChanged?.call(label);
       // Bump last_used_at so this entry stays at the top.
       ref.read(savedLocationsProvider.notifier).save(label);
+      ref.read(lastPickupLocationIdProvider.notifier).save(label);
     } else {
       // Preset selected.
       setState(() {
@@ -238,11 +240,8 @@ class PickupAddressSelectorState
         DropdownMenuItem<String>(
           value: '_divider_',
           enabled: false,
-          // NOTE: height=1 + zero padding keeps the divider visually thin.
-          child: SizedBox(
-            height: 1,
-            child: Divider(color: colors.outlineVariant, height: 1),
-          ),
+          // NOTE: height=0 + zero padding keeps the divider visually thin and tight.
+          child: Divider(color: colors.outlineVariant, height: 0),
         ),
       );
     }
@@ -275,10 +274,7 @@ class PickupAddressSelectorState
         DropdownMenuItem<String>(
           value: '_divider2_',
           enabled: false,
-          child: SizedBox(
-            height: 1,
-            child: Divider(color: colors.outlineVariant, height: 1),
-          ),
+          child: Divider(color: colors.outlineVariant, height: 0),
         ),
       );
     }
@@ -432,14 +428,25 @@ class PickupAddressSelectorState
         widget.onAddressChanged?.call(presetMatch.name);
         return;
       }
-      // Try matching as a custom label (legacy storage).
-      final customMatch = customs.where((c) => c == lastId).firstOrNull;
+      // Try matching as a custom label (case-insensitive).
+      final customMatch = customs.where((c) => c.toLowerCase() == lastId.toLowerCase()).firstOrNull;
       if (customMatch != null) {
         setState(() => _selectedKey = '_custom_$customMatch');
         widget.onPickupIdChanged?.call(null);
         widget.onAddressChanged?.call(customMatch);
         return;
       }
+      
+      // If we reach here, lastId existed but wasn't found in presets or customs.
+      // This means the user previously used an address that was since deleted.
+      // Fallback to Specify Address as requested.
+      setState(() {
+        _selectedKey = _kSpecifyKey;
+        _showSpecifyField = true;
+      });
+      widget.onPickupIdChanged?.call(null);
+      widget.onAddressChanged?.call('');
+      return;
     }
 
     // 4. Fall back to first available preset (excluding 'other' sentinels).

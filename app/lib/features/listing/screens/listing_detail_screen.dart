@@ -413,11 +413,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'PICKUP LOCATION',
-                                            style: typo.labelSmall.copyWith(
-                                              color: colors.onSurface
-                                                  .withValues(alpha: 0.5),
-                                              letterSpacing: 0.5,
+                                            'Pickup Location',
+                                            style: typo.labelLarge.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: colors.onSurface,
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -447,24 +446,12 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                             return Padding(
                                               padding: const EdgeInsets.only(
                                                   top: 4),
-                                              child: Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.school_outlined,
-                                                    size: 13,
-                                                    color:
-                                                        colors.onSurfaceVariant,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    '校园：$schoolName',
-                                                    style:
-                                                        typo.bodySmall.copyWith(
-                                                      color: colors
-                                                          .onSurfaceVariant,
-                                                    ),
-                                                  ),
-                                                ],
+                                              child: Text(
+                                                'Campus: $schoolName',
+                                                style: typo.labelLarge.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: colors.onSurface,
+                                                ),
                                               ),
                                             );
                                           }),
@@ -492,11 +479,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                     _showChangeAddress
                                                         ? 'Cancel address change'
                                                         : 'Change pickup address',
-                                                    style: typo.labelSmall
-                                                        .copyWith(
-                                                      color: colors.primary,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                    style: typo.labelLarge.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: colors.onSurface,
                                                     ),
                                                   ),
                                                 ],
@@ -538,27 +523,12 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                         padding:
                                                             const EdgeInsets
                                                                 .only(top: 6),
-                                                        child: Row(
-                                                          children: [
-                                                            Icon(
-                                                              Icons
-                                                                  .school_outlined,
-                                                              size: 13,
-                                                              color: colors
-                                                                  .onSurfaceVariant,
-                                                            ),
-                                                            const SizedBox(
-                                                                width: 4),
-                                                            Text(
-                                                              '校园：${school.name}',
-                                                              style: typo
-                                                                  .bodySmall
-                                                                  .copyWith(
-                                                                color: colors
-                                                                    .onSurfaceVariant,
-                                                              ),
-                                                            ),
-                                                          ],
+                                                        child: Text(
+                                                          'Campus: ${school.name}',
+                                                          style: typo.labelLarge.copyWith(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: colors.onSurface,
+                                                          ),
                                                         ),
                                                       );
                                                     },

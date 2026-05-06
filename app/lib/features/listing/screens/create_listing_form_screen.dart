@@ -433,14 +433,6 @@ class _CreateListingFormScreenState
                         onAddressChanged: (addr) =>
                             setState(() => _customLocationNote = addr),
                       ),
-                      CheckboxListTile(
-                        title: const Text('Allow buyer to change pickup address'),
-                        value: _allowBuyerToSuggest,
-                        onChanged: (v) =>
-                            setState(() => _allowBuyerToSuggest = v ?? false),
-                        controlAffinity: ListTileControlAffinity.leading,
-                        contentPadding: EdgeInsets.zero,
-                      ),
                       // Display current user's school — always visible below
                       // the address selector, separate from the address text.
                       // This is intentionally read-only context for the seller.
@@ -453,27 +445,26 @@ class _CreateListingFormScreenState
                             data: (school) {
                               if (school == null) return const SizedBox.shrink();
                               return Padding(
-                                padding: const EdgeInsets.only(top: 4, bottom: 4),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.school_outlined,
-                                      size: 14,
-                                      color: colors.onSurfaceVariant,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '校园：${school.name}',
-                                      style: typo.bodySmall.copyWith(
-                                        color: colors.onSurfaceVariant,
-                                      ),
-                                    ),
-                                  ],
+                                padding: const EdgeInsets.only(top: 8, bottom: 4),
+                                child: Text(
+                                  'Campus: ${school.name}',
+                                  style: typo.labelLarge.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.onSurface,
+                                  ),
                                 ),
                               );
                             },
                           );
                         },
+                      ),
+                      CheckboxListTile(
+                        title: const Text('Allow buyer to change pickup address'),
+                        value: _allowBuyerToSuggest,
+                        onChanged: (v) =>
+                            setState(() => _allowBuyerToSuggest = v ?? false),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: EdgeInsets.zero,
                       ),
                       const SizedBox(height: 24),
                       // C2: Available date picker
