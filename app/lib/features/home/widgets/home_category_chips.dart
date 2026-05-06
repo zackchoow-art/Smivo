@@ -58,7 +58,7 @@ class HomeCategoryChips extends ConsumerWidget {
       );
     }
 
-    // IKEA Theme: Keep current chips style but centered
+    // Flat Theme: Keep current chips style but centered
     return SizedBox(
       height: 40,
       width: double.infinity,

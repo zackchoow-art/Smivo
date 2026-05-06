@@ -7,7 +7,7 @@ part 'theme_provider.g.dart';
 
 /// Persists and exposes the user's chosen [SmivoThemeVariant].
 ///
-/// On first launch, defaults to [SmivoThemeVariant.teal]. The selected
+/// On first launch, defaults to [SmivoThemeVariant.flat]. The selected
 /// variant is saved to SharedPreferences so it survives app restarts.
 ///
 /// Widgets watch this provider via `ref.watch(themeProvider)`
@@ -20,7 +20,7 @@ class ThemeNotifier extends _$ThemeNotifier {
   SmivoThemeVariant build() {
     // NOTE: Synchronously returns default; async load updates later.
     _loadSavedTheme();
-    return SmivoThemeVariant.teal;
+    return SmivoThemeVariant.flat;
   }
 
   /// Switch to a new theme variant and persist the choice.
@@ -36,7 +36,10 @@ class ThemeNotifier extends _$ThemeNotifier {
     final saved = prefs.getString(_key);
     if (saved != null) {
       try {
-        state = SmivoThemeVariant.values.byName(saved);
+        // NOTE: Backward compat — users on v1.0 may have 'ikea' saved.
+        // Map it to the renamed 'flat' variant to avoid enum parse failure.
+        final normalised = saved == 'ikea' ? 'flat' : saved;
+        state = SmivoThemeVariant.values.byName(normalised);
       } catch (_) {
         // HACK: If the persisted value is invalid (e.g. old enum name),
         // silently fall back to default. This prevents crashes after

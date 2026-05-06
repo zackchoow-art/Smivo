@@ -7,7 +7,7 @@ enum SmivoThemeVariant {
   /// Original teal/cyan brand theme with rounded corners and bright accents.
   teal,
 
-  /// IKEA-inspired flat theme: deep blue + yellow, sharp corners,
+  /// Flat theme: deep blue + yellow, sharp corners,
   /// no divider lines, ambient shadows.
-  ikea,
+  flat,
 }

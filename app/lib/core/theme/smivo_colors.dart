@@ -122,7 +122,7 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
   final Color dividerColor;
 
   /// Whether 1px divider lines are used in this theme.
-  /// Teal uses traditional dividers; IKEA replaces them with whitespace.
+  /// Teal uses traditional dividers; Flat replaces them with whitespace.
   final bool useDividers;
 
   // ── Borders ────────────────────────────────────────────────
@@ -211,8 +211,8 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
     shadow: Color(0x11000000),
   );
 
-  // ── Factory: IKEA (blue + yellow flat) ─────────────────────
-  factory SmivoColors.ikea() => const SmivoColors(
+  // ── Factory: Flat (blue + yellow flat) ─────────────────────
+  factory SmivoColors.flat() => const SmivoColors(
     // Brand
     primary: Color(0xFF004181),
     primaryContainer: Color(0xFF0058AB),
@@ -242,14 +242,14 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
     successContainer: Color(0xFFCCF7E5),
     warning: Color(0xFFE65100),
     warningContainer: Color(0xFFFFBBAA),
-    // Specialised — dark bold price for IKEA
+    // Specialised — dark bold price for Flat
     priceAccent: Color(0xFF1A1C1C),
     priceAccentContainer: Color(0xFF1A1C1C),
     settingsIcon: Color(0xFF004181),
     settingsIconBg: Color(0xFFF3F3F3),
     settingsText: Color(0xFF1A1C1C),
     settingsTextSecondary: Color(0xFF424752),
-    // Gradients — IKEA uses flat solid colors, no gradient
+    // Gradients — Flat uses flat solid colors, no gradient
     gradientStart: Color(0xFF004181),
     gradientEnd: Color(0xFF004181),
     secondaryGradientStart: Color(0xFF004181),
@@ -280,8 +280,8 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
     switch (variant) {
       case SmivoThemeVariant.teal:
         return SmivoColors.teal();
-      case SmivoThemeVariant.ikea:
-        return SmivoColors.ikea();
+      case SmivoThemeVariant.flat:
+        return SmivoColors.flat();
     }
   }
 

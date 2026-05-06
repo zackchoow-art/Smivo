@@ -17,7 +17,7 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/responsive_grid.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
-import 'package:smivo/features/seller/widgets/ikea_seller_order_card.dart';
+import 'package:smivo/features/seller/widgets/flat_seller_order_card.dart';
 
 class SellerCenterScreen extends ConsumerStatefulWidget {
   const SellerCenterScreen({super.key});
@@ -209,21 +209,21 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         ),
                       ),
                       if (isExpanded)
-                        // NOTE: Desktop: ContentWidthConstraint(maxWidth: 1280) for IKEA grid,
+                        // NOTE: Desktop: ContentWidthConstraint(maxWidth: 1280) for Flat grid,
                         // maxWidth: 960 for Teal list. Resolves via Builder.
                         Builder(
                           builder: (context) {
-                            final isIkea =
+                            final isFlat =
                                 colors.primary == const Color(0xFF004181);
                             final sw = MediaQuery.of(context).size.width;
                             final useConstraint = Breakpoints.isDesktop(sw);
-                            final maxW = isIkea ? 1280.0 : 960.0;
+                            final maxW = isFlat ? 1280.0 : 960.0;
                             final sliver = SliverPadding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
                               ),
                               sliver:
-                                  isIkea
+                                  isFlat
                                       ? SliverResponsiveGrid(
                                         itemCount: activeListings.length,
                                         mobileColumns: 2,
@@ -234,9 +234,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                         childAspectRatio: 0.72,
                                         itemBuilder: (context, index) {
                                           final listing = activeListings[index];
-                                          return IkeaSellerOrderCard(
+                                          return FlatSellerOrderCard(
                                             cardType:
-                                                IkeaSellerCardType
+                                                FlatSellerCardType
                                                     .activeListing,
                                             listing: listing,
                                             hasUnread: false,
@@ -372,13 +372,13 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       if (isExpanded)
                         Builder(
                           builder: (context) {
-                            final isIkea = colors.primary == const Color(0xFF004181);
+                            final isFlat = colors.primary == const Color(0xFF004181);
                             final sw = MediaQuery.of(context).size.width;
                             final useConstraint = Breakpoints.isDesktop(sw);
-                            final maxW = isIkea ? 1280.0 : 960.0;
+                            final maxW = isFlat ? 1280.0 : 960.0;
                             final sliver = SliverPadding(
                               padding: const EdgeInsets.symmetric(horizontal: 24),
-                              sliver: isIkea
+                              sliver: isFlat
                                   ? SliverResponsiveGrid(
                                       itemCount: flaggedListings.length,
                                       mobileColumns: 2,
@@ -389,8 +389,8 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                       childAspectRatio: 0.72,
                                       itemBuilder: (context, index) {
                                         final listing = flaggedListings[index];
-                                        return IkeaSellerOrderCard(
-                                          cardType: IkeaSellerCardType.flaggedItem,
+                                        return FlatSellerOrderCard(
+                                          cardType: FlatSellerCardType.flaggedItem,
                                           listing: listing,
                                           hasUnread: false,
                                           onTap: () => context.pushNamed(
@@ -526,17 +526,17 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       if (isExpanded)
                         Builder(
                           builder: (context) {
-                            final isIkea =
+                            final isFlat =
                                 colors.primary == const Color(0xFF004181);
                             final sw = MediaQuery.of(context).size.width;
                             final useConstraint = Breakpoints.isDesktop(sw);
-                            final maxW = isIkea ? 1280.0 : 960.0;
+                            final maxW = isFlat ? 1280.0 : 960.0;
                             final sliver = SliverPadding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
                               ),
                               sliver:
-                                  isIkea
+                                  isFlat
                                       ? SliverResponsiveGrid(
                                         itemCount: awaitingDelivery.length,
                                         mobileColumns: 2,
@@ -552,9 +552,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                                 !n.isRead &&
                                                 n.relatedOrderId == order.id,
                                           );
-                                          return IkeaSellerOrderCard(
+                                          return FlatSellerOrderCard(
                                             cardType:
-                                                IkeaSellerCardType
+                                                FlatSellerCardType
                                                     .awaitingDelivery,
                                             order: order,
                                             hasUnread: hasUnread,
@@ -691,11 +691,11 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       if (isExpanded)
                         Builder(
                           builder: (context) {
-                            final isIkea =
+                            final isFlat =
                                 colors.primary == const Color(0xFF004181);
                             final sw = MediaQuery.of(context).size.width;
                             final useConstraint = Breakpoints.isDesktop(sw);
-                            final maxW = isIkea ? 1280.0 : 960.0;
+                            final maxW = isFlat ? 1280.0 : 960.0;
                             final resolver =
                                 ref.watch(statusResolverProvider).value;
                             final sliver = SliverPadding(
@@ -703,7 +703,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                 horizontal: 24,
                               ),
                               sliver:
-                                  isIkea
+                                  isFlat
                                       ? SliverResponsiveGrid(
                                         itemCount: activeTransactions.length,
                                         mobileColumns: 2,
@@ -734,9 +734,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                                 !n.isRead &&
                                                 n.relatedOrderId == order.id,
                                           );
-                                          return IkeaSellerOrderCard(
+                                          return FlatSellerOrderCard(
                                             cardType:
-                                                IkeaSellerCardType
+                                                FlatSellerCardType
                                                     .activeTransaction,
                                             order: order,
                                             statusLabel: statusLabel,
@@ -1008,17 +1008,17 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                           if (isExpanded)
                             Builder(
                               builder: (context) {
-                                final isIkea =
+                                final isFlat =
                                     colors.primary == const Color(0xFF004181);
                                 final sw = MediaQuery.of(context).size.width;
                                 final useConstraint = Breakpoints.isDesktop(sw);
-                                final maxW = isIkea ? 1280.0 : 960.0;
+                                final maxW = isFlat ? 1280.0 : 960.0;
                                 final sliver = SliverPadding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 24,
                                   ),
                                   sliver:
-                                      isIkea
+                                      isFlat
                                           ? SliverResponsiveGrid(
                                             itemCount: filteredHistory.length,
                                             mobileColumns: 2,
@@ -1042,9 +1042,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                                                   item.orderId,
                                                         )
                                                       : false;
-                                              return IkeaSellerOrderCard(
+                                              return FlatSellerOrderCard(
                                                 cardType:
-                                                    IkeaSellerCardType.history,
+                                                    FlatSellerCardType.history,
                                                 historyItem: item,
                                                 hasUnread: hasUnread,
                                                 onTap: item.onTap,

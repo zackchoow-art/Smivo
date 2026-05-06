@@ -6,7 +6,7 @@ import 'theme_variant.dart';
 
 /// Semantic border-radius tokens for the Smivo design system.
 ///
-/// Teal theme uses rounded, pill-like corners; IKEA theme uses
+/// Teal theme uses rounded, pill-like corners; Flat theme uses
 /// near-right-angle "architectural" corners. Widgets access these
 /// via `context.smivoRadius`.
 class SmivoRadius extends ThemeExtension<SmivoRadius> {
@@ -78,8 +78,8 @@ class SmivoRadius extends ThemeExtension<SmivoRadius> {
     dialog: 16,
   );
 
-  // ── Factory: IKEA (architectural / sharp) ──────────────────
-  factory SmivoRadius.ikea() => const SmivoRadius(
+  // ── Factory: Flat (architectural / sharp) ──────────────────
+  factory SmivoRadius.flat() => const SmivoRadius(
     xs: 2,
     sm: 2,
     md: 4,
@@ -101,8 +101,8 @@ class SmivoRadius extends ThemeExtension<SmivoRadius> {
     switch (variant) {
       case SmivoThemeVariant.teal:
         return SmivoRadius.teal();
-      case SmivoThemeVariant.ikea:
-        return SmivoRadius.ikea();
+      case SmivoThemeVariant.flat:
+        return SmivoRadius.flat();
     }
   }
 

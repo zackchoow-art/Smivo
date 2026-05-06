@@ -221,6 +221,9 @@ function ConfigsTab() {
   const contentFilterBlockAction = configs.find(c => c.config_key === 'content_filter.block_action');
   const backendReviewEnabled = configs.find(c => c.config_key === 'backend_review.enabled');
   const backendReviewMode = configs.find(c => c.config_key === 'backend_review.mode');
+  // NOTE: auto_accept_message_enabled controls the order-accepted-message Edge Function.
+  // When enabled, a platform message is sent to the buyer chat room on order acceptance.
+  const autoAcceptMessage = configs.find(c => c.config_key === 'auto_accept_message_enabled');
 
   const isBackendEnabled = backendReviewEnabled?.config_value === 'true' || backendReviewEnabled?.config_value === true;
   const showAiSettings = backendReviewMode?.config_value === 'ai' || backendReviewMode?.config_value === 'both';
@@ -287,6 +290,44 @@ function ConfigsTab() {
                     <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{l}</span>
                   </label>
                 ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Messaging Settings ──────────────────────────────────────── */}
+      <div className="sc-section">
+        <div className="sc-section-header">
+          <ShieldAlert size={20} color="var(--color-success)" />
+          <div>
+            <h2>Messaging</h2>
+            <p className="sc-section-desc">Automated platform messages sent on transaction events</p>
+          </div>
+        </div>
+        <div className="sc-card-list">
+          {autoAcceptMessage && (
+            <div className="sc-card">
+              <div className="sc-card-info">
+                <h3>Auto-Message on Offer Acceptance</h3>
+                <p>
+                  When a seller accepts a buyer's offer, automatically send a platform message
+                  in their chat thread so they can coordinate pickup details immediately.
+                </p>
+              </div>
+              <div className="sc-card-action">
+                <label className="sc-toggle">
+                  <input
+                    type="checkbox"
+                    checked={
+                      autoAcceptMessage.config_value === 'true' ||
+                      autoAcceptMessage.config_value === true
+                    }
+                    onChange={() => handleToggle(autoAcceptMessage)}
+                    disabled={updateConfig.isPending}
+                  />
+                  <span className="sc-slider"></span>
+                </label>
               </div>
             </div>
           )}

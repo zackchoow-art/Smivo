@@ -55,11 +55,16 @@ abstract class Listing with _$Listing {
     @Default('auto_approved')
     String moderationStatus,
     @JsonKey(name: 'moderation_note') String? moderationNote,
+    // Custom pickup address note — filled when seller selects "Other" location.
+    @JsonKey(name: 'custom_pickup_note') String? customPickupNote,
     // NOTE: listing_cycle increments each time a confirmed order is cancelled
     // and the listing is re-released to the market. Orders store their own
     // snapshot of this value so offer counts and notifications can be scoped
     // to the current cycle without deleting historical order records.
     @JsonKey(name: 'listing_cycle') @Default(1) int listingCycle,
+    // Available date: earliest pickup/delivery date set by the seller.
+    // Null means "available immediately" or not specified.
+    @JsonKey(name: 'available_date') DateTime? availableDate,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _Listing;

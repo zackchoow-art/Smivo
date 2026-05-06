@@ -10,15 +10,49 @@ import 'package:smivo/features/home/widgets/featured_listing_card.dart';
 import 'package:smivo/features/home/widgets/home_category_chips.dart';
 import 'package:smivo/features/home/widgets/home_header.dart';
 import 'package:smivo/features/home/widgets/home_search_bar.dart';
-import 'package:smivo/features/home/widgets/ikea_featured_listing_card.dart';
-import 'package:smivo/features/home/widgets/ikea_grid_listing_card.dart';
+import 'package:smivo/features/home/widgets/flat_featured_listing_card.dart';
+import 'package:smivo/features/home/widgets/flat_grid_listing_card.dart';
 import 'package:smivo/core/providers/heartbeat_provider.dart';
+import 'package:smivo/shared/widgets/responsive_scaffold.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  // NOTE: Explicit ScrollController lets us scroll to top programmatically
+  // (double-tap Home nav) and also sets the primary scroll view for iOS
+  // status-bar tap-to-top gesture.
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Scrolls the home feed back to the top with animation.
+  void scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Initialize heartbeat manager (only active when user is logged in)
     ref.watch(heartbeatManagerProvider);
 
@@ -27,7 +61,9 @@ class HomeScreen extends ConsumerWidget {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
-    return Scaffold(
+    return HomeScrollControllerScope(
+      controller: _scrollController,
+      child: Scaffold(
       backgroundColor: colors.background,
       body: SafeArea(
         child: LayoutBuilder(
@@ -48,7 +84,13 @@ class HomeScreen extends ConsumerWidget {
                     // Ignore errors, UI will handle
                   }
                 },
-                child: CustomScrollView(
+                child: PrimaryScrollController(
+                  // NOTE: Wrapping CustomScrollView in PrimaryScrollController
+                  // ensures iOS status-bar tap and double-tap Home nav both
+                  // work correctly by associating our controller as the primary.
+                  controller: _scrollController,
+                  child: CustomScrollView(
+                  controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -103,8 +145,8 @@ class HomeScreen extends ConsumerWidget {
                             );
                           }
 
-                          if (themeVariant == SmivoThemeVariant.ikea) {
-                            return _buildIkeaLayout(context, listings);
+                          if (themeVariant == SmivoThemeVariant.flat) {
+                            return _buildFlatLayout(context, listings);
                           }
 
                           return _buildTealLayout(listings);
@@ -113,14 +155,16 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+                ),
               );
 
               return content;
             },
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
 
   /// Teal theme: original single-column layout, but responsive on tablet/desktop.
   /// First 4 = FeaturedListingCard, rest = CompactListingCard.
@@ -210,10 +254,10 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  /// IKEA theme: featured cards + responsive grid.
-  /// First 4 = IkeaFeaturedListingCard (full-width or 2-col),
-  /// from item 5 = IkeaGridListingCard (2/3/4 columns by screen width).
-  Widget _buildIkeaLayout(BuildContext context, List listings) {
+  /// Flat theme: featured cards + responsive grid.
+  /// First 4 = FlatFeaturedListingCard (full-width or 2-col),
+  /// from item 5 = FlatGridListingCard (2/3/4 columns by screen width).
+  Widget _buildFlatLayout(BuildContext context, List listings) {
     final featuredCount = listings.length < 4 ? listings.length : 4;
     final gridItems = listings.length > 4 ? listings.sublist(4) : [];
 
@@ -239,7 +283,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) =>
-                        IkeaFeaturedListingCard(listing: listings[index]),
+                        FlatFeaturedListingCard(listing: listings[index]),
                     childCount: featuredCount,
                   ),
                 );
@@ -249,7 +293,7 @@ class HomeScreen extends ConsumerWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => Padding(
                     padding: const EdgeInsets.only(bottom: 48),
-                    child: IkeaFeaturedListingCard(listing: listings[index]),
+                    child: FlatFeaturedListingCard(listing: listings[index]),
                   ),
                   childCount: featuredCount,
                 ),
@@ -291,7 +335,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) =>
-                        IkeaGridListingCard(listing: gridItems[index]),
+                        FlatGridListingCard(listing: gridItems[index]),
                     childCount: gridItems.length,
                   ),
                 );

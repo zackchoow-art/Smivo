@@ -12,7 +12,7 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/responsive_grid.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
-import 'package:smivo/features/buyer/widgets/ikea_buyer_order_card.dart';
+import 'package:smivo/features/buyer/widgets/flat_buyer_order_card.dart';
 
 class BuyerCenterScreen extends ConsumerStatefulWidget {
   const BuyerCenterScreen({super.key});
@@ -276,7 +276,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final isExpanded = _expandedSections[title] ?? true;
-    final isIkea = colors.primary == const Color(0xFF004181);
+    final isFlat = colors.primary == const Color(0xFF004181);
 
     return [
       SliverPadding(
@@ -313,16 +313,16 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
       // NOTE: Hide the list entirely when the section is collapsed.
       if (isExpanded)
         // NOTE: ContentWidthConstraint centers cards on desktop.
-        // IKEA grid maxWidth 1280; Teal list maxWidth 960.
+        // Flat grid maxWidth 1280; Teal list maxWidth 960.
         Builder(
           builder: (context) {
             final sw = MediaQuery.of(context).size.width;
             final useConstraint = Breakpoints.isDesktop(sw);
-            final maxW = isIkea ? 1280.0 : 960.0;
+            final maxW = isFlat ? 1280.0 : 960.0;
             final sliver = SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver:
-                  isIkea
+                  isFlat
                       ? SliverResponsiveGrid(
                         itemCount: orders.length,
                         mobileColumns: 2,
@@ -336,7 +336,7 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
                           final hasUnread = notifications.any(
                             (n) => !n.isRead && n.relatedOrderId == order.id,
                           );
-                          return IkeaBuyerOrderCard(
+                          return FlatBuyerOrderCard(
                             order: order,
                             sectionTitle: title,
                             hasUnread: hasUnread,

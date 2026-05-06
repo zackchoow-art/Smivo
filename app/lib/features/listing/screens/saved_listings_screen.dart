@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/listing/providers/saved_listing_provider.dart';
-import 'package:smivo/features/listing/widgets/ikea_saved_listing_card.dart';
+import 'package:smivo/features/listing/widgets/flat_saved_listing_card.dart';
 import 'package:smivo/features/listing/widgets/saved_listing_card.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
@@ -135,7 +135,7 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final isExpanded = _expandedSections[title] ?? true;
-    final isIkea = colors.primary == const Color(0xFF004181);
+    final isFlat = colors.primary == const Color(0xFF004181);
 
     return [
       SliverPadding(
@@ -174,12 +174,12 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
           builder: (context) {
             final sw = MediaQuery.of(context).size.width;
             final useConstraint = Breakpoints.isDesktop(sw);
-            final maxW = isIkea ? 1280.0 : 960.0;
+            final maxW = isFlat ? 1280.0 : 960.0;
 
             final sliver = SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver:
-                  isIkea
+                  isFlat
                       ? SliverResponsiveGrid(
                         itemCount: items.length,
                         mobileColumns: 2,
@@ -189,7 +189,7 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
                         mainAxisSpacing: 12,
                         childAspectRatio: 0.72,
                         itemBuilder: (context, index) {
-                          return IkeaSavedListingCard(
+                          return FlatSavedListingCard(
                             savedListing: items[index],
                           );
                         },

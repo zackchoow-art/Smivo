@@ -6,7 +6,7 @@ import 'theme_variant.dart';
 /// Typography tokens for the Smivo design system.
 ///
 /// Teal uses Plus Jakarta Sans for headlines + Manrope for body;
-/// IKEA uses Plus Jakarta Sans throughout. Labels in the IKEA theme
+/// Flat uses Plus Jakarta Sans throughout. Labels in the Flat theme
 /// are uppercase with wider letter-spacing.
 ///
 /// Widgets access typography via `context.smivoTypo`.
@@ -40,7 +40,7 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
   /// All-caps utility label (categories, statuses).
   final TextStyle labelUppercase;
 
-  /// Price display — bright + bold in Teal, dark + extrabold in IKEA.
+  /// Price display — bright + bold in Teal, dark + extrabold in Flat.
   final TextStyle priceStyle;
 
   // ── Factory: Teal ──────────────────────────────────────────
@@ -102,8 +102,8 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
     );
   }
 
-  // ── Factory: IKEA ──────────────────────────────────────────
-  factory SmivoTypography.ikea() {
+  // ── Factory: Flat ──────────────────────────────────────────
+  factory SmivoTypography.flat() {
     final font = GoogleFonts.plusJakartaSans;
     const c = Color(0xFF1A1C1C);
 
@@ -142,7 +142,7 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
       titleMedium: font(fontSize: 16, fontWeight: FontWeight.w700, color: c),
       labelLarge: font(fontSize: 14, fontWeight: FontWeight.w700, color: c),
       labelSmall: font(fontSize: 12, fontWeight: FontWeight.w700, color: c),
-      // IKEA labels are always uppercase with wider tracking
+      // Flat labels are always uppercase with wider tracking
       labelUppercase: font(
         fontSize: 12,
         fontWeight: FontWeight.w700,
@@ -163,8 +163,8 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
     switch (variant) {
       case SmivoThemeVariant.teal:
         return SmivoTypography.teal();
-      case SmivoThemeVariant.ikea:
-        return SmivoTypography.ikea();
+      case SmivoThemeVariant.flat:
+        return SmivoTypography.flat();
     }
   }
 

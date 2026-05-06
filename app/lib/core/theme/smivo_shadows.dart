@@ -4,7 +4,7 @@ import 'theme_variant.dart';
 
 /// Shadow tokens for the Smivo design system.
 ///
-/// Teal theme uses minimal shadows; IKEA uses "ambient" diffused shadows
+/// Teal theme uses minimal shadows; Flat uses "ambient" diffused shadows
 /// as per the "Democratic Architect" design spec. Widgets access these
 /// via `context.smivoShadows`.
 class SmivoShadows extends ThemeExtension<SmivoShadows> {
@@ -45,8 +45,8 @@ class SmivoShadows extends ThemeExtension<SmivoShadows> {
     ],
   );
 
-  // ── Factory: IKEA (ambient / diffused) ─────────────────────
-  factory SmivoShadows.ikea() => const SmivoShadows(
+  // ── Factory: Flat (ambient / diffused) ─────────────────────
+  factory SmivoShadows.flat() => const SmivoShadows(
     card: [
       BoxShadow(
         color: Color(0x0F1A1C1C),
@@ -86,8 +86,8 @@ class SmivoShadows extends ThemeExtension<SmivoShadows> {
     switch (variant) {
       case SmivoThemeVariant.teal:
         return SmivoShadows.teal();
-      case SmivoThemeVariant.ikea:
-        return SmivoShadows.ikea();
+      case SmivoThemeVariant.flat:
+        return SmivoShadows.flat();
     }
   }
 

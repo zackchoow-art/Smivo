@@ -3,8 +3,8 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 
 /// Maps a listing condition value to a user-friendly display label.
 ///
-/// NOTE: The IKEA design uses prominent yellow badges for item condition.
-/// This widget is intentionally IKEA-specific and only used in IKEA
+/// NOTE: The Flat design uses prominent yellow badges for item condition.
+/// This widget is intentionally Flat-specific and only used in Flat
 /// theme card variants.
 String _conditionLabel(String condition) {
   switch (condition.toLowerCase()) {
@@ -36,8 +36,8 @@ class ConditionBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        // NOTE: Uses IKEA yellow (secondaryContainer) as the badge
-        // background to match the IKEA design language.
+        // NOTE: Uses Flat yellow (secondaryContainer) as the badge
+        // background to match the Flat design language.
         color: colors.secondaryContainer,
         borderRadius: BorderRadius.circular(2),
       ),

@@ -15,6 +15,7 @@ import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/core/providers/preferences_provider.dart';
+import 'package:smivo/features/listing/providers/saved_location_provider.dart';
 
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 
@@ -31,9 +32,12 @@ class _CreateListingFormScreenState
     extends ConsumerState<CreateListingFormScreen> {
   late dynamic modeProvider;
   PickupLocation? _selectedPickup;
+  String _customLocationNote = '';   // Custom address when 'Other' is selected
   bool _allowBuyerToSuggest = false;
   bool _isSubmitting = false;
   String _selectedCondition = 'good';
+  // C2: Available date — null means "available now" or not specified.
+  DateTime? _availableDate;
 
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -42,6 +46,7 @@ class _CreateListingFormScreenState
   final _dailyController = TextEditingController();
   final _weeklyController = TextEditingController();
   final _monthlyController = TextEditingController();
+  final _customLocationController = TextEditingController();
 
   bool _dailyEnabled = true;
   bool _weeklyEnabled = false;
@@ -82,6 +87,7 @@ class _CreateListingFormScreenState
     _dailyController.dispose();
     _weeklyController.dispose();
     _monthlyController.dispose();
+    _customLocationController.dispose();
     super.dispose();
   }
 
@@ -458,7 +464,8 @@ class _CreateListingFormScreenState
                                 }
                               }
 
-                              return Container(
+                              // Build the base dropdown widget.
+                              final dropdownWidget = Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                 ),
@@ -481,7 +488,18 @@ class _CreateListingFormScreenState
                                       color: colors.onSurface,
                                     ),
                                     onChanged: (v) {
-                                      setState(() => _selectedPickup = v);
+                                      setState(() {
+                                        _selectedPickup = v;
+                                        // NOTE: Reset custom note when switching
+                                        // away from 'Other' location.
+                                        if (v != null &&
+                                            !v.name
+                                                .toLowerCase()
+                                                .startsWith('other')) {
+                                          _customLocationNote = '';
+                                          _customLocationController.clear();
+                                        }
+                                      });
                                       // Persist the selection so next time
                                       // the form opens it defaults to this.
                                       if (v != null) {
@@ -493,19 +511,117 @@ class _CreateListingFormScreenState
                                             .save(v.id);
                                       }
                                     },
-                                    items:
-                                        locations
-                                            .map(
-                                              (loc) => DropdownMenuItem<
-                                                PickupLocation
-                                              >(
-                                                value: loc,
-                                                child: Text('${loc.name}, ${activeSchools.where((s) => s.id == loc.schoolId).firstOrNull?.name ?? 'Unknown'}'),
-                                              ),
-                                            )
-                                            .toList(),
+                                    items: locations
+                                        .map(
+                                          (loc) =>
+                                              DropdownMenuItem<PickupLocation>(
+                                            value: loc,
+                                            child: Text(
+                                              '${loc.name}, ${activeSchools.where((s) => s.id == loc.schoolId).firstOrNull?.name ?? 'Unknown'}',
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
                                   ),
                                 ),
+                              );
+
+                              // NOTE: Show custom address field + history only
+                              // when "Other (Specify in Chat)" is selected.
+                              // Detected by name prefix to avoid hardcoding UUID.
+                              final isOther = _selectedPickup != null &&
+                                  _selectedPickup!.name
+                                      .toLowerCase()
+                                      .startsWith('other');
+
+                              if (!isOther) return dropdownWidget;
+
+                              final savedAsync =
+                                  ref.watch(savedLocationsProvider);
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  dropdownWidget,
+                                  const SizedBox(height: 12),
+                                  // Custom address text field
+                                  TextField(
+                                    controller: _customLocationController,
+                                    onChanged: (v) => setState(
+                                      () => _customLocationNote = v,
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          'Enter a specific meeting spot...',
+                                      filled: true,
+                                      fillColor: colors.surfaceContainerLow,
+                                      contentPadding:
+                                          const EdgeInsets.all(12),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          radius.input,
+                                        ),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
+                                  // Previously used addresses
+                                  savedAsync.when(
+                                    loading: () => const SizedBox.shrink(),
+                                    error: (_, __) =>
+                                        const SizedBox.shrink(),
+                                    data: (saved) {
+                                      if (saved.isEmpty) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Previously used',
+                                            style: typo.bodySmall.copyWith(
+                                              color: colors.onSurfaceVariant,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 4,
+                                            children: saved.map((addr) {
+                                              return GestureDetector(
+                                                onTap: () => setState(() {
+                                                  _customLocationController
+                                                      .text = addr;
+                                                  _customLocationNote = addr;
+                                                }),
+                                                // NOTE: Long-press to delete.
+                                                onLongPress: () => ref
+                                                    .read(
+                                                      savedLocationsProvider
+                                                          .notifier,
+                                                    )
+                                                    .delete(addr),
+                                                child: Chip(
+                                                  label: Text(
+                                                    addr,
+                                                    style: typo.bodySmall,
+                                                  ),
+                                                  backgroundColor: colors
+                                                      .surfaceContainerLow,
+                                                  side: BorderSide.none,
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
                               );
                             },
                           );
@@ -524,6 +640,82 @@ class _CreateListingFormScreenState
                         contentPadding: EdgeInsets.zero,
                       ),
                       const SizedBox(height: 24),
+                      // C2: Available date picker
+                      Text(
+                        'Available Date',
+                        style: typo.labelLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Earliest date you can hand off this item (optional)',
+                        style: typo.bodySmall.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: _availableDate ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
+                            ),
+                          );
+                          if (picked != null) {
+                            setState(() => _availableDate = picked);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(radius.input),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_today_outlined,
+                                size: 18,
+                                color: colors.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _availableDate == null
+                                      ? 'Available now (tap to set a date)'
+                                      : '${_availableDate!.year}-'
+                                          '${_availableDate!.month.toString().padLeft(2, '0')}-'
+                                          '${_availableDate!.day.toString().padLeft(2, '0')}',
+                                  style: typo.bodyMedium.copyWith(
+                                    color:
+                                        _availableDate == null
+                                            ? colors.onSurfaceVariant
+                                            : colors.onSurface,
+                                  ),
+                                ),
+                              ),
+                              if (_availableDate != null)
+                                GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _availableDate = null),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 16,
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 48),
                       SizedBox(
                         width: double.infinity,
@@ -761,9 +953,13 @@ class _CreateListingFormScreenState
             monthlyRate: monthlyRate,
             depositAmount: deposit,
             pickupLocationId: _selectedPickup?.id,
+            customPickupNote: _customLocationNote.trim().isEmpty
+                ? null
+                : _customLocationNote.trim(),
             allowPickupChange: _allowBuyerToSuggest,
             isPinned: false,
             pinnedDays: null,
+            availableDate: _availableDate,
           );
 
       // Post-creation cleanup — done here (screen level) rather than inside
@@ -771,6 +967,12 @@ class _CreateListingFormScreenState
       // can cause a "provider disposed" exception even though the listing was
       // successfully created.
       if (!mounted) return;
+      // NOTE: Save custom address to user history so it appears as a
+      // suggestion chip on the next listing. Only save non-empty notes.
+      final note = _customLocationNote.trim();
+      if (note.isNotEmpty) {
+        ref.read(savedLocationsProvider.notifier).save(note);
+      }
       ref.invalidate(homeListingsProvider);
       ref.read(listingPhotosProvider.notifier).clear();
       ref.read(selectedListingCategoryProvider.notifier).clear();

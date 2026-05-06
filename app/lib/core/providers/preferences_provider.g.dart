@@ -144,3 +144,81 @@ abstract class _$LastPickupLocationId extends $Notifier<String?> {
     element.handleCreate(ref, build);
   }
 }
+
+/// Persists whether the floating quick-nav speed-dial is shown.
+///
+/// Defaults to [true] (visible) if no preference has been saved.
+/// Users can toggle this from System Settings.
+///
+/// NOTE: keepAlive: true so the toggle survives tab switches.
+
+@ProviderFor(ShowFloatingNav)
+final showFloatingNavProvider = ShowFloatingNavProvider._();
+
+/// Persists whether the floating quick-nav speed-dial is shown.
+///
+/// Defaults to [true] (visible) if no preference has been saved.
+/// Users can toggle this from System Settings.
+///
+/// NOTE: keepAlive: true so the toggle survives tab switches.
+final class ShowFloatingNavProvider
+    extends $NotifierProvider<ShowFloatingNav, bool> {
+  /// Persists whether the floating quick-nav speed-dial is shown.
+  ///
+  /// Defaults to [true] (visible) if no preference has been saved.
+  /// Users can toggle this from System Settings.
+  ///
+  /// NOTE: keepAlive: true so the toggle survives tab switches.
+  ShowFloatingNavProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'showFloatingNavProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$showFloatingNavHash();
+
+  @$internal
+  @override
+  ShowFloatingNav create() => ShowFloatingNav();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$showFloatingNavHash() => r'48e4aad5e7fea7a3cc96aeef9cce5f71132d900e';
+
+/// Persists whether the floating quick-nav speed-dial is shown.
+///
+/// Defaults to [true] (visible) if no preference has been saved.
+/// Users can toggle this from System Settings.
+///
+/// NOTE: keepAlive: true so the toggle survives tab switches.
+
+abstract class _$ShowFloatingNav extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

@@ -112,9 +112,13 @@ class CreateListingAction extends _$CreateListingAction {
     double? monthlyRate,
     double? depositAmount,
     String? pickupLocationId,
+    String? customPickupNote,
     bool allowPickupChange = false,
     bool isPinned = false,
     int? pinnedDays,
+    // Earliest date the item is available for pickup/handover.
+    // Null means immediately available or no preference.
+    DateTime? availableDate,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -183,6 +187,7 @@ class CreateListingAction extends _$CreateListingAction {
         sellerId: user.id,
         schoolId: schoolId,
         pickupLocationId: pickupLocationId,
+        customPickupNote: customPickupNote,
         allowPickupChange: allowPickupChange,
         title: finalTitle,
         description: finalDescription,
@@ -198,6 +203,7 @@ class CreateListingAction extends _$CreateListingAction {
         isPinned: isPinned,
         pinnedDays: pinnedDays,
         condition: condition,
+        availableDate: availableDate,
         status: 'active',
         createdAt: now,
         updatedAt: now,

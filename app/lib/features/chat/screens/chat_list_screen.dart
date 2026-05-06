@@ -13,6 +13,7 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
+import 'package:smivo/features/notifications/providers/notification_provider.dart';
 
 class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
@@ -105,6 +106,15 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
+              // ── Notification Banner (B4) ─────────────────────────────
+              // Shows the most recent unread notification as a tappable
+              // banner. Tap navigates to the notification center.
+              // Hidden when there are no unread notifications.
+              SliverToBoxAdapter(
+                child: _NotificationBanner(
+                  useWidthConstraint: useWidthConstraint,
+                ),
+              ),
               SliverPadding(
                 padding: const EdgeInsets.only(left: 24, right: 24, top: 12),
                 sliver: SliverToBoxAdapter(
@@ -241,7 +251,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   }
 
                   return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    // NOTE: Bottom padding compensates for the BottomNavBar
+                    // height (~80px) so the last chat item is always tappable.
+                    padding: const EdgeInsets.only(
+                      left: 24,
+                      right: 24,
+                      bottom: 80,
+                    ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final room = searchFiltered[index];
@@ -378,6 +394,119 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           borderSide: BorderSide.none,
         ),
       ),
+    );
+  }
+}
+
+// ── Notification Banner Widget ─────────────────────────────────────────────
+/// Shows the most recent unread notification as a compact tappable banner.
+///
+/// Dismissible by the user for the current session (local state only).
+/// Navigates to the notification center on tap.
+class _NotificationBanner extends ConsumerStatefulWidget {
+  const _NotificationBanner({required this.useWidthConstraint});
+
+  final bool useWidthConstraint;
+
+  @override
+  ConsumerState<_NotificationBanner> createState() =>
+      _NotificationBannerState();
+}
+
+class _NotificationBannerState extends ConsumerState<_NotificationBanner> {
+  // NOTE: Tracks dismissed notification IDs for the current session.
+  // We only hide the banner locally — the underlying notification is
+  // not marked as read until the user visits the notification center.
+  final Set<String> _dismissed = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final notificationsAsync = ref.watch(notificationListProvider);
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    return notificationsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (notifications) {
+        // Pick the most recent unread notification that hasn't been dismissed.
+        final latest = notifications
+            .where((n) => !n.isRead && !_dismissed.contains(n.id))
+            .firstOrNull;
+
+        if (latest == null) return const SizedBox.shrink();
+
+        final banner = Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Material(
+            // NOTE: Use a slightly elevated card so the banner stands out
+            // without being visually heavy on the list.
+            color: colors.primaryContainer,
+            borderRadius: BorderRadius.circular(radius.card),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(radius.card),
+              onTap: () => context.goNamed(AppRoutes.notificationCenter),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.notifications_outlined,
+                      size: 18,
+                      color: colors.onPrimary,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            latest.title,
+                            style: typo.labelLarge.copyWith(
+                              color: colors.onPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            latest.body,
+                            style: typo.labelSmall.copyWith(
+                              color: colors.onPrimary.withValues(
+                                alpha: 0.8,
+                              ),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    // Dismiss button — hides for this session only.
+                    GestureDetector(
+                      onTap: () => setState(() => _dismissed.add(latest.id)),
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: colors.onPrimary.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+
+        if (!widget.useWidthConstraint) return banner;
+        return ContentWidthConstraint(maxWidth: 768, child: banner);
+      },
     );
   }
 }

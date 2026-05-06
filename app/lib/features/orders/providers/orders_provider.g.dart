@@ -497,7 +497,7 @@ final class UnreadBuyerUpdatesCountProvider
 }
 
 String _$unreadBuyerUpdatesCountHash() =>
-    r'2c697c370de13efe7c4465d7e9c941e204925586';
+    r'6e5001f104acb71a8533a15605ae51d89c1955a7';
 
 @ProviderFor(unreadSellerUpdatesCount)
 final unreadSellerUpdatesCountProvider = UnreadSellerUpdatesCountProvider._();
@@ -531,4 +531,4 @@ final class UnreadSellerUpdatesCountProvider
 }
 
 String _$unreadSellerUpdatesCountHash() =>
-    r'1f1d08c84b38a056bf3f75b517ae92a1ddd96bac';
+    r'f9f3968b25e726f7b295362b47b3dddad7f55a50';

@@ -198,7 +198,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 // NOTE: Condition label with themed background chip.
-                                // Uses secondaryContainer (IKEA yellow / Teal accent)
+                                // Uses secondaryContainer (Flat yellow / Teal accent)
                                 // for visual prominence below the title.
                                 Container(
                                   padding: const EdgeInsets.symmetric(

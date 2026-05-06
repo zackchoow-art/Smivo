@@ -3,6 +3,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/core/providers/theme_provider.dart';
 import 'package:smivo/core/providers/shake_feedback_provider.dart';
+import 'package:smivo/core/providers/preferences_provider.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -108,7 +109,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                                           ),
                                         ),
                                         ButtonSegment(
-                                          value: SmivoThemeVariant.ikea,
+                                          value: SmivoThemeVariant.flat,
                                           label: Text('Flat'),
                                           icon: Icon(
                                             Icons.square_outlined,
@@ -338,6 +339,66 @@ class SystemSettingsScreen extends ConsumerWidget {
                                   activeColor: colors.primary,
                                   onChanged: (value) {
                                     ref.read(shakeFeedbackProvider.notifier).toggle(value);
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Quick Navigation toggle
+                      SettingCardContainer(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: colors.surfaceContainerLowest,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.apps_rounded,
+                                color: colors.settingsIcon,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Quick Navigation',
+                                    style: typo.bodyLarge.copyWith(
+                                      color: colors.onSurface,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Show floating shortcut button for Home, Chat, Post, Orders',
+                                    style: typo.bodySmall.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final isEnabled =
+                                    ref.watch(showFloatingNavProvider);
+                                return Switch.adaptive(
+                                  value: isEnabled,
+                                  activeColor: colors.primary,
+                                  onChanged: (value) {
+                                    ref
+                                        .read(
+                                          showFloatingNavProvider.notifier,
+                                        )
+                                        .set(value);
                                   },
                                 );
                               },

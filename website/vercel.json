@@ -2,7 +2,7 @@
   "redirects": [
     {
       "source": "/listing/:id",
-      "destination": "/",
+      "destination": "https://smivo.app/listing/:id",
       "permanent": false
     }
   ]

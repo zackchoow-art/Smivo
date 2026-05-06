@@ -51,8 +51,14 @@ class AppRouterNotifier extends _$AppRouterNotifier implements Listenable {
   /// location changes. Returns a redirect path, or null to stay put.
   String? redirect(BuildContext context, GoRouterState state) {
     // Read current auth/profile state synchronously.
-    // NOTE: Use .value (not .requireValue) to safely handle loading states.
     final authStateValue = ref.read(authStateProvider);
+
+    // NOTE: Guard against loading state — when auth is still resolving
+    // (e.g. app just launched or mid sign-in/sign-out), return null to stay
+    // put. The notifier will fire again once the state settles, triggering
+    // a second redirect evaluation with the correct values.
+    if (authStateValue.isLoading) return null;
+
     final user = authStateValue.value;
     final isLoggedIn = user != null;
     final isEmailVerified = user?.emailConfirmedAt != null;

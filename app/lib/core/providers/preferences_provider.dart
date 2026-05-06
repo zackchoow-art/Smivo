@@ -7,6 +7,9 @@ part 'preferences_provider.g.dart';
 // ── Keys ───────────────────────────────────────────────────────────────────
 // NOTE: Use a namespaced prefix to avoid collisions with other SharedPrefs.
 const _kLastPickupLocationId = 'smivo.listing.lastPickupLocationId';
+// NOTE: Controls visibility of the floating quick-nav dial.
+// Defaults to true (visible) on first launch.
+const _kShowFloatingNav = 'smivo.ui.showFloatingNav';
 
 // ── SharedPreferences singleton ────────────────────────────────────────────
 
@@ -50,5 +53,30 @@ class LastPickupLocationId extends _$LastPickupLocationId {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kLastPickupLocationId);
     state = null;
+  }
+}
+
+// ── Floating Quick-Nav Visibility ─────────────────────────────────────────
+
+/// Persists whether the floating quick-nav speed-dial is shown.
+///
+/// Defaults to [true] (visible) if no preference has been saved.
+/// Users can toggle this from System Settings.
+///
+/// NOTE: keepAlive: true so the toggle survives tab switches.
+@Riverpod(keepAlive: true)
+class ShowFloatingNav extends _$ShowFloatingNav {
+  @override
+  bool build() {
+    final prefs = ref.watch(sharedPreferencesProvider).value;
+    // Default to true — show the dial by default on first launch.
+    return prefs?.getBool(_kShowFloatingNav) ?? true;
+  }
+
+  /// Persists [value] and updates local state immediately.
+  Future<void> set(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowFloatingNav, value);
+    state = value;
   }
 }

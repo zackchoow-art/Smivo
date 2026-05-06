@@ -10,7 +10,7 @@ part of 'theme_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// Persists and exposes the user's chosen [SmivoThemeVariant].
 ///
-/// On first launch, defaults to [SmivoThemeVariant.teal]. The selected
+/// On first launch, defaults to [SmivoThemeVariant.flat]. The selected
 /// variant is saved to SharedPreferences so it survives app restarts.
 ///
 /// Widgets watch this provider via `ref.watch(themeProvider)`
@@ -21,7 +21,7 @@ final themeProvider = ThemeNotifierProvider._();
 
 /// Persists and exposes the user's chosen [SmivoThemeVariant].
 ///
-/// On first launch, defaults to [SmivoThemeVariant.teal]. The selected
+/// On first launch, defaults to [SmivoThemeVariant.flat]. The selected
 /// variant is saved to SharedPreferences so it survives app restarts.
 ///
 /// Widgets watch this provider via `ref.watch(themeProvider)`
@@ -30,7 +30,7 @@ final class ThemeNotifierProvider
     extends $NotifierProvider<ThemeNotifier, SmivoThemeVariant> {
   /// Persists and exposes the user's chosen [SmivoThemeVariant].
   ///
-  /// On first launch, defaults to [SmivoThemeVariant.teal]. The selected
+  /// On first launch, defaults to [SmivoThemeVariant.flat]. The selected
   /// variant is saved to SharedPreferences so it survives app restarts.
   ///
   /// Widgets watch this provider via `ref.watch(themeProvider)`
@@ -62,11 +62,11 @@ final class ThemeNotifierProvider
   }
 }
 
-String _$themeNotifierHash() => r'dd8522f98eb10bc657444ab9e662192fec8fb526';
+String _$themeNotifierHash() => r'f66833a0d1f95c5439bf7a354cd973c6e7a92930';
 
 /// Persists and exposes the user's chosen [SmivoThemeVariant].
 ///
-/// On first launch, defaults to [SmivoThemeVariant.teal]. The selected
+/// On first launch, defaults to [SmivoThemeVariant.flat]. The selected
 /// variant is saved to SharedPreferences so it survives app restarts.
 ///
 /// Widgets watch this provider via `ref.watch(themeProvider)`

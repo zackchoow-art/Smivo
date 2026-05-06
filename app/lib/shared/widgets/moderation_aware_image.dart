@@ -43,12 +43,16 @@ class ModerationAwareImage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final flaggedUrls = ref.watch(flaggedImageUrlsProvider);
+    final flaggedUrlsAsync = ref.watch(flaggedImageUrlsProvider);
 
-    // NOTE: Check if this URL is in the local flagged set.
-    // The set is populated from backend_moderation_logs at app startup
-    // and updated when new flags come in during the session.
-    final isFlagged = flaggedUrls.contains(imageUrl);
+    // NOTE: flaggedImageUrlsProvider is an AsyncNotifierProvider returning
+    // AsyncValue<Set<String>>. We must unwrap it before calling .contains().
+    // While loading or on error we treat the image as clean (not flagged).
+    final isFlagged = flaggedUrlsAsync.when(
+      data: (urls) => urls.contains(imageUrl),
+      loading: () => false,
+      error: (_, __) => false,
+    );
 
     final image = Image.network(
       imageUrl,
