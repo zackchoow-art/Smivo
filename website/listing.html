@@ -223,7 +223,7 @@
       // NOTE: Fetch basic listing data using the public anon key.
       // RLS allows reading active listings without auth.
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/listings?id=eq.${listingId}&select=id,title,price,rental_type,listing_images(image_url,display_order)&limit=1`,
+        `${SUPABASE_URL}/rest/v1/listings?id=eq.${listingId}&select=id,title,price,rental_type,listing_images(image_url,sort_order)&limit=1`,
         { headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' } }
       );
       const data = await res.json();
@@ -247,7 +247,7 @@
 
       // Show first listing image if available
       const images = listing.listing_images || [];
-      images.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      images.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       if (images.length > 0 && images[0].image_url) {
         const img = document.getElementById('listing-img');
         img.src = images[0].image_url;

@@ -18,7 +18,7 @@ export default async function handler(request) {
     try {
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/listings?id=eq.${encodeURIComponent(id)}` +
-          `&select=title,price,rental_type,listing_images(image_url,display_order)&limit=1`,
+          `&select=title,price,rental_type,listing_images(image_url,sort_order)&limit=1`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY,
@@ -38,7 +38,7 @@ export default async function handler(request) {
             ? `$${parseFloat(listing.price).toFixed(0)}`
             : '';
         const images = (listing.listing_images || []).sort(
-          (a, b) => (a.display_order || 0) - (b.display_order || 0),
+          (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
         );
         if (images[0]?.image_url) productImageUrl = images[0].image_url;
       }

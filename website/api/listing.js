@@ -25,7 +25,7 @@ export default async function handler(request) {
     try {
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/listings?id=eq.${encodeURIComponent(id)}` +
-          `&select=title,price,rental_type,listing_images(image_url,display_order)&limit=1`,
+          `&select=title,price,rental_type,listing_images(image_url,sort_order)&limit=1`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY,
@@ -46,7 +46,7 @@ export default async function handler(request) {
             : '';
         description = `${title}${priceText ? ` — ${priceText}` : ''} · Available on Smivo`;
         const images = (listing.listing_images || []).sort(
-          (a, b) => (a.display_order || 0) - (b.display_order || 0),
+          (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
         );
         if (images[0]?.image_url) productImageUrl = images[0].image_url;
       }
@@ -149,11 +149,11 @@ export default async function handler(request) {
   const SBKEY = '${SUPABASE_ANON_KEY}';
   const id = '${esc(id)}';
   if (id) {
-    fetch(SBURL+'/rest/v1/listings?id=eq.'+id+'&select=listing_images(image_url,display_order)&limit=1',
+    fetch(SBURL+'/rest/v1/listings?id=eq.'+id+'&select=listing_images(image_url,sort_order)&limit=1',
       {headers:{apikey:SBKEY}})
       .then(r=>r.json()).then(data=>{
         const imgs = ((data&&data[0]&&data[0].listing_images)||[])
-          .sort((a,b)=>(a.display_order||0)-(b.display_order||0));
+          .sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
         if(imgs[0]?.image_url){
           const img=document.getElementById('product-img');
           img.src=imgs[0].image_url;
