@@ -79,9 +79,13 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
   void _handleDeepLink(Uri uri) {
     // NOTE: Auth callback deep links carry tokens from email verification.
     // Format: smivo://auth/callback?access_token=xxx&refresh_token=xxx
-    // When present, we call setSession() to auto-login the user so they
-    // don't need to re-enter their password after verifying their email.
-    if (uri.path == '/auth/callback') {
+    //
+    // IMPORTANT: In custom URL schemes, Dart's Uri parser treats the part
+    // after :// as the HOST, not the path:
+    //   smivo://auth/callback  →  host="auth", path="/callback"
+    //   https://smivo.io/auth/callback  →  host="smivo.io", path="/auth/callback"
+    // We must check both formats to handle custom scheme + Universal Links.
+    if (_isAuthCallback(uri)) {
       final refreshToken = uri.queryParameters['refresh_token'];
       if (refreshToken != null && refreshToken.isNotEmpty) {
         _handleAuthCallback(refreshToken);
@@ -100,6 +104,17 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
         ref.read(routerProvider).go(uri.path);
       });
     }
+  }
+
+  /// Detects whether [uri] is an auth callback, handling both:
+  /// - Custom URL scheme: smivo://auth/callback (host=auth, path=/callback)
+  /// - Universal Link: https://smivo.io/auth/callback (path=/auth/callback)
+  bool _isAuthCallback(Uri uri) {
+    // Custom scheme: smivo://auth/callback
+    if (uri.host == 'auth' && uri.path == '/callback') return true;
+    // Universal Link: https://smivo.io/auth/callback
+    if (uri.path == '/auth/callback') return true;
+    return false;
   }
 
   /// Exchanges a refresh token from the auth callback deep link for a full
