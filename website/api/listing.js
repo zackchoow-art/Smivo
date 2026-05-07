@@ -55,11 +55,11 @@ export default async function handler(request) {
     }
   }
 
-  // NOTE: Use a clean, static-looking path for og:image so crawlers like
-  // WeChat (which distrust query-parameter image URLs) treat it as a real
-  // image file. Vercel rewrites /listing/:id/image.jpg → /api/img?id=:id.
+  // NOTE: og:image is a dynamically generated card (600×315 PNG, ~50-150KB)
+  // with product photo + price overlay. Small size keeps WeChat happy.
+  // Vercel rewrites /listing/:id/card.png → /api/og?id=:id.
   const ogImage = id
-    ? `https://smivo.io/listing/${encodeURIComponent(id)}/image.jpg`
+    ? `https://smivo.io/listing/${encodeURIComponent(id)}/card.png`
     : 'https://smivo.io/og-image.png';
   const canonical = `https://smivo.io/listing/${encodeURIComponent(id)}`;
 
@@ -77,19 +77,19 @@ export default async function handler(request) {
   <meta property="og:site_name" content="Smivo">
   <meta property="og:url" content="${canonical}">
   <meta property="og:title" content="${esc(title)}">
-  <meta property="og:description" content="${esc(description)}">
   <meta property="og:image" content="${ogImage}">
+  <meta property="og:image:width" content="600">
+  <meta property="og:image:height" content="315">
+  <meta property="og:image:type" content="image/png">
 
-  <!-- WeChat / Schema.org (WeChat prefers itemprop over og:image) -->
+  <!-- WeChat / Schema.org -->
   <meta itemprop="name" content="${esc(title)}">
-  <meta itemprop="description" content="${esc(description)}">
   <meta itemprop="image" content="${ogImage}">
-  <meta name="description" content="${esc(description)}">
+  <meta name="description" content="${esc(title)} — Smivo Campus Marketplace">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${esc(title)}">
-  <meta name="twitter:description" content="${esc(description)}">
   <meta name="twitter:image" content="${ogImage}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
