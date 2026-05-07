@@ -85,19 +85,27 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
     //   smivo://auth/callback  →  host="auth", path="/callback"
     //   https://smivo.io/auth/callback  →  host="smivo.io", path="/auth/callback"
     // We must check both formats to handle custom scheme + Universal Links.
+    debugPrint('[DeepLink] received: $uri');
+    debugPrint('[DeepLink] scheme=${uri.scheme} host=${uri.host} path=${uri.path}');
+    debugPrint('[DeepLink] queryParams=${uri.queryParameters}');
+
     if (_isAuthCallback(uri)) {
+      debugPrint('[DeepLink] matched auth callback');
       final refreshToken = uri.queryParameters['refresh_token'];
+      debugPrint('[DeepLink] refresh_token present: ${refreshToken != null && refreshToken.isNotEmpty}');
       if (refreshToken != null && refreshToken.isNotEmpty) {
         _handleAuthCallback(refreshToken);
         return;
       }
       // No tokens — just navigate to home (legacy "Open App" behavior)
+      debugPrint('[DeepLink] no tokens, going to /');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(routerProvider).go('/');
       });
       return;
     }
 
+    debugPrint('[DeepLink] not auth callback, going to ${uri.path}');
     // Regular deep link (e.g. /listing/<id>)
     if (uri.path.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -121,13 +129,16 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
   /// session, effectively auto-logging in the user after email verification.
   Future<void> _handleAuthCallback(String refreshToken) async {
     try {
+      debugPrint('[DeepLink] calling setSession...');
       await Supabase.instance.client.auth.setSession(refreshToken);
-      debugPrint('Auto-login via deep link succeeded');
+      debugPrint('[DeepLink] setSession succeeded — user logged in');
       // NOTE: setSession() triggers onAuthStateChange which the router
       // listens to. GoRouter's redirect will automatically navigate the
       // user to home (or profile setup if profile is incomplete).
-    } catch (e) {
-      debugPrint('Auto-login via deep link failed: $e');
+    } catch (e, stack) {
+      // Log the full error so we can diagnose why setSession failed
+      debugPrint('[DeepLink] setSession FAILED: $e');
+      debugPrint('[DeepLink] stack: $stack');
       // Fall through — user will see the login screen and can sign in
       // manually. This is graceful degradation, not a hard failure.
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -135,6 +146,7 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
       });
     }
   }
+
 
   @override
   void dispose() {
