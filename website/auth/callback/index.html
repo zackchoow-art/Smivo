@@ -159,14 +159,44 @@
       // No auth data in the URL — leave the default button href as-is
       if (!deepLink) return;
 
-      // Update the button so a manual tap also carries the auth data
       var btn = document.getElementById('open-app-btn');
-      if (btn) btn.href = deepLink;
+
+      // NOTE: PKCE codes are single-use. The auto-redirect below will
+      // open the app and consume the code. Clicking the button afterwards
+      // would send the same (already used) code and fail silently.
+      // We track whether the redirect has fired so we can warn the user.
+      function openApp() {
+        // Guard: if already opened, show a warning instead of re-trying
+        if (sessionStorage.getItem('smivo_code_used')) {
+          if (btn) {
+            btn.textContent = 'Verification already sent to app';
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'default';
+            btn.removeAttribute('href');
+          }
+          return;
+        }
+        sessionStorage.setItem('smivo_code_used', '1');
+        if (btn) {
+          btn.textContent = 'Opening Smivo App…';
+          btn.style.opacity = '0.7';
+          btn.style.cursor = 'default';
+          btn.removeAttribute('href'); // prevent further clicks
+        }
+        window.location.href = deepLink;
+      }
+
+      // Update the button so a manual tap also uses the guarded open flow
+      if (btn) {
+        btn.href = deepLink;
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          openApp();
+        });
+      }
 
       // Auto-open the app after a short delay
-      setTimeout(function () {
-        window.location.href = deepLink;
-      }, 1500);
+      setTimeout(openApp, 1500);
     })();
   </script>
 </body>
