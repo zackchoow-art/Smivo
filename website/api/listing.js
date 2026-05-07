@@ -55,10 +55,12 @@ export default async function handler(request) {
     }
   }
 
-  // NOTE: Use the actual product image as og:image instead of the dynamic
-  // /api/og generator (which was returning 404 on Vercel).
-  // Falls back to the default Smivo branding image if no product image.
-  const ogImage = productImageUrl;
+  // NOTE: Proxy the product image through /api/img so crawlers that cannot
+  // reach Supabase directly (e.g. WeChat's crawler in China) still see the
+  // image via Vercel's global CDN. Falls back to default branding image.
+  const ogImage = productImageUrl !== 'https://smivo.io/og-image.png'
+    ? `https://smivo.io/api/img?url=${encodeURIComponent(productImageUrl)}`
+    : productImageUrl;
   const canonical = `https://smivo.io/listing/${encodeURIComponent(id)}`;
 
   const html = `<!DOCTYPE html>
