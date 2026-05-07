@@ -7,6 +7,9 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:smivo.io</string>
+		<!-- webcredentials enables iOS Strong Password suggestions and
+		     associates Keychain credentials with the smivo.io domain -->
+		<string>webcredentials:smivo.io</string>
 	</array>
 </dict>
 </plist>
