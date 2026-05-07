@@ -84,23 +84,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final emailValue = _emailController.text.trim();
     final password = _passwordController.text;
 
-    // NOTE: In normal (non-debug) mode, _emailController only holds the
-    // username prefix (e.g. "jsmith"). The @domain is shown as suffixText
-    // (visual only) and is NOT part of the controller value.
-    // iOS Keychain requires a valid email address to offer a strong password
-    // suggestion and to save the correct credential username.
-    // We temporarily write the full email into the controller BEFORE calling
-    // finishAutofillContext(), then restore the prefix so the UI is unchanged.
-    if (!_isDebugMode && _selectedSchool != null) {
-      _emailController.text =
-          '$emailValue@${_selectedSchool!.emailDomain}';
-    }
+    // NOTE: finishAutofillContext() tells iOS Keychain / Android Autofill to
+    // save the credentials captured by the AutofillGroup.
+    // - Normal mode: email field uses AutofillHints.username, so iOS accepts
+    //   the prefix-only value ("jsmith") as a valid username without needing
+    //   a complete email address. No controller manipulation needed.
+    // - Debug mode: email field uses AutofillHints.email with a full address.
     TextInput.finishAutofillContext();
-
-    // Restore prefix so the field shows correctly if the user navigates back
-    if (!_isDebugMode) {
-      _emailController.text = emailValue;
-    }
 
     if (_isDebugMode) {
       await ref.read(authProvider.notifier).signUpDebug(emailValue, password);
@@ -383,8 +373,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                               : '@edu'),
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
-                                  // iOS Keychain / Android Autofill hint
-                                  autofillHints: const [AutofillHints.email],
+                                   // NOTE: Normal mode uses username hint so iOS accepts the prefix-only
+                                  // value ("jsmith") without requiring a full email address.
+                                  // Debug mode uses email hint since the full address is entered.
+                                  autofillHints: _isDebugMode
+                                      ? const [AutofillHints.email]
+                                      : const [AutofillHints.username],
                                   textInputAction: TextInputAction.next,
                                   validator:
                                       _isDebugMode
