@@ -345,13 +345,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           _isDebugMode
                                               ? Validators.eduEmail
                                               : Validators.emailPrefix,
-                                      // NOTE: username hint maps to the email
-                                      // prefix field; iOS Keychain stores the
-                                      // full email but fills only the prefix.
-                                      autofillHints: const [
-                                        AutofillHints.username,
-                                        AutofillHints.email,
-                                      ],
+                                      // NOTE: Hint must match the hint used during registration
+                                      // so iOS Keychain can find and fill the correct credential.
+                                      // Normal mode registered with username → match with username.
+                                      // Debug mode registered with email   → match with email.
+                                      autofillHints: _isDebugMode
+                                          ? const [AutofillHints.email]
+                                          : const [AutofillHints.username],
                                       textInputAction: TextInputAction.next,
                                     ),
                                     const SizedBox(height: 16),
