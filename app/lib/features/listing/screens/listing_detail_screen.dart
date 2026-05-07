@@ -1748,10 +1748,12 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           // the platform from generating the preview card.
                           const baseUrl = 'https://smivo.io';
                           final listingUrl = '$baseUrl/listing/${listing.id}';
-                          SharePlus.instance.share(
-                            ShareParams(
-                              text: listingUrl,
-                            ),
+                          final box = context.findRenderObject() as RenderBox?;
+                          Share.share(
+                            listingUrl,
+                            sharePositionOrigin: box != null
+                                ? box.localToGlobal(Offset.zero) & box.size
+                                : null,
                           );
                         },
                       ),

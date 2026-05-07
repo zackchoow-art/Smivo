@@ -26,7 +26,7 @@ export default async function handler(request) {
       // NOTE: Fetch title, description, price, type and first image
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/listings?id=eq.${encodeURIComponent(id)}` +
-          `&select=title,description,price,transaction_type,listing_images(image_url,sort_order)&limit=1`,
+        `&select=title,description,price,transaction_type,listing_images(image_url,sort_order)&limit=1`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY,

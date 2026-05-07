@@ -32,18 +32,25 @@ Future<void> showChatPopup(
     barrierColor: context.smivoColors.shadow.withValues(alpha: 0.3),
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) {
-      return Center(
-        child: Material(
-          color: Colors.transparent,
-          child: ChatPopupWidget(
-            chatRoomId: chatRoomId,
-            otherUserName: otherUserName,
-            otherUserAvatar: otherUserAvatar,
-            otherUserEmail: otherUserEmail,
-            listingTitle: listingTitle,
-            listingPrice: listingPrice,
-            listingImageUrl: listingImageUrl,
-            priceLabel: priceLabel,
+      // NOTE: Padding with viewInsets.bottom shifts the entire dialog upward
+      // when the keyboard appears, preventing it from covering the input field.
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            child: ChatPopupWidget(
+              chatRoomId: chatRoomId,
+              otherUserName: otherUserName,
+              otherUserAvatar: otherUserAvatar,
+              otherUserEmail: otherUserEmail,
+              listingTitle: listingTitle,
+              listingPrice: listingPrice,
+              listingImageUrl: listingImageUrl,
+              priceLabel: priceLabel,
+            ),
           ),
         ),
       );
@@ -218,8 +225,16 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     // NOTE: On desktop the popup is constrained to 480px via ConstrainedBox
     // to prevent it from stretching across large monitors.
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     final isDesktop = Breakpoints.isDesktop(screenWidth);
     final popupWidth = isDesktop ? 480.0 : screenWidth * 0.85;
+    // NOTE: When the keyboard is visible, reduce popup height so it fits
+    // within the remaining viewport above the keyboard (min 300px for usability).
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final maxPopupHeight = screenHeight * 0.75;
+    final popupHeight = keyboardHeight > 0
+        ? (screenHeight - keyboardHeight - 48).clamp(300.0, maxPopupHeight)
+        : maxPopupHeight;
 
     // Re-mark as read whenever new messages arrive while viewing this chat.
     ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
@@ -234,7 +249,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
       constraints: const BoxConstraints(maxWidth: 480),
       child: Container(
         width: popupWidth,
-        height: MediaQuery.of(context).size.height * 0.75,
+        height: popupHeight,
         decoration: BoxDecoration(
           color: colors.background.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(radius.xl),
