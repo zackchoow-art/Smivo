@@ -55,12 +55,12 @@ export default async function handler(request) {
     }
   }
 
-  // NOTE: Proxy the product image through /api/img so crawlers that cannot
-  // reach Supabase directly (e.g. WeChat's crawler in China) still see the
-  // image via Vercel's global CDN. Falls back to default branding image.
-  const ogImage = productImageUrl !== 'https://smivo.io/og-image.png'
-    ? `https://smivo.io/api/img?url=${encodeURIComponent(productImageUrl)}`
-    : productImageUrl;
+  // NOTE: Use a clean, static-looking path for og:image so crawlers like
+  // WeChat (which distrust query-parameter image URLs) treat it as a real
+  // image file. Vercel rewrites /listing/:id/image.jpg → /api/img?id=:id.
+  const ogImage = id
+    ? `https://smivo.io/listing/${encodeURIComponent(id)}/image.jpg`
+    : 'https://smivo.io/og-image.png';
   const canonical = `https://smivo.io/listing/${encodeURIComponent(id)}`;
 
   const html = `<!DOCTYPE html>
@@ -79,6 +79,12 @@ export default async function handler(request) {
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
   <meta property="og:image" content="${ogImage}">
+
+  <!-- WeChat / Schema.org (WeChat prefers itemprop over og:image) -->
+  <meta itemprop="name" content="${esc(title)}">
+  <meta itemprop="description" content="${esc(description)}">
+  <meta itemprop="image" content="${ogImage}">
+  <meta name="description" content="${esc(description)}">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
