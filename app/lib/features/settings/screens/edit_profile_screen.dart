@@ -380,16 +380,29 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                                     Navigator.pop(
                                                       dialogContext,
                                                     );
-                                                    await ref
-                                                        .read(
-                                                          authProvider.notifier,
-                                                        )
-                                                        .deleteAccount();
+                                                    // NOTE: Navigate away BEFORE
+                                                    // deleteAccount completes.
+                                                    // deleteAccount() calls signOut()
+                                                    // internally, which triggers
+                                                    // profileProvider to refetch.
+                                                    // If we stay on this page, it
+                                                    // shows "No profile found" because
+                                                    // the user is already gone.
                                                     if (context.mounted) {
                                                       context.goNamed(
                                                         AppRoutes.home,
                                                       );
                                                     }
+                                                    // Fire-and-forget: the RPC deletes
+                                                    // the account server-side, then
+                                                    // signOut clears local session.
+                                                    // GoRouter redirect will land the
+                                                    // user on the login screen.
+                                                    ref
+                                                        .read(
+                                                          authProvider.notifier,
+                                                        )
+                                                        .deleteAccount();
                                                   },
                                                   style: TextButton.styleFrom(
                                                     foregroundColor:
