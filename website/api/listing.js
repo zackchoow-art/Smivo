@@ -1,8 +1,7 @@
 export const config = { runtime: 'edge' };
 
-const SUPABASE_URL = 'https://cpavunhkwsrmomhktklb.supabase.co';
-const SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwYXZ1bmhrd3NybW9taGt0a2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2MjI0OTIsImV4cCI6MjA1OTE5ODQ5Mn0.A0d4-qzWsIJtggZdGfT7b7YCn5VJyiIuAqY_vN7OmT8';
+const SUPABASE_URL = 'https://sztrbkfdcldwaifjkkol.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_uF2gSam0yvMjVEswqwYWcA_i67ROBxj';
 
 function esc(str) {
   return String(str)

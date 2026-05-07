@@ -210,8 +210,8 @@
   const pathParts = window.location.pathname.split('/');
   const listingId = pathParts[pathParts.length - 1];
 
-  const SUPABASE_URL = 'https://cpavunhkwsrmomhktklb.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwYXZ1bmhrd3NybW9taGt0a2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2MjI0OTIsImV4cCI6MjA1OTE5ODQ5Mn0.A0d4-qzWsIJtggZdGfT7b7YCn5VJyiIuAqY_vN7OmT8';
+  const SUPABASE_URL = 'https://sztrbkfdcldwaifjkkol.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_uF2gSam0yvMjVEswqwYWcA_i67ROBxj';
 
   async function loadListing() {
     if (!listingId || listingId === 'listing') {
@@ -268,7 +268,7 @@
     // before this page is shown. This page only appears when the app is not
     // installed. Deep-link attempt via custom scheme as last resort for
     // Android webviews that don't support App Links in some contexts.
-    const deepLinkUrl = `com.smivo://listing/${listingId}`;
+    const deepLinkUrl = `smivo://listing/${listingId}`;
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.src = deepLinkUrl;
