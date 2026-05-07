@@ -373,12 +373,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                               : '@edu'),
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
-                                   // NOTE: Normal mode uses username hint so iOS accepts the prefix-only
-                                  // value ("jsmith") without requiring a full email address.
-                                  // Debug mode uses email hint since the full address is entered.
-                                  autofillHints: _isDebugMode
-                                      ? const [AutofillHints.email]
-                                      : const [AutofillHints.username],
+                                   // NOTE: Both modes use AutofillHints.username because iOS only
+                                  // shows Strong Password suggestions when the AutofillGroup
+                                  // contains a 'username' field + a 'newPassword' field.
+                                  // Using AutofillHints.email alone does NOT trigger it.
+                                  // Keychain saves whatever string is in the field, so the full
+                                  // email (debug) or prefix (normal) is saved correctly.
+                                  autofillHints: const [AutofillHints.username],
                                   textInputAction: TextInputAction.next,
                                   validator:
                                       _isDebugMode

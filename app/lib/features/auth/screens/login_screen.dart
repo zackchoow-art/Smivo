@@ -345,13 +345,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           _isDebugMode
                                               ? Validators.eduEmail
                                               : Validators.emailPrefix,
-                                      // NOTE: Hint must match the hint used during registration
-                                      // so iOS Keychain can find and fill the correct credential.
-                                      // Normal mode registered with username → match with username.
-                                      // Debug mode registered with email   → match with email.
-                                      autofillHints: _isDebugMode
-                                          ? const [AutofillHints.email]
-                                          : const [AutofillHints.username],
+                                      // NOTE: Both modes use AutofillHints.username to match the
+                                      // hint used at registration. iOS only shows Strong Password
+                                      // suggestions for 'username' + 'newPassword' groups, not
+                                      // 'email' + 'newPassword'. Keychain saves the actual string
+                                      // value regardless of hint type, so full emails are saved.
+                                      autofillHints: const [AutofillHints.username],
                                       textInputAction: TextInputAction.next,
                                     ),
                                     const SizedBox(height: 16),
