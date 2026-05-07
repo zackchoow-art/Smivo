@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -82,6 +83,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     final emailValue = _emailController.text.trim();
     final password = _passwordController.text;
+
+    // NOTE: finishAutofillContext(shouldSave: true) signals to iOS Keychain
+    // and Android Autofill that the credentials are valid and should be saved.
+    // Must be called BEFORE the async sign-up so fields are still populated.
+    TextInput.finishAutofillContext();
 
     if (_isDebugMode) {
       await ref.read(authProvider.notifier).signUpDebug(emailValue, password);
@@ -230,368 +236,387 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         padding: const EdgeInsets.all(32),
                         child: Form(
                           key: _formKey,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // ── Headline ──────────────────────────────────
-                              Text(
-                                'Join the Quad.',
-                                textAlign: TextAlign.center,
-                                style: typo.headlineLarge,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Create your account with your university email.',
-                                textAlign: TextAlign.center,
-                                style: typo.bodyLarge,
-                              ),
-                              const SizedBox(height: 32),
+                          // NOTE: AutofillGroup is required for iOS Keychain
+                          // and Android Autofill to recognize this as a
+                          // credential form and offer to save the password.
+                          child: AutofillGroup(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // ── Headline ──────────────────────────────────
+                                Text(
+                                  'Join the Quad.',
+                                  textAlign: TextAlign.center,
+                                  style: typo.headlineLarge,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Create your account with your university email.',
+                                  textAlign: TextAlign.center,
+                                  style: typo.bodyLarge,
+                                ),
+                                const SizedBox(height: 32),
 
-                              // ── School Selector ─────────────────────────────
-                              if (!_isDebugMode) ...[
-                                activeSchoolsAsync.when(
-                                  data: (schools) {
-                                    if (schools.isEmpty) {
-                                      return const Text(
-                                        'No schools available.',
-                                      );
-                                    }
+                                // ── School Selector ─────────────────────────────
+                                if (!_isDebugMode) ...[
+                                  activeSchoolsAsync.when(
+                                    data: (schools) {
+                                      if (schools.isEmpty) {
+                                        return const Text(
+                                          'No schools available.',
+                                        );
+                                      }
 
-                                    // Set default if null
-                                    if (_selectedSchool == null) {
-                                      WidgetsBinding.instance
-                                          .addPostFrameCallback((_) {
-                                            if (mounted)
-                                              setState(
-                                                () =>
-                                                    _selectedSchool =
-                                                        schools.first,
-                                              );
-                                          });
-                                    }
+                                      // Set default if null
+                                      if (_selectedSchool == null) {
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) {
+                                              if (mounted)
+                                                setState(
+                                                  () =>
+                                                      _selectedSchool =
+                                                          schools.first,
+                                                );
+                                            });
+                                      }
 
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 4,
-                                          ),
-                                          child: Text(
-                                            'SELECT SCHOOL',
-                                            style: typo.labelUppercase,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        DropdownButtonFormField<School>(
-                                          value:
-                                              _selectedSchool ?? schools.first,
-                                          items:
-                                              schools
-                                                  .map(
-                                                    (s) => DropdownMenuItem(
-                                                      value: s,
-                                                      child: Text(
-                                                        s.name,
-                                                        style: typo.bodyMedium,
-                                                      ),
-                                                    ),
-                                                  )
-                                                  .toList(),
-                                          onChanged: (val) {
-                                            if (val != null) {
-                                              setState(
-                                                () => _selectedSchool = val,
-                                              );
-                                            }
-                                          },
-                                          decoration: InputDecoration(
-                                            filled: true,
-                                            fillColor:
-                                                colors.surfaceContainerLow,
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                  horizontal: 16,
-                                                  vertical: 18,
-                                                ),
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    radius.input,
-                                                  ),
-                                              borderSide: BorderSide.none,
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                            ),
+                                            child: Text(
+                                              'SELECT SCHOOL',
+                                              style: typo.labelUppercase,
                                             ),
                                           ),
-                                          icon: Icon(
-                                            Icons.arrow_drop_down_rounded,
-                                            color: colors.onSurfaceVariant,
+                                          const SizedBox(height: 8),
+                                          DropdownButtonFormField<School>(
+                                            value:
+                                                _selectedSchool ?? schools.first,
+                                            items:
+                                                schools
+                                                    .map(
+                                                      (s) => DropdownMenuItem(
+                                                        value: s,
+                                                        child: Text(
+                                                          s.name,
+                                                          style: typo.bodyMedium,
+                                                        ),
+                                                      ),
+                                                    )
+                                                    .toList(),
+                                            onChanged: (val) {
+                                              if (val != null) {
+                                                setState(
+                                                  () => _selectedSchool = val,
+                                                );
+                                              }
+                                            },
+                                            decoration: InputDecoration(
+                                              filled: true,
+                                              fillColor:
+                                                  colors.surfaceContainerLow,
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 18,
+                                                  ),
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      radius.input,
+                                                    ),
+                                                borderSide: BorderSide.none,
+                                              ),
+                                            ),
+                                            icon: Icon(
+                                              Icons.arrow_drop_down_rounded,
+                                              color: colors.onSurfaceVariant,
+                                            ),
                                           ),
+                                        ],
+                                      );
+                                    },
+                                    loading:
+                                        () => const Center(
+                                          child: CircularProgressIndicator(),
                                         ),
-                                      ],
-                                    );
-                                  },
-                                  loading:
-                                      () => const Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                  error:
-                                      (err, st) =>
-                                          Text('Error loading schools: $err'),
+                                    error:
+                                        (err, st) =>
+                                            Text('Error loading schools: $err'),
+                                  ),
+                                  const SizedBox(height: 24),
+                                ],
+
+                                // ── Email Field ───────────────────────────────
+                                AppTextField(
+                                  label:
+                                      _isDebugMode
+                                          ? 'Test Email'
+                                          : 'University Username',
+                                  hintText:
+                                      _isDebugMode
+                                          ? 'test@smivo.dev'
+                                          : 'username',
+                                  suffixText:
+                                      _isDebugMode
+                                          ? null
+                                          : (_selectedSchool != null
+                                              ? '@${_selectedSchool!.emailDomain}'
+                                              : '@edu'),
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  // iOS Keychain / Android Autofill hint
+                                  autofillHints: const [AutofillHints.email],
+                                  textInputAction: TextInputAction.next,
+                                  validator:
+                                      _isDebugMode
+                                          ? Validators.eduEmail
+                                          : Validators.emailPrefix,
                                 ),
                                 const SizedBox(height: 24),
-                              ],
 
-                              // ── Email Field ───────────────────────────────
-                              AppTextField(
-                                label:
-                                    _isDebugMode
-                                        ? 'Test Email'
-                                        : 'University Username',
-                                hintText:
-                                    _isDebugMode
-                                        ? 'test@smivo.dev'
-                                        : 'username',
-                                suffixText:
-                                    _isDebugMode
-                                        ? null
-                                        : (_selectedSchool != null
-                                            ? '@${_selectedSchool!.emailDomain}'
-                                            : '@edu'),
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                validator:
-                                    _isDebugMode
-                                        ? Validators.eduEmail
-                                        : Validators.emailPrefix,
-                              ),
-                              const SizedBox(height: 24),
-
-                              // ── Password Field ────────────────────────────
-                              AppTextField(
-                                label: 'Password',
-                                hintText: '••••••••',
-                                controller: _passwordController,
-                                obscureText: true,
-                                validator: Validators.password,
-                                prefixIcon: Icon(
-                                  Icons.lock_outline_rounded,
-                                  size: 16,
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-
-                              // ── Confirm Password Field ────────────────────
-                              AppTextField(
-                                label: 'Confirm Password',
-                                hintText: '••••••••',
-                                controller: _confirmPasswordController,
-                                obscureText: true,
-                                validator:
-                                    (val) => Validators.confirmPassword(
-                                      _passwordController.text,
-                                      val,
-                                    ),
-                                prefixIcon: Icon(
-                                  Icons.verified_user_outlined,
-                                  size: 16,
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-
-                              // ── EULA Checkbox ─────────────────────────────
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: Checkbox(
-                                      value: _agreedToEula,
-                                      onChanged: (val) {
-                                        setState(
-                                          () => _agreedToEula = val ?? false,
-                                        );
-                                      },
-                                      activeColor: colors.primary,
-                                    ),
+                                // ── Password Field ────────────────────────────
+                                AppTextField(
+                                  label: 'Password',
+                                  hintText: '••••••••',
+                                  controller: _passwordController,
+                                  obscureText: true,
+                                  // newPassword tells the system this is a
+                                  // registration form, triggering strong
+                                  // password suggestions on iOS 12+
+                                  autofillHints: const [
+                                    AutofillHints.newPassword,
+                                  ],
+                                  textInputAction: TextInputAction.next,
+                                  validator: Validators.password,
+                                  prefixIcon: Icon(
+                                    Icons.lock_outline_rounded,
+                                    size: 16,
+                                    color: colors.onSurfaceVariant,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: RichText(
-                                      text: TextSpan(
-                                        text: 'I agree to the ',
-                                        style: typo.bodySmall.copyWith(
-                                          color: colors.onSurfaceVariant,
-                                          height: 1.4,
+                                ),
+                                const SizedBox(height: 24),
+
+                                // ── Confirm Password Field ────────────────────
+                                AppTextField(
+                                  label: 'Confirm Password',
+                                  hintText: '••••••••',
+                                  controller: _confirmPasswordController,
+                                  obscureText: true,
+                                  autofillHints: const [
+                                    AutofillHints.newPassword,
+                                  ],
+                                  textInputAction: TextInputAction.done,
+                                  validator:
+                                      (val) => Validators.confirmPassword(
+                                        _passwordController.text,
+                                        val,
+                                      ),
+                                  prefixIcon: Icon(
+                                    Icons.verified_user_outlined,
+                                    size: 16,
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+
+                                // ── EULA Checkbox ─────────────────────────────
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: Checkbox(
+                                        value: _agreedToEula,
+                                        onChanged: (val) {
+                                          setState(
+                                            () => _agreedToEula = val ?? false,
+                                          );
+                                        },
+                                        activeColor: colors.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          text: 'I agree to the ',
+                                          style: typo.bodySmall.copyWith(
+                                            color: colors.onSurfaceVariant,
+                                            height: 1.4,
+                                          ),
+                                          children: [
+                                            TextSpan(
+                                              text: 'Terms of Service',
+                                              style: typo.bodySmall.copyWith(
+                                                color: colors.primary,
+                                                fontWeight: FontWeight.w600,
+                                                height: 1.4,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                              recognizer:
+                                                  TapGestureRecognizer()
+                                                    ..onTap = () async {
+                                                      final url = Uri.parse(
+                                                        termsUrlStr,
+                                                      );
+                                                      if (await canLaunchUrl(
+                                                        url,
+                                                      )) {
+                                                        await launchUrl(url);
+                                                      }
+                                                    },
+                                            ),
+                                            const TextSpan(
+                                              text:
+                                                  ' and acknowledge that there is ',
+                                            ),
+                                            TextSpan(
+                                              text:
+                                                  'zero tolerance for objectionable content or abusive users',
+                                              style: typo.bodySmall.copyWith(
+                                                color: colors.primary,
+                                                fontWeight: FontWeight.w600,
+                                                height: 1.4,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                              recognizer:
+                                                  TapGestureRecognizer()
+                                                    ..onTap = () async {
+                                                      final url = Uri.parse(
+                                                        zeroToleranceUrlStr,
+                                                      );
+                                                      if (await canLaunchUrl(
+                                                        url,
+                                                      )) {
+                                                        await launchUrl(url);
+                                                      }
+                                                    },
+                                            ),
+                                            const TextSpan(text: '.'),
+                                          ],
                                         ),
-                                        children: [
-                                          TextSpan(
-                                            text: 'Terms of Service',
-                                            style: typo.bodySmall.copyWith(
-                                              color: colors.primary,
-                                              fontWeight: FontWeight.w600,
-                                              height: 1.4,
-                                              decoration:
-                                                  TextDecoration.underline,
-                                            ),
-                                            recognizer:
-                                                TapGestureRecognizer()
-                                                  ..onTap = () async {
-                                                    final url = Uri.parse(
-                                                      termsUrlStr,
-                                                    );
-                                                    if (await canLaunchUrl(
-                                                      url,
-                                                    )) {
-                                                      await launchUrl(url);
-                                                    }
-                                                  },
-                                          ),
-                                          const TextSpan(
-                                            text:
-                                                ' and acknowledge that there is ',
-                                          ),
-                                          TextSpan(
-                                            text:
-                                                'zero tolerance for objectionable content or abusive users',
-                                            style: typo.bodySmall.copyWith(
-                                              color: colors.primary,
-                                              fontWeight: FontWeight.w600,
-                                              height: 1.4,
-                                              decoration:
-                                                  TextDecoration.underline,
-                                            ),
-                                            recognizer:
-                                                TapGestureRecognizer()
-                                                  ..onTap = () async {
-                                                    final url = Uri.parse(
-                                                      zeroToleranceUrlStr,
-                                                    );
-                                                    if (await canLaunchUrl(
-                                                      url,
-                                                    )) {
-                                                      await launchUrl(url);
-                                                    }
-                                                  },
-                                          ),
-                                          const TextSpan(text: '.'),
-                                        ],
                                       ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 32),
-
-                              // ── Register Button ───────────────────────────
-                              Container(
-                                height: 60,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(
-                                    radius.xl,
-                                  ),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      colors.gradientStart,
-                                      colors.gradientEnd,
-                                    ],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: colors.primary.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 10),
                                     ),
                                   ],
                                 ),
-                                child: ElevatedButton(
-                                  onPressed: isLoading ? null : _handleRegister,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        radius.xl,
-                                      ),
+                                const SizedBox(height: 32),
+
+                                // ── Register Button ───────────────────────────
+                                Container(
+                                  height: 60,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                      radius.xl,
                                     ),
-                                  ),
-                                  child:
-                                      isLoading
-                                          ? SizedBox(
-                                            height: 24,
-                                            width: 24,
-                                            child: CircularProgressIndicator(
-                                              color: colors.onPrimary,
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                          : Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                'Create Account',
-                                                style: typo.labelLarge.copyWith(
-                                                  color: colors.onPrimary,
-                                                  fontSize: 18,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Icon(
-                                                Icons.person_add_alt_1_rounded,
-                                                size: 18,
-                                                color: colors.onPrimary,
-                                              ),
-                                            ],
-                                          ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 32),
-
-                              // ── Divider ───────────────────────────────────
-                              Divider(color: colors.dividerColor),
-                              const SizedBox(height: 24),
-
-                              // ── Switch to Login ───────────────────────────
-                              GestureDetector(
-                                onTap: () => context.pop(),
-                                child: Text.rich(
-                                  TextSpan(
-                                    text: 'Already have an account? ',
-                                    style: typo.bodyLarge.copyWith(
-                                      color: colors.onSurfaceVariant,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        colors.gradientStart,
+                                        colors.gradientEnd,
+                                      ],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
                                     ),
-                                    children: [
-                                      TextSpan(
-                                        text: 'Sign In',
-                                        style: typo.bodyMedium.copyWith(
-                                          color: colors.primary,
-                                          fontWeight: FontWeight.w600,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: colors.primary.withValues(
+                                          alpha: 0.2,
                                         ),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 10),
                                       ),
                                     ],
                                   ),
-                                  textAlign: TextAlign.center,
+                                  child: ElevatedButton(
+                                    onPressed: isLoading ? null : _handleRegister,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          radius.xl,
+                                        ),
+                                      ),
+                                    ),
+                                    child:
+                                        isLoading
+                                            ? SizedBox(
+                                              height: 24,
+                                              width: 24,
+                                              child: CircularProgressIndicator(
+                                                color: colors.onPrimary,
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                            : Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'Create Account',
+                                                  style: typo.labelLarge.copyWith(
+                                                    color: colors.onPrimary,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Icon(
+                                                  Icons.person_add_alt_1_rounded,
+                                                  size: 18,
+                                                  color: colors.onPrimary,
+                                                ),
+                                              ],
+                                            ),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 32),
 
-                              // ── Footer ────────────────────────────────────
-                              Text(
-                                'Only valid university emails (.edu) are accepted to ensure a safe campus environment.',
-                                textAlign: TextAlign.center,
-                                style: typo.bodySmall,
-                              ),
-                            ],
+                                const SizedBox(height: 32),
+
+                                // ── Divider ───────────────────────────────────
+                                Divider(color: colors.dividerColor),
+                                const SizedBox(height: 24),
+
+                                // ── Switch to Login ───────────────────────────
+                                GestureDetector(
+                                  onTap: () => context.pop(),
+                                  child: Text.rich(
+                                    TextSpan(
+                                      text: 'Already have an account? ',
+                                      style: typo.bodyLarge.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: 'Sign In',
+                                          style: typo.bodyMedium.copyWith(
+                                            color: colors.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+
+                                // ── Footer ────────────────────────────────────
+                                Text(
+                                  'Only valid university emails (.edu) are accepted to ensure a safe campus environment.',
+                                  textAlign: TextAlign.center,
+                                  style: typo.bodySmall,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
