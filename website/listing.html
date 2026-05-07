@@ -223,7 +223,7 @@
       // NOTE: Fetch basic listing data using the public anon key.
       // RLS allows reading active listings without auth.
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/listings?id=eq.${listingId}&select=id,title,price,rental_type,listing_images(image_url,sort_order)&limit=1`,
+        `${SUPABASE_URL}/rest/v1/listings?id=eq.${listingId}&select=id,title,price,transaction_type,listing_images(image_url,sort_order)&limit=1`,
         { headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' } }
       );
       const data = await res.json();
@@ -240,7 +240,7 @@
     if (listing) {
       // Update title and price
       document.getElementById('listing-title').textContent = listing.title || 'View this item on Smivo';
-      const price = listing.rental_type === 'rent'
+      const price = listing.transaction_type === 'rental'
         ? 'For Rent'
         : listing.price ? `$${parseFloat(listing.price).toFixed(0)}` : '';
       document.getElementById('listing-price').textContent = price;

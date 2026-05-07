@@ -18,7 +18,7 @@ export default async function handler(request) {
     try {
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/listings?id=eq.${encodeURIComponent(id)}` +
-          `&select=title,price,rental_type,listing_images(image_url,sort_order)&limit=1`,
+          `&select=title,price,transaction_type,listing_images(image_url,sort_order)&limit=1`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY,
@@ -30,7 +30,7 @@ export default async function handler(request) {
       if (data && data[0]) {
         const listing = data[0];
         title = listing.title || title;
-        const isRent = listing.rental_type === 'rent';
+        const isRent = listing.transaction_type === 'rental';
         badge = isRent ? 'Rent' : 'Sale';
         priceText = isRent
           ? 'For Rent'

@@ -25,7 +25,7 @@ export default async function handler(request) {
     try {
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/listings?id=eq.${encodeURIComponent(id)}` +
-          `&select=title,price,rental_type,listing_images(image_url,sort_order)&limit=1`,
+          `&select=title,price,transaction_type,listing_images(image_url,sort_order)&limit=1`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY,
@@ -37,7 +37,7 @@ export default async function handler(request) {
       if (data && data[0]) {
         const listing = data[0];
         title = listing.title || title;
-        const isRent = listing.rental_type === 'rent';
+        const isRent = listing.transaction_type === 'rental';
         badge = isRent ? 'Rent' : 'Sale';
         priceText = isRent
           ? 'For Rent'
@@ -55,10 +55,10 @@ export default async function handler(request) {
     }
   }
 
-  // NOTE: og:image points to /api/og?id=<id> which returns the dynamic card.
-  // All meta tags are server-rendered so iMessage, WhatsApp, and every other
-  // crawler reads them without executing JavaScript.
-  const ogImage = `https://smivo.io/api/og?id=${encodeURIComponent(id)}`;
+  // NOTE: Use the actual product image as og:image instead of the dynamic
+  // /api/og generator (which was returning 404 on Vercel).
+  // Falls back to the default Smivo branding image if no product image.
+  const ogImage = productImageUrl;
   const canonical = `https://smivo.io/listing/${encodeURIComponent(id)}`;
 
   const html = `<!DOCTYPE html>
@@ -77,9 +77,6 @@ export default async function handler(request) {
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
   <meta property="og:image" content="${ogImage}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:type" content="image/png">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
