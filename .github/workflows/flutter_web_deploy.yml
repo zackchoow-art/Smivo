@@ -62,6 +62,12 @@ jobs:
       - name: Write CNAME for custom domain
         run: echo "smivo.app" > app/build/web/CNAME
 
+      # NOTE: GitHub Pages returns its own 404 page for unknown paths.
+      # Copying index.html to 404.html makes ALL paths load the Flutter app,
+      # then GoRouter handles routing client-side.
+      - name: Create 404.html fallback for SPA routing
+        run: cp app/build/web/index.html app/build/web/404.html
+
       # Upload the build output as a GitHub Pages artifact
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

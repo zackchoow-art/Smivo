@@ -1,13 +1,15 @@
 name: smivo
 description: "Campus marketplace for college students"
 publish_to: 'none'
-version: 1.1.0+4
+version: 1.1.5+5
 
 environment:
   sdk: ^3.7.0
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_web_plugins:
     sdk: flutter
   cupertino_icons: ^1.0.8
 

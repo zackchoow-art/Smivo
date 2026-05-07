@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 part 'shake_feedback_provider.g.dart';
 
 /// Persists and exposes whether the "Shake to Report Bug" feature is enabled.
-/// Default is true.
+/// Default is false — user must explicitly enable in Settings.
 @Riverpod(keepAlive: true)
 class ShakeFeedbackNotifier extends _$ShakeFeedbackNotifier {
   static const _key = 'smivo_shake_feedback_enabled';
@@ -13,7 +13,7 @@ class ShakeFeedbackNotifier extends _$ShakeFeedbackNotifier {
   bool build() {
     // Synchronously return default, async load will update if needed
     _loadSavedState();
-    return true;
+    return false;
   }
 
   Future<void> toggle(bool enabled) async {

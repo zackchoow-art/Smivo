@@ -7,7 +7,7 @@ class AppConstants {
 
   // ── App Info ───────────────────────────────────────────────
   static const String appName = 'Smivo';
-  static const String appBundleId = 'com.smivo';
+  static const String appBundleId = 'com.smivo.app';
   static const String defaultSchool = 'Data Not Found';
   static const String authCallbackUrl = 'https://smivo.io/auth/callback';
 

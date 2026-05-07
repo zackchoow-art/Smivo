@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
@@ -14,6 +15,7 @@ import 'app.dart';
 /// for Riverpod dependency injection.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
 
   // Load environment variables from assets/env file.
   await dotenv.load(fileName: 'assets/env');

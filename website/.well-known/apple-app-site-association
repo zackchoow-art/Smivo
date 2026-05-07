@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "DKWKX97U49.com.smivo",
+        "appID": "DKWKX97U49.com.smivo.app",
         "paths": [ "/listing/*", "/auth/*" ]
       }
     ]
