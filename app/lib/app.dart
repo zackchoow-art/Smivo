@@ -78,7 +78,6 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
 
   void _handleDeepLink(Uri uri) {
     // NOTE: Auth callback deep links carry tokens from email verification.
-    // Format: smivo://auth/callback?access_token=xxx&refresh_token=xxx
     //
     // IMPORTANT: In custom URL schemes, Dart's Uri parser treats the part
     // after :// as the HOST, not the path:
@@ -91,14 +90,25 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
 
     if (_isAuthCallback(uri)) {
       debugPrint('[DeepLink] matched auth callback');
-      final refreshToken = uri.queryParameters['refresh_token'];
-      debugPrint('[DeepLink] refresh_token present: ${refreshToken != null && refreshToken.isNotEmpty}');
-      if (refreshToken != null && refreshToken.isNotEmpty) {
-        _handleAuthCallback(refreshToken);
+
+      // PKCE flow (supabase_flutter v2+ default): code in query params
+      final code = uri.queryParameters['code'];
+      if (code != null && code.isNotEmpty) {
+        debugPrint('[DeepLink] PKCE code present, exchanging for session...');
+        _handlePkceCallback(code);
         return;
       }
+
+      // Legacy implicit flow: refresh_token in query params
+      final refreshToken = uri.queryParameters['refresh_token'];
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        debugPrint('[DeepLink] refresh_token present, calling setSession...');
+        _handleImplicitCallback(refreshToken);
+        return;
+      }
+
       // No tokens — just navigate to home (legacy "Open App" behavior)
-      debugPrint('[DeepLink] no tokens, going to /');
+      debugPrint('[DeepLink] no auth data, going to /');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(routerProvider).go('/');
       });
@@ -125,22 +135,32 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
     return false;
   }
 
-  /// Exchanges a refresh token from the auth callback deep link for a full
-  /// session, effectively auto-logging in the user after email verification.
-  Future<void> _handleAuthCallback(String refreshToken) async {
+  /// PKCE flow: exchanges the one-time authorization code for a full session.
+  /// Used by supabase_flutter v2+ (PKCE is the default auth flow).
+  Future<void> _handlePkceCallback(String code) async {
     try {
-      debugPrint('[DeepLink] calling setSession...');
+      await Supabase.instance.client.auth.exchangeCodeForSession(code);
+      debugPrint('[DeepLink] PKCE exchange succeeded — user logged in');
+      // NOTE: exchangeCodeForSession triggers onAuthStateChange.
+      // GoRouter's redirect will auto-navigate to home or profile setup.
+    } catch (e, stack) {
+      debugPrint('[DeepLink] PKCE exchange FAILED: $e');
+      debugPrint('[DeepLink] stack: $stack');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(routerProvider).go('/');
+      });
+    }
+  }
+
+  /// Implicit flow: restores session from a refresh token.
+  /// Fallback for environments where PKCE is not used.
+  Future<void> _handleImplicitCallback(String refreshToken) async {
+    try {
       await Supabase.instance.client.auth.setSession(refreshToken);
       debugPrint('[DeepLink] setSession succeeded — user logged in');
-      // NOTE: setSession() triggers onAuthStateChange which the router
-      // listens to. GoRouter's redirect will automatically navigate the
-      // user to home (or profile setup if profile is incomplete).
     } catch (e, stack) {
-      // Log the full error so we can diagnose why setSession failed
       debugPrint('[DeepLink] setSession FAILED: $e');
       debugPrint('[DeepLink] stack: $stack');
-      // Fall through — user will see the login screen and can sign in
-      // manually. This is graceful degradation, not a hard failure.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(routerProvider).go('/');
       });

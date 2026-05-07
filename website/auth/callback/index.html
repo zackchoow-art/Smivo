@@ -10,12 +10,9 @@
     :root {
       --primary: #1a3a6b;
       --primary-light: #2a5298;
-      --accent: #e8b630;
-      --accent-light: #fef3c7;
       --text: #1e293b;
       --text-light: #64748b;
       --bg: #ffffff;
-      --surface: #f8fafc;
       --border: #e2e8f0;
       --radius: 16px;
       --success: #10b981;
@@ -44,6 +41,7 @@
       width: 100%;
       text-align: center;
       box-shadow: 0 12px 40px rgba(0,0,0,0.06);
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .icon-wrapper {
@@ -99,11 +97,6 @@
       color: var(--text-light);
     }
 
-    /* Animation */
-    .card {
-      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -116,49 +109,62 @@
     <div class="icon-wrapper">✓</div>
     <h1>Verification Successful</h1>
     <p>Your email has been verified. You can now access all features of the Smivo marketplace.</p>
-    
+
+    <!-- Default href is updated by JS below once auth data is extracted -->
     <a href="smivo://auth/callback" class="btn" id="open-app-btn">Open Smivo App</a>
-    
+
     <div class="footer-text">
       You can close this window now.
     </div>
   </div>
 
   <script>
-    // NOTE: After Supabase verifies the email, it redirects here with auth
-    // tokens in the URL fragment:
-    //   https://smivo.io/auth/callback#access_token=eyJ...&refresh_token=xxx&type=signup
+    // NOTE: supabase_flutter v2+ uses PKCE auth flow by default.
     //
-    // We extract these tokens and pass them to the app via deep link so the
-    // app can call setSession() and auto-login the user without requiring
-    // them to re-enter their password.
+    // PKCE flow — Supabase redirects here with ?code=xxx in query string:
+    //   https://smivo.io/auth/callback?code=xxx&type=signup
     //
-    // Tokens in URL fragments (#) are never sent to the server — they only
-    // exist in the browser, making this as secure as a standard OAuth callback.
+    // Legacy implicit flow — tokens arrive in the URL hash (#):
+    //   https://smivo.io/auth/callback#access_token=xxx&refresh_token=xxx
+    //
+    // We detect whichever is present, build a deep link, and open the app
+    // so it can exchange the code (or tokens) for a Supabase session.
+    // URL fragments (#) are never sent to the server, so both flows are safe.
 
-    (function() {
-      var hash = window.location.hash.substring(1);
-      if (!hash) return;
+    (function () {
+      var deepLink = null;
 
-      var params = new URLSearchParams(hash);
-      var accessToken = params.get('access_token');
-      var refreshToken = params.get('refresh_token');
+      // ── PKCE flow: code is in the query string ──────────────────────────
+      var searchParams = new URLSearchParams(window.location.search);
+      var code = searchParams.get('code');
+      if (code) {
+        deepLink = 'smivo://auth/callback?code=' + encodeURIComponent(code);
+      }
 
-      if (!accessToken || !refreshToken) return;
+      // ── Implicit flow: tokens are in the URL hash ───────────────────────
+      if (!deepLink) {
+        var hash = window.location.hash.substring(1); // strip leading '#'
+        if (hash) {
+          var hashParams = new URLSearchParams(hash);
+          var accessToken  = hashParams.get('access_token');
+          var refreshToken = hashParams.get('refresh_token');
+          if (accessToken && refreshToken) {
+            deepLink = 'smivo://auth/callback'
+              + '?access_token='  + encodeURIComponent(accessToken)
+              + '&refresh_token=' + encodeURIComponent(refreshToken);
+          }
+        }
+      }
 
-      // Build the deep link with tokens as query parameters.
-      // Using query params (not fragment) because Dart's Uri parser handles
-      // them more reliably across iOS and Android custom URL schemes.
-      var deepLink = 'smivo://auth/callback'
-        + '?access_token=' + encodeURIComponent(accessToken)
-        + '&refresh_token=' + encodeURIComponent(refreshToken);
+      // No auth data in the URL — leave the default button href as-is
+      if (!deepLink) return;
 
-      // Update the button to carry the tokens
+      // Update the button so a manual tap also carries the auth data
       var btn = document.getElementById('open-app-btn');
       if (btn) btn.href = deepLink;
 
       // Auto-open the app after a short delay
-      setTimeout(function() {
+      setTimeout(function () {
         window.location.href = deepLink;
       }, 1500);
     })();
