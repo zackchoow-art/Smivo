@@ -125,12 +125,43 @@
   </div>
 
   <script>
-    // Automatically try to open the app after a short delay
-    window.onload = function() {
+    // NOTE: After Supabase verifies the email, it redirects here with auth
+    // tokens in the URL fragment:
+    //   https://smivo.io/auth/callback#access_token=eyJ...&refresh_token=xxx&type=signup
+    //
+    // We extract these tokens and pass them to the app via deep link so the
+    // app can call setSession() and auto-login the user without requiring
+    // them to re-enter their password.
+    //
+    // Tokens in URL fragments (#) are never sent to the server — they only
+    // exist in the browser, making this as secure as a standard OAuth callback.
+
+    (function() {
+      var hash = window.location.hash.substring(1);
+      if (!hash) return;
+
+      var params = new URLSearchParams(hash);
+      var accessToken = params.get('access_token');
+      var refreshToken = params.get('refresh_token');
+
+      if (!accessToken || !refreshToken) return;
+
+      // Build the deep link with tokens as query parameters.
+      // Using query params (not fragment) because Dart's Uri parser handles
+      // them more reliably across iOS and Android custom URL schemes.
+      var deepLink = 'smivo://auth/callback'
+        + '?access_token=' + encodeURIComponent(accessToken)
+        + '&refresh_token=' + encodeURIComponent(refreshToken);
+
+      // Update the button to carry the tokens
+      var btn = document.getElementById('open-app-btn');
+      if (btn) btn.href = deepLink;
+
+      // Auto-open the app after a short delay
       setTimeout(function() {
-        window.location.href = "smivo://auth/callback";
+        window.location.href = deepLink;
       }, 1500);
-    };
+    })();
   </script>
 </body>
 </html>

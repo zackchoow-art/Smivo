@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/providers/preferences_provider.dart';
 import 'core/providers/push_notification_provider.dart';
@@ -76,10 +77,46 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
   }
 
   void _handleDeepLink(Uri uri) {
+    // NOTE: Auth callback deep links carry tokens from email verification.
+    // Format: smivo://auth/callback?access_token=xxx&refresh_token=xxx
+    // When present, we call setSession() to auto-login the user so they
+    // don't need to re-enter their password after verifying their email.
+    if (uri.path == '/auth/callback') {
+      final refreshToken = uri.queryParameters['refresh_token'];
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        _handleAuthCallback(refreshToken);
+        return;
+      }
+      // No tokens — just navigate to home (legacy "Open App" behavior)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(routerProvider).go('/');
+      });
+      return;
+    }
+
+    // Regular deep link (e.g. /listing/<id>)
     if (uri.path.isNotEmpty) {
-      // Defer navigation until the router is ready
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(routerProvider).go(uri.path);
+      });
+    }
+  }
+
+  /// Exchanges a refresh token from the auth callback deep link for a full
+  /// session, effectively auto-logging in the user after email verification.
+  Future<void> _handleAuthCallback(String refreshToken) async {
+    try {
+      await Supabase.instance.client.auth.setSession(refreshToken);
+      debugPrint('Auto-login via deep link succeeded');
+      // NOTE: setSession() triggers onAuthStateChange which the router
+      // listens to. GoRouter's redirect will automatically navigate the
+      // user to home (or profile setup if profile is incomplete).
+    } catch (e) {
+      debugPrint('Auto-login via deep link failed: $e');
+      // Fall through — user will see the login screen and can sign in
+      // manually. This is graceful degradation, not a hard failure.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(routerProvider).go('/');
       });
     }
   }
