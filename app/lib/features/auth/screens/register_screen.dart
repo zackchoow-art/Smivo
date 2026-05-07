@@ -84,10 +84,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final emailValue = _emailController.text.trim();
     final password = _passwordController.text;
 
-    // NOTE: finishAutofillContext(shouldSave: true) signals to iOS Keychain
-    // and Android Autofill that the credentials are valid and should be saved.
-    // Must be called BEFORE the async sign-up so fields are still populated.
+    // NOTE: In normal (non-debug) mode, _emailController only holds the
+    // username prefix (e.g. "jsmith"). The @domain is shown as suffixText
+    // (visual only) and is NOT part of the controller value.
+    // iOS Keychain requires a valid email address to offer a strong password
+    // suggestion and to save the correct credential username.
+    // We temporarily write the full email into the controller BEFORE calling
+    // finishAutofillContext(), then restore the prefix so the UI is unchanged.
+    if (!_isDebugMode && _selectedSchool != null) {
+      _emailController.text =
+          '$emailValue@${_selectedSchool!.emailDomain}';
+    }
     TextInput.finishAutofillContext();
+
+    // Restore prefix so the field shows correctly if the user navigates back
+    if (!_isDebugMode) {
+      _emailController.text = emailValue;
+    }
 
     if (_isDebugMode) {
       await ref.read(authProvider.notifier).signUpDebug(emailValue, password);
