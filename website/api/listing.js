@@ -73,21 +73,24 @@ export default async function handler(request) {
   <link rel="canonical" href="${canonical}">
   <link rel="icon" type="image/png" href="/favicon.png">
 
-  <!-- Open Graph -->
+  <!-- Open Graph (YouTube-style: clean photo + title + price line) -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Smivo">
   <meta property="og:url" content="${canonical}">
   <meta property="og:title" content="${esc(title)}">
+  <meta property="og:description" content="${esc(priceText ? priceText + ' · Smivo' : 'Smivo Campus Marketplace')}">
   <meta property="og:image" content="${ogImage}">
 
   <!-- WeChat / Schema.org -->
   <meta itemprop="name" content="${esc(title)}">
+  <meta itemprop="description" content="${esc(priceText ? priceText + ' · Smivo' : 'Smivo Campus Marketplace')}">
   <meta itemprop="image" content="${ogImage}">
-  <meta name="description" content="${esc(title)} — Smivo Campus Marketplace">
+  <meta name="description" content="${esc(priceText ? priceText + ' · Smivo' : 'Smivo Campus Marketplace')}">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${esc(title)}">
+  <meta name="twitter:description" content="${esc(priceText ? priceText + ' · Smivo' : 'Smivo Campus Marketplace')}">
   <meta name="twitter:image" content="${ogImage}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">

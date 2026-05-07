@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/listing/:id/card.png",
-      "destination": "/api/og?id=:id"
-    },
-    {
       "source": "/listing/:id/image.jpg",
       "destination": "/api/img?id=:id"
     },
