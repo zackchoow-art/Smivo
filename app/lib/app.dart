@@ -84,17 +84,10 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
     //   smivo://auth/callback  →  host="auth", path="/callback"
     //   https://smivo.io/auth/callback  →  host="smivo.io", path="/auth/callback"
     // We must check both formats to handle custom scheme + Universal Links.
-    debugPrint('[DeepLink] received: $uri');
-    debugPrint('[DeepLink] scheme=${uri.scheme} host=${uri.host} path=${uri.path}');
-    debugPrint('[DeepLink] queryParams=${uri.queryParameters}');
-
     if (_isAuthCallback(uri)) {
-      debugPrint('[DeepLink] matched auth callback');
-
       // PKCE flow (supabase_flutter v2+ default): code in query params
       final code = uri.queryParameters['code'];
       if (code != null && code.isNotEmpty) {
-        debugPrint('[DeepLink] PKCE code present, exchanging for session...');
         _handlePkceCallback(code);
         return;
       }
@@ -102,20 +95,17 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
       // Legacy implicit flow: refresh_token in query params
       final refreshToken = uri.queryParameters['refresh_token'];
       if (refreshToken != null && refreshToken.isNotEmpty) {
-        debugPrint('[DeepLink] refresh_token present, calling setSession...');
         _handleImplicitCallback(refreshToken);
         return;
       }
 
-      // No tokens — just navigate to home (legacy "Open App" behavior)
-      debugPrint('[DeepLink] no auth data, going to /');
+      // No auth data — navigate to home
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(routerProvider).go('/');
       });
       return;
     }
 
-    debugPrint('[DeepLink] not auth callback, going to ${uri.path}');
     // Regular deep link (e.g. /listing/<id>)
     if (uri.path.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -137,15 +127,13 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
 
   /// PKCE flow: exchanges the one-time authorization code for a full session.
   /// Used by supabase_flutter v2+ (PKCE is the default auth flow).
+  /// On success, onAuthStateChange fires and GoRouter navigates automatically.
   Future<void> _handlePkceCallback(String code) async {
     try {
       await Supabase.instance.client.auth.exchangeCodeForSession(code);
-      debugPrint('[DeepLink] PKCE exchange succeeded — user logged in');
-      // NOTE: exchangeCodeForSession triggers onAuthStateChange.
-      // GoRouter's redirect will auto-navigate to home or profile setup.
-    } catch (e, stack) {
-      debugPrint('[DeepLink] PKCE exchange FAILED: $e');
-      debugPrint('[DeepLink] stack: $stack');
+      debugPrint('Auth: PKCE auto-login succeeded');
+    } catch (e) {
+      debugPrint('Auth: PKCE auto-login failed: $e');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(routerProvider).go('/');
       });
@@ -157,10 +145,9 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
   Future<void> _handleImplicitCallback(String refreshToken) async {
     try {
       await Supabase.instance.client.auth.setSession(refreshToken);
-      debugPrint('[DeepLink] setSession succeeded — user logged in');
-    } catch (e, stack) {
-      debugPrint('[DeepLink] setSession FAILED: $e');
-      debugPrint('[DeepLink] stack: $stack');
+      debugPrint('Auth: implicit auto-login succeeded');
+    } catch (e) {
+      debugPrint('Auth: implicit auto-login failed: $e');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(routerProvider).go('/');
       });
