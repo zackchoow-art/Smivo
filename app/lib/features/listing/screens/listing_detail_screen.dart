@@ -1740,27 +1740,17 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           color: colors.onSurface,
                         ),
                         onPressed: () {
-                          // NOTE: Always use smivo.io as the share URL base.
-                          // smivo.io hosts the AASA / App Links files, so
-                          // Universal Links on iOS and App Links on Android
-                          // intercept smivo.io/listing/* and open the app.
-                          // smivo.app (GitHub Pages) does NOT have these files.
+                          // NOTE: Only share the bare URL. When a message
+                          // contains just a URL, iMessage / WeChat / Slack
+                          // will crawl it and render the rich preview card
+                          // (og:title, og:image, og:description).
+                          // Adding extra text alongside the URL often prevents
+                          // the platform from generating the preview card.
                           const baseUrl = 'https://smivo.io';
                           final listingUrl = '$baseUrl/listing/${listing.id}';
-                          final subject = isSale
-                              ? '${listing.title} — \$${listing.price.toStringAsFixed(0)} on Smivo'
-                              : '${listing.title} on Smivo';
-                          final body = isSale
-                              ? 'Check out ${listing.title} for \$${listing.price.toStringAsFixed(0)} on Smivo!\n\n$listingUrl'
-                              : 'Check out ${listing.title} on Smivo!\n\n$listingUrl';
-                          // NOTE: share_plus 13.x throws ArgumentError if both
-                          // `text` and `uri` are provided simultaneously. We
-                          // pass only `text` (which already contains the full
-                          // URL) so iOS/Android recognise it as a tappable link.
                           SharePlus.instance.share(
                             ShareParams(
-                              subject: subject,
-                              text: body,
+                              text: listingUrl,
                             ),
                           );
                         },
