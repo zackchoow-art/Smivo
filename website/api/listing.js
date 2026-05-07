@@ -55,11 +55,12 @@ export default async function handler(request) {
     }
   }
 
-  // NOTE: og:image is a dynamically generated card (600×315 PNG, ~50-150KB)
-  // with product photo + price overlay. Small size keeps WeChat happy.
-  // Vercel rewrites /listing/:id/card.png → /api/og?id=:id.
+  // NOTE: og:image uses the image proxy (/api/img) which returns the actual
+  // product photo (~60KB JPEG) through Vercel's CDN. This is small enough
+  // for WeChat (<300KB limit) and the path looks like a static file.
+  // Vercel rewrites /listing/:id/image.jpg → /api/img?id=:id.
   const ogImage = id
-    ? `https://smivo.io/listing/${encodeURIComponent(id)}/card.png`
+    ? `https://smivo.io/listing/${encodeURIComponent(id)}/image.jpg`
     : 'https://smivo.io/og-image.png';
   const canonical = `https://smivo.io/listing/${encodeURIComponent(id)}`;
 
@@ -78,9 +79,6 @@ export default async function handler(request) {
   <meta property="og:url" content="${canonical}">
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:image" content="${ogImage}">
-  <meta property="og:image:width" content="600">
-  <meta property="og:image:height" content="315">
-  <meta property="og:image:type" content="image/png">
 
   <!-- WeChat / Schema.org -->
   <meta itemprop="name" content="${esc(title)}">
