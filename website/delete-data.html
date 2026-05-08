@@ -242,43 +242,64 @@
           <input type="email" id="email" placeholder="yourname@university.edu" required>
         </div>
 
-        <div class="section-title">📋 Select Data to Delete</div>
-        <div class="checkbox-list">
-          <label class="checkbox-item">
-            <input type="checkbox" name="data-type" value="transactions">
+        <div class="section-title">🛡️ Deletion Type</div>
+        <div class="checkbox-list" style="margin-bottom: 24px;">
+          <label class="checkbox-item" style="border-color: var(--danger); background: #fff1f2;">
+            <input type="radio" name="delete-type" value="account" checked onclick="toggleOptions(true)">
             <div>
-              <span class="label-text">Transaction Records</span>
-              <span class="sub-text">Includes listings, purchase history, and sales history.</span>
+              <span class="label-text" style="color: var(--danger);">Delete My Entire Account</span>
+              <span class="sub-text">Permanently close your account and remove all associated data.</span>
             </div>
           </label>
           <label class="checkbox-item">
-            <input type="checkbox" name="data-type" value="chats">
+            <input type="radio" name="delete-type" value="selective" onclick="toggleOptions(false)">
             <div>
-              <span class="label-text">Chat History</span>
-              <span class="sub-text">Clear all messages and shared images in your conversations.</span>
+              <span class="label-text">Keep Account, Delete Specific Data</span>
+              <span class="sub-text">Keep your login access but remove selected records below.</span>
             </div>
           </label>
-          <label class="checkbox-item">
-            <input type="checkbox" name="data-type" value="feedback">
-            <div>
-              <span class="label-text">Feedback Records</span>
-              <span class="sub-text">Delete your submitted feedback and suggestions.</span>
-            </div>
-          </label>
-          <label class="checkbox-item">
-            <input type="checkbox" name="data-type" value="reports">
-            <div>
-              <span class="label-text">Report Records</span>
-              <span class="sub-text">Remove reports you have filed against other users.</span>
-            </div>
-          </label>
+        </div>
+
+        <div id="selective-options" style="opacity: 0.5; pointer-events: none; transition: opacity 0.3s;">
+          <div class="section-title">📋 Select Data to Delete</div>
+          <div class="checkbox-list">
+            <label class="checkbox-item">
+              <input type="checkbox" name="data-type" value="transactions">
+              <div>
+                <span class="label-text">Transaction Records</span>
+                <span class="sub-text">Includes listings, purchase history, and sales history.</span>
+              </div>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="data-type" value="chats">
+              <div>
+                <span class="label-text">Chat History</span>
+                <span class="sub-text">Clear all messages and shared images in your conversations.</span>
+              </div>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="data-type" value="feedback">
+              <div>
+                <span class="label-text">Feedback Records</span>
+                <span class="sub-text">Delete your submitted feedback and suggestions.</span>
+              </div>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="data-type" value="reports">
+              <div>
+                <span class="label-text">Report Records</span>
+                <span class="sub-text">Remove reports you have filed against other users.</span>
+              </div>
+            </label>
+          </div>
         </div>
 
         <div class="disclaimer">
-          <p>⚠️ <strong>Important:</strong> Your request will be manually reviewed by our support team. Upon verification, the selected data will be permanently deleted within 15 days.</p>
+          <p>⚠️ <strong>Important:</strong> Your request will be manually reviewed by our support team. Upon verification, the request will be processed within 15 days.</p>
+          <p style="margin-top: 8px;">📧 你将会收到一封确认邮件，请根据邮件中的指引完成删除数据或删除账户的后续事宜。</p>
         </div>
 
-        <button type="submit" class="btn-submit">Submit Deletion Request</button>
+        <button type="submit" class="btn-submit">Submit Request</button>
       </form>
 
       <div id="success-message">
@@ -295,21 +316,31 @@
   </footer>
 
   <script>
+    function toggleOptions(isDisabled) {
+      const options = document.getElementById('selective-options');
+      options.style.opacity = isDisabled ? '0.5' : '1';
+      options.style.pointerEvents = isDisabled ? 'none' : 'auto';
+      
+      // Uncheck everything if disabling
+      if (isDisabled) {
+        options.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      }
+    }
+
     document.getElementById('delete-form').addEventListener('submit', function(e) {
       e.preventDefault();
       
       const email = document.getElementById('email').value;
-      const checked = Array.from(document.querySelectorAll('input[name="data-type"]:checked')).map(cb => cb.parentElement.querySelector('.label-text').innerText);
+      const type = document.querySelector('input[name="delete-type"]:checked').value;
       
-      if (checked.length === 0) {
-        alert('Please select at least one type of data to delete.');
-        return;
+      if (type === 'selective') {
+        const checked = Array.from(document.querySelectorAll('input[name="data-type"]:checked'));
+        if (checked.length === 0) {
+          alert('Please select at least one type of data to delete.');
+          return;
+        }
       }
 
-      // In a real scenario, this would send an API request.
-      // Since it's a static page, we simulate success.
-      console.log('Deletion Request:', { email, dataTypes: checked });
-      
       this.style.display = 'none';
       document.getElementById('success-message').style.display = 'block';
     });
