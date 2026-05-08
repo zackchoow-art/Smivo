@@ -187,20 +187,38 @@ class FlaggedImageUrls extends _$FlaggedImageUrls {
   Future<Set<String>> build() async {
     try {
       final supabase = ref.watch(supabaseClientProvider);
-      // Query backend_moderation_logs for failed image moderation results.
-      // NOTE: content_snapshot holds the image URL for image-type logs.
+      // Query backend_moderation_logs for failed moderation results.
+      // The Edge Function writes action_taken = 'blur' for chat images,
+      // 'flag' or 'reject' for listings. We collect all failed records.
+      //
+      // Flagged image URLs come from two sources:
+      //   1. content_snapshot: holds the image URL for chat image messages
+      //   2. image_details: jsonb array of per-image results for listings
       final data = await supabase
           .from('backend_moderation_logs')
-          .select('content_snapshot')
+          .select('content_snapshot, image_details')
           .eq('result', 'fail')
-          .inFilter('action_taken', ['image_flagged', 'blur_applied'])
           .limit(500);
 
       final urls = <String>{};
       for (final row in (data as List)) {
-        final url = row['content_snapshot'] as String?;
-        if (url != null && url.startsWith('http')) {
-          urls.add(url);
+        // Source 1: content_snapshot (chat image messages store URL here)
+        final snapshot = row['content_snapshot'] as String?;
+        if (snapshot != null && snapshot.startsWith('http')) {
+          urls.add(snapshot);
+        }
+
+        // Source 2: image_details array (listings store per-image results)
+        final imageDetails = row['image_details'] as List?;
+        if (imageDetails != null) {
+          for (final detail in imageDetails) {
+            if (detail is Map &&
+                detail['flagged'] == true &&
+                detail['url'] is String &&
+                (detail['url'] as String).startsWith('http')) {
+              urls.add(detail['url'] as String);
+            }
+          }
         }
       }
       return urls;

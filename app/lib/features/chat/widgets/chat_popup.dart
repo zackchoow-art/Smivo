@@ -13,6 +13,7 @@ import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/shared/widgets/moderation_aware_image.dart';
 
 Future<void> showChatPopup(
   BuildContext context, {
@@ -674,28 +675,19 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 200, maxHeight: 300),
-      child: ClipRRect(
+      // NOTE: ModerationAwareImage handles blur for AI-flagged images.
+      // It is a ConsumerWidget and reads flaggedImageUrlsProvider internally.
+      child: ModerationAwareImage(
+        imageUrl: url,
+        fit: BoxFit.cover,
         borderRadius: BorderRadius.circular(radius.sm),
-        child: Image.network(
-          url,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              width: 200,
-              height: 150,
-              color: colors.surfaceContainerHigh,
-              child: const Center(child: CircularProgressIndicator()),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              width: 200,
-              height: 150,
-              color: colors.surfaceContainerHigh,
-              child: const Center(child: Icon(Icons.broken_image)),
-            );
-          },
+        placeholder: Container(
+          width: 200,
+          height: 150,
+          color: colors.surfaceContainerHigh,
+          child: const Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
         ),
       ),
     );

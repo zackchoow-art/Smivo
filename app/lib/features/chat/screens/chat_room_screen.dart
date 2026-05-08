@@ -12,6 +12,7 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/data/models/message.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/moderation_aware_image.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 
 import 'package:smivo/shared/widgets/report_dialog.dart';
@@ -958,8 +959,13 @@ class _MessageBubble extends StatelessWidget {
                                             children: [
                                               InteractiveViewer(
                                                 child: Center(
-                                                  child: Image.network(
-                                                    message.imageUrl!,
+                                                  // NOTE: Full-screen preview
+                                                  // also uses ModerationAwareImage
+                                                  // so flagged content stays blurred
+                                                  // even when expanded.
+                                                  child: ModerationAwareImage(
+                                                    imageUrl:
+                                                        message.imageUrl!,
                                                   ),
                                                 ),
                                               ),
@@ -982,36 +988,23 @@ class _MessageBubble extends StatelessWidget {
                                           ),
                                         ),
                                   ),
-                              child: ClipRRect(
+                              child: ModerationAwareImage(
+                                imageUrl: message.imageUrl!,
+                                width: 200,
+                                fit: BoxFit.cover,
                                 borderRadius: BorderRadius.circular(
                                   radius.card,
                                 ),
-                                child: Image.network(
-                                  message.imageUrl!,
+                                placeholder: Container(
                                   width: 200,
-                                  fit: BoxFit.cover,
-                                  errorBuilder:
-                                      (_, __, ___) => Container(
-                                        width: 200,
-                                        height: 150,
-                                        color: colors.surfaceContainerHigh,
-                                        child: const Icon(Icons.broken_image),
-                                      ),
-                                  loadingBuilder: (
-                                    context,
-                                    child,
-                                    loadingProgress,
-                                  ) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      width: 200,
-                                      height: 150,
-                                      color: colors.surfaceContainerHigh,
-                                      child: const Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    );
-                                  },
+                                  height: 150,
+                                  color: colors.surfaceContainerHigh,
+                                  child: const Center(
+                                    child:
+                                        CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                  ),
                                 ),
                               ),
                             )
