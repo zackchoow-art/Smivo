@@ -363,8 +363,8 @@
         timestamp: new Date().toLocaleString()
       };
 
-      // 2. Production Backend Call (Supabase Edge Function)
-      fetch('https://sztrbkfdcldwaifjkkol.supabase.co/functions/v1/send-delete-email', {
+      // 2. Production Backend Call (Vercel Serverless Function)
+      fetch('/api/send-delete-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
