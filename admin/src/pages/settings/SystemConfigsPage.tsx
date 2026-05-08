@@ -501,17 +501,18 @@ function FlagsTab() {
 /** Upload a file to Supabase storage and return a public URL for AI testing. */
 async function uploadTestImage(file: File): Promise<string> {
   const ext  = file.name.split('.').pop() ?? 'jpg';
-  const path = `moderation-test/${Date.now()}.${ext}`;
+  const path = `${Date.now()}.${ext}`;
 
-  // NOTE: We reuse the listing-images bucket (public read) so that both
-  // OpenAI and Google Vision can fetch the URL without any auth headers.
-  const { error } = await supabase.storage.from('listing-images').upload(path, file, {
+  // NOTE: Uses the dedicated moderation-test-images bucket (public read,
+  // admin-only write). The listing-images bucket's RLS requires the first
+  // folder to match the uploader's UUID, which blocks admin test uploads.
+  const { error } = await supabase.storage.from('moderation-test-images').upload(path, file, {
     upsert: true,
     contentType: file.type,
   });
   if (error) throw new Error(`Upload failed: ${error.message}`);
 
-  const { data } = supabase.storage.from('listing-images').getPublicUrl(path);
+  const { data } = supabase.storage.from('moderation-test-images').getPublicUrl(path);
   return data.publicUrl;
 }
 
