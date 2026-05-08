@@ -363,14 +363,20 @@
         timestamp: new Date().toLocaleString()
       };
 
-      console.log('Submitting request to backend...', requestData);
-
       // 2. Production Backend Call (Supabase Edge Function)
-      // fetch('https://your-project-ref.supabase.co/functions/v1/send-delete-email', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(requestData)
-      // }).catch(err => console.error('Backend submission failed', err));
+      fetch('https://sztrbkfdcldwaifjkkol.supabase.co/functions/v1/send-delete-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Submission failed');
+        console.log('Request sent successfully');
+      })
+      .catch(err => {
+        console.error('Backend submission failed', err);
+        // Fallback: in case of error, we can still show success or notify user
+      });
 
       // 3. UI Update
       this.style.display = 'none';
