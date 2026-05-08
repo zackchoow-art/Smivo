@@ -136,10 +136,12 @@ export function TestDataCleanupPage() {
 
   const SCHOOL_ITEMS = [
     `All listings from ${currentSchool?.name ?? 'the selected school'}`,
-    'Orders and rentals tied to those listings',
+    'Orders, rentals, and user reviews tied to those listings',
     'Chat rooms and messages for those listings',
-    'Reports, feedback, bans for school users',
-    'Notifications for school users',
+    'AI moderation logs and tasks for school content',
+    'Reports, feedback, bans, and contribution points for school users',
+    'Notifications and push jobs for school users',
+    'User saved locations and activity sessions',
   ];
 
   return (
