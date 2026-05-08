@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, User, AlertTriangle, Shield, CheckCircle, XCircle, ChevronRight, Ban, Eye, EyeOff } from 'lucide-react';
 import { useListingReportsByListingId, useResolveListingReport, useGroupedListingReports } from '@/hooks/useListingReports';
-import { useListingModerationDetail, useBatchModerateListings } from '@/hooks/useListingModeration';
+import { useListingModerationDetail, useBatchModerateListings, useListingOrders } from '@/hooks/useListingModeration';
 import { useAuth } from '@/hooks/useAuth';
 import { useDictItems } from '@/hooks/useDictionary';
 import { UserSummaryPopup } from '@/components/users/UserSummaryPopup';
@@ -19,6 +19,8 @@ export function ListingReportDetailPage() {
   const { data: reports, isLoading: reportsLoading, error: reportsError } = useListingReportsByListingId(id);
   const { data: listing, isLoading: listingLoading } = useListingModerationDetail(id);
   const { data: allGroupedReports } = useGroupedListingReports({ status: 'pending' });
+  // Bug 1: Fetch order count so we can display it in the listing context card
+  const { data: listingOrders } = useListingOrders(id);
   
   const resolveMutation = useResolveListingReport();
   const listingModerateMutation = useBatchModerateListings();
@@ -127,8 +129,10 @@ export function ListingReportDetailPage() {
       }
 
       // ── Step 2: Apply user penalty if takedown + penalty selected ─
+      // Bug 3 fix: 'warn' is a formal notice only — it does NOT insert a user_ban row.
+      // Only 'restrict' creates an actual ban record that blocks features.
       const sellerId = listing?.seller?.id;
-      if (listingAction === 'takedown' && userPenalty !== 'none' && sellerId) {
+      if (listingAction === 'takedown' && userPenalty === 'restrict' && sellerId) {
         const isPermanent = restrictionDuration === '9999';
         const expiresAt = isPermanent
           ? null
@@ -137,7 +141,7 @@ export function ListingReportDetailPage() {
         await supabase.from('user_bans').insert({
           user_id: sellerId,
           college_id: (listing?.seller as any)?.school_id || '',
-          scope: userPenalty === 'restrict' ? restrictionScope : 'listing_ban',
+          scope: restrictionScope,
           ban_type: isPermanent ? 'permanent' : 'temporary',
           reason_code: 'listing_report',
           reason_detail: finalNote,
@@ -204,7 +208,12 @@ export function ListingReportDetailPage() {
       }));
 
       // 4b. Notify the listing seller if taken down
+      // Bug 2 fix: Include reporter count in the notification body so the user
+      // knows how many people flagged their listing (not just one generic message).
       if (isTakedown && sellerId) {
+        const reporterCount = reportsToResolve.length;
+        const reporterCountText = reporterCount > 1 ? `${reporterCount} users` : '1 user';
+
         let penaltyTitle: string;
         let penaltyBody: string;
         let penaltyType: string;
@@ -212,15 +221,15 @@ export function ListingReportDetailPage() {
         if (userPenalty === 'restrict') {
           penaltyType = 'moderation_restricted';
           penaltyTitle = '🚫 Listing Removed & Account Restricted';
-          penaltyBody = `Your listing "${listing?.title ?? 'an item'}" has been removed due to a community guideline violation. A ${restrictionScope.replace(/_/g, ' ')} restriction has been applied for ${restrictionDuration === '9999' ? 'permanently' : `${restrictionDuration} days`}. Contact support if you believe this is an error.`;
+          penaltyBody = `Your listing "${listing?.title ?? 'an item'}" was reported by ${reporterCountText} and removed after moderation review. A ${restrictionScope.replace(/_/g, ' ')} restriction has been applied for ${restrictionDuration === '9999' ? 'permanently' : `${restrictionDuration} days`}. Contact support if you believe this is an error.`;
         } else if (userPenalty === 'warn') {
           penaltyType = 'moderation_warned';
           penaltyTitle = '⚠️ Listing Removed — Account Warning';
-          penaltyBody = `Your listing "${listing?.title ?? 'an item'}" has been removed due to a community guideline violation. A formal warning has been issued. Please review our community guidelines to avoid further action.`;
+          penaltyBody = `Your listing "${listing?.title ?? 'an item'}" was reported by ${reporterCountText} and removed after moderation review. A formal warning has been issued. Please review our community guidelines to avoid further action.`;
         } else {
           penaltyType = 'moderation_warned';
           penaltyTitle = '📋 Listing Removed by Moderation';
-          penaltyBody = `Your listing "${listing?.title ?? 'an item'}" has been removed following a moderation review. If you have questions, please contact support.`;
+          penaltyBody = `Your listing "${listing?.title ?? 'an item'}" was reported by ${reporterCountText} and removed following a moderation review. If you have questions, please contact support.`;
         }
 
         const { error: sellerErr } = await supabase.rpc('send_moderation_notification', {
@@ -333,6 +342,19 @@ export function ListingReportDetailPage() {
                       <span>Category: {listing.category}</span>
                       <span>Condition: {listing.condition}</span>
                       <span>Type: {listing.listing_type}</span>
+                      <span style={{ textTransform: 'capitalize' }}>Status: {listing.status}</span>
+                    </div>
+                    {/* Bug 1: Display engagement stats for better moderation context */}
+                    <div className="listing-stats-row">
+                      <span className="listing-stat">
+                        👁 {(listing as any).view_count ?? '—'} views
+                      </span>
+                      <span className="listing-stat">
+                        🔖 {(listing as any).save_count ?? '—'} saves
+                      </span>
+                      <span className="listing-stat">
+                        📦 {listingOrders?.length ?? 0} orders
+                      </span>
                     </div>
                     <p className="listing-description">{listing.description}</p>
                     {listing.images && listing.images.length > 0 && (
@@ -669,7 +691,9 @@ export function ListingReportDetailPage() {
         .listing-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .listing-title { font-weight: 700; font-size: 18px; color: var(--color-text-primary); }
         .listing-price { font-weight: 600; font-size: 16px; color: var(--color-info); }
-        .listing-meta { display: flex; gap: 16px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 12px; }
+        .listing-meta { display: flex; gap: 16px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px; flex-wrap: wrap; }
+        .listing-stats-row { display: flex; gap: 16px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 12px; background: var(--color-bg-tertiary); padding: 8px 12px; border-radius: var(--radius-sm); }
+        .listing-stat { font-weight: 600; color: var(--color-text-primary); }
         .listing-description { font-size: 14px; color: var(--color-text-secondary); white-space: pre-wrap; margin-bottom: 16px; }
         .listing-image-gallery { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; }
         .listing-img { width: 100%; height: 120px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-light); object-fit: cover; transition: filter 0.3s ease; }

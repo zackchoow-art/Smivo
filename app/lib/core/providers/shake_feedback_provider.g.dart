@@ -9,17 +9,17 @@ part of 'shake_feedback_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Persists and exposes whether the "Shake to Report Bug" feature is enabled.
-/// Default is true.
+/// Default is false — user must explicitly enable in Settings.
 
 @ProviderFor(ShakeFeedbackNotifier)
 final shakeFeedbackProvider = ShakeFeedbackNotifierProvider._();
 
 /// Persists and exposes whether the "Shake to Report Bug" feature is enabled.
-/// Default is true.
+/// Default is false — user must explicitly enable in Settings.
 final class ShakeFeedbackNotifierProvider
     extends $NotifierProvider<ShakeFeedbackNotifier, bool> {
   /// Persists and exposes whether the "Shake to Report Bug" feature is enabled.
-  /// Default is true.
+  /// Default is false — user must explicitly enable in Settings.
   ShakeFeedbackNotifierProvider._()
     : super(
         from: null,
@@ -48,10 +48,10 @@ final class ShakeFeedbackNotifierProvider
 }
 
 String _$shakeFeedbackNotifierHash() =>
-    r'6c907291aa6edd44700b36b46d3d2a496197e754';
+    r'341f5aca9b959fbde8585bfde3e30abd07bb0d06';
 
 /// Persists and exposes whether the "Shake to Report Bug" feature is enabled.
-/// Default is true.
+/// Default is false — user must explicitly enable in Settings.
 
 abstract class _$ShakeFeedbackNotifier extends $Notifier<bool> {
   bool build();

@@ -380,6 +380,89 @@ abstract class _$UserPenalties extends $AsyncNotifier<List<ContentReport>> {
   }
 }
 
+/// Platform-level image moderation mode.
+///
+/// Reads 'image_moderation_mode' from the system_configs table.
+/// Supported values:
+///   'blur'        — blur the flagged image and show a violation summary
+///   'auto_reject' — do not load the image at all, show a removal notice
+///
+/// NOTE: keepAlive: true — this config must persist for the session.
+/// Defaults to 'blur' on any error so existing behavior is preserved.
+
+@ProviderFor(ImageModerationMode)
+final imageModerationModeProvider = ImageModerationModeProvider._();
+
+/// Platform-level image moderation mode.
+///
+/// Reads 'image_moderation_mode' from the system_configs table.
+/// Supported values:
+///   'blur'        — blur the flagged image and show a violation summary
+///   'auto_reject' — do not load the image at all, show a removal notice
+///
+/// NOTE: keepAlive: true — this config must persist for the session.
+/// Defaults to 'blur' on any error so existing behavior is preserved.
+final class ImageModerationModeProvider
+    extends $AsyncNotifierProvider<ImageModerationMode, String> {
+  /// Platform-level image moderation mode.
+  ///
+  /// Reads 'image_moderation_mode' from the system_configs table.
+  /// Supported values:
+  ///   'blur'        — blur the flagged image and show a violation summary
+  ///   'auto_reject' — do not load the image at all, show a removal notice
+  ///
+  /// NOTE: keepAlive: true — this config must persist for the session.
+  /// Defaults to 'blur' on any error so existing behavior is preserved.
+  ImageModerationModeProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'imageModerationModeProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$imageModerationModeHash();
+
+  @$internal
+  @override
+  ImageModerationMode create() => ImageModerationMode();
+}
+
+String _$imageModerationModeHash() =>
+    r'34cf0d3a858cefedae7f8efa5033e27efe1cc72a';
+
+/// Platform-level image moderation mode.
+///
+/// Reads 'image_moderation_mode' from the system_configs table.
+/// Supported values:
+///   'blur'        — blur the flagged image and show a violation summary
+///   'auto_reject' — do not load the image at all, show a removal notice
+///
+/// NOTE: keepAlive: true — this config must persist for the session.
+/// Defaults to 'blur' on any error so existing behavior is preserved.
+
+abstract class _$ImageModerationMode extends $AsyncNotifier<String> {
+  FutureOr<String> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<String>, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<String>, String>,
+              AsyncValue<String>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 /// Set of image URLs that have been flagged by the AI moderation system.
 ///
 /// Loaded once at session start from backend_moderation_logs where result='fail'.

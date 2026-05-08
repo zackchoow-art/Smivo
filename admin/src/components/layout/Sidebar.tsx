@@ -18,7 +18,6 @@ import {
   UserCog,
   GraduationCap,
   ScrollText,
-  Settings,
   ChevronLeft,
   ChevronRight,
   Cpu,
@@ -54,11 +53,19 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       ],
     },
     {
+      title: 'Review',
+      items: [
+        { path: '/moderation/listings', label: 'System Queue', icon: <ShieldAlert size={18} />, visible: perms.canViewModeration },
+        { path: '/moderation/user-reports', label: 'User Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
+        { path: '/moderation/chat-reports', label: 'Chat Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
+        { path: '/feedback', label: 'User Feedback', icon: <MessageCircle size={18} />, visible: perms.canViewFeedback },
+        { path: '/moderation/ai-reviewed', label: 'AI Reviewed', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
+      ],
+    },
+    {
       title: 'Content',
       items: [
         { path: '/moderation/all-listings', label: 'All Listings', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
-        { path: '/moderation/listings', label: 'Listing Review', icon: <ShieldAlert size={18} />, visible: perms.canViewModeration },
-        { path: '/moderation/chat-reports', label: 'Chat Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
         { path: '/moderation/sensitive-words', label: 'Sensitive Words', icon: <ShieldAlert size={18} />, visible: perms.canViewSensitiveWords },
       ],
     },
@@ -72,8 +79,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     {
       title: 'Engagement',
       items: [
-        { path: '/feedback', label: 'User Feedback', icon: <MessageCircle size={18} />, visible: perms.canViewFeedback },
-        { path: '/push', label: 'Push Notifications', icon: <Megaphone size={18} />, visible: perms.canViewPush },
+        { path: '/push', label: 'Push Notifications', icon: <Megaphone size={18} />, visible: perms.isSysadmin },
       ],
     },
     {
@@ -97,7 +103,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       title: '',
       items: [
         { path: '/audit-log', label: 'Audit Log', icon: <ScrollText size={18} />, visible: perms.canViewAuditLog },
-        { path: '/settings/profile', label: 'Settings', icon: <Settings size={18} />, visible: true },
       ],
     },
   ];

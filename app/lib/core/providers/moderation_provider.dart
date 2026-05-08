@@ -173,6 +173,38 @@ class UserPenalties extends _$UserPenalties {
   }
 }
 
+/// Platform-level image moderation mode.
+///
+/// Reads 'image_moderation_mode' from the system_configs table.
+/// Supported values:
+///   'blur'        — blur the flagged image and show a violation summary
+///   'auto_reject' — do not load the image at all, show a removal notice
+///
+/// NOTE: keepAlive: true — this config must persist for the session.
+/// Defaults to 'blur' on any error so existing behavior is preserved.
+@Riverpod(keepAlive: true)
+class ImageModerationMode extends _$ImageModerationMode {
+  @override
+  Future<String> build() async {
+    try {
+      final supabase = ref.watch(supabaseClientProvider);
+      final data =
+          await supabase
+              .from('system_configs')
+              .select('value')
+              .eq('key', 'image_moderation_mode')
+              .maybeSingle();
+
+      final value = data?['value'] as String?;
+      if (value == 'auto_reject' || value == 'blur') return value!;
+      // NOTE: Fall back to 'blur' for any unknown or null config value.
+      return 'blur';
+    } catch (_) {
+      return 'blur';
+    }
+  }
+}
+
 /// Set of image URLs that have been flagged by the AI moderation system.
 ///
 /// Loaded once at session start from backend_moderation_logs where result='fail'.

@@ -78,7 +78,9 @@ export function DashboardPage() {
         <StatCard icon={<Users size={20} />} label="Total Users" value={stats.userCount} color="var(--color-info)" />
         <StatCard icon={<Package size={20} />} label="Total Listings" value={stats.listingCount} color="var(--color-success)" />
         <StatCard icon={<ShoppingCart size={20} />} label="Active Orders" value={stats.activeOrderCount} color="var(--color-warning)" />
-        <StatCard icon={<Activity size={20} />} label="Online Now" value={stats.todayDau} color="var(--color-danger)" />
+        <StatCard icon={<Activity size={20} />} label="DAU (24h)" value={stats.activeUsers.dau} color="var(--color-danger)" />
+        <StatCard icon={<Activity size={20} />} label="WAU (7d)" value={stats.activeUsers.wau} color="#8884d8" />
+        <StatCard icon={<Activity size={20} />} label="MAU (30d)" value={stats.activeUsers.mau} color="#FF8042" />
       </div>
 
       {/* ── Two Column Detail ── */}

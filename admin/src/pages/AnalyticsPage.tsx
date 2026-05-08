@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BarChart3, PieChart as PieChartIcon, TrendingUp, Package, ShoppingCart, Users, Zap } from 'lucide-react';
+import { BarChart3, PieChart as PieChartIcon, TrendingUp, Package, ShoppingCart, Users } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -57,8 +57,9 @@ export function AnalyticsPage() {
 
       {/* Period KPIs */}
       <div className="an-kpi-grid">
-        <KpiCard icon={<Users size={18} />} label="Avg Daily Active" value={kpis.avgDau} color="#0088FE" />
-        <KpiCard icon={<Zap size={18} />} label="Peak DAU" value={kpis.peakDau} color="#FF8042" />
+        <KpiCard icon={<Users size={18} />} label="DAU (24h)" value={kpis.rollingDau} color="#0088FE" />
+        <KpiCard icon={<Users size={18} />} label="WAU (7d)" value={kpis.rollingWau} color="#8884d8" />
+        <KpiCard icon={<Users size={18} />} label="MAU (30d)" value={kpis.rollingMau} color="#FF8042" />
         <KpiCard icon={<Package size={18} />} label={`New Listings (${RANGE_LABELS[range]})`} value={kpis.newListingsCount} color="#00C49F" />
         <KpiCard icon={<ShoppingCart size={18} />} label={`New Orders (${RANGE_LABELS[range]})`} value={kpis.newOrdersCount} color="#FFBB28" />
       </div>
@@ -249,8 +250,16 @@ export function AnalyticsPage() {
         /* KPI Grid */
         .an-kpi-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(5, 1fr);
           gap: 16px;
+        }
+
+        @media (max-width: 1100px) {
+          .an-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 700px) {
+          .an-kpi-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 800px) {

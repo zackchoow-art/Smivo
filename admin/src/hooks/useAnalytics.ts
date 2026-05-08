@@ -86,7 +86,10 @@ export function useAnalytics(range: TimeRange = '7d') {
         orderCounts[row.status] = (orderCounts[row.status] || 0) + 1;
       });
 
-      // 6. Summary KPIs for the selected period
+      // 6. Rolling Active User Metrics (DAU, WAU, MAU) via RPC
+      const { data: activeMetrics } = await supabase.rpc('get_active_user_metrics');
+
+      // 7. Summary KPIs for the selected period
       const newListingsCount = listingsRaw?.length ?? 0;
       const newOrdersCount = ordersRaw?.length ?? 0;
       const avgDau = Object.values(dailyDau).length > 0
@@ -104,6 +107,9 @@ export function useAnalytics(range: TimeRange = '7d') {
           newOrdersCount,
           avgDau,
           peakDau: Object.values(dailyDau).length > 0 ? Math.max(...Object.values(dailyDau)) : 0,
+          rollingDau: activeMetrics?.dau ?? 0,
+          rollingWau: activeMetrics?.wau ?? 0,
+          rollingMau: activeMetrics?.mau ?? 0,
         },
       };
     },

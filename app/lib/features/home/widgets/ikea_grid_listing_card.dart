@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/features/home/widgets/transaction_tag.dart';
+import 'package:smivo/shared/widgets/moderation_aware_image.dart';
 
 /// IKEA-themed grid card for listings displayed from item 4 onwards.
 ///
 /// Layout: square-ish image inset by 8px from card edges (top/left/right),
 /// RENT/SALE tag overlay on image top-right, followed by a compact info
 /// section: price (right-aligned), title, description, and a spacer line.
-class IkeaGridListingCard extends StatelessWidget {
+class IkeaGridListingCard extends ConsumerWidget {
   const IkeaGridListingCard({super.key, required this.listing});
 
   final Listing listing;
@@ -33,7 +35,7 @@ class IkeaGridListingCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final imageUrl = listing.displayImageUrl;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -66,13 +68,12 @@ class IkeaGridListingCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Product image
+                      // Product image — routed through moderation guard
                       if (imageUrl != null)
-                        Image.network(
-                          imageUrl,
+                        ModerationAwareImage(
+                          imageUrl: imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder:
-                              (_, __, ___) => _buildImageFallback(colors),
+                          placeholder: _buildImageFallback(colors),
                         )
                       else
                         _buildImageFallback(colors),

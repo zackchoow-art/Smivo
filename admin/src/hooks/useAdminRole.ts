@@ -67,7 +67,7 @@ export function useAdminRole() {
       canViewAuditLog:          _isSysadmin || isPlatformAdmin || isPlatformReviewer || isSchoolAdmin,
 
       canViewSensitiveWords:    _isSysadmin || isPlatformAdmin,
-      canViewPush:              _isSysadmin || isPlatformAdmin,
+      canViewPush:              _isSysadmin,
 
       canViewDictionary:        _isSysadmin || isPlatformAdmin || isSchoolAdmin,
 

@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/shared/widgets/moderation_aware_image.dart';
 
 enum FlatSellerCardType {
   activeListing,
@@ -14,7 +16,7 @@ enum FlatSellerCardType {
 /// A square grid card for seller center used in Flat theme.
 ///
 /// Supports 4 card types matching the 4 sections of SellerCenterScreen.
-class FlatSellerOrderCard extends StatelessWidget {
+class FlatSellerOrderCard extends ConsumerWidget {
   const FlatSellerOrderCard({
     super.key,
     required this.cardType,
@@ -43,7 +45,7 @@ class FlatSellerOrderCard extends StatelessWidget {
   final List<VoidCallback>? statTaps;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final radius = context.smivoRadius;
     final shadows = context.smivoShadows;
@@ -92,7 +94,12 @@ class FlatSellerOrderCard extends StatelessWidget {
               aspectRatio: 1.3,
               child:
                   imageUrl != null
-                      ? Image.network(imageUrl, fit: BoxFit.cover)
+                      ? ModerationAwareImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      )
                       : Container(
                         color: colors.surfaceContainerHigh,
                         child: const Icon(Icons.image),
@@ -197,7 +204,12 @@ class FlatSellerOrderCard extends StatelessWidget {
                   aspectRatio: 1.3,
                   child:
                       imageUrl != null
-                          ? Image.network(imageUrl, fit: BoxFit.cover)
+                          ? ModerationAwareImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          )
                           : Container(
                             color: colors.surfaceContainerHigh,
                             child: const Icon(Icons.image),
@@ -304,7 +316,12 @@ class FlatSellerOrderCard extends StatelessWidget {
                   aspectRatio: 1.3,
                   child:
                       imageUrl != null
-                          ? Image.network(imageUrl, fit: BoxFit.cover)
+                          ? ModerationAwareImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          )
                           : Container(
                             color: colors.surfaceContainerHigh,
                             child: const Icon(Icons.image),
@@ -397,9 +414,11 @@ class FlatSellerOrderCard extends StatelessWidget {
                   aspectRatio: 1.3,
                   child:
                       historyItem.imageUrl != null
-                          ? Image.network(
-                            historyItem.imageUrl!,
+                          ? ModerationAwareImage(
+                            imageUrl: historyItem.imageUrl!,
                             fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
                           )
                           : Container(
                             color: colors.surfaceContainerHigh,

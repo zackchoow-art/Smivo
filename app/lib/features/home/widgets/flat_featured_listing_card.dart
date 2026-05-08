@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
@@ -6,6 +7,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/features/home/widgets/transaction_tag.dart';
+import 'package:smivo/shared/widgets/moderation_aware_image.dart';
 
 /// Flat-themed full-width featured card for the first 3 listings.
 ///
@@ -17,8 +19,9 @@ import 'package:smivo/features/home/widgets/transaction_tag.dart';
 /// because the visual structure differs too much to share a single
 /// build tree (Flat = top-image + bottom-info vs Teal = overlay
 /// gradient on full-bleed image).
-class FlatFeaturedListingCard extends StatelessWidget {
+class FlatFeaturedListingCard extends ConsumerWidget {
   const FlatFeaturedListingCard({super.key, required this.listing});
+
 
   final Listing listing;
 
@@ -39,7 +42,7 @@ class FlatFeaturedListingCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final imageUrl = listing.displayImageUrl;
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
@@ -72,13 +75,12 @@ class FlatFeaturedListingCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Product image
+                      // Product image — routed through moderation guard
                       if (imageUrl != null)
-                        Image.network(
-                          imageUrl,
+                        ModerationAwareImage(
+                          imageUrl: imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder:
-                              (_, __, ___) => _buildImageFallback(colors),
+                          placeholder: _buildImageFallback(colors),
                         )
                       else
                         _buildImageFallback(colors),

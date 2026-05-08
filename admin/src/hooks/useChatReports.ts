@@ -141,10 +141,12 @@ export function useChatReport(id: string | undefined) {
  * Mutation for resolving a chat report.
  * Full enforcement pipeline:
  *   1. Update content_reports status + resolution_note
- *   2. If warn/restrict: insert into user_bans
+ *   2. If restrict: insert into user_bans for each selected scope
+ *      NOTE: 'warn' does NOT create a user_ban — it only sets action_taken='warn'
  *   3. Hide reported messages via admin_hide_messages RPC
  *   4. Award reporter contribution points (if requested)
  *   5. Write audit log
+ *   6. Send in-app notifications to reporter + reported user
  */
 export function useResolveReport() {
   const queryClient = useQueryClient();
@@ -195,24 +197,13 @@ export function useResolveReport() {
 
       if (error) throw error;
 
-
       // ── Step 2: Auto-enforce user restrictions ───────────────────
-      // NOTE: 'warn' also creates a user_ban with scope='account_freeze'
-      // but duration_days=0 acts as a formal warning record (expires immediately).
-      if ((resolution === 'warn' || resolution === 'restrict') && reportedUserId) {
-        const scopesToApply: Array<{ scope: string; days: number }> = [];
-
-        if (resolution === 'warn') {
-          // Formal warning: a 1-day chat_mute serves as an official record
-          scopesToApply.push({ scope: 'chat_mute', days: 1 });
-        } else if (resolution === 'restrict' && restrictionScopes) {
-          // Apply each configured scope with its duration
-          for (const [scope, daysStr] of Object.entries(restrictionScopes)) {
-            scopesToApply.push({ scope, days: parseFloat(daysStr) });
-          }
-        }
-
-        for (const { scope, days } of scopesToApply) {
+      // NOTE: 'warn' only marks action_taken='warn' on the report record (Step 1).
+      // It does NOT insert a user_ban row — a formal warning is an official notice,
+      // not an enforcement action that blocks any feature. Only 'restrict' inserts bans.
+      if (resolution === 'restrict' && reportedUserId && restrictionScopes) {
+        for (const [scope, daysStr] of Object.entries(restrictionScopes)) {
+          const days = parseFloat(daysStr);
           const isPermanent = days >= 9999;
           const expiresAt = isPermanent
             ? null
@@ -232,7 +223,7 @@ export function useResolveReport() {
           });
 
           if (banError) {
-            // NOTE: Non-critical \u2014 log but continue; report is already resolved.
+            // NOTE: Non-critical — log but continue; report is already resolved.
             console.error(`[useResolveReport] Failed to insert ban (scope=${scope}):`, banError);
           }
         }
@@ -243,7 +234,7 @@ export function useResolveReport() {
       if (selectedMessageIds && selectedMessageIds.length > 0 && resolution !== 'dismiss') {
         const { error: hideError } = await supabase.rpc('admin_hide_messages', {
           message_ids: selectedMessageIds,
-          reason_text: `Reported content \u2014 hidden by moderation (report: ${reportId})`,
+          reason_text: `Reported content — hidden by moderation (report: ${reportId})`,
         });
 
         if (hideError) {
@@ -352,5 +343,3 @@ export function useResolveReport() {
     },
   });
 }
-
-

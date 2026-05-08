@@ -4,6 +4,7 @@
  */
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
+import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
@@ -55,9 +56,11 @@ export const router = createBrowserRouter([
       { path: 'moderation/listings', element: <ListingModerationPage /> },
       { path: 'moderation/listings/:id', element: <ListingModerationDetailPage /> },
       { path: 'moderation/listing-reports/:id', element: <ListingReportDetailPage /> },
+      { path: 'moderation/user-reports', element: <PlaceholderPage /> },
       { path: 'moderation/chat-reports', element: <ChatReportsPage /> },
       { path: 'moderation/chat-reports/:id', element: <ChatReportDetailPage /> },
       { path: 'moderation/sensitive-words', element: <SensitiveWordsPage /> },
+      { path: 'moderation/ai-reviewed', element: <PlaceholderPage /> },
 
       // 06-08 User Management
       { path: 'users', element: <UsersPage /> },

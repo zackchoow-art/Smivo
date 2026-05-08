@@ -798,7 +798,41 @@ class _OffersTab extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            Divider(
+              height: 1,
+              thickness: 0.5,
+              color: colors.outlineVariant.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                _buildInfoItem(
+                  context,
+                  Icons.calendar_today_outlined,
+                  order.orderType == 'rental' &&
+                          order.rentalStartDate != null &&
+                          order.rentalEndDate != null
+                      ? '${DateFormat('MM/dd').format(order.rentalStartDate!)} - ${DateFormat('MM/dd/yyyy').format(order.rentalEndDate!)}'
+                      : DateFormat('MM/dd/yyyy').format(order.createdAt),
+                ),
+                if (order.pickupLocationName != null &&
+                    order.pickupLocationName!.isNotEmpty)
+                  _buildInfoItem(
+                    context,
+                    Icons.location_on_outlined,
+                    order.pickupLocationName!,
+                  ),
+                _buildInfoItem(
+                  context,
+                  Icons.school_outlined,
+                  order.school,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -950,6 +984,36 @@ class _OffersTab extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+  ) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 14,
+          color: colors.onSurface.withValues(alpha: 0.5),
+        ),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            label,
+            style: typo.bodySmall.copyWith(
+              color: colors.onSurface.withValues(alpha: 0.6),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -941,9 +941,41 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                     error: (_, __) => const SizedBox.shrink(),
                                     data: (order) {
                                       if (order != null) {
+                                        final isSaleOrder =
+                                            order.orderType == 'sale';
                                         final submittedDate = DateFormat(
-                                          'MMM d, yyyy · h:mm a',
+                                          isSaleOrder
+                                              ? 'MM/dd/yyyy HH:mm'
+                                              : 'MMM d, yyyy · h:mm a',
                                         ).format(order.createdAt.toLocal());
+
+                                        // Determine status-based UI
+                                        String title;
+                                        IconData icon = Icons.check_circle;
+                                        Color iconColor = colors.success;
+
+                                        if (order.status == 'pending') {
+                                          title =
+                                              isSaleOrder
+                                                  ? '已预订'
+                                                  : 'Application Submitted';
+                                        } else if (order.status == 'confirmed') {
+                                          title = 'Order Confirmed';
+                                        } else if (order.status == 'completed') {
+                                          title = 'Order Completed';
+                                        } else if (order.status == 'cancelled') {
+                                          title = 'Order Cancelled';
+                                          icon = Icons.cancel;
+                                          iconColor = colors.error;
+                                        } else if (order.status == 'missed') {
+                                          title = 'Offer Missed';
+                                          icon = Icons.info_outline;
+                                          iconColor = colors.outlineVariant;
+                                        } else {
+                                          title =
+                                              'Order ${order.status.toUpperCase()}';
+                                        }
+
                                         return Container(
                                           width: double.infinity,
                                           padding: const EdgeInsets.all(16),
@@ -956,18 +988,16 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                           child: Column(
                                             children: [
                                               Icon(
-                                                Icons.check_circle,
-                                                color: colors.success,
+                                                icon,
+                                                color: iconColor,
                                                 size: 28,
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
-                                                'Application Submitted',
-                                                style: typo.titleMedium
-                                                    .copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
+                                                title,
+                                                style: typo.titleMedium.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
@@ -1000,9 +1030,14 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                       ),
                                                 ),
                                               ],
-                                              // Cancel button — only for pending orders
-                                              if (order.status ==
-                                                  'pending') ...[
+                                              // Cancel button — for pending or confirmed (unconfirmed delivery)
+                                              if (order.status == 'pending' ||
+                                                  (order.status ==
+                                                          'confirmed' &&
+                                                      !order
+                                                          .deliveryConfirmedByBuyer &&
+                                                      !order
+                                                          .deliveryConfirmedBySeller)) ...[
                                                 const SizedBox(height: 12),
                                                 SizedBox(
                                                   width: double.infinity,
@@ -1016,11 +1051,17 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                             (
                                                               ctx,
                                                             ) => AlertDialog(
-                                                              title: const Text(
-                                                                'Cancel Application',
+                                                              title: Text(
+                                                                order.status ==
+                                                                        'pending'
+                                                                    ? 'Cancel Application'
+                                                                    : 'Cancel Order',
                                                               ),
-                                                              content: const Text(
-                                                                'Are you sure you want to cancel your application?',
+                                                              content: Text(
+                                                                order.status ==
+                                                                        'pending'
+                                                                    ? 'Are you sure you want to cancel your application?'
+                                                                    : 'Are you sure you want to cancel this order?',
                                                               ),
                                                               actions: [
                                                                 TextButton(
@@ -1046,8 +1087,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                         Colors
                                                                             .red,
                                                                   ),
-                                                                  child: const Text(
-                                                                    'Cancel Application',
+                                                                  child: Text(
+                                                                    order.status ==
+                                                                            'pending'
+                                                                        ? 'Cancel Application'
+                                                                        : 'Cancel Order',
                                                                   ),
                                                                 ),
                                                               ],
@@ -1095,8 +1139,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                             ),
                                                       ),
                                                     ),
-                                                    child: const Text(
-                                                      'Cancel Application',
+                                                    child: Text(
+                                                      order.status == 'pending'
+                                                          ? 'Cancel Application'
+                                                          : 'Cancel Order',
                                                     ),
                                                   ),
                                                 ),
@@ -1276,12 +1322,63 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                   isSubmitting
                                                       ? null
                                                       : () async {
-                                                        final user =
-                                                            ref
-                                                                .read(
-                                                                  authStateProvider,
-                                                                )
-                                                                .value;
+                                                        // Before submitting order, re-fetch listing to check if still active
+                                                        try {
+                                                          final freshListing = await ref
+                                                              .read(
+                                                                listingRepositoryProvider,
+                                                              )
+                                                              .fetchListing(
+                                                                listing.id,
+                                                              );
+                                                          if (freshListing.status !=
+                                                              'active') {
+                                                            if (context.mounted) {
+                                                              ScaffoldMessenger.of(
+                                                                context,
+                                                              ).showSnackBar(
+                                                                const SnackBar(
+                                                                  content: Text(
+                                                                    'This item is no longer available',
+                                                                  ),
+                                                                ),
+                                                              );
+                                                              // Refresh the page
+                                                              ref.invalidate(
+                                                                listingDetailProvider(
+                                                                  widget.id,
+                                                                ),
+                                                              );
+                                                            }
+                                                            return;
+                                                          }
+                                                        } catch (_) {
+                                                          // If fetch fails (e.g. item deleted), treat as unavailable
+                                                          if (context.mounted) {
+                                                            ScaffoldMessenger.of(
+                                                              context,
+                                                            ).showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text(
+                                                                  'This item is no longer available',
+                                                                ),
+                                                              ),
+                                                            );
+                                                            ref.invalidate(
+                                                              listingDetailProvider(
+                                                                widget.id,
+                                                              ),
+                                                            );
+                                                          }
+                                                          return;
+                                                        }
+                                                        if (!context.mounted) return;
+
+                                                        final user = ref
+                                                            .read(
+                                                              authStateProvider,
+                                                            )
+                                                            .value;
                                                         if (user == null) {
                                                           context.pushNamed(
                                                             AppRoutes.login,

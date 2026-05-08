@@ -37,7 +37,7 @@ export function useDashboard() {
         userCount,
         listingCount,
         activeOrderCount,
-        todayDau,
+        activeUsers,
         pendingReportCount,
         pendingModerationCount,
         pendingFeedbackCount,
@@ -57,17 +57,19 @@ export function useDashboard() {
           return query;
         }, currentCollegeId ? '*, listing:listings!inner(school_id)' : '*'),
 
-        // 4. Today DAU via RPC
+        // 4. Active User Metrics (DAU, WAU, MAU) via RPC
         (async () => {
           try {
-            const { data, error } = await supabase.rpc('get_today_dau');
+            const { data, error } = await supabase.rpc('get_active_user_metrics', {
+              p_school_id: currentCollegeId
+            });
             if (error) {
-              console.warn('[Dashboard] get_today_dau RPC failed:', error.message);
-              return 0;
+              console.warn('[Dashboard] get_active_user_metrics RPC failed:', error.message);
+              return { dau: 0, wau: 0, mau: 0 };
             }
-            return typeof data === 'number' ? data : 0;
+            return data as { dau: number; wau: number; mau: number };
           } catch {
-            return 0;
+            return { dau: 0, wau: 0, mau: 0 };
           }
         })(),
 
@@ -143,7 +145,7 @@ export function useDashboard() {
           userCount,
           listingCount,
           activeOrderCount,
-          todayDau,
+          activeUsers,
           pendingReportCount,
           pendingModerationCount,
           pendingFeedbackCount,

@@ -14,6 +14,7 @@ import 'package:smivo/data/models/message.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/moderation_aware_image.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
+import 'package:smivo/shared/widgets/fullscreen_image_viewer.dart';
 
 import 'package:smivo/shared/widgets/report_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
@@ -307,6 +308,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
     final currentUserId = ref.watch(authStateProvider).value?.id;
     final colors = context.smivoColors;
+    final flaggedUrls = ref.watch(flaggedImageUrlsProvider).value ?? {};
 
     // Re-mark as read whenever new messages arrive while viewing this chat.
     ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
@@ -522,6 +524,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   }
                   // NOTE: On desktop the message list is constrained to 720px
                   // for readability. ContentWidthConstraint centers it.
+                  final validImageUrls = messages
+                      .where((m) => m.messageType == 'image' && m.imageUrl != null && !flaggedUrls.contains(m.imageUrl!))
+                      .map((m) => m.imageUrl!)
+                      .toList();
+
                   final listView = ListView.builder(
                     controller: _scrollController,
                     reverse: true,
@@ -535,6 +542,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         isMine: isMine,
                         isSelected: _selectedMessageIds.contains(msg.id),
                         selectionMode: _selectionMode,
+                        validImageUrls: validImageUrls,
                         onSelect: (id) {
                           setState(() {
                             if (_selectedMessageIds.contains(id)) {
@@ -840,6 +848,7 @@ class _MessageBubble extends StatelessWidget {
     this.selectionMode = false,
     this.onSelect,
     this.onLongPress,
+    this.validImageUrls = const [],
   });
 
   final Message message;
@@ -848,6 +857,7 @@ class _MessageBubble extends StatelessWidget {
   final bool selectionMode;
   final Function(String id)? onSelect;
   final Function(String id)? onLongPress;
+  final List<String> validImageUrls;
 
   @override
   Widget build(BuildContext context) {
@@ -947,66 +957,46 @@ class _MessageBubble extends StatelessWidget {
                     child:
                         message.messageType == 'image' &&
                                 message.imageUrl != null
-                            ? GestureDetector(
-                              onTap:
-                                  () => showDialog(
-                                    context: context,
-                                    builder:
-                                        (_) => Dialog(
-                                          backgroundColor: Colors.transparent,
-                                          insetPadding: EdgeInsets.zero,
-                                          child: Stack(
-                                            children: [
-                                              InteractiveViewer(
-                                                child: Center(
-                                                  // NOTE: Full-screen preview
-                                                  // also uses ModerationAwareImage
-                                                  // so flagged content stays blurred
-                                                  // even when expanded.
-                                                  child: ModerationAwareImage(
-                                                    imageUrl:
-                                                        message.imageUrl!,
-                                                  ),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                top: 40,
-                                                right: 20,
-                                                child: IconButton(
-                                                  icon: const Icon(
-                                                    Icons.close,
-                                                    color: Colors.white,
-                                                    size: 30,
-                                                  ),
-                                                  onPressed:
-                                                      () => Navigator.pop(
-                                                        context,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                  ),
-                              child: ModerationAwareImage(
-                                imageUrl: message.imageUrl!,
+                            ? ModerationAwareImage(
+                              imageUrl: message.imageUrl!,
+                              width: 200,
+                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.circular(
+                                radius.card,
+                              ),
+                              placeholder: Container(
                                 width: 200,
-                                fit: BoxFit.cover,
-                                borderRadius: BorderRadius.circular(
-                                  radius.card,
-                                ),
-                                placeholder: Container(
-                                  width: 200,
-                                  height: 150,
-                                  color: colors.surfaceContainerHigh,
-                                  child: const Center(
-                                    child:
-                                        CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                  ),
+                                height: 150,
+                                color: colors.surfaceContainerHigh,
+                                child: const Center(
+                                  child:
+                                      CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
                                 ),
                               ),
+                              // NOTE: onTap is only fired when the image is NOT
+                              // flagged. ModerationAwareImage suppresses the
+                              // tap for blurred/rejected images automatically.
+                              onTap:
+                                  validImageUrls.contains(message.imageUrl)
+                                      ? () {
+                                        final index = validImageUrls.indexOf(
+                                          message.imageUrl!,
+                                        );
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            fullscreenDialog: true,
+                                            builder:
+                                                (_) => FullscreenImageViewer(
+                                                  imageUrls: validImageUrls,
+                                                  initialIndex: index,
+                                                ),
+                                          ),
+                                        );
+                                      }
+                                      : null,
                             )
                             : IgnorePointer(
                               ignoring: selectionMode,

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/listing_image.dart';
+import 'package:smivo/shared/widgets/fullscreen_image_viewer.dart';
+import 'package:smivo/shared/widgets/moderation_aware_image.dart';
 
-class ListingImageCarousel extends StatefulWidget {
+class ListingImageCarousel extends ConsumerStatefulWidget {
   const ListingImageCarousel({
     super.key,
     required this.images,
@@ -17,10 +19,11 @@ class ListingImageCarousel extends StatefulWidget {
   final bool isSale;
 
   @override
-  State<ListingImageCarousel> createState() => _ListingImageCarouselState();
+  ConsumerState<ListingImageCarousel> createState() =>
+      _ListingImageCarouselState();
 }
 
-class _ListingImageCarouselState extends State<ListingImageCarousel> {
+class _ListingImageCarouselState extends ConsumerState<ListingImageCarousel> {
   int _currentIndex = 0;
 
   @override
@@ -69,17 +72,33 @@ class _ListingImageCarouselState extends State<ListingImageCarousel> {
                       return Stack(
                         fit: StackFit.expand,
                         children: [
-                          ImageFiltered(
-                            imageFilter:
-                                isRejected
-                                    ? ImageFilter.blur(sigmaX: 10, sigmaY: 10)
-                                    : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                            child: Image.network(
-                              img.imageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                            ),
+                          // NOTE: ModerationAwareImage handles both moderation-log
+                          // blur (AI flagged) and the isRejected guard from the DB.
+                          // onTap is null for rejected images to prevent navigation.
+                          ModerationAwareImage(
+                            imageUrl: img.imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            onTap: isRejected ? null : () {
+                              final validImages = widget.images
+                                  .where((i) => i.moderationStatus != 'rejected')
+                                  .map((i) => i.imageUrl)
+                                  .toList();
+                              final validIndex = validImages.indexOf(img.imageUrl);
+                              if (validIndex != -1) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (_) => FullscreenImageViewer(
+                                      imageUrls: validImages,
+                                      initialIndex: validIndex,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
                           ),
                           if (isRejected)
                             Positioned.fill(

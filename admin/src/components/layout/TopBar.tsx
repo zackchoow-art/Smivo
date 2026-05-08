@@ -9,8 +9,9 @@ import { useColleges } from '@/hooks/useColleges';
 import { useAuth } from '@/hooks/useAuth';
 import { GlobalSearch } from '@/components/shared/GlobalSearch';
 import { ADMIN_ROLE_LABELS } from '@/lib/constants';
-import { Bell, LogOut, User } from 'lucide-react';
+import { Bell, LogOut, User, Settings } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export function TopBar() {
   const { roles, adminProfile } = useAuthStore();
@@ -19,6 +20,7 @@ export function TopBar() {
   const { logout } = useAuth();
   const { data: colleges } = useColleges();
   const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
 
   // Derive role label from current roles
   const highestRole = getHighestRole(roles);
@@ -106,6 +108,16 @@ export function TopBar() {
                 <div>{adminProfile?.email}</div>
                 <div className="topbar__role">{roleLabel}</div>
               </div>
+              <button 
+                className="topbar__dropdown-item" 
+                onClick={() => {
+                  setShowDropdown(false);
+                  navigate('/settings/profile');
+                }}
+              >
+                <Settings size={14} />
+                Settings
+              </button>
               <button className="topbar__dropdown-item" onClick={logout}>
                 <LogOut size={14} />
                 Sign Out
