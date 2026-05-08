@@ -346,15 +346,33 @@
       
       const email = document.getElementById('email').value;
       const type = document.querySelector('input[name="delete-type"]:checked').value;
+      const dataTypes = Array.from(document.querySelectorAll('input[name="data-type"]:checked')).map(cb => {
+        return cb.parentElement.querySelector('.label-text').innerText;
+      });
       
-      if (type === 'selective') {
-        const checked = Array.from(document.querySelectorAll('input[name="data-type"]:checked'));
-        if (checked.length === 0) {
-          alert('Please select at least one type of data to delete.');
-          return;
-        }
+      if (type === 'selective' && dataTypes.length === 0) {
+        alert('Please select at least one type of data to delete.');
+        return;
       }
 
+      // 1. Prepare data for backend
+      const requestData = {
+        requester_email: email,
+        request_type: type === 'account' ? 'Full Account Deletion' : 'Selective Data Deletion',
+        selected_items: dataTypes.join(', ') || 'None (Full Account Deletion)',
+        timestamp: new Date().toLocaleString()
+      };
+
+      console.log('Submitting request to backend...', requestData);
+
+      // 2. Production Backend Call (Supabase Edge Function)
+      // fetch('https://your-project-ref.supabase.co/functions/v1/send-delete-email', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(requestData)
+      // }).catch(err => console.error('Backend submission failed', err));
+
+      // 3. UI Update
       this.style.display = 'none';
       document.getElementById('success-message').style.display = 'block';
     });
