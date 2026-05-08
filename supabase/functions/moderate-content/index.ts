@@ -351,19 +351,20 @@ serve(async (req) => {
     } else if (targetType === 'message') {
       const { data: message } = await supabase
         .from('messages')
-        .select('id, content, sender_id, message_type')
+        .select('id, content, sender_id, message_type, image_url')
         .eq('id', targetId)
         .single();
 
       if (!message) throw new Error(`Message not found: ${targetId}`);
 
-      // For image messages, content is the image URL
-      if (message.message_type === 'image' && message.content) {
-        imageUrls = [message.content];
+      // For image messages, the actual URL is stored in image_url column,
+      // NOT in content (which is just a '[Image]' placeholder).
+      if (message.message_type === 'image' && message.image_url) {
+        imageUrls = [message.image_url];
       }
       textToCheck = message.message_type === 'text' ? (message.content || '') : '';
       userId = message.sender_id;
-      contentSnapshot = message.content || '';
+      contentSnapshot = message.image_url || message.content || '';
     } else if (targetType === 'profile') {
       const { data: profile } = await supabase
         .from('user_profiles')
