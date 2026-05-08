@@ -32,11 +32,14 @@ async function ensureValidSession() {
 
 // ── Storage cleanup helpers ─────────────────────────────────────────────────
 
-/** Buckets that hold user-generated content and should be emptied on purge. */
+/**
+ * Buckets that hold user-generated content and should be emptied on purge.
+ * NOTE: 'avatars' is intentionally excluded — user profile pictures are
+ * preserved because user accounts themselves are not deleted during cleanup.
+ */
 const UGC_BUCKETS = [
   'listing-images',
   'order-files',
-  'avatars',
   'moderation-test-images',
 ] as const;
 
