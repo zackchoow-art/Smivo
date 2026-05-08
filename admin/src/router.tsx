@@ -10,6 +10,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { FeatureFlagsPage } from '@/pages/settings/FeatureFlagsPage';
 import { ProfilePage } from '@/pages/settings/ProfilePage';
+import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { CollegesPage } from '@/pages/settings/CollegesPage';
 import { DictionaryListPage } from '@/pages/settings/DictionaryListPage';
 import { DictionaryItemsPage } from '@/pages/settings/DictionaryItemsPage';
@@ -77,7 +78,8 @@ export const router = createBrowserRouter([
       // 11 Analytics
       { path: 'analytics', element: <AnalyticsPage /> },
 
-      // 12-15 System Configuration
+      // 12-15 System Configuration (accessed via TopBar → Settings)
+      { path: 'settings', element: <SettingsPage /> },
       { path: 'settings/dictionary', element: <DictionaryListPage /> },
       { path: 'settings/dictionary/:dictCode', element: <DictionaryItemsPage /> },
       { path: 'settings/configs', element: <SystemConfigsPage /> },

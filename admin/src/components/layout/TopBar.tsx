@@ -112,7 +112,7 @@ export function TopBar() {
                 className="topbar__dropdown-item" 
                 onClick={() => {
                   setShowDropdown(false);
-                  navigate('/settings/profile');
+                  navigate('/settings');
                 }}
               >
                 <Settings size={14} />

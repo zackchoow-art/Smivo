@@ -14,14 +14,9 @@ import {
   MessageCircle,
   Megaphone,
   BarChart3,
-  BookOpen,
-  UserCog,
-  GraduationCap,
   ScrollText,
   ChevronLeft,
   ChevronRight,
-  Cpu,
-  Trash2,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -63,7 +58,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       ],
     },
     {
-      title: 'Content',
+      title: 'Content Moderation',
       items: [
         { path: '/moderation/all-listings', label: 'All Listings', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
         { path: '/moderation/sensitive-words', label: 'Sensitive Words', icon: <ShieldAlert size={18} />, visible: perms.canViewSensitiveWords },
@@ -79,24 +74,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     {
       title: 'Engagement',
       items: [
-        { path: '/push', label: 'Push Notifications', icon: <Megaphone size={18} />, visible: perms.isSysadmin },
+        { path: '/push', label: 'Push Notifications', icon: <Megaphone size={18} />, visible: perms.canViewPush },
       ],
     },
     {
       title: 'Analytics',
       items: [
         { path: '/analytics', label: 'Data Dashboard', icon: <BarChart3 size={18} />, visible: perms.canViewAnalytics },
-      ],
-    },
-    {
-      title: 'Configuration',
-      items: [
-        { path: '/settings/dictionary', label: 'Data Dictionary', icon: <BookOpen size={18} />, visible: perms.canViewDictionary },
-        { path: '/settings/configs', label: 'Platform Settings', icon: <Cpu size={18} />, visible: perms.canViewDictionary },
-        { path: '/settings/admins', label: 'Admin Management', icon: <UserCog size={18} />, visible: perms.canViewAdminManagement },
-        { path: '/settings/colleges', label: 'Schools', icon: <GraduationCap size={18} />, visible: perms.canViewCollegeManagement },
-        // NOTE: Cleanup is sysadmin-only and intentionally placed last in config group
-        { path: '/settings/cleanup', label: 'Test Data Cleanup', icon: <Trash2 size={18} />, visible: perms.canViewCleanup },
       ],
     },
     {
