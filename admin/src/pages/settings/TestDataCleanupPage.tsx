@@ -142,6 +142,7 @@ export function TestDataCleanupPage() {
     'Reports, feedback, bans, and contribution points for school users',
     'Notifications and push jobs for school users',
     'User saved locations and activity sessions',
+    'Storage files (listing images, chat images, evidence photos, avatars)',
   ];
 
   return (
