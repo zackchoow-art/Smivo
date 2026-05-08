@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delete My Data — Smivo</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a3a6b;
+      --primary-light: #2a5298;
+      --accent: #e8b630;
+      --accent-light: #fef3c7;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --danger: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Hero Area */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, #3b82f6 100%);
+      color: white;
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+
+    .hero p {
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Content Area */
+    .container {
+      max-width: 600px;
+      margin: -40px auto 80px;
+      padding: 0 24px;
+    }
+
+    .form-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 40px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .input-group {
+      margin-bottom: 24px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .input-group input[type="email"] {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(26, 58, 107, 0.1);
+    }
+
+    /* Checkboxes */
+    .checkbox-list {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .checkbox-item:hover {
+      background: var(--surface);
+      border-color: var(--primary-light);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      cursor: pointer;
+    }
+
+    .checkbox-item .label-text {
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: block;
+      color: var(--text);
+    }
+
+    .checkbox-item .sub-text {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+    }
+
+    .disclaimer p {
+      font-size: 0.85rem;
+      color: #9a3412;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Button */
+    .btn-submit {
+      width: 100%;
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn-submit:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+    }
+
+    /* Success State */
+    #success-message {
+      display: none;
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .success-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .back-home {
+      display: inline-block;
+      margin-top: 24px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    footer {
+      padding: 40px 24px;
+      text-align: center;
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 2rem; }
+      .form-card { padding: 24px; }
+    }
+  </style>
+</head>
+
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Delete My Data</h1>
+      <p>Submit a request to remove your personal information from the Smivo platform.</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="form-card">
+      <form id="delete-form">
+        <div class="section-title">👤 Identity Verification</div>
+        <div class="input-group">
+          <label for="email">Campus Email (.edu)</label>
+          <input type="email" id="email" placeholder="yourname@university.edu" required>
+        </div>
+
+        <div class="section-title">📋 Select Data to Delete</div>
+        <div class="checkbox-list">
+          <label class="checkbox-item">
+            <input type="checkbox" name="data-type" value="transactions">
+            <div>
+              <span class="label-text">Transaction Records</span>
+              <span class="sub-text">Includes listings, purchase history, and sales history.</span>
+            </div>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="data-type" value="chats">
+            <div>
+              <span class="label-text">Chat History</span>
+              <span class="sub-text">Clear all messages and shared images in your conversations.</span>
+            </div>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="data-type" value="feedback">
+            <div>
+              <span class="label-text">Feedback Records</span>
+              <span class="sub-text">Delete your submitted feedback and suggestions.</span>
+            </div>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="data-type" value="reports">
+            <div>
+              <span class="label-text">Report Records</span>
+              <span class="sub-text">Remove reports you have filed against other users.</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="disclaimer">
+          <p>⚠️ <strong>Important:</strong> Your request will be manually reviewed by our support team. Upon verification, the selected data will be permanently deleted within 15 days.</p>
+        </div>
+
+        <button type="submit" class="btn-submit">Submit Deletion Request</button>
+      </form>
+
+      <div id="success-message">
+        <div class="success-icon">✅</div>
+        <h2 style="color: var(--primary); margin-bottom: 12px;">Request Submitted</h2>
+        <p style="color: var(--text-light);">We have received your request. Our team will verify your identity and process the deletion within 15 days.</p>
+        <a href="index.html" class="back-home">← Back to Homepage</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Smivo. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.getElementById('delete-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const checked = Array.from(document.querySelectorAll('input[name="data-type"]:checked')).map(cb => cb.parentElement.querySelector('.label-text').innerText);
+      
+      if (checked.length === 0) {
+        alert('Please select at least one type of data to delete.');
+        return;
+      }
+
+      // In a real scenario, this would send an API request.
+      // Since it's a static page, we simulate success.
+      console.log('Deletion Request:', { email, dataTypes: checked });
+      
+      this.style.display = 'none';
+      document.getElementById('success-message').style.display = 'block';
+    });
+  </script>
+</body>
+
+</html>

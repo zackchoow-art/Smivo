@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,10 @@
   <link rel="canonical" href="https://smivo.io">
 
   <!-- Primary meta -->
-  <meta name="description" content="Smivo is the trusted marketplace where college students buy, sell, and rent items within their campus community. Verified .edu accounts only.">
-  <meta name="keywords" content="college marketplace, campus buy sell, student secondhand, .edu verified, campus rentals, Smith College">
+  <meta name="description"
+    content="Smivo is the trusted marketplace where college students buy, sell, and rent items within their campus community. Verified .edu accounts only.">
+  <meta name="keywords"
+    content="college marketplace, campus buy sell, student secondhand, .edu verified, campus rentals, Smith College">
   <meta name="author" content="Smivo">
   <meta name="robots" content="index, follow">
 
@@ -17,7 +20,8 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://smivo.io">
   <meta property="og:title" content="Smivo — Campus Marketplace for College Students">
-  <meta property="og:description" content="Buy, sell, and rent items within your campus community. Verified .edu accounts only. Available on iOS, Android, and Web.">
+  <meta property="og:description"
+    content="Buy, sell, and rent items within your campus community. Verified .edu accounts only. Available on iOS, Android, and Web.">
   <meta property="og:image" content="https://smivo.io/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -29,7 +33,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://smivo.io">
   <meta name="twitter:title" content="Smivo — Campus Marketplace for College Students">
-  <meta name="twitter:description" content="Buy, sell, and rent items within your campus community. Verified .edu accounts only.">
+  <meta name="twitter:description"
+    content="Buy, sell, and rent items within your campus community. Verified .edu accounts only.">
   <meta name="twitter:image" content="https://smivo.io/og-image.png">
   <meta name="twitter:image:alt" content="Smivo — The campus marketplace">
 
@@ -58,7 +63,11 @@
       --radius: 16px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -84,19 +93,43 @@
       left: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle at 30% 70%, rgba(232,182,48,0.15) 0%, transparent 50%),
-                  radial-gradient(circle at 70% 30%, rgba(255,255,255,0.08) 0%, transparent 50%);
+      background: radial-gradient(circle at 30% 70%, rgba(232, 182, 48, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
       animation: float 20s ease-in-out infinite;
     }
 
     @keyframes float {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(-30px, 20px); }
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      50% {
+        transform: translate(-30px, 20px);
+      }
     }
 
-    .hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
-    .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
-    .hero .tagline { font-size: 1.2rem; opacity: 0.9; margin-bottom: 32px; line-height: 1.6; }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+
+    .hero .tagline {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
 
     .hero-badges {
       display: flex;
@@ -109,9 +142,9 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255,255,255,0.15);
+      background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       padding: 8px 18px;
       border-radius: 100px;
       font-size: 0.85rem;
@@ -149,7 +182,7 @@
 
     .feature-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
     }
 
     .feature-icon {
@@ -216,8 +249,19 @@
       text-align: center;
     }
 
-    .cta h2 { font-size: 2rem; margin-bottom: 16px; }
-    .cta p { font-size: 1.05rem; opacity: 0.85; margin-bottom: 28px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .cta h2 {
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+
+    .cta p {
+      font-size: 1.05rem;
+      opacity: 0.85;
+      margin-bottom: 28px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
     .cta-buttons {
       display: flex;
@@ -240,12 +284,23 @@
 
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
 
-    .btn-primary { background: var(--accent); color: var(--primary); }
-    .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); }
-    .btn-outline:hover { border-color: white; }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--primary);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-outline:hover {
+      border-color: white;
+    }
 
     /* Footer */
     footer {
@@ -269,7 +324,9 @@
       transition: color 0.2s;
     }
 
-    .footer-links a:hover { color: var(--primary); }
+    .footer-links a:hover {
+      color: var(--primary);
+    }
 
     .copyright {
       font-size: 0.82rem;
@@ -277,111 +334,139 @@
     }
 
     @media (max-width: 600px) {
-      .hero { padding: 56px 20px 44px; }
-      .hero h1 { font-size: 2.2rem; }
-      .hero .tagline { font-size: 1.05rem; }
-      .features { padding: 48px 16px; }
-      .features h2 { font-size: 1.6rem; }
-      .trust-items { gap: 32px; }
+      .hero {
+        padding: 56px 20px 44px;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      .hero .tagline {
+        font-size: 1.05rem;
+      }
+
+      .features {
+        padding: 48px 16px;
+      }
+
+      .features h2 {
+        font-size: 1.6rem;
+      }
+
+      .trust-items {
+        gap: 32px;
+      }
     }
   </style>
 </head>
+
 <body>
 
-<!-- Hero -->
-<section class="hero">
-  <div class="hero-content">
-    <h1>Smivo</h1>
-    <p class="tagline">The trusted marketplace where college students buy, sell, and rent items within their campus community.</p>
-    <div class="hero-badges">
-      <span class="badge">🎓 .edu Verified</span>
-      <span class="badge">🔒 Campus-Only</span>
-      <span class="badge">📱 iOS &amp; Android</span>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Smivo</h1>
+      <p class="tagline">The trusted marketplace where college students buy, sell, and rent items within their campus
+        community.</p>
+      <div class="hero-badges">
+        <span class="badge">🎓 .edu Verified</span>
+        <span class="badge">🔒 Campus-Only</span>
+        <span class="badge">📱 iOS &amp; Android</span>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Features -->
-<section class="features">
-  <h2>Everything you need, right on campus</h2>
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">🛍️</div>
-      <h3>Buy &amp; Sell</h3>
-      <p>List items in seconds with photos, pricing, and condition details. Browse furniture, electronics, books, instruments, and more from verified students.</p>
+  <!-- Features -->
+  <section class="features">
+    <h2>Everything you need, right on campus</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🛍️</div>
+        <h3>Buy &amp; Sell</h3>
+        <p>List items in seconds with photos, pricing, and condition details. Browse furniture, electronics, books,
+          instruments, and more from verified students.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Rent Items</h3>
+        <p>Need something temporarily? Rent items by the day, week, or month. Flexible rental periods with extension
+          support and deposit protection.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>Real-Time Chat</h3>
+        <p>Message sellers instantly with our built-in chat. Share photos, negotiate details, and coordinate pickup —
+          all within the app.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>Verified Community</h3>
+        <p>Every user is verified with a .edu email address. Trade with confidence knowing you're dealing with real
+          students at your university.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Order Management</h3>
+        <p>Track your purchases, sales, and rentals with dedicated Buyer and Seller Centers. Real-time status updates
+          and evidence photo uploads.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <h3>Stay Updated</h3>
+        <p>Get instant notifications for new offers, messages, order updates, and rental reminders. Never miss an
+          important transaction update.</p>
+      </div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">📅</div>
-      <h3>Rent Items</h3>
-      <p>Need something temporarily? Rent items by the day, week, or month. Flexible rental periods with extension support and deposit protection.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">💬</div>
-      <h3>Real-Time Chat</h3>
-      <p>Message sellers instantly with our built-in chat. Share photos, negotiate details, and coordinate pickup — all within the app.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔐</div>
-      <h3>Verified Community</h3>
-      <p>Every user is verified with a .edu email address. Trade with confidence knowing you're dealing with real students at your university.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">📋</div>
-      <h3>Order Management</h3>
-      <p>Track your purchases, sales, and rentals with dedicated Buyer and Seller Centers. Real-time status updates and evidence photo uploads.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔔</div>
-      <h3>Stay Updated</h3>
-      <p>Get instant notifications for new offers, messages, order updates, and rental reminders. Never miss an important transaction update.</p>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- Trust -->
-<section class="trust">
-  <h2>Built for campus life</h2>
-  <div class="trust-items">
-    <div class="trust-item">
-      <div class="number">7</div>
-      <div class="label">Item Categories</div>
+  <!-- Trust -->
+  <section class="trust">
+    <h2>Built for campus life</h2>
+    <div class="trust-items">
+      <div class="trust-item">
+        <div class="number">7</div>
+        <div class="label">Item Categories</div>
+      </div>
+      <div class="trust-item">
+        <div class="number">3</div>
+        <div class="label">Rental Rate Types</div>
+      </div>
+      <div class="trust-item">
+        <div class="number">100%</div>
+        <div class="label">.edu Verified</div>
+      </div>
+      <div class="trust-item">
+        <div class="number">3</div>
+        <div class="label">Platforms</div>
+      </div>
     </div>
-    <div class="trust-item">
-      <div class="number">3</div>
-      <div class="label">Rental Rate Types</div>
-    </div>
-    <div class="trust-item">
-      <div class="number">100%</div>
-      <div class="label">.edu Verified</div>
-    </div>
-    <div class="trust-item">
-      <div class="number">3</div>
-      <div class="label">Platforms</div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- CTA -->
-<section class="cta">
-  <h2>Ready to join your campus marketplace?</h2>
-  <p>Download Smivo and start buying, selling, and renting with verified students today.</p>
-  <div class="cta-buttons">
-    <a href="https://apps.apple.com/us/app/smivo/id6764173442" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Download on App Store</a>
-    <a href="#" class="btn btn-outline">Open Web App</a>
-  </div>
-</section>
+  <!-- CTA -->
+  <section class="cta">
+    <h2>Ready to join your campus marketplace?</h2>
+    <p>Download Smivo and start buying, selling, and renting with verified students today.</p>
+    <div class="cta-buttons">
+      <a href="https://apps.apple.com/us/app/smivo/id6764173442" class="btn btn-primary" target="_blank"
+        rel="noopener noreferrer">Download on App Store</a>
+      <a href="#" class="btn btn-outline">Open Web App</a>
+    </div>
+  </section>
 
-<!-- Footer -->
-<footer>
-  <div class="footer-links">
-    <a href="privacy-policy.html">Privacy Policy</a>
-    <a href="terms.html">Terms of Service</a>
-    <a href="safety.html">Safety Guidelines</a>
-    <a href="support.html">Help Center</a>
-    <a href="mailto:support@smivo.com">Contact Us</a>
-  </div>
-  <p class="copyright">&copy; 2026 Smivo. All rights reserved.</p>
-</footer>
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="safety.html">Safety Guidelines</a>
+      <a href="delete-data.html">Delete My Data</a>
+      <a href="support.html">Help Center</a>
+      <a href="mailto:support@smivo.com">Contact Us</a>
+    </div>
+    <p class="copyright">&copy; 2026 Smivo. All rights reserved.</p>
+  </footer>
 
 </body>
+
 </html>
