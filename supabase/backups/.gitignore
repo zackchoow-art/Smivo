@@ -1,0 +1,4 @@
+# Backup files contain database connection strings and schema details
+# They should not be committed to version control
+*
+!.gitignore
