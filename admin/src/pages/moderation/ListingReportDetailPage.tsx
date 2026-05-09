@@ -114,11 +114,19 @@ export function ListingReportDetailPage() {
 
       // ── Step 1: Moderate the listing ─────────────────────────────
       if (id) {
-        await listingModerateMutation.mutateAsync({
-          ids: [id],
-          action: listingAction === 'takedown' ? 'reject' : 'approve',
-          adminId: admin.user_id
-        });
+        try {
+          await listingModerateMutation.mutateAsync({
+            ids: [id],
+            // NOTE: Pass 'takedown' (not 'reject') so useBatchModerateListings
+            // sets moderation_status='taken_down', which activates the DB trigger
+            // listing_taken_down_trigger to cancel pending orders and clear saves.
+            action: listingAction === 'takedown' ? 'takedown' : 'approve',
+            adminId: admin.user_id
+          });
+        } catch (step1Err) {
+          console.error('[Step 1] listingModerateMutation failed:', step1Err);
+          throw step1Err;
+        }
 
         // Trigger AI audit for images only (does NOT change listing status)
         if (listingAction === 'takedown') {

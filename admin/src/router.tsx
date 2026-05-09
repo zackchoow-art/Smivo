@@ -4,7 +4,6 @@
  */
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
-import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
@@ -29,6 +28,8 @@ import { AllListingsPage } from '@/pages/moderation/AllListingsPage';
 import { ListingModerationPage } from '@/pages/moderation/ListingModerationPage';
 import { ListingModerationDetailPage } from '@/pages/moderation/ListingModerationDetailPage';
 import { ListingReportDetailPage } from '@/pages/moderation/ListingReportDetailPage';
+import { UserReportsPage } from '@/pages/moderation/UserReportsPage';
+import { AiReviewedPage } from '@/pages/moderation/AiReviewedPage';
 import { PushOverviewPage } from '@/pages/push/PushOverviewPage';
 import { PushCreatePage } from '@/pages/push/PushCreatePage';
 import { PushHistoryPage } from '@/pages/push/PushHistoryPage';
@@ -57,11 +58,11 @@ export const router = createBrowserRouter([
       { path: 'moderation/listings', element: <ListingModerationPage /> },
       { path: 'moderation/listings/:id', element: <ListingModerationDetailPage /> },
       { path: 'moderation/listing-reports/:id', element: <ListingReportDetailPage /> },
-      { path: 'moderation/user-reports', element: <PlaceholderPage /> },
+      { path: 'moderation/user-reports', element: <UserReportsPage /> },
       { path: 'moderation/chat-reports', element: <ChatReportsPage /> },
       { path: 'moderation/chat-reports/:id', element: <ChatReportDetailPage /> },
       { path: 'moderation/sensitive-words', element: <SensitiveWordsPage /> },
-      { path: 'moderation/ai-reviewed', element: <PlaceholderPage /> },
+      { path: 'moderation/ai-reviewed', element: <AiReviewedPage /> },
 
       // 06-08 User Management
       { path: 'users', element: <UsersPage /> },

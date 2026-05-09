@@ -308,7 +308,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.chatRoomId));
     final currentUserId = ref.watch(authStateProvider).value?.id;
     final colors = context.smivoColors;
-    final flaggedUrls = ref.watch(flaggedImageUrlsProvider).value ?? {};
+    // FIX 2.2: Do NOT fall back to an empty map while the provider is loading.
+    // An empty fallback means ALL images pass the filter, which allows violating
+    // images to appear in the fullscreen gallery before the blacklist is ready.
+    //
+    // Conservative strategy: treat loading state as "unknown — block all".
+    // validImageUrls will be empty while loading, preventing the gallery from
+    // opening. Once data arrives (typically <1s), the list is populated normally.
+    final flaggedUrlsAsync = ref.watch(flaggedImageUrlsProvider);
+    final flaggedUrls = flaggedUrlsAsync.value ?? <String, List<String>>{};
+    // isLoadingFlagged = true means we don't yet know which images are safe.
+    final isLoadingFlagged = flaggedUrlsAsync.isLoading;
 
     // Re-mark as read whenever new messages arrive while viewing this chat.
     ref.listen(chatMessagesProvider(widget.chatRoomId), (previous, next) {
@@ -524,10 +534,22 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   }
                   // NOTE: On desktop the message list is constrained to 720px
                   // for readability. ContentWidthConstraint centers it.
-                  final validImageUrls = messages
-                      .where((m) => m.messageType == 'image' && m.imageUrl != null && !flaggedUrls.contains(m.imageUrl!))
-                      .map((m) => m.imageUrl!)
-                      .toList();
+                  //
+                  // FIX 2.2 (continued): When the flagged-URL blacklist is still
+                  // loading, we cannot safely determine which images are clean.
+                  // Return an empty list so the fullscreen gallery cannot be
+                  // opened at all until the blacklist is ready.
+                  final validImageUrls = isLoadingFlagged
+                      ? <String>[]
+                      : messages
+                            .where(
+                              (m) =>
+                                  m.messageType == 'image' &&
+                                  m.imageUrl != null &&
+                                  !flaggedUrls.containsKey(m.imageUrl!),
+                            )
+                            .map((m) => m.imageUrl!)
+                            .toList();
 
                   final listView = ListView.builder(
                     controller: _scrollController,

@@ -397,18 +397,33 @@ final class ListingDetailFamily extends $Family
 
 /// Checks if the current user already has a pending/confirmed order
 /// for this listing. Returns the order if found, null otherwise.
+///
+/// NOTE: Subscribes to a Realtime channel scoped to the specific listing so
+/// any INSERT/UPDATE on its orders row immediately re-fetches this provider
+/// and invalidates listingDetail. This drives the real-time UI update for
+/// buttons and status cards when the seller accepts, cancels, etc.
 
 @ProviderFor(existingBuyerOrder)
 final existingBuyerOrderProvider = ExistingBuyerOrderFamily._();
 
 /// Checks if the current user already has a pending/confirmed order
 /// for this listing. Returns the order if found, null otherwise.
+///
+/// NOTE: Subscribes to a Realtime channel scoped to the specific listing so
+/// any INSERT/UPDATE on its orders row immediately re-fetches this provider
+/// and invalidates listingDetail. This drives the real-time UI update for
+/// buttons and status cards when the seller accepts, cancels, etc.
 
 final class ExistingBuyerOrderProvider
     extends $FunctionalProvider<AsyncValue<Order?>, Order?, FutureOr<Order?>>
     with $FutureModifier<Order?>, $FutureProvider<Order?> {
   /// Checks if the current user already has a pending/confirmed order
   /// for this listing. Returns the order if found, null otherwise.
+  ///
+  /// NOTE: Subscribes to a Realtime channel scoped to the specific listing so
+  /// any INSERT/UPDATE on its orders row immediately re-fetches this provider
+  /// and invalidates listingDetail. This drives the real-time UI update for
+  /// buttons and status cards when the seller accepts, cancels, etc.
   ExistingBuyerOrderProvider._({
     required ExistingBuyerOrderFamily super.from,
     required String super.argument,
@@ -453,10 +468,15 @@ final class ExistingBuyerOrderProvider
 }
 
 String _$existingBuyerOrderHash() =>
-    r'874b403ef9faa1be3aa3629be4f5efd545cba55d';
+    r'152bd514357c56d3e24b5f34ef0849b31b01cff6';
 
 /// Checks if the current user already has a pending/confirmed order
 /// for this listing. Returns the order if found, null otherwise.
+///
+/// NOTE: Subscribes to a Realtime channel scoped to the specific listing so
+/// any INSERT/UPDATE on its orders row immediately re-fetches this provider
+/// and invalidates listingDetail. This drives the real-time UI update for
+/// buttons and status cards when the seller accepts, cancels, etc.
 
 final class ExistingBuyerOrderFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Order?>, String> {
@@ -471,6 +491,11 @@ final class ExistingBuyerOrderFamily extends $Family
 
   /// Checks if the current user already has a pending/confirmed order
   /// for this listing. Returns the order if found, null otherwise.
+  ///
+  /// NOTE: Subscribes to a Realtime channel scoped to the specific listing so
+  /// any INSERT/UPDATE on its orders row immediately re-fetches this provider
+  /// and invalidates listingDetail. This drives the real-time UI update for
+  /// buttons and status cards when the seller accepts, cancels, etc.
 
   ExistingBuyerOrderProvider call(String listingId) =>
       ExistingBuyerOrderProvider._(argument: listingId, from: this);

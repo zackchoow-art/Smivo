@@ -108,15 +108,16 @@ export function TopBar() {
                 <div>{adminProfile?.email}</div>
                 <div className="topbar__role">{roleLabel}</div>
               </div>
-              <button 
-                className="topbar__dropdown-item" 
+              <button
+                className="topbar__dropdown-item"
                 onClick={() => {
                   setShowDropdown(false);
-                  navigate('/settings');
+                  // NOTE: Navigate directly to profile page; Configuration is now in sidebar
+                  navigate('/settings/profile');
                 }}
               >
                 <Settings size={14} />
-                Settings
+                Profile
               </button>
               <button className="topbar__dropdown-item" onClick={logout}>
                 <LogOut size={14} />

@@ -1,6 +1,8 @@
 /**
  * Sidebar navigation — role-driven menu rendering.
  * Menu items are hidden based on admin permissions per 04_ADMIN_WEB_SPEC.md §4.2.
+ * NOTE: Configuration group restored in T9 refactor. Sensitive Words moved into
+ * Platform Settings (SystemConfigsPage) as a tab — no longer a standalone sidebar entry.
  */
 import { NavLink } from 'react-router-dom';
 import { useAdminRole } from '@/hooks/useAdminRole';
@@ -17,6 +19,12 @@ import {
   ScrollText,
   ChevronLeft,
   ChevronRight,
+  Bot,
+  BookOpen,
+  UserCog,
+  GraduationCap,
+  Cpu,
+  Trash2,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -54,14 +62,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         { path: '/moderation/user-reports', label: 'User Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
         { path: '/moderation/chat-reports', label: 'Chat Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
         { path: '/feedback', label: 'User Feedback', icon: <MessageCircle size={18} />, visible: perms.canViewFeedback },
-        { path: '/moderation/ai-reviewed', label: 'AI Reviewed', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
       ],
     },
     {
       title: 'Content Moderation',
       items: [
         { path: '/moderation/all-listings', label: 'All Listings', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
-        { path: '/moderation/sensitive-words', label: 'Sensitive Words', icon: <ShieldAlert size={18} />, visible: perms.canViewSensitiveWords },
+        // NOTE: AI Reviewed moved here from Review group in T9 refactor
+        { path: '/moderation/ai-reviewed', label: 'AI Reviewed', icon: <Bot size={18} />, visible: perms.canViewModeration },
       ],
     },
     {
@@ -81,6 +89,18 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       title: 'Analytics',
       items: [
         { path: '/analytics', label: 'Data Dashboard', icon: <BarChart3 size={18} />, visible: perms.canViewAnalytics },
+      ],
+    },
+    {
+      // NOTE: Configuration group restored in T9 refactor (was removed previously)
+      title: 'Configuration',
+      items: [
+        { path: '/settings/dictionary', label: 'Data Dictionary', icon: <BookOpen size={18} />, visible: perms.canViewDictionary },
+        { path: '/settings/configs', label: 'Platform Settings', icon: <Cpu size={18} />, visible: perms.canViewSystemConfigs },
+        { path: '/settings/feature-flags', label: 'System Configuration', icon: <UserCog size={18} />, visible: perms.canViewFeatureFlags },
+        { path: '/settings/admins', label: 'Admin Management', icon: <UserCog size={18} />, visible: perms.canViewAdminManagement },
+        { path: '/settings/colleges', label: 'Schools', icon: <GraduationCap size={18} />, visible: perms.canViewCollegeManagement },
+        { path: '/settings/cleanup', label: 'Test Data Cleanup', icon: <Trash2 size={18} />, visible: perms.canViewCleanup },
       ],
     },
     {

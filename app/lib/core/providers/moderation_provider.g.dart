@@ -433,7 +433,7 @@ final class ImageModerationModeProvider
 }
 
 String _$imageModerationModeHash() =>
-    r'34cf0d3a858cefedae7f8efa5033e27efe1cc72a';
+    r'021f6d31aeafe55715b4825bdb55968026fadae1';
 
 /// Platform-level image moderation mode.
 ///
@@ -463,36 +463,49 @@ abstract class _$ImageModerationMode extends $AsyncNotifier<String> {
   }
 }
 
-/// Set of image URLs that have been flagged by the AI moderation system.
+/// Map of flagged image URLs to their violation reasons.
+///
+/// Key   = image URL
+/// Value = list of violation reason strings (e.g. ['sexual', 'violence'])
 ///
 /// Loaded once at session start from backend_moderation_logs where result='fail'.
-/// Used by [ModerationAwareImage] to decide whether to apply blur.
+/// Used by [ModerationAwareImage] to decide whether to apply blur and what text
+/// to show the user.
 ///
-/// NOTE: keepAlive: true — this set must persist for the entire session so
-/// the blur is consistent across page navigations. It is NOT per-user data;
-/// it loads all flagged images visible to the current user via RLS.
+/// NOTE: keepAlive: true — must persist for the entire session so blur is
+/// consistent across page navigations. Loads all flagged images visible to
+/// the current user via the RLS policy added in migration 00129.
 
 @ProviderFor(FlaggedImageUrls)
 final flaggedImageUrlsProvider = FlaggedImageUrlsProvider._();
 
-/// Set of image URLs that have been flagged by the AI moderation system.
+/// Map of flagged image URLs to their violation reasons.
+///
+/// Key   = image URL
+/// Value = list of violation reason strings (e.g. ['sexual', 'violence'])
 ///
 /// Loaded once at session start from backend_moderation_logs where result='fail'.
-/// Used by [ModerationAwareImage] to decide whether to apply blur.
+/// Used by [ModerationAwareImage] to decide whether to apply blur and what text
+/// to show the user.
 ///
-/// NOTE: keepAlive: true — this set must persist for the entire session so
-/// the blur is consistent across page navigations. It is NOT per-user data;
-/// it loads all flagged images visible to the current user via RLS.
+/// NOTE: keepAlive: true — must persist for the entire session so blur is
+/// consistent across page navigations. Loads all flagged images visible to
+/// the current user via the RLS policy added in migration 00129.
 final class FlaggedImageUrlsProvider
-    extends $AsyncNotifierProvider<FlaggedImageUrls, Set<String>> {
-  /// Set of image URLs that have been flagged by the AI moderation system.
+    extends
+        $AsyncNotifierProvider<FlaggedImageUrls, Map<String, List<String>>> {
+  /// Map of flagged image URLs to their violation reasons.
+  ///
+  /// Key   = image URL
+  /// Value = list of violation reason strings (e.g. ['sexual', 'violence'])
   ///
   /// Loaded once at session start from backend_moderation_logs where result='fail'.
-  /// Used by [ModerationAwareImage] to decide whether to apply blur.
+  /// Used by [ModerationAwareImage] to decide whether to apply blur and what text
+  /// to show the user.
   ///
-  /// NOTE: keepAlive: true — this set must persist for the entire session so
-  /// the blur is consistent across page navigations. It is NOT per-user data;
-  /// it loads all flagged images visible to the current user via RLS.
+  /// NOTE: keepAlive: true — must persist for the entire session so blur is
+  /// consistent across page navigations. Loads all flagged images visible to
+  /// the current user via the RLS policy added in migration 00129.
   FlaggedImageUrlsProvider._()
     : super(
         from: null,
@@ -512,28 +525,41 @@ final class FlaggedImageUrlsProvider
   FlaggedImageUrls create() => FlaggedImageUrls();
 }
 
-String _$flaggedImageUrlsHash() => r'fb718238a460abd481dffbf224ead87d7d2dfe95';
+String _$flaggedImageUrlsHash() => r'7697df16a464b20a5d1d38f43ec3ab402b6b81a0';
 
-/// Set of image URLs that have been flagged by the AI moderation system.
+/// Map of flagged image URLs to their violation reasons.
+///
+/// Key   = image URL
+/// Value = list of violation reason strings (e.g. ['sexual', 'violence'])
 ///
 /// Loaded once at session start from backend_moderation_logs where result='fail'.
-/// Used by [ModerationAwareImage] to decide whether to apply blur.
+/// Used by [ModerationAwareImage] to decide whether to apply blur and what text
+/// to show the user.
 ///
-/// NOTE: keepAlive: true — this set must persist for the entire session so
-/// the blur is consistent across page navigations. It is NOT per-user data;
-/// it loads all flagged images visible to the current user via RLS.
+/// NOTE: keepAlive: true — must persist for the entire session so blur is
+/// consistent across page navigations. Loads all flagged images visible to
+/// the current user via the RLS policy added in migration 00129.
 
-abstract class _$FlaggedImageUrls extends $AsyncNotifier<Set<String>> {
-  FutureOr<Set<String>> build();
+abstract class _$FlaggedImageUrls
+    extends $AsyncNotifier<Map<String, List<String>>> {
+  FutureOr<Map<String, List<String>>> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<Set<String>>, Set<String>>;
+    final ref =
+        this.ref
+            as $Ref<
+              AsyncValue<Map<String, List<String>>>,
+              Map<String, List<String>>
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Set<String>>, Set<String>>,
-              AsyncValue<Set<String>>,
+              AnyNotifier<
+                AsyncValue<Map<String, List<String>>>,
+                Map<String, List<String>>
+              >,
+              AsyncValue<Map<String, List<String>>>,
               Object?,
               Object?
             >;

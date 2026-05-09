@@ -4,7 +4,7 @@
  * Only platform_super_admin can edit; others see read-only view.
  */
 import { useState } from 'react';
-import { Search, ToggleLeft, ToggleRight, Shield, Loader2, Database, Settings } from 'lucide-react';
+import { Search, ToggleLeft, ToggleRight, Shield, Loader2, Database, Settings, Plus, Trash2 } from 'lucide-react';
 import { useFeatureFlags, useToggleFlag } from '@/hooks/useFeatureFlags';
 import { useSystemConfigs, useUpdateSystemConfig } from '@/hooks/useSystemConfigs';
 import { useAdminRole } from '@/hooks/useAdminRole';
@@ -98,7 +98,8 @@ export function FeatureFlagsPage() {
     <div className="flags-page">
       <div className="flags-header">
         <div>
-          <h1 className="flags-title">System Configurations & Feature Flags</h1>
+          {/* NOTE: Title changed from "System Configurations & Feature Flags" in T9 refactor */}
+          <h1 className="flags-title">System Configuration</h1>
           <p className="flags-subtitle">
             Control platform behavior and feature availability in real-time.
           </p>
@@ -159,7 +160,23 @@ export function FeatureFlagsPage() {
                     </div>
 
                     <div className="flag-actions">
-                      {isBoolean ? (
+                      {/* NOTE: feedback.shortcuts is a JSON array — render dedicated editor instead of "Edit in DB" hint */}
+                      {flag.key === 'feedback.shortcuts' ? (
+                        <ShortcutsEditor
+                          rawValue={flag.value}
+                          canEdit={canEdit}
+                          onSave={(newArray) => {
+                            if (flag.sourceTable === 'system_configs') {
+                              updateConfig.mutate({
+                                key: flag.key,
+                                value: JSON.stringify(newArray),
+                                oldValue: flag.value,
+                                adminId: admin?.user_id || '',
+                              });
+                            }
+                          }}
+                        />
+                      ) : isBoolean ? (
                         <button
                           className={`flag-toggle ${isOn ? 'toggle-on' : 'toggle-off'}`}
                           disabled={!canEdit || isPending}
@@ -167,11 +184,11 @@ export function FeatureFlagsPage() {
                             if (flag.sourceTable === 'system_settings') {
                               toggleFlag.mutate({ key: flag.key, value: !isOn });
                             } else {
-                              updateConfig.mutate({ 
-                                key: flag.key, 
-                                value: !isOn, 
-                                oldValue: isOn, 
-                                adminId: admin?.user_id || '' 
+                              updateConfig.mutate({
+                                key: flag.key,
+                                value: !isOn,
+                                oldValue: isOn,
+                                adminId: admin?.user_id || ''
                               });
                             }
                           }}
@@ -400,6 +417,109 @@ export function FeatureFlagsPage() {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+      `}</style>
+    </div>
+  );
+}
+
+
+// NOTE: Dedicated editor for feedback.shortcuts JSON array config.
+// Renders an inline list with add / edit / delete controls and a Save button.
+
+interface ShortcutsEditorProps {
+  rawValue: unknown;
+  canEdit: boolean;
+  onSave: (newArray: string[]) => void;
+}
+
+function ShortcutsEditor({ rawValue, canEdit, onSave }: ShortcutsEditorProps) {
+  // Parse the raw value safely — it may be a JSON string or already an array
+  const parse = (v: unknown): string[] => {
+    if (Array.isArray(v)) return v.map(String);
+    if (typeof v === 'string') {
+      try { const p = JSON.parse(v); return Array.isArray(p) ? p.map(String) : []; } catch { return []; }
+    }
+    return [];
+  };
+
+  const [items, setItems] = useState<string[]>(() => parse(rawValue));
+  const [dirty, setDirty] = useState(false);
+
+  const handleChange = (idx: number, value: string) => {
+    const next = [...items];
+    next[idx] = value;
+    setItems(next);
+    setDirty(true);
+  };
+
+  const handleAdd = () => {
+    setItems(prev => [...prev, '']);
+    setDirty(true);
+  };
+
+  const handleRemove = (idx: number) => {
+    setItems(prev => prev.filter((_, i) => i !== idx));
+    setDirty(true);
+  };
+
+  const handleSave = () => {
+    // Filter empty strings before saving
+    const filtered = items.filter(s => s.trim() !== '');
+    onSave(filtered);
+    setItems(filtered);
+    setDirty(false);
+  };
+
+  return (
+    <div className="se-root">
+      <div className="se-list">
+        {items.map((item, idx) => (
+          <div key={idx} className="se-row">
+            <input
+              className="se-input"
+              value={item}
+              disabled={!canEdit}
+              onChange={(e) => handleChange(idx, e.target.value)}
+              placeholder="Quick reply text…"
+            />
+            {canEdit && (
+              <button className="se-remove-btn" onClick={() => handleRemove(idx)} title="Remove">
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        ))}
+        {items.length === 0 && (
+          <p className="se-empty">No shortcuts defined.</p>
+        )}
+      </div>
+      {canEdit && (
+        <div className="se-footer">
+          <button className="se-add-btn" onClick={handleAdd}>
+            <Plus size={13} /> Add
+          </button>
+          {dirty && (
+            <button className="se-save-btn" onClick={handleSave}>
+              Save
+            </button>
+          )}
+        </div>
+      )}
+      <style>{`
+        .se-root { min-width: 260px; }
+        .se-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+        .se-row { display: flex; align-items: center; gap: 6px; }
+        .se-input { flex: 1; padding: 5px 8px; font-size: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-secondary); color: var(--color-text-primary); outline: none; }
+        .se-input:focus { border-color: var(--color-info); }
+        .se-input:disabled { opacity: 0.6; cursor: not-allowed; }
+        .se-remove-btn { padding: 4px; background: none; border: none; color: var(--color-danger); cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; }
+        .se-remove-btn:hover { background: var(--color-danger-light); }
+        .se-empty { font-size: 12px; color: var(--color-text-tertiary); font-style: italic; }
+        .se-footer { display: flex; gap: 8px; align-items: center; }
+        .se-add-btn { display: flex; align-items: center; gap: 4px; padding: 4px 10px; font-size: 12px; border: 1px solid var(--color-border); background: var(--color-bg-secondary); border-radius: var(--radius-sm); cursor: pointer; color: var(--color-text-secondary); }
+        .se-add-btn:hover { background: var(--color-bg-tertiary); }
+        .se-save-btn { padding: 4px 12px; font-size: 12px; background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; }
+        .se-save-btn:hover { opacity: 0.9; }
       `}</style>
     </div>
   );

@@ -57,3 +57,5 @@ ios/
 # ─── Misc ──────────────────────────────────────────────
 .env.db
 db.sh
+app/build_error.log
+app/build_error_v2.log

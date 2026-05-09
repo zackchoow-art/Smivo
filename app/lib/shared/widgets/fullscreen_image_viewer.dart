@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:dio/dio.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:smivo/core/providers/moderation_provider.dart';
 
-class FullscreenImageViewer extends StatefulWidget {
+// NOTE: Changed from StatefulWidget to ConsumerStatefulWidget in T12 (task B)
+// so that flaggedImageUrlsProvider can be watched to block viewing violating images.
+class FullscreenImageViewer extends ConsumerStatefulWidget {
   const FullscreenImageViewer({
     super.key,
     required this.imageUrls,
@@ -16,10 +20,11 @@ class FullscreenImageViewer extends StatefulWidget {
   final int initialIndex;
 
   @override
-  State<FullscreenImageViewer> createState() => _FullscreenImageViewerState();
+  ConsumerState<FullscreenImageViewer> createState() =>
+      _FullscreenImageViewerState();
 }
 
-class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
+class _FullscreenImageViewerState extends ConsumerState<FullscreenImageViewer> {
   late PageController _pageController;
   late int _currentIndex;
   bool _isDownloading = false;
@@ -40,6 +45,20 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
   Future<void> _saveImage() async {
     if (_isDownloading || widget.imageUrls.isEmpty) return;
 
+    // NOTE: Block saving flagged images — user cannot download violating content.
+    final flaggedUrls = ref.read(flaggedImageUrlsProvider).value ?? {};
+    final currentUrl = widget.imageUrls[_currentIndex];
+    if (flaggedUrls.containsKey(currentUrl)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('This image cannot be saved: content policy violation.'),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isDownloading = true);
 
     try {
@@ -57,14 +76,12 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
         }
       }
 
-      final url = widget.imageUrls[_currentIndex];
-      
       // Download to temporary file
       final tempDir = await getTemporaryDirectory();
       final fileName = 'smivo_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final savePath = '${tempDir.path}/$fileName';
-      
-      await Dio().download(url, savePath);
+
+      await Dio().download(currentUrl, savePath);
 
       // Save to gallery
       await Gal.putImage(savePath);
@@ -89,6 +106,10 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
 
   @override
   Widget build(BuildContext context) {
+    // NOTE: Watch flaggedImageUrlsProvider so the viewer reacts if the set
+    // updates while the screen is open (e.g. just-moderated image).
+    final flaggedUrls = ref.watch(flaggedImageUrlsProvider).value ?? {};
+
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -125,12 +146,43 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
             child: PhotoViewGallery.builder(
               scrollPhysics: const BouncingScrollPhysics(),
               builder: (BuildContext context, int index) {
+                final url = widget.imageUrls[index];
+                final isFlagged = flaggedUrls.containsKey(url);
+
+                // NOTE: If the image is flagged, show a placeholder instead of
+                // the actual image. This prevents users from swiping to see
+                // violating content in the full-screen gallery.
+                if (isFlagged) {
+                  final reasons = flaggedUrls[url];
+                  final label = (reasons != null && reasons.isNotEmpty)
+                      ? reasons.join(', ')
+                      : 'policy violation';
+                  return PhotoViewGalleryPageOptions.customChild(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.block, color: Colors.grey, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            'This image has been restricted for: $label',
+                            style: const TextStyle(color: Colors.grey, fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    minScale: PhotoViewComputedScale.contained,
+                    maxScale: PhotoViewComputedScale.contained,
+                  );
+                }
+
                 return PhotoViewGalleryPageOptions(
-                  imageProvider: NetworkImage(widget.imageUrls[index]),
+                  imageProvider: NetworkImage(url),
                   initialScale: PhotoViewComputedScale.contained,
                   minScale: PhotoViewComputedScale.contained,
                   maxScale: PhotoViewComputedScale.covered * 2,
-                  heroAttributes: PhotoViewHeroAttributes(tag: widget.imageUrls[index]),
+                  heroAttributes: PhotoViewHeroAttributes(tag: url),
                 );
               },
               itemCount: widget.imageUrls.length,

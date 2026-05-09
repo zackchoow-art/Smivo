@@ -18,6 +18,7 @@ import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/data/repositories/order_repository.dart';
+import 'package:smivo/data/repositories/school_repository.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/shared/providers/school_data_provider.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
@@ -197,7 +198,6 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     // for the information section below the image carousel.
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = Breakpoints.isDesktop(screenWidth);
-    final activeSchools = ref.watch(activeSchoolsProvider).value ?? [];
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -517,47 +517,57 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                             ),
                                           ),
                                           // School name for the listing's campus.
-                                          // Displayed separately from address for
-                                          // multi-school readiness.
-                                          Builder(
-                                            builder: (ctx) {
-                                              final schoolName =
-                                                  activeSchools
-                                                      .where(
-                                                        (s) =>
-                                                            s.id ==
-                                                            listing.schoolId,
-                                                      )
-                                                      .firstOrNull
-                                                      ?.name;
-                                              if (schoolName == null) {
-                                                return const SizedBox.shrink();
-                                              }
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                  top: 4,
+                                          // NOTE: Uses schoolByIdProvider (direct ID lookup) instead of
+                                          // activeSchools so dev/test schools are never filtered out.
+                                          Consumer(
+                                            builder: (ctx, ref2, _) {
+                                              final schoolAsync = ref2.watch(
+                                                schoolByIdProvider(
+                                                  listing.schoolId,
                                                 ),
-                                                child: Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.school_outlined,
-                                                      size: 18,
-                                                      color: colors.onSurface,
+                                              );
+                                              return schoolAsync.when(
+                                                loading:
+                                                    () => const SizedBox.shrink(),
+                                                error:
+                                                    (_, __) =>
+                                                        const SizedBox.shrink(),
+                                                data: (school) {
+                                                  if (school == null) {
+                                                    return const SizedBox.shrink();
+                                                  }
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          top: 4,
+                                                        ),
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.school_outlined,
+                                                          size: 18,
+                                                          color:
+                                                              colors.onSurface,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 6,
+                                                        ),
+                                                        Text(
+                                                          'Campus: ${school.name}',
+                                                          style: typo.labelLarge
+                                                              .copyWith(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    colors
+                                                                        .onSurface,
+                                                              ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      'Campus: $schoolName',
-                                                      style: typo.labelLarge
-                                                          .copyWith(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color:
-                                                                colors
-                                                                    .onSurface,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                  );
+                                                },
                                               );
                                             },
                                           ),
@@ -957,7 +967,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                         if (order.status == 'pending') {
                                           title =
                                               isSaleOrder
-                                                  ? '已预订'
+                                                  ? 'Reserved'
                                                   : 'Application Submitted';
                                         } else if (order.status == 'confirmed') {
                                           title = 'Order Confirmed';
@@ -999,6 +1009,16 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
+                                              // NOTE: Awaiting approval subtitle — only shown for pending orders
+                                              if (order.status == 'pending') ...[
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  'Awaiting seller\'s approval',
+                                                  style: typo.bodySmall.copyWith(
+                                                    color: colors.outlineVariant,
+                                                  ),
+                                                ),
+                                              ],
                                               const SizedBox(height: 4),
                                               Text(
                                                 submittedDate,
@@ -1006,6 +1026,18 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                   color: colors.outlineVariant,
                                                 ),
                                               ),
+                                              // NOTE: Expected Pickup only shown for rental orders
+                                              // (rentalStartDate is always set for rentals).
+                                              // Sale orders have no equivalent scheduled date field.
+                                              if (order.rentalStartDate != null) ...[
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  'Expected Pickup: ${DateFormat('MMM d, yyyy').format(order.rentalStartDate!.toLocal())}',
+                                                  style: typo.bodySmall.copyWith(
+                                                    color: colors.outlineVariant,
+                                                  ),
+                                                ),
+                                              ],
                                               const SizedBox(height: 8),
                                               // Price display — different format for sale vs rental
                                               if (order.orderType ==
@@ -1620,8 +1652,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
 
                                                           // Write buyer's school when address changed,
                                                           // otherwise write the listing's school.
-                                                          final String
-                                                          schoolName;
+                                                          // NOTE: Not final — assigned inside try/catch branch
+                                                          String schoolName = '';
                                                           if (buyerChangedAddress) {
                                                             final buyerSchool =
                                                                 ref
@@ -1634,18 +1666,34 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                     ?.name ??
                                                                 'Unknown School';
                                                           } else {
-                                                            schoolName =
-                                                                activeSchools
-                                                                    .where(
-                                                                      (s) =>
-                                                                          s.id ==
-                                                                          listing
-                                                                              .schoolId,
-                                                                    )
-                                                                    .firstOrNull
-                                                                    ?.name ??
-                                                                'Unknown School';
+                                                            // NOTE: Do NOT resolve school name from the activeSchools
+                                                            // local list. That list excludes schools whose slug starts
+                                                            // with 'smivo-' (dev/test schools), so the lookup returns
+                                                            // null for test accounts and causes 'Unknown School' to be
+                                                            // persisted to the DB.
+                                                            //
+                                                            // Instead, fetch directly by ID — no slug filter applies.
+                                                            try {
+                                                              final school =
+                                                                  await ref
+                                                                      .read(
+                                                                        schoolRepositoryProvider,
+                                                                      )
+                                                                      .fetchSchool(
+                                                                        listing
+                                                                            .schoolId,
+                                                                      );
+                                                              schoolName =
+                                                                  school.name;
+                                                            } catch (_) {
+                                                              // Graceful fallback: use the schoolId UUID rather
+                                                              // than the misleading 'Unknown School' string.
+                                                              schoolName =
+                                                                  listing
+                                                                      .schoolId;
+                                                            }
                                                           }
+
 
                                                           await ref
                                                               .read(
@@ -1816,7 +1864,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 right: 12,
                 child: Row(
                   children: [
-                    // Share Button (Always visible)
+                    // Share Button — hidden when listing is rejected / taken down by platform
+                    // NOTE: We disable sharing rather than hiding the button entirely,
+                    // so the user still sees where the share action would be. This also
+                    // avoids the layout shifting that hiding would cause for other buttons.
                     Container(
                       decoration: BoxDecoration(
                         color: colors.surfaceContainerLowest.withValues(
@@ -1831,26 +1882,46 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           ),
                         ],
                       ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.ios_share,
-                          color: colors.onSurface,
-                        ),
-                        onPressed: () {
-                          // NOTE: Only share the bare URL. When a message
-                          // contains just a URL, iMessage / WeChat / Slack
-                          // will crawl it and render the rich preview card
-                          // (og:title, og:image, og:description).
-                          // Adding extra text alongside the URL often prevents
-                          // the platform from generating the preview card.
-                          const baseUrl = 'https://smivo.io';
-                          final listingUrl = '$baseUrl/listing/${listing.id}';
-                          final box = context.findRenderObject() as RenderBox?;
-                          Share.share(
-                            listingUrl,
-                            sharePositionOrigin: box != null
-                                ? box.localToGlobal(Offset.zero) & box.size
-                                : null,
+                      child: Builder(
+                        builder: (context) {
+                          // NOTE: Reject sharing for content that was removed by the platform.
+                          // 'rejected' = failed AI/manual review before publishing.
+                          // 'taken_down' = removed after publishing (AI or admin action).
+                          final isRemoved =
+                              listing.moderationStatus == 'rejected' ||
+                              listing.moderationStatus == 'taken_down';
+
+                          return IconButton(
+                            icon: Icon(
+                              Icons.ios_share,
+                              // Visually indicate the button is disabled
+                              color: isRemoved
+                                  ? colors.outlineVariant
+                                  : colors.onSurface,
+                            ),
+                            // null disables the button — no tap response
+                            onPressed: isRemoved
+                                ? null
+                                : () {
+                                    // NOTE: Only share the bare URL. When a message
+                                    // contains just a URL, iMessage / WeChat / Slack
+                                    // will crawl it and render the rich preview card
+                                    // (og:title, og:image, og:description).
+                                    // Adding extra text alongside the URL often prevents
+                                    // the platform from generating the preview card.
+                                    const baseUrl = 'https://smivo.io';
+                                    final listingUrl =
+                                        '$baseUrl/listing/${listing.id}';
+                                    final box =
+                                        context.findRenderObject() as RenderBox?;
+                                    Share.share(
+                                      listingUrl,
+                                      sharePositionOrigin: box != null
+                                          ? box.localToGlobal(Offset.zero) &
+                                              box.size
+                                          : null,
+                                    );
+                                  },
                           );
                         },
                       ),

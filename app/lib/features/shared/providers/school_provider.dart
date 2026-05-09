@@ -47,3 +47,20 @@ Future<School?> mySchool(Ref ref) async {
   final repository = ref.watch(schoolRepositoryProvider);
   return repository.fetchSchool(profile.schoolId);
 }
+
+/// Fetches any school by its ID, bypassing the active-schools slug filter.
+///
+/// Unlike [activeSchools], this queries [SchoolRepository.fetchSchool] which
+/// performs a simple `eq('id', id)` lookup, so dev/test schools
+/// (slug = 'smivo-*') are returned correctly.
+///
+/// Returns null on error so callers can gracefully degrade to hiding the row.
+@riverpod
+Future<School?> schoolById(Ref ref, String id) async {
+  try {
+    final repository = ref.watch(schoolRepositoryProvider);
+    return await repository.fetchSchool(id);
+  } catch (_) {
+    return null;
+  }
+}

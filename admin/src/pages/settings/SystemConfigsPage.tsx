@@ -15,9 +15,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { supabase } from '@/lib/supabase';
 import { ADMIN_ROLES } from '@/lib/constants';
+import { SensitiveWordsPage } from '@/pages/moderation/SensitiveWordsPage';
 
-
-type Tab = 'configs' | 'flags' | 'moderation';
+type Tab = 'configs' | 'flags' | 'moderation' | 'sensitive_words';
 
 export function SystemConfigsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('configs');
@@ -57,9 +57,22 @@ export function SystemConfigsPage() {
             Image Moderation
           </button>
         )}
+        {/* NOTE: Sensitive Words moved here from sidebar in T9 refactor (sysadmin only) */}
+        {role === ADMIN_ROLES.PLATFORM_SUPER_ADMIN && (
+          <button
+            className={`sc-tab ${activeTab === 'sensitive_words' ? 'sc-tab--active' : ''}`}
+            onClick={() => setActiveTab('sensitive_words')}
+          >
+            <ShieldAlert size={14} />
+            Sensitive Words
+          </button>
+        )}
       </div>
 
-      {activeTab === 'configs' ? <ConfigsTab /> : activeTab === 'flags' ? <FlagsTab /> : <ImageModerationTab />}
+      {activeTab === 'configs' ? <ConfigsTab />
+        : activeTab === 'flags' ? <FlagsTab />
+        : activeTab === 'sensitive_words' ? <SensitiveWordsPage />
+        : <ImageModerationTab />}
 
 
       <style>{`

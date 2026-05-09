@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/repositories/listing_repository.dart';
@@ -90,12 +94,43 @@ Future<Listing> listingDetail(Ref ref, String id) async {
 
 /// Checks if the current user already has a pending/confirmed order
 /// for this listing. Returns the order if found, null otherwise.
+///
+/// NOTE: Subscribes to a Realtime channel scoped to the specific listing so
+/// any INSERT/UPDATE on its orders row immediately re-fetches this provider
+/// and invalidates listingDetail. This drives the real-time UI update for
+/// buttons and status cards when the seller accepts, cancels, etc.
 @riverpod
 Future<Order?> existingBuyerOrder(Ref ref, String listingId) async {
   final user = ref.watch(authStateProvider).value;
   if (user == null) return null;
 
+  final supabase = ref.watch(supabaseClientProvider);
   final repo = ref.watch(orderRepositoryProvider);
+
+  // Subscribe to order changes for this listing
+  final channel = supabase
+      .channel('order_changes_$listingId')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'orders',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'listing_id',
+          value: listingId,
+        ),
+        callback: (_) {
+          // Re-fetch this provider so the button/card reacts immediately
+          ref.invalidateSelf();
+          // Also re-fetch the listing itself (e.g. status changes on accept)
+          ref.invalidate(listingDetailProvider(listingId));
+        },
+      )
+      .subscribe();
+
+  // Clean up the channel when this provider is disposed or rebuilt
+  ref.onDispose(channel.unsubscribe);
+
   return repo.fetchOrderByListingAndBuyer(
     listingId: listingId,
     buyerId: user.id,

@@ -1,57 +1,33 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useListingsModeration, useBatchModerateListings } from '@/hooks/useListingModeration';
-import { useGroupedListingReports } from '@/hooks/useListingReports';
-import { useBackendModerationLogs, type BackendModerationLog, type LogFilters } from '@/hooks/useBackendModerationLogs';
-import { DEFAULT_PAGE_SIZE, MODERATION_STATUS, MODERATION_PRIORITY, REPORT_REASONS } from '@/lib/constants';
-import { Filter, ChevronRight, Bot, CheckCircle, XCircle } from 'lucide-react';
+import { DEFAULT_PAGE_SIZE, MODERATION_STATUS, MODERATION_PRIORITY } from '@/lib/constants';
+import { Filter, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
+// NOTE: User Reports and AI Reviewed tabs were extracted into separate pages:
+//   - UserReportsPage.tsx  → /moderation/user-reports
+//   - AiReviewedPage.tsx   → /moderation/ai-reviewed
+// This page now exclusively renders the System Queue.
 export function ListingModerationPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [viewTab, setViewTab] = useState<'system' | 'user' | 'ai_reviewed'>(
-    location.state?.tab === 'user' ? 'user' : location.state?.tab === 'ai_reviewed' ? 'ai_reviewed' : 'system'
-  );
-  
-  // System Queue State
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [systemStatus, setSystemStatus] = useState<string>(MODERATION_STATUS.PENDING_REVIEW);
 
   const { data, isLoading, error } = useListingsModeration(page, { status: systemStatus as any });
-  
-  // User Reports State
-  const [reportStatus, setReportStatus] = useState<string>('pending');
-  const [reportReason, setReportReason] = useState<string>('all');
-  const { data: reportsData, isLoading: reportsLoading, error: reportsError } = useGroupedListingReports({ 
-    status: reportStatus, 
-    reason: reportReason 
-  });
-
-  // AI Reviewed State
-  const [aiPage, setAiPage] = useState(0);
-  const [logFilters, setLogFilters] = useState<LogFilters>({ targetType: 'all', result: 'all', engine: 'all' });
-  const { data: logsData, isLoading: logsLoading, error: logsError } = useBackendModerationLogs(aiPage, logFilters);
-
   const batchModerate = useBatchModerateListings();
   const { admin } = useAuth();
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>, ids: string[]) => {
-    if (e.target.checked) {
-      setSelectedIds(new Set(ids));
-    } else {
-      setSelectedIds(new Set());
-    }
+    if (e.target.checked) setSelectedIds(new Set(ids));
+    else setSelectedIds(new Set());
   };
 
   const handleSelectOne = (id: string, checked: boolean) => {
     const newSet = new Set(selectedIds);
-    if (checked) {
-      newSet.add(id);
-    } else {
-      newSet.delete(id);
-    }
+    if (checked) newSet.add(id);
+    else newSet.delete(id);
     setSelectedIds(newSet);
   };
 
@@ -61,7 +37,7 @@ export function ListingModerationPage() {
       await batchModerate.mutateAsync({
         ids: Array.from(selectedIds),
         action,
-        adminId: admin?.user_id ?? ""
+        adminId: admin?.user_id ?? '',
       });
       setSelectedIds(new Set());
     } catch (err) {
@@ -91,492 +67,164 @@ export function ListingModerationPage() {
   return (
     <div className="lm-container">
       <div className="lm-header">
-        <h1 className="lm-page-title">Listing Review</h1>
+        <h1 className="lm-page-title">System Queue</h1>
       </div>
 
-      <div className="lm-tabs-container">
-        <div className="lm-tabs">
-          <button 
-            className={`lm-tab-btn ${viewTab === 'system' ? 'active' : ''}`}
-            onClick={() => { setViewTab('system'); setSelectedIds(new Set()); }}
+      <div className="lm-actions-row" style={{ justifyContent: 'space-between' }}>
+        <div className="lm-filters">
+          <div className="lm-filter-group">
+            <Filter size={14} />
+            <select
+              className="lm-filter-select-inline"
+              value={systemStatus}
+              onChange={(e) => { setSystemStatus(e.target.value); setPage(0); }}
+            >
+              <option value="all">All Statuses</option>
+              <option value={MODERATION_STATUS.PENDING_REVIEW}>Pending</option>
+              <option value={MODERATION_STATUS.APPROVED}>Approved</option>
+              <option value={MODERATION_STATUS.REJECTED}>Rejected</option>
+              <option value={MODERATION_STATUS.TAKEN_DOWN}>Taken Down</option>
+            </select>
+          </div>
+        </div>
+        <div className="lm-batch-actions">
+          <button
+            onClick={() => handleBatchAction('approve')}
+            disabled={selectedIds.size === 0 || batchModerate.isPending}
+            className="lm-btn lm-btn--success"
           >
-            System Queue
-            {data?.count !== undefined && data.count > 0 && <span className="lm-badge-num">{data.count}</span>}
+            Batch Approve
           </button>
-          <button 
-            className={`lm-tab-btn ${viewTab === 'user' ? 'active' : ''}`}
-            onClick={() => { setViewTab('user'); setSelectedIds(new Set()); }}
+          <button
+            onClick={() => handleBatchAction('reject')}
+            disabled={selectedIds.size === 0 || batchModerate.isPending}
+            className="lm-btn lm-btn--danger"
           >
-            User Reports
-            {reportsData !== undefined && reportsData.length > 0 && <span className="lm-badge-num">{reportsData.length}</span>}
-          </button>
-          <button 
-            className={`lm-tab-btn ${viewTab === 'ai_reviewed' ? 'active' : ''}`}
-            onClick={() => { setViewTab('ai_reviewed'); setSelectedIds(new Set()); }}
-          >
-            <Bot size={15} /> AI Reviewed
-            {logsData?.count !== undefined && logsData.count > 0 && <span className="lm-ai-count-label">{logsData.count}</span>}
+            Batch Reject
           </button>
         </div>
       </div>
 
-      {viewTab === 'system' && (
-        <>
-          <div className="lm-actions-row" style={{ justifyContent: 'space-between' }}>
-            <div className="lm-filters">
-              <div className="lm-filter-group" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '6px 12px', color: 'var(--color-text-tertiary)' }}>
-                <Filter size={14} />
-                <select 
-                  className="lm-filter-select-inline"
-                  value={systemStatus} 
-                  onChange={(e) => { setSystemStatus(e.target.value); setPage(0); }}
-                >
-                  <option value="all">All Statuses</option>
-                  <option value={MODERATION_STATUS.PENDING_REVIEW}>Pending</option>
-                  <option value={MODERATION_STATUS.APPROVED}>Approved</option>
-                  <option value={MODERATION_STATUS.REJECTED}>Rejected</option>
-                  <option value={MODERATION_STATUS.TAKEN_DOWN}>Taken Down</option>
-                </select>
-              </div>
-            </div>
-            <div className="lm-batch-actions">
-              <button
-                onClick={() => handleBatchAction('approve')}
-                disabled={selectedIds.size === 0 || batchModerate.isPending}
-                className="lm-btn lm-btn--success"
-              >
-                Batch Approve
-              </button>
-              <button
-                onClick={() => handleBatchAction('reject')}
-                disabled={selectedIds.size === 0 || batchModerate.isPending}
-                className="lm-btn lm-btn--danger"
-              >
-                Batch Reject
-              </button>
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="lm-state-msg">Loading listings...</div>
-          ) : error ? (
-            <div className="lm-state-error">Error loading listings.</div>
-          ) : (
-            <div className="lm-table-wrap">
-              <table className="lm-table">
-                <thead className="lm-thead">
-                  <tr>
-                    <th className="lm-th">
+      {isLoading ? (
+        <div className="lm-state-msg">Loading listings...</div>
+      ) : error ? (
+        <div className="lm-state-error">Error loading listings.</div>
+      ) : (
+        <div className="lm-table-wrap">
+          <table className="lm-table">
+            <thead className="lm-thead">
+              <tr>
+                <th className="lm-th">
+                  <input
+                    type="checkbox"
+                    onChange={(e) => handleSelectAll(e, data?.data.map((l: any) => l.id) || [])}
+                    checked={(data?.data?.length ?? 0) > 0 && selectedIds.size === (data?.data?.length ?? 0)}
+                  />
+                </th>
+                <th className="lm-th">Title</th>
+                <th className="lm-th">Seller</th>
+                <th className="lm-th">Price</th>
+                <th className="lm-th">Status</th>
+                <th className="lm-th">Priority</th>
+                <th className="lm-th">Submitted</th>
+                <th className="lm-th lm-th--right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data?.data.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="lm-td-empty">No listings found in system queue.</td>
+                </tr>
+              ) : (
+                data?.data.map((listing: any) => (
+                  <tr
+                    key={listing.id}
+                    className="lm-tr"
+                    onClick={() => navigate(`/moderation/listings/${listing.id}`)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td className="lm-td" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
-                        onChange={(e) => handleSelectAll(e, data?.data.map((l: any) => l.id) || [])}
-                        checked={(data?.data?.length ?? 0) > 0 && selectedIds.size === (data?.data?.length ?? 0)}
+                        checked={selectedIds.has(listing.id)}
+                        onChange={(e) => handleSelectOne(listing.id, e.target.checked)}
                       />
-                    </th>
-                    <th className="lm-th">Title</th>
-                    <th className="lm-th">Seller</th>
-                    <th className="lm-th">Price</th>
-                    <th className="lm-th">Status</th>
-                    <th className="lm-th">Priority</th>
-                    <th className="lm-th">Submitted</th>
-                    <th className="lm-th lm-th--right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data?.data.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="lm-td-empty">No listings found in system queue.</td>
-                    </tr>
-                  ) : (
-                    data?.data.map((listing: any) => (
-                      <tr 
-                        key={listing.id} 
-                        className="lm-tr" 
-                        onClick={() => navigate(`/moderation/listings/${listing.id}`)}
-                        style={{ cursor: 'pointer' }}
+                    </td>
+                    <td className="lm-td">
+                      <div className="lm-cell-title">{listing.title}</div>
+                    </td>
+                    <td className="lm-td">
+                      <div className="lm-seller-cell">
+                        {listing.seller?.avatar_url && (
+                          <img className="lm-seller-avatar" src={listing.seller.avatar_url} alt="" />
+                        )}
+                        <span className="lm-cell-text">{listing.seller?.display_name || 'Unknown'}</span>
+                      </div>
+                    </td>
+                    <td className="lm-td lm-cell-muted">${listing.price}</td>
+                    <td className="lm-td">
+                      <span className={getStatusClass(listing.moderation_status)}>
+                        {listing.moderation_status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="lm-td">
+                      <span className={getPriorityClass(listing.moderation_priority)}>
+                        {listing.moderation_priority}
+                      </span>
+                    </td>
+                    <td className="lm-td lm-cell-muted">{new Date(listing.created_at).toLocaleDateString()}</td>
+                    <td className="lm-td lm-td--right" onClick={(e) => e.stopPropagation()}>
+                      <Link
+                        to={`/moderation/listings/${listing.id}`}
+                        className="lm-review-link"
+                        style={{ display: 'inline-flex', alignItems: 'center' }}
                       >
-                        <td className="lm-td" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(listing.id)}
-                            onChange={(e) => handleSelectOne(listing.id, e.target.checked)}
-                          />
-                        </td>
-                        <td className="lm-td">
-                          <div className="lm-cell-title">{listing.title}</div>
-                        </td>
-                        <td className="lm-td">
-                          <div className="lm-seller-cell">
-                            {listing.seller?.avatar_url && (
-                              <img className="lm-seller-avatar" src={listing.seller.avatar_url} alt="" />
-                            )}
-                            <span className="lm-cell-text">{listing.seller?.display_name || 'Unknown'}</span>
-                          </div>
-                        </td>
-                        <td className="lm-td lm-cell-muted">${listing.price}</td>
-                        <td className="lm-td">
-                          <span className={getStatusClass(listing.moderation_status)}>
-                            {listing.moderation_status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="lm-td">
-                          <span className={getPriorityClass(listing.moderation_priority)}>
-                            {listing.moderation_priority}
-                          </span>
-                        </td>
-                        <td className="lm-td lm-cell-muted">{new Date(listing.created_at).toLocaleDateString()}</td>
-                        <td className="lm-td lm-td--right" onClick={(e) => e.stopPropagation()}>
-                          <Link to={`/moderation/listings/${listing.id}`} className="lm-review-link" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <ChevronRight size={18} />
-                          </Link>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {data && data.count > DEFAULT_PAGE_SIZE && (
-            <div className="lm-pagination">
-              <p className="lm-pagination-info">
-                Showing <strong>{page * DEFAULT_PAGE_SIZE + 1}</strong> to{' '}
-                <strong>{Math.min((page + 1) * DEFAULT_PAGE_SIZE, data.count)}</strong> of{' '}
-                <strong>{data.count}</strong> results
-              </p>
-              <div className="lm-pagination-nav">
-                <button
-                  onClick={() => setPage(p => Math.max(0, p - 1))}
-                  disabled={page === 0}
-                  className="lm-page-btn lm-page-btn--left"
-                >
-                  &larr; Previous
-                </button>
-                <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={(page + 1) * DEFAULT_PAGE_SIZE >= data.count}
-                  className="lm-page-btn lm-page-btn--right"
-                >
-                  Next &rarr;
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+                        <ChevronRight size={18} />
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      {viewTab === 'user' && (
-        <>
-          <div className="lm-actions-row" style={{ justifyContent: 'space-between' }}>
-            <div className="lm-filters">
-              <div className="lm-filter-group" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '6px 12px', color: 'var(--color-text-tertiary)' }}>
-                <Filter size={14} />
-                <select 
-                  className="lm-filter-select-inline"
-                  value={reportReason} 
-                  onChange={(e) => setReportReason(e.target.value)}
-                >
-                  <option value="all">All Reasons</option>
-                  {Object.entries(REPORT_REASONS).map(([key, value]) => (
-                    <option key={key} value={value}>{value.toUpperCase()}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="lm-filter-group" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '6px 12px', color: 'var(--color-text-tertiary)' }}>
-                <select 
-                  className="lm-filter-select-inline"
-                  value={reportStatus} 
-                  onChange={(e) => setReportStatus(e.target.value)}
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="dismissed">Dismissed</option>
-                </select>
-              </div>
-            </div>
-            <div className="lm-batch-actions">
-              <button
-                onClick={() => handleBatchAction('approve')}
-                disabled={selectedIds.size === 0 || batchModerate.isPending}
-                className="lm-btn lm-btn--success"
-              >
-                Batch Approve
-              </button>
-              <button
-                onClick={() => handleBatchAction('reject')}
-                disabled={selectedIds.size === 0 || batchModerate.isPending}
-                className="lm-btn lm-btn--danger"
-              >
-                Batch Reject
-              </button>
-            </div>
+      {data && data.count > DEFAULT_PAGE_SIZE && (
+        <div className="lm-pagination">
+          <p className="lm-pagination-info">
+            Showing <strong>{page * DEFAULT_PAGE_SIZE + 1}</strong> to{' '}
+            <strong>{Math.min((page + 1) * DEFAULT_PAGE_SIZE, data.count)}</strong> of{' '}
+            <strong>{data.count}</strong> results
+          </p>
+          <div className="lm-pagination-nav">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="lm-page-btn lm-page-btn--left"
+            >
+              &larr; Previous
+            </button>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={(page + 1) * DEFAULT_PAGE_SIZE >= data.count}
+              className="lm-page-btn lm-page-btn--right"
+            >
+              Next &rarr;
+            </button>
           </div>
-
-          {reportsLoading ? (
-            <div className="lm-state-msg">Loading user reports...</div>
-          ) : reportsError ? (
-            <div className="lm-state-error">Error loading reports.</div>
-          ) : (
-            <div className="lm-table-wrap">
-              <table className="lm-table">
-                <thead className="lm-thead">
-                  <tr>
-                    <th className="lm-th">
-                      <input
-                        type="checkbox"
-                        onChange={(e) => handleSelectAll(e, reportsData?.map((r) => r.listing_id) || [])}
-                        checked={(reportsData?.length ?? 0) > 0 && selectedIds.size === (reportsData?.length ?? 0)}
-                      />
-                    </th>
-                    <th className="lm-th">Listing</th>
-                    <th className="lm-th">Reported Seller</th>
-                    <th className="lm-th">Reports</th>
-                    <th className="lm-th">Violations</th>
-                    <th className="lm-th">First Reported At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reportsData?.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="lm-td-empty">No listing reports found.</td>
-                    </tr>
-                  ) : (
-                    reportsData?.map((report) => (
-                      <tr 
-                        key={report.listing_id} 
-                        className="lm-tr clickable-row"
-                        onClick={() => navigate(`/moderation/listing-reports/${report.listing_id}`)}
-                      >
-                        <td className="lm-td" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(report.listing_id)}
-                            onChange={(e) => handleSelectOne(report.listing_id, e.target.checked)}
-                          />
-                        </td>
-                        <td className="lm-td">
-                          <div className="lm-listing-cell">
-                            {report.listing_images?.[0] && (
-                              <img className="lm-listing-thumb" src={report.listing_images[0]} alt="Cover" />
-                            )}
-                            <div className="lm-cell-title">{report.listing_title}</div>
-                          </div>
-                        </td>
-                        <td className="lm-td">
-                          <div className="lm-user-info">
-                            <span className="lm-cell-text">{report.reported_name || 'Unknown'}</span>
-                            <span className="lm-cell-muted" style={{fontSize: 11, display: 'block'}}>{report.reported_email}</span>
-                          </div>
-                        </td>
-                        <td className="lm-td">
-                          <span className="lm-badge lm-badge--danger" style={{ fontSize: 13, padding: '4px 10px' }}>
-                            {report.report_count} Report{report.report_count > 1 ? 's' : ''}
-                          </span>
-                        </td>
-                        <td className="lm-td">
-                          <div className="lm-violations">
-                            {report.reasons.map((reason, idx) => (
-                              <div key={idx} className="lm-violation-item">{reason.toUpperCase()}</div>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="lm-td lm-cell-muted">
-                          {new Date(report.first_reported_at).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-
-        </>
-      )}
-
-      {viewTab === 'ai_reviewed' && (
-        <>
-          <div className="lm-actions-row">
-            <div className="lm-filters">
-              <div className="lm-filter-group">
-                <Filter size={14} />
-                <select
-                  className="lm-filter-select-inline"
-                  value={logFilters.targetType}
-                  onChange={(e) => { setLogFilters(f => ({ ...f, targetType: e.target.value as any })); setAiPage(0); }}
-                >
-                  <option value="all">All Types</option>
-                  <option value="listing">Listings</option>
-                  <option value="message">Messages</option>
-                  <option value="profile">Profiles</option>
-                </select>
-              </div>
-              <div className="lm-filter-group">
-                <select
-                  className="lm-filter-select-inline"
-                  value={logFilters.result}
-                  onChange={(e) => { setLogFilters(f => ({ ...f, result: e.target.value as any })); setAiPage(0); }}
-                >
-                  <option value="all">All Results</option>
-                  <option value="pass">Pass</option>
-                  <option value="fail">Fail</option>
-                </select>
-              </div>
-              <div className="lm-filter-group">
-                <select
-                  className="lm-filter-select-inline"
-                  value={logFilters.engine}
-                  onChange={(e) => { setLogFilters(f => ({ ...f, engine: e.target.value as any })); setAiPage(0); }}
-                >
-                  <option value="all">All Engines</option>
-                  <option value="openai">OpenAI</option>
-                  <option value="google_vision">Google Vision</option>
-                  <option value="sensitive_words">Sensitive Words</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {logsLoading ? (
-            <div className="lm-state-msg">Loading AI review logs...</div>
-          ) : logsError ? (
-            <div className="lm-state-error">Error loading logs.</div>
-          ) : (
-            <div className="lm-table-wrap">
-              <table className="lm-table">
-                <thead className="lm-thead">
-                  <tr>
-                    <th className="lm-th">Time</th>
-                    <th className="lm-th">Engine</th>
-                    <th className="lm-th">Type</th>
-                    <th className="lm-th">User</th>
-                    <th className="lm-th">Result</th>
-                    <th className="lm-th">Action</th>
-                    <th className="lm-th">Reason</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logsData?.data.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="lm-td-empty">No AI review logs found.</td>
-                    </tr>
-                  ) : (
-                    logsData?.data.map((log: BackendModerationLog) => {
-                      const flaggedImages = log.image_details?.filter(i => i.flagged) || [];
-                      const textWords = log.text_details?.matched_words || [];
-                      const aiCategories = Object.entries(log.text_details?.ai_text?.categories || {})
-                        .filter(([, v]) => v)
-                        .map(([k]) => k);
-
-                      const reasons: string[] = [
-                        ...textWords.map((w: string) => `word: ${w}`),
-                        ...aiCategories.map(c => `text: ${c}`),
-                        ...flaggedImages.flatMap(i => i.reasons.map(r => `img#${i.index}: ${r}`)),
-                      ];
-
-                      return (
-                        <tr key={log.id} className="lm-tr">
-                          <td className="lm-td lm-cell-muted" style={{ fontSize: 12 }}>
-                            {new Date(log.created_at).toLocaleString()}
-                          </td>
-                          <td className="lm-td">
-                            <span className="lm-badge lm-badge--engine">{log.engine.replace('_', ' ')}</span>
-                          </td>
-                          <td className="lm-td">
-                            <span className="lm-badge lm-badge--neutral" style={{ textTransform: 'capitalize' }}>{log.target_type}</span>
-                          </td>
-                          <td className="lm-td">
-                            <div className="lm-user-info">
-                              <span className="lm-cell-text">{log.user_profile?.display_name || 'Unknown'}</span>
-                              <span className="lm-cell-muted" style={{ fontSize: 11 }}>{log.user_profile?.email}</span>
-                            </div>
-                          </td>
-                          <td className="lm-td">
-                            {log.result === 'pass' ? (
-                              <span className="lm-badge lm-badge--success"><CheckCircle size={12} style={{ marginRight: 4 }} /> Pass</span>
-                            ) : (
-                              <span className="lm-badge lm-badge--danger"><XCircle size={12} style={{ marginRight: 4 }} /> Fail</span>
-                            )}
-                          </td>
-                          <td className="lm-td">
-                            <span className={`lm-badge ${log.action_taken === 'approve' ? 'lm-badge--success' : log.action_taken === 'reject' ? 'lm-badge--danger' : log.action_taken === 'blur' ? 'lm-badge--info' : 'lm-badge--warning'}`}>
-                              {log.action_taken}
-                            </span>
-                          </td>
-                          <td className="lm-td">
-                            <div className="ai-reasons-cell">
-                              {reasons.length === 0 ? (
-                                <span className="lm-cell-muted">—</span>
-                              ) : (
-                                reasons.slice(0, 3).map((r, idx) => (
-                                  <span key={idx} className="ai-reason-tag">{r}</span>
-                                ))
-                              )}
-                              {reasons.length > 3 && (
-                                <span className="ai-reason-more">+{reasons.length - 3} more</span>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {logsData && logsData.count > DEFAULT_PAGE_SIZE && (
-            <div className="lm-pagination">
-              <p className="lm-pagination-info">
-                Showing <strong>{aiPage * DEFAULT_PAGE_SIZE + 1}</strong> to{' '}
-                <strong>{Math.min((aiPage + 1) * DEFAULT_PAGE_SIZE, logsData.count)}</strong> of{' '}
-                <strong>{logsData.count}</strong> logs
-              </p>
-              <div className="lm-pagination-nav">
-                <button
-                  onClick={() => setAiPage(p => Math.max(0, p - 1))}
-                  disabled={aiPage === 0}
-                  className="lm-page-btn lm-page-btn--left"
-                >
-                  &larr; Previous
-                </button>
-                <button
-                  onClick={() => setAiPage(p => p + 1)}
-                  disabled={(aiPage + 1) * DEFAULT_PAGE_SIZE >= logsData.count}
-                  className="lm-page-btn lm-page-btn--right"
-                >
-                  Next &rarr;
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+        </div>
       )}
 
       <style>{`
         .lm-container { padding: var(--spacing-page); max-width: 1280px; margin: 0 auto; }
-        .lm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0px; padding-bottom: 16px; }
+        .lm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .lm-page-title { font-size: 24px; font-weight: 700; color: var(--color-text-primary); margin: 0; }
-        
-        .lm-tabs-container { border-bottom: 1px solid var(--color-border-light); margin-bottom: 24px; padding-bottom: 8px; }
-        .lm-tabs { display: flex; gap: 24px; }
-        .lm-tab-btn { padding: 8px 0; border: none; background: transparent; color: var(--color-text-secondary); font-size: 15px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; position: relative; display: flex; align-items: center; gap: 8px; }
-        .lm-tab-btn:hover { color: var(--color-text-primary); }
-        .lm-tab-btn.active { color: var(--color-text-primary); border-bottom-color: var(--color-primary); }
-        .lm-badge-num { background: var(--color-danger); color: white; font-size: 11px; padding: 2px 6px; border-radius: 99px; font-weight: 700; min-width: 18px; text-align: center; }
-        .lm-ai-count-label { background: #f0f4ff; color: #4338ca; font-size: 11px; font-weight: 500; padding: 1px 6px; border-radius: 4px; border: 1px solid #e0e7ff; margin-left: 4px; }
-        
-        .lm-actions-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .lm-actions-row { display: flex; align-items: center; margin-bottom: 16px; }
         .lm-filters { display: flex; gap: 12px; }
-        .lm-filter-select { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 13px; color: var(--color-text-primary); background: var(--color-bg-primary); outline: none; }
-        .lm-filter-select:focus { border-color: var(--color-border-focus); }
-        .lm-batch-actions { display: flex; gap: 12px; }
+        .lm-filter-group { display: flex; align-items: center; gap: 8px; background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 6px 12px; color: var(--color-text-tertiary); }
         .lm-filter-select-inline { border: none; background: transparent; font-size: 13px; color: var(--color-text-primary); outline: none; cursor: pointer; }
-        
+        .lm-batch-actions { display: flex; gap: 12px; }
         .lm-btn { padding: 8px 16px; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; }
         .lm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .lm-btn--success { background: var(--color-success); color: #fff; }
@@ -588,7 +236,6 @@ export function ListingModerationPage() {
         .lm-thead { background: var(--color-bg-secondary); }
         .lm-th { padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border-light); }
         .lm-th--right { text-align: right; }
-        .clickable-row { cursor: pointer; }
         .lm-tr:hover { background: var(--color-bg-secondary); }
         .lm-td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--color-border-light); white-space: nowrap; }
         .lm-td--right { text-align: right; }
@@ -596,10 +243,6 @@ export function ListingModerationPage() {
         .lm-cell-title { font-weight: 500; color: var(--color-text-primary); max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
         .lm-cell-text { color: var(--color-text-primary); }
         .lm-cell-muted { color: var(--color-text-secondary); }
-        .lm-user-info { display: flex; flex-direction: column; gap: 2px; }
-        .lm-listing-cell { display: flex; align-items: center; gap: 12px; }
-        .lm-listing-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
-        .lm-violation-item { font-size: 11px; color: var(--color-danger); margin-bottom: 2px; }
         .lm-seller-cell { display: flex; align-items: center; gap: 8px; }
         .lm-seller-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
         .lm-badge { display: inline-flex; align-items: center; padding: 2px 8px; font-size: 11px; font-weight: 600; border-radius: 999px; white-space: nowrap; }
@@ -618,13 +261,6 @@ export function ListingModerationPage() {
         .lm-page-btn--right { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
         .lm-page-btn:hover:not(:disabled) { background: var(--color-bg-secondary); }
         .lm-page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* .lm-badge-num--purple was removed in favor of .lm-ai-count-label */
-        .lm-badge--engine { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; text-transform: capitalize; }
-        .ai-reasons-cell { display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px; }
-        .ai-reason-tag { display: inline-flex; padding: 2px 6px; font-size: 10px; font-weight: 500; background: var(--color-danger-light); color: var(--color-danger); border-radius: 4px; white-space: nowrap; }
-        .ai-reason-more { font-size: 10px; color: var(--color-text-tertiary); align-self: center; }
-        .lm-filter-group { display: flex; align-items: center; gap: 8px; background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 6px 12px; color: var(--color-text-tertiary); }
       `}</style>
     </div>
   );

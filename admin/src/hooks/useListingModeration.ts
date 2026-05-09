@@ -229,19 +229,32 @@ export function useBatchModerateListings() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ ids, action, adminId }: { ids: string[], action: 'approve' | 'reject', adminId: string }) => {
-      const targetModerationStatus = action === 'approve' ? MODERATION_STATUS.APPROVED : MODERATION_STATUS.REJECTED;
+    mutationFn: async ({ ids, action, adminId }: { ids: string[], action: 'approve' | 'reject' | 'takedown', adminId: string }) => {
+      // NOTE: 'takedown' uses TAKEN_DOWN (not REJECTED) so the DB trigger
+      // listing_taken_down_trigger fires and cancels pending orders / clears
+      // saved_listings. 'reject' is reserved for non-user-report rejections
+      // where the cleanup trigger is not needed.
+      let targetModerationStatus: string;
+      if (action === 'approve') {
+        targetModerationStatus = MODERATION_STATUS.APPROVED;
+      } else if (action === 'takedown') {
+        targetModerationStatus = MODERATION_STATUS.TAKEN_DOWN;
+      } else {
+        targetModerationStatus = MODERATION_STATUS.REJECTED;
+      }
 
-      // NOTE: When rejecting, we must also deactivate the listing.
-      // The listings.status CHECK constraint only allows: active, inactive, reserved, sold, rented.
-      // 'rejected' is NOT a valid status — that lives in moderation_status.
+      // NOTE: When rejecting or taking down, we must also deactivate the
+      // listing. The listings.status CHECK constraint only allows:
+      // active, inactive, reserved, sold, rented.
+      // 'rejected' / 'taken_down' are NOT valid status values — they live
+      // in moderation_status.
       const updatePayload: Record<string, any> = {
         moderation_status: targetModerationStatus,
         moderated_by: adminId,
         moderated_at: new Date().toISOString(),
       };
 
-      if (action === 'reject') {
+      if (action === 'reject' || action === 'takedown') {
         // IMPORTANT: Set status to inactive so the listing disappears from
         // the app home feed immediately, regardless of client-side filter version.
         updatePayload.status = 'inactive';
@@ -252,13 +265,19 @@ export function useBatchModerateListings() {
         .update(updatePayload)
         .in('id', ids);
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useBatchModerateListings] listings UPDATE failed:', error);
+        throw error;
+      }
 
       // 1.5. Batch update associated images status
+      const imagesModerationStatus = action === 'approve'
+        ? MODERATION_STATUS.APPROVED
+        : MODERATION_STATUS.REJECTED;  // images always use REJECTED for audit clarity
       const { error: imagesError } = await supabase
         .from(TABLES.LISTING_IMAGES)
         .update({
-          moderation_status: targetModerationStatus,
+          moderation_status: imagesModerationStatus,
           moderation_reasons: action === 'approve' ? null : 'Taken down by administrator'
         })
         .in('listing_id', ids);
