@@ -25,33 +25,33 @@ export function ChatReportsPage() {
           <h1 className="page-title">Chat Reports</h1>
           <p className="page-subtitle">Moderation queue for user-to-user messaging violations</p>
         </div>
-        
-        <div className="filters-bar">
-          <div className="filter-group">
-            <Filter size={14} />
-            <select 
-              value={reason} 
-              onChange={(e) => { setReason(e.target.value as ReportReason | ''); setPage(0); }}
-            >
-              <option value="">All Reasons</option>
-              {Object.entries(REPORT_REASONS).map(([key, value]) => (
-                <option key={key} value={value}>{value.toUpperCase()}</option>
-              ))}
-            </select>
-          </div>
-          <div className="filter-group">
-            <select 
-              value={status} 
-              onChange={(e) => { setStatus(e.target.value as ReportStatus | ''); setPage(0); }}
-            >
-              <option value="">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="resolved">Resolved</option>
-              <option value="dismissed">Dismissed</option>
-            </select>
-          </div>
-        </div>
       </header>
+
+      <div className="filters-bar">
+        <div className="filter-group">
+          <Filter size={14} />
+          <select 
+            value={reason} 
+            onChange={(e) => { setReason(e.target.value as ReportReason | ''); setPage(0); }}
+          >
+            <option value="">All Reasons</option>
+            {Object.entries(REPORT_REASONS).map(([key, value]) => (
+              <option key={key} value={value}>{value.toUpperCase()}</option>
+            ))}
+          </select>
+        </div>
+        <div className="filter-group">
+          <select 
+            value={status} 
+            onChange={(e) => { setStatus(e.target.value as ReportStatus | ''); setPage(0); }}
+          >
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="resolved">Resolved</option>
+            <option value="dismissed">Dismissed</option>
+          </select>
+        </div>
+      </div>
 
       <div className="reports-table-wrapper">
         <table className="reports-table">
@@ -125,8 +125,8 @@ export function ChatReportsPage() {
 
         .reports-header {
           display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
+          flex-direction: column;
+          gap: 4px;
         }
 
         .page-title {

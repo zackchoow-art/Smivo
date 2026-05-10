@@ -1,19 +1,19 @@
 /**
  * Router configuration — all routes per 04_ADMIN_WEB_SPEC.md §4.4.
- * Pages not yet implemented use PlaceholderPage.
+ * Updated: Dashboard/Analytics merged, Platform Functions added,
+ * Feature Flags & System Configuration routes removed.
  */
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
-import { AnalyticsPage } from '@/pages/AnalyticsPage';
-import { FeatureFlagsPage } from '@/pages/settings/FeatureFlagsPage';
 import { ProfilePage } from '@/pages/settings/ProfilePage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { CollegesPage } from '@/pages/settings/CollegesPage';
 import { DictionaryListPage } from '@/pages/settings/DictionaryListPage';
 import { DictionaryItemsPage } from '@/pages/settings/DictionaryItemsPage';
 import { SystemConfigsPage } from '@/pages/settings/SystemConfigsPage';
+import { PlatformFunctionsPage } from '@/pages/settings/PlatformFunctionsPage';
 import { AdminsPage } from '@/pages/settings/AdminsPage';
 import { SensitiveWordsPage } from '@/pages/moderation/SensitiveWordsPage';
 import { AuditLogPage } from '@/pages/AuditLogPage';
@@ -50,19 +50,25 @@ export const router = createBrowserRouter([
       // Root redirect
       { index: true, element: <Navigate to="/dashboard" replace /> },
 
-      // 01 Dashboard
+      // 01 Dashboard (merged with Analytics)
       { path: 'dashboard', element: <DashboardPage /> },
+
+      // Legacy analytics route — redirect to merged dashboard
+      { path: 'analytics', element: <Navigate to="/dashboard" replace /> },
 
       // 02-05 Content Moderation
       { path: 'moderation/all-listings', element: <AllListingsPage /> },
       { path: 'moderation/listings', element: <ListingModerationPage /> },
       { path: 'moderation/listings/:id', element: <ListingModerationDetailPage /> },
       { path: 'moderation/listing-reports/:id', element: <ListingReportDetailPage /> },
-      { path: 'moderation/user-reports', element: <UserReportsPage /> },
+      { path: 'moderation/listing-reports', element: <UserReportsPage /> },
       { path: 'moderation/chat-reports', element: <ChatReportsPage /> },
       { path: 'moderation/chat-reports/:id', element: <ChatReportDetailPage /> },
       { path: 'moderation/sensitive-words', element: <SensitiveWordsPage /> },
       { path: 'moderation/ai-reviewed', element: <AiReviewedPage /> },
+
+      // Legacy route — redirect to new path
+      { path: 'moderation/user-reports', element: <Navigate to="/moderation/listing-reports" replace /> },
 
       // 06-08 User Management
       { path: 'users', element: <UsersPage /> },
@@ -76,20 +82,22 @@ export const router = createBrowserRouter([
       { path: 'push/new', element: <PushCreatePage /> },
       { path: 'push/history', element: <PushHistoryPage /> },
 
-      // 11 Analytics
-      { path: 'analytics', element: <AnalyticsPage /> },
-
       // 12-15 System Configuration (accessed via TopBar → Settings)
       { path: 'settings', element: <SettingsPage /> },
-      { path: 'settings/dictionary', element: <DictionaryListPage /> },
-      { path: 'settings/dictionary/:dictCode', element: <DictionaryItemsPage /> },
-      { path: 'settings/configs', element: <SystemConfigsPage /> },
-      { path: 'settings/feature-flags', element: <FeatureFlagsPage /> },
+      { path: 'settings/school-settings', element: <DictionaryListPage /> },
+      { path: 'settings/school-settings/:dictCode', element: <DictionaryItemsPage /> },
+      { path: 'settings/content-moderation', element: <SystemConfigsPage /> },
+      { path: 'settings/platform-functions', element: <PlatformFunctionsPage /> },
       { path: 'settings/admins', element: <AdminsPage /> },
       { path: 'settings/colleges', element: <CollegesPage /> },
       { path: 'settings/profile', element: <ProfilePage /> },
       { path: 'settings/cleanup', element: <TestDataCleanupPage /> },
 
+      // Legacy routes — redirect to new paths
+      { path: 'settings/dictionary', element: <Navigate to="/settings/school-settings" replace /> },
+      { path: 'settings/dictionary/:dictCode', element: <Navigate to="/settings/school-settings" replace /> },
+      { path: 'settings/configs', element: <Navigate to="/settings/content-moderation" replace /> },
+      { path: 'settings/feature-flags', element: <Navigate to="/settings/platform-functions" replace /> },
 
       // 16 Audit Log
       { path: 'audit-log', element: <AuditLogPage /> },

@@ -22,43 +22,47 @@ export function FeedbackListPage() {
   return (
     <div className="feedback-container">
       <header className="feedback-header">
-        <h1 className="page-title">User Feedback</h1>
-        <div className="filters-bar">
-          <div className="filter-group">
-            <Filter size={14} />
-            {/* NOTE: Option values match DB enum: bug / improvement / feature_request / other */}
-            <select
-              value={feedbackType}
-              onChange={(e) => {
-                setFeedbackType(e.target.value as FeedbackType | '');
-                setPage(0);
-              }}
-            >
-              <option value="">All Types</option>
-              <option value="bug">Bug Report</option>
-              <option value="improvement">Improvement</option>
-              <option value="feature_request">Feature Request</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            {/* NOTE: Option values match DB enum: submitted / read / accepted / high_contribution */}
-            <select
-              value={status}
-              onChange={(e) => {
-                setStatus(e.target.value as FeedbackStatus | '');
-                setPage(0);
-              }}
-            >
-              <option value="">All Statuses</option>
-              <option value="submitted">Submitted</option>
-              <option value="read">Read</option>
-              <option value="accepted">Accepted</option>
-              <option value="high_contribution">High Contribution</option>
-            </select>
-          </div>
+        <div>
+          <h1 className="page-title">User Feedback</h1>
+          <p className="page-subtitle">User-submitted feedback, bug reports, and feature requests</p>
         </div>
       </header>
+
+      <div className="filters-bar">
+        <div className="filter-group">
+          <Filter size={14} />
+          {/* NOTE: Option values match DB enum: bug / improvement / feature_request / other */}
+          <select
+            value={feedbackType}
+            onChange={(e) => {
+              setFeedbackType(e.target.value as FeedbackType | '');
+              setPage(0);
+            }}
+          >
+            <option value="">All Types</option>
+            <option value="bug">Bug Report</option>
+            <option value="improvement">Improvement</option>
+            <option value="feature_request">Feature Request</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div className="filter-group">
+          {/* NOTE: Option values match DB enum: submitted / read / accepted / high_contribution */}
+          <select
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value as FeedbackStatus | '');
+              setPage(0);
+            }}
+          >
+            <option value="">All Statuses</option>
+            <option value="submitted">Submitted</option>
+            <option value="read">Read</option>
+            <option value="accepted">Accepted</option>
+            <option value="high_contribution">High Contribution</option>
+          </select>
+        </div>
+      </div>
 
       <div className="feedback-table-wrapper">
         <table className="feedback-table">
@@ -142,14 +146,20 @@ export function FeedbackListPage() {
 
         .feedback-header {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
+          flex-direction: column;
+          gap: 4px;
         }
 
         .page-title {
           font-size: 24px;
           font-weight: 700;
           color: var(--color-text-primary);
+          margin-bottom: 0;
+        }
+
+        .page-subtitle {
+          font-size: 14px;
+          color: var(--color-text-tertiary);
         }
 
         .filters-bar {

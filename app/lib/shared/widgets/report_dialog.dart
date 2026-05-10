@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/features/shared/providers/system_dictionary_provider.dart';
 
-class ReportDialog extends StatefulWidget {
+/// Hardcoded fallback — used when the DB query fails or is still loading
+/// on first launch. Keeps the app functional offline.
+const _fallbackCategories = {
+  'spam': 'Spam or irrelevant',
+  'harassment': 'Harassment or hate speech',
+  'fraud': 'Scam or fraud',
+  'inappropriate': 'Inappropriate content',
+  'other': 'Other',
+};
+
+class ReportDialog extends ConsumerStatefulWidget {
   final String title;
   final Function(String category, String customReason) onSubmit;
 
   const ReportDialog({super.key, required this.title, required this.onSubmit});
 
   @override
-  State<ReportDialog> createState() => _ReportDialogState();
+  ConsumerState<ReportDialog> createState() => _ReportDialogState();
 }
 
-class _ReportDialogState extends State<ReportDialog> {
+class _ReportDialogState extends ConsumerState<ReportDialog> {
   String _selectedCategory = 'spam';
   final _reasonController = TextEditingController();
-
-  final Map<String, String> _categories = {
-    'spam': 'Spam or irrelevant',
-    'harassment': 'Harassment or hate speech',
-    'fraud': 'Scam or fraud',
-    'inappropriate': 'Inappropriate content',
-    'other': 'Other',
-  };
 
   @override
   void dispose() {
@@ -29,8 +33,31 @@ class _ReportDialogState extends State<ReportDialog> {
     super.dispose();
   }
 
+  /// Converts the provider data into a {key: value} map, falling back to
+  /// hardcoded defaults on error or while loading for the first time.
+  Map<String, String> _resolveCategories(
+    AsyncValue<List<Map<String, String>>> asyncDict,
+  ) {
+    return asyncDict.when(
+      data: (items) {
+        if (items.isEmpty) return _fallbackCategories;
+        final map = <String, String>{};
+        for (final item in items) {
+          map[item['key']!] = item['value']!;
+        }
+        return map;
+      },
+      // NOTE: Show fallback while loading so the dialog is never empty.
+      loading: () => _fallbackCategories,
+      error: (_, __) => _fallbackCategories,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final asyncDict = ref.watch(systemDictionaryProvider('report_type'));
+    final categories = _resolveCategories(asyncDict);
+
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(context.smivoRadius.xl),
@@ -54,7 +81,7 @@ class _ReportDialogState extends State<ReportDialog> {
               ),
             ),
             const SizedBox(height: 12),
-            ..._categories.entries.map((entry) {
+            ...categories.entries.map((entry) {
               return RadioListTile<String>(
                 title: Text(
                   entry.value,
@@ -109,7 +136,7 @@ class _ReportDialogState extends State<ReportDialog> {
             final customReason =
                 _selectedCategory == 'other'
                     ? _reasonController.text.trim()
-                    : _categories[_selectedCategory]!;
+                    : categories[_selectedCategory]!;
 
             if (_selectedCategory == 'other' && customReason.isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(

@@ -84,10 +84,9 @@ export function DictionaryListPage() {
     <div className="dlist-page">
       {/* ── Header ── */}
       <div className="dlist-header">
-        <h1 className="dlist-title">Data Dictionary</h1>
+        <h1 className="dlist-title">School Settings</h1>
         <p className="dlist-subtitle">
-          {Object.keys(DICT_REGISTRY).length} dictionary groups ·
-          Manage enumerations and system constants
+          Campus-specific configurations · Categories, conditions, and pickup locations
         </p>
       </div>
 
@@ -117,8 +116,8 @@ export function DictionaryListPage() {
         })}
       </div>
 
-      {/* ── Sections by access level ── */}
-      {ACCESS_LEVEL_ORDER.map((level) => {
+      {/* ── Sections by access level — School Settings shows only school-level ── */}
+      {ACCESS_LEVEL_ORDER.filter((l) => l === 'school').map((level) => {
         const dictCodes = byLevel[level];
         if (dictCodes.length === 0) return null;
         const levelMeta = ACCESS_LEVEL_META[level];
@@ -159,7 +158,7 @@ export function DictionaryListPage() {
                   <button
                     key={dictCode}
                     className="dlist-card"
-                    onClick={() => navigate(`/settings/dictionary/${dictCode}`)}
+                    onClick={() => navigate(`/settings/school-settings/${dictCode}`)}
                   >
                     <div className="dlist-card-left">
                       <div

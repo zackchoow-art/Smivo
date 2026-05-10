@@ -67,7 +67,7 @@ export function ListingModerationPage() {
   return (
     <div className="lm-container">
       <div className="lm-header">
-        <h1 className="lm-page-title">System Queue</h1>
+        <h1 className="lm-page-title">Listing Queue</h1>
       </div>
 
       <div className="lm-actions-row" style={{ justifyContent: 'space-between' }}>
@@ -133,7 +133,7 @@ export function ListingModerationPage() {
             <tbody>
               {data?.data.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="lm-td-empty">No listings found in system queue.</td>
+                  <td colSpan={8} className="lm-td-empty">No listings found in listing queue.</td>
                 </tr>
               ) : (
                 data?.data.map((listing: any) => (

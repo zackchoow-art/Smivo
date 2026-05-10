@@ -12,7 +12,7 @@ import {
   GraduationCap,
   Trash2,
   User,
-  ToggleRight,
+  Blocks,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -37,25 +37,25 @@ export function SettingsPage() {
       visible: true,
     },
     {
-      path: '/settings/dictionary',
-      label: 'Data Dictionary',
-      description: 'Manage platform-wide data dictionaries and lookup values.',
-      icon: <BookOpen size={24} />,
-      visible: perms.canViewDictionary,
+      path: '/settings/platform-functions',
+      label: 'Platform Functions',
+      description: 'Centralized hub for all platform feature toggles and operational settings.',
+      icon: <Blocks size={24} />,
+      visible: perms.canViewFeatureFlags,
     },
     {
-      path: '/settings/configs',
-      label: 'Platform Settings',
-      description: 'Configure system-level settings and parameters.',
+      path: '/settings/content-moderation',
+      label: 'Content Moderation',
+      description: 'Configure content review, image moderation, and sensitive word filters.',
       icon: <Cpu size={24} />,
       visible: perms.canViewDictionary,
     },
     {
-      path: '/settings/feature-flags',
-      label: 'Feature Flags',
-      description: 'Toggle platform features and view their database mappings.',
-      icon: <ToggleRight size={24} />,
-      visible: perms.canViewFeatureFlags,
+      path: '/settings/school-settings',
+      label: 'School Settings',
+      description: 'Manage school-level configurations: categories, conditions, and pickup locations.',
+      icon: <BookOpen size={24} />,
+      visible: perms.canViewDictionary,
     },
     {
       path: '/settings/admins',

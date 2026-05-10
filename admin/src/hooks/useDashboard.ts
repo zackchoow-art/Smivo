@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { TABLES } from '@/lib/constants';
-import type { Listing } from '@/types';
-import type { AuditLog } from '@/types/audit-log';
 import { useSchoolScopeStore } from '@/stores/school-scope-store';
 
 const QUERY_KEY = ['dashboard-stats'] as const;
@@ -41,6 +39,9 @@ export function useDashboard() {
         pendingReportCount,
         pendingModerationCount,
         pendingFeedbackCount,
+        autoApprovedCount,
+        aiRejectedCount,
+        newUserCount,
       ] = await Promise.all([
         // 1. Total Users
         safeCount(TABLES.USER_PROFILES, currentCollegeId ? (q: any) => q.eq('school_id', currentCollegeId) : undefined),
@@ -74,11 +75,7 @@ export function useDashboard() {
         })(),
 
         // 5. Pending chat reports
-        safeCount(TABLES.CONTENT_REPORTS, (q: any) => {
-          let query = q.eq('status', 'pending');
-          // No direct way to filter reports by school unless we join
-          return query;
-        }),
+        safeCount(TABLES.CONTENT_REPORTS, (q: any) => q.eq('status', 'pending')),
 
         // 6. Pending listing moderations
         safeCount(TABLES.LISTINGS, (q: any) => {
@@ -89,56 +86,30 @@ export function useDashboard() {
 
         // 7. Pending feedbacks
         safeCount(TABLES.USER_FEEDBACKS, (q: any) => q.eq('status', 'submitted')),
+
+        // 8. AI auto-approved listings count
+        safeCount(TABLES.LISTINGS, (q: any) => {
+          let query = q.eq('moderation_status', 'auto_approved');
+          if (currentCollegeId) query = query.eq('school_id', currentCollegeId);
+          return query;
+        }),
+
+        // 9. AI rejected listings (rejected + no human moderator = automated)
+        safeCount(TABLES.LISTINGS, (q: any) => {
+          let query = q.eq('moderation_status', 'rejected').is('moderated_by', null);
+          if (currentCollegeId) query = query.eq('school_id', currentCollegeId);
+          return query;
+        }),
+
+        // 10. New users (registered in last 7 days)
+        safeCount(TABLES.USER_PROFILES, (q: any) => {
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          let query = q.gte('created_at', sevenDaysAgo.toISOString());
+          if (currentCollegeId) query = query.eq('school_id', currentCollegeId);
+          return query;
+        }),
       ]);
-
-      // 8. Recent Audit Logs (top 10)
-      let recentLogs: AuditLog[] = [];
-      try {
-        const { data, error } = await supabase
-          .from(TABLES.ADMIN_AUDIT_LOGS)
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(10);
-        if (!error && data) recentLogs = data as AuditLog[];
-      } catch {
-        // NOTE: Non-critical — show empty logs
-      }
-
-      // 9. Urgent Pending Listings (oldest 5, potentially near SLA timeout)
-      let urgentListings: Listing[] = [];
-      try {
-        let q = supabase
-          .from(TABLES.LISTINGS)
-          .select('*')
-          .eq('moderation_status', 'pending_review')
-          .order('created_at', { ascending: true })  // Oldest first = most urgent
-          .limit(5);
-        if (currentCollegeId) {
-          q = q.eq('school_id', currentCollegeId);
-        }
-        const { data, error } = await q;
-        if (!error && data) urgentListings = data as Listing[];
-      } catch {
-        // NOTE: Non-critical
-      }
-
-      // 10. Urgent Chat Reports (oldest pending reports)
-      let urgentReports: any[] = [];
-      try {
-        const { data, error } = await supabase
-          .from(TABLES.CONTENT_REPORTS)
-          .select(`
-            *,
-            reporter:reporter_id(display_name, email),
-            reported:reported_user_id(display_name, email)
-          `)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: true })
-          .limit(5);
-        if (!error && data) urgentReports = data;
-      } catch {
-        // NOTE: Non-critical
-      }
 
       return {
         stats: {
@@ -149,10 +120,10 @@ export function useDashboard() {
           pendingReportCount,
           pendingModerationCount,
           pendingFeedbackCount,
+          autoApprovedCount,
+          aiRejectedCount,
+          newUserCount,
         },
-        recentLogs,
-        urgentListings,
-        urgentReports,
       };
     },
     // NOTE: Retry once max — don't make user wait 30s on repeated failures

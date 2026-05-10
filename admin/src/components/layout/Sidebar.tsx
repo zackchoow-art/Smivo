@@ -4,7 +4,7 @@
  * NOTE: Configuration group restored in T9 refactor. Sensitive Words moved into
  * Platform Settings (SystemConfigsPage) as a tab — no longer a standalone sidebar entry.
  */
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation, useSearchParams } from 'react-router-dom';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import {
   LayoutDashboard,
@@ -15,7 +15,6 @@ import {
   Ban,
   MessageCircle,
   Megaphone,
-  BarChart3,
   ScrollText,
   ChevronLeft,
   ChevronRight,
@@ -25,6 +24,7 @@ import {
   GraduationCap,
   Cpu,
   Trash2,
+  Blocks,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -47,6 +47,9 @@ interface MenuGroup {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const perms = useAdminRole();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const fromParam = searchParams.get('from');
 
   const menuGroups: MenuGroup[] = [
     {
@@ -58,8 +61,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     {
       title: 'Review',
       items: [
-        { path: '/moderation/listings', label: 'System Queue', icon: <ShieldAlert size={18} />, visible: perms.canViewModeration },
-        { path: '/moderation/user-reports', label: 'User Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
+        { path: '/moderation/listings', label: 'Listing Queue', icon: <ShieldAlert size={18} />, visible: perms.canViewModeration },
+        { path: '/moderation/listing-reports', label: 'Listing Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
         { path: '/moderation/chat-reports', label: 'Chat Reports', icon: <MessageSquareWarning size={18} />, visible: perms.canViewModeration },
         { path: '/feedback', label: 'User Feedback', icon: <MessageCircle size={18} />, visible: perms.canViewFeedback },
       ],
@@ -68,7 +71,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       title: 'Content Moderation',
       items: [
         { path: '/moderation/all-listings', label: 'All Listings', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
-        // NOTE: AI Reviewed moved here from Review group in T9 refactor
         { path: '/moderation/ai-reviewed', label: 'AI Reviewed', icon: <Bot size={18} />, visible: perms.canViewModeration },
       ],
     },
@@ -86,18 +88,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       ],
     },
     {
-      title: 'Analytics',
-      items: [
-        { path: '/analytics', label: 'Data Dashboard', icon: <BarChart3 size={18} />, visible: perms.canViewAnalytics },
-      ],
-    },
-    {
-      // NOTE: Configuration group restored in T9 refactor (was removed previously)
       title: 'Configuration',
       items: [
-        { path: '/settings/dictionary', label: 'Data Dictionary', icon: <BookOpen size={18} />, visible: perms.canViewDictionary },
-        { path: '/settings/configs', label: 'Platform Settings', icon: <Cpu size={18} />, visible: perms.canViewSystemConfigs },
-        { path: '/settings/feature-flags', label: 'System Configuration', icon: <UserCog size={18} />, visible: perms.canViewFeatureFlags },
+        { path: '/settings/platform-functions', label: 'Platform Functions', icon: <Blocks size={18} />, visible: perms.canViewFeatureFlags },
+        { path: '/settings/content-moderation', label: 'Content Moderation', icon: <Cpu size={18} />, visible: perms.canViewSystemConfigs },
+        { path: '/settings/school-settings', label: 'School Settings', icon: <BookOpen size={18} />, visible: perms.canViewDictionary },
         { path: '/settings/admins', label: 'Admin Management', icon: <UserCog size={18} />, visible: perms.canViewAdminManagement },
         { path: '/settings/colleges', label: 'Schools', icon: <GraduationCap size={18} />, visible: perms.canViewCollegeManagement },
         { path: '/settings/cleanup', label: 'Test Data Cleanup', icon: <Trash2 size={18} />, visible: perms.canViewCleanup },
@@ -132,19 +127,33 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               {group.title && !collapsed && (
                 <div className="sidebar__group-title">{group.title}</div>
               )}
-              {visibleItems.map((item) => (
+              {visibleItems.map((item) => {
+                // NOTE: When navigating from Platform Functions → dict edit page,
+                // the URL is /settings/school-settings/:dictCode?from=platform-functions.
+                // Without this override, School Settings would be incorrectly highlighted.
+                const isFromPlatform = fromParam === 'platform-functions';
+                const isDictSubpage = location.pathname.startsWith('/settings/school-settings/');
+
+                return (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive }) =>
-                    `sidebar__item ${isActive ? 'sidebar__item--active' : ''}`
-                  }
+                  className={({ isActive }) => {
+                    let active = isActive;
+                    if (isFromPlatform && isDictSubpage) {
+                      // Suppress School Settings highlight, activate Platform Functions instead
+                      if (item.path === '/settings/school-settings') active = false;
+                      if (item.path === '/settings/platform-functions') active = true;
+                    }
+                    return `sidebar__item ${active ? 'sidebar__item--active' : ''}`;
+                  }}
                   title={collapsed ? item.label : undefined}
                 >
                   <span className="sidebar__icon">{item.icon}</span>
                   {!collapsed && <span className="sidebar__label">{item.label}</span>}
                 </NavLink>
-              ))}
+                );
+              })}
             </div>
           );
         })}

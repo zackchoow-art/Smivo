@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/settings/providers/feedback_provider.dart';
+import 'package:smivo/features/shared/providers/system_dictionary_provider.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
@@ -102,6 +103,44 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
     }
   }
 
+  /// Hardcoded fallback — used while DB query is loading or on error.
+  static const _fallbackTypes = [
+    {'key': 'bug', 'value': 'Bug Report'},
+    {'key': 'improvement', 'value': 'Improvement'},
+    {'key': 'feature_request', 'value': 'Feature Request'},
+    {'key': 'other', 'value': 'Other'},
+  ];
+
+  /// Builds ChoiceChips from database-driven feedback types.
+  Widget _buildFeedbackTypeChips(dynamic colors) {
+    final asyncDict = ref.watch(systemDictionaryProvider('feedback_type'));
+    final items = asyncDict.when(
+      data: (list) => list.isEmpty ? _fallbackTypes : list,
+      loading: () => _fallbackTypes,
+      error: (_, __) => _fallbackTypes,
+    );
+
+    return Wrap(
+      spacing: 8,
+      children: items.map((item) {
+        final key = item['key']!;
+        final label = item['value']!;
+        final isSelected = _selectedType == key;
+        return ChoiceChip(
+          label: Text(label),
+          selected: isSelected,
+          onSelected: (selected) {
+            if (selected) setState(() => _selectedType = key);
+          },
+          selectedColor: colors.primary.withAlpha(50),
+          labelStyle: TextStyle(
+            color: isSelected ? colors.primary : colors.onSurfaceVariant,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(submitFeedbackActionProvider).isLoading;
@@ -125,29 +164,7 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
               children: [
                 Text('Feedback Type', style: typo.labelLarge),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children:
-                      ['bug', 'improvement', 'feature_request', 'other'].map((
-                        type,
-                      ) {
-                        final isSelected = _selectedType == type;
-                        return ChoiceChip(
-                          label: Text(type.replaceAll('_', ' ').toUpperCase()),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            if (selected) setState(() => _selectedType = type);
-                          },
-                          selectedColor: colors.primary.withAlpha(50),
-                          labelStyle: TextStyle(
-                            color:
-                                isSelected
-                                    ? colors.primary
-                                    : colors.onSurfaceVariant,
-                          ),
-                        );
-                      }).toList(),
-                ),
+                _buildFeedbackTypeChips(colors),
                 const SizedBox(height: 24),
                 Text('Title', style: typo.labelLarge),
                 const SizedBox(height: 8),

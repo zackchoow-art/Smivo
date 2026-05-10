@@ -94,6 +94,52 @@ export const DICT_REGISTRY: Record<string, DictTypeMetadata> = {
     ],
   },
 
+  moderation_status: {
+    title: 'Moderation Statuses',
+    description: 'Listing moderation lifecycle states used by AI and admin review',
+    icon: '🛡️',
+    access_level: 'system',
+    extraFields: [
+      { key: 'icon', label: 'Material Icon', type: 'text', placeholder: 'e.g. check_circle' },
+      { key: 'color', label: 'Color (hex)', type: 'color', placeholder: '#059669' },
+    ],
+  },
+
+  // ── Platform-level (operational config) ───────────────────────────────────
+  feedback_type: {
+    title: 'Feedback Types',
+    description: 'Categories users can select when submitting feedback/bug reports',
+    icon: '💬',
+    access_level: 'platform',
+  },
+  report_type: {
+    title: 'Report Types',
+    description: 'Reasons users can select when reporting content or other users',
+    icon: '🚩',
+    access_level: 'platform',
+  },
+  report_resolution: {
+    title: 'Report Resolutions',
+    description: 'Admin resolution categories for user reports, with auto-reply and points',
+    icon: '⚖️',
+    access_level: 'platform',
+    extraFields: [
+      { key: 'points', label: 'Contribution Points', type: 'number', placeholder: '0' },
+      { key: 'reply', label: 'Auto-Reply Template', type: 'text', placeholder: 'Thank you for...' },
+    ],
+  },
+  punishment_type: {
+    title: 'Punishment Types',
+    description: 'Restriction scopes that can be applied to users as penalties',
+    icon: '⛔',
+    access_level: 'platform',
+    extraFields: [
+      { key: 'icon', label: 'Emoji Icon', type: 'text', placeholder: '🔇' },
+      { key: 'color', label: 'Color (hex)', type: 'color', placeholder: '#c92a2a' },
+      { key: 'reply_template', label: 'Reply Template', type: 'text', placeholder: 'Your privileges have been...' },
+    ],
+  },
+
   // ── School-level (campus-specific config) ─────────────────────────────────
   category: {
     title: 'Product Categories',

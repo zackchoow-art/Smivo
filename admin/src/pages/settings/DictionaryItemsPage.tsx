@@ -5,7 +5,7 @@
  *   - all other types → system_dictionaries table
  */
 import { useState, useRef, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, Plus, Trash2, Loader2, GripVertical, Pencil,
   ToggleLeft, ToggleRight, Lock, School, Download,
@@ -167,6 +167,7 @@ function DictItemModal({ dictType, item, onClose, onSave, isSaving, isSchoolSour
 export function DictionaryItemsPage() {
   const { dictCode }           = useParams<{ dictCode: string }>();
   const navigate               = useNavigate();
+  const [searchParams]         = useSearchParams();
   const { role }               = useAdminRole();
   const { roles }              = useAuthStore();
   const adminId                = roles[0]?.user_id ?? '';
@@ -228,12 +229,18 @@ export function DictionaryItemsPage() {
   // ── School context banner ─────────────────────────────────────────────────
   const currentSchoolName = colleges?.find((c) => c.id === currentCollegeId)?.name;
 
+  // Determine back navigation target based on referrer query param
+  // NOTE: When navigated from Platform Functions page, back should go there
+  const fromPlatformFunctions = searchParams.get('from') === 'platform-functions';
+  const backPath = fromPlatformFunctions ? '/settings/platform-functions' : '/settings/school-settings';
+  const backLabel = fromPlatformFunctions ? 'Platform Functions' : 'Dictionary';
+
   // Warn if school-level but no school selected
   if (isSchoolSource && !currentCollegeId) {
     return (
       <div className="ditems-page">
-        <button className="ditems-back" onClick={() => navigate('/settings/dictionary')}>
-          <ArrowLeft size={15} /> Dictionary
+        <button className="ditems-back" onClick={() => navigate(backPath)}>
+          <ArrowLeft size={15} /> {backLabel}
         </button>
         <div className="ditems-no-school">
           <School size={40} color="var(--color-text-tertiary)" />
@@ -403,8 +410,8 @@ export function DictionaryItemsPage() {
     <div className="ditems-page">
       {/* Header */}
       <div className="ditems-header">
-        <button className="ditems-back" onClick={() => navigate('/settings/dictionary')}>
-          <ArrowLeft size={15} /> Dictionary
+        <button className="ditems-back" onClick={() => navigate(backPath)}>
+          <ArrowLeft size={15} /> {backLabel}
         </button>
         <div className="ditems-header-center">
           <div className="ditems-title-row">

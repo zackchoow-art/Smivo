@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import {
-  Cpu, Loader2, ShieldAlert, ToggleLeft, ToggleRight, Shield, Search,
+  Cpu, Loader2, ShieldAlert,
   KeyRound, Eye, EyeOff, CheckCircle2, XCircle, Upload, ImageIcon,
   RefreshCw, ScanSearch, AlertTriangle,
 } from 'lucide-react';
 import { useSystemConfigs, useUpdateSystemConfig, type SystemConfig } from '@/hooks/useSystemConfigs';
-import { useFeatureFlags, useToggleFlag } from '@/hooks/useFeatureFlags';
+
 import {
   useModerationUsage, useSecretStatus, useSavePlatformSecret,
   useTestOpenAIModeration, useTestGoogleVisionModeration,
@@ -17,7 +17,7 @@ import { supabase } from '@/lib/supabase';
 import { ADMIN_ROLES } from '@/lib/constants';
 import { SensitiveWordsPage } from '@/pages/moderation/SensitiveWordsPage';
 
-type Tab = 'configs' | 'flags' | 'moderation' | 'sensitive_words';
+type Tab = 'configs' | 'moderation' | 'sensitive_words';
 
 export function SystemConfigsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('configs');
@@ -28,25 +28,17 @@ export function SystemConfigsPage() {
   return (
     <div className="sc-page">
       <div className="sc-header">
-        <h1 className="sc-title">Platform Settings</h1>
-        <p className="sc-subtitle">System configurations, moderation rules, and feature toggles</p>
+        <h1 className="sc-title">Content Moderation</h1>
+        <p className="sc-subtitle">Content review settings, image moderation, and sensitive word filters</p>
       </div>
 
-      {/* Tab Switch */}
       <div className="sc-tabs">
         <button
           className={`sc-tab ${activeTab === 'configs' ? 'sc-tab--active' : ''}`}
           onClick={() => setActiveTab('configs')}
         >
           <Cpu size={14} />
-          Content Moderation
-        </button>
-        <button
-          className={`sc-tab ${activeTab === 'flags' ? 'sc-tab--active' : ''}`}
-          onClick={() => setActiveTab('flags')}
-        >
-          <ToggleLeft size={14} />
-          Feature Flags
+          Content Settings
         </button>
         {canSeeModerationTest && (
           <button
@@ -57,7 +49,6 @@ export function SystemConfigsPage() {
             Image Moderation
           </button>
         )}
-        {/* NOTE: Sensitive Words moved here from sidebar in T9 refactor (sysadmin only) */}
         {role === ADMIN_ROLES.PLATFORM_SUPER_ADMIN && (
           <button
             className={`sc-tab ${activeTab === 'sensitive_words' ? 'sc-tab--active' : ''}`}
@@ -70,7 +61,6 @@ export function SystemConfigsPage() {
       </div>
 
       {activeTab === 'configs' ? <ConfigsTab />
-        : activeTab === 'flags' ? <FlagsTab />
         : activeTab === 'sensitive_words' ? <SensitiveWordsPage />
         : <ImageModerationTab />}
 
@@ -186,6 +176,50 @@ export function SystemConfigsPage() {
 }
 
 /* ─── Configs Tab ─── */
+// ── Inline editor for content_filter.warn_message ────────────────────────────
+function WarnMessageEditor({ config, onSave, disabled }: {
+  config: SystemConfig;
+  onSave: (config: SystemConfig, value: string) => void;
+  disabled: boolean;
+}) {
+  const [value, setValue] = useState(String(config.config_value ?? ''));
+  const isDirty = value !== String(config.config_value ?? '');
+
+  return (
+    <div className="sc-card">
+      <div className="sc-card-info">
+        <h3>Content Filter Warning Message</h3>
+        <p>Custom message shown to users when a warned-level sensitive word is detected in their input</p>
+        <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', opacity: 0.7 }}>Source: system_configs → content_filter.warn_message</span>
+      </div>
+      <div className="sc-card-action" style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'stretch', minWidth: 260 }}>
+        <input
+          type="text"
+          className="sc-select"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="e.g. Your message contains sensitive content…"
+          disabled={disabled}
+          style={{ width: '100%' }}
+        />
+        {isDirty && (
+          <button
+            onClick={() => onSave(config, value)}
+            disabled={disabled}
+            style={{
+              padding: '6px 14px', background: 'var(--color-info)', color: 'white',
+              border: 'none', borderRadius: 'var(--radius-sm)', fontSize: '12px',
+              fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-end',
+            }}
+          >
+            Save
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ConfigsTab() {
   const { admin } = useAuth();
   const { data: configs, isLoading, error } = useSystemConfigs();
@@ -232,8 +266,10 @@ function ConfigsTab() {
   const contentFilterEnabled = configs.find(c => c.config_key === 'content_filter.enabled');
   const contentFilterWarnAction = configs.find(c => c.config_key === 'content_filter.warn_action');
   const contentFilterBlockAction = configs.find(c => c.config_key === 'content_filter.block_action');
+  const contentFilterWarnMessage = configs.find(c => c.config_key === 'content_filter.warn_message');
   const backendReviewEnabled = configs.find(c => c.config_key === 'backend_review.enabled');
   const backendReviewMode = configs.find(c => c.config_key === 'backend_review.mode');
+  const imageModerationMode = configs.find(c => c.config_key === 'image_moderation_mode');
 
   const isBackendEnabled = backendReviewEnabled?.config_value === 'true' || backendReviewEnabled?.config_value === true;
   const showAiSettings = backendReviewMode?.config_value === 'ai' || backendReviewMode?.config_value === 'both';
@@ -302,6 +338,9 @@ function ConfigsTab() {
                 ))}
               </div>
             </div>
+          )}
+          {contentFilterWarnMessage && (
+            <WarnMessageEditor config={contentFilterWarnMessage} onSave={handleChangeRaw} disabled={updateConfig.isPending} />
           )}
         </div>
       </div>
@@ -409,105 +448,35 @@ function ConfigsTab() {
               )}
             </>
           )}
-        </div>
-      </div>
-    </>
-  );
-}
 
-/* ─── Feature Flags Tab ─── */
-
-function FlagsTab() {
-  const [search, setSearch] = useState('');
-  const { data: flags, isLoading, error } = useFeatureFlags();
-  const toggleFlag = useToggleFlag();
-  const { role } = useAdminRole();
-
-  const canEdit = role === ADMIN_ROLES.PLATFORM_SUPER_ADMIN;
-
-  const parseFlagValue = (value: unknown): boolean => {
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') {
-      try { return JSON.parse(value) === true; } catch { return value === 'true'; }
-    }
-    return false;
-  };
-
-  const groupedFlags = (flags ?? [])
-    .filter((f) => f.key.toLowerCase().includes(search.toLowerCase()) || (f.description ?? '').toLowerCase().includes(search.toLowerCase()))
-    .reduce<Record<string, typeof flags>>((acc, flag) => {
-      if (!flag) return acc;
-      const namespace = flag.key.split('.')[0] ?? 'other';
-      if (!acc[namespace]) acc[namespace] = [];
-      acc[namespace]!.push(flag);
-      return acc;
-    }, {});
-
-  if (isLoading) return <div className="sc-state"><Loader2 size={24} className="spin" /><span>Loading feature flags...</span></div>;
-  if (error) return <div className="sc-state sc-error">Failed to load feature flags: {(error as Error).message}</div>;
-
-  return (
-    <>
-      {!canEdit && (
-        <div className="ff-readonly-badge">
-          <Shield size={14} />
-          <span>Read-only — Super Admin access required to toggle</span>
-        </div>
-      )}
-
-      <div className="ff-search-bar">
-        <Search size={16} color="var(--color-text-tertiary)" />
-        <input
-          type="text"
-          placeholder="Search flags by key or description..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="ff-search-input"
-        />
-      </div>
-
-      <div className="ff-groups">
-        {Object.entries(groupedFlags).map(([namespace, items]) => (
-          <div key={namespace} className="ff-group">
-            <h3 className="ff-group-title">{namespace}</h3>
-            <div className="ff-group-items">
-              {items?.map((flag) => {
-                const isOn = parseFlagValue(flag.value);
-                const isPending = toggleFlag.isPending && toggleFlag.variables?.key === flag.key;
-
-                return (
-                  <div key={flag.key} className="ff-item">
-                    <div className="ff-info">
-                      <code className="ff-key">{flag.key}</code>
-                      <p className="ff-desc">{flag.description ?? 'No description'}</p>
-                    </div>
-                    <button
-                      className={`ff-toggle ${isOn ? 'ff-toggle-on' : 'ff-toggle-off'}`}
-                      disabled={!canEdit || isPending}
-                      onClick={() => toggleFlag.mutate({ key: flag.key, value: !isOn })}
-                      title={canEdit ? `Toggle ${flag.key}` : 'Super Admin access required'}
-                    >
-                      {isPending ? (
-                        <Loader2 size={20} className="spin" />
-                      ) : isOn ? (
-                        <ToggleRight size={28} />
-                      ) : (
-                        <ToggleLeft size={28} />
-                      )}
-                    </button>
-                  </div>
-                );
-              })}
+          {imageModerationMode && (
+            <div className="sc-card">
+              <div className="sc-card-info">
+                <h3>Flagged Image Display Mode</h3>
+                <p>Controls how the app displays images that have been flagged as violating content policies</p>
+                <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', opacity: 0.7 }}>Source: system_configs → image_moderation_mode</span>
+              </div>
+              <div className="sc-card-action">
+                <select
+                  value={(imageModerationMode.config_value || '').replace(/"/g, '')}
+                  onChange={(e) => handleChangeSelect(imageModerationMode, e.target.value)}
+                  disabled={updateConfig.isPending}
+                  className="sc-select"
+                >
+                  <option value="blur">Blur — blur the image and show violation summary</option>
+                  <option value="auto_reject">Auto Reject — hide image entirely, show removal notice</option>
+                </select>
+              </div>
             </div>
-          </div>
-        ))}
-        {Object.keys(groupedFlags).length === 0 && (
-          <div className="ff-empty">No flags match your search.</div>
-        )}
+          )}
+        </div>
       </div>
     </>
   );
 }
+
+
+
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
