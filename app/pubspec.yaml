@@ -1,7 +1,7 @@
 name: smivo
 description: "Campus marketplace for college students"
 publish_to: 'none'
-version: 1.1.8+8
+version: 1.2.0+9
 
 environment:
   sdk: ^3.7.0
