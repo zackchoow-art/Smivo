@@ -12,6 +12,7 @@ import 'package:smivo/data/repositories/storage_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/core/providers/content_filter_provider.dart';
+import 'package:smivo/data/models/user_profile.dart';
 
 part 'chat_provider.g.dart';
 
@@ -33,6 +34,7 @@ class ChatConversation {
   final bool isPinned;
   final bool isArchived;
   final bool isUnreadOverride;
+  final UserProfile? partnerProfile;
 
   ChatConversation({
     required this.id,
@@ -50,6 +52,7 @@ class ChatConversation {
     this.isPinned = false,
     this.isArchived = false,
     this.isUnreadOverride = false,
+    this.partnerProfile,
   });
 }
 

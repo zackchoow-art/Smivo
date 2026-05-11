@@ -10,7 +10,7 @@ import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
-import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
+import 'package:smivo/shared/widgets/smivo_user_identity.dart';
 
 /// Collapsible order information section with buyer/seller profiles.
 ///
@@ -239,52 +239,15 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
             ),
           ),
           const SizedBox(width: 8),
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: colors.surfaceContainerHigh,
-            backgroundImage:
-                user.avatarUrl != null && user.avatarUrl!.trim().isNotEmpty
-                    ? NetworkImage(user.avatarUrl!)
-                    : null,
-            child:
-                user.avatarUrl == null || user.avatarUrl!.trim().isEmpty
-                    ? Icon(
-                      Icons.person,
-                      size: 18,
-                      color: colors.onSurface.withValues(alpha: 0.5),
-                    )
-                    : null,
-          ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.displayName ?? 'Unknown',
-                  style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w600),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (user.email.isNotEmpty)
-                  Text(
-                    user.email,
-                    style: typo.bodySmall.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                const SizedBox(height: 4),
-                UserRatingBadge(user: user, role: role.toLowerCase()),
-              ],
+            child: SmivoUserIdentity(
+              user: user,
+              role: role.toLowerCase(),
+              showMessageButton: !isSelf,
+              onMessageTap: isSelf ? null : () => _openChat(user),
             ),
           ),
-          if (!isSelf)
-            IconButton(
-              icon: Icon(Icons.chat_outlined, size: 18, color: colors.primary),
-              tooltip: 'Message $role',
-              onPressed: () => _openChat(user),
-              visualDensity: VisualDensity.compact,
-            ),
         ],
       ),
     );
@@ -310,6 +273,7 @@ class _OrderInfoSectionState extends ConsumerState<OrderInfoSection> {
       otherUserName: user.displayName ?? 'User',
       otherUserAvatar: user.avatarUrl,
       otherUserEmail: user.email,
+      otherUserProfile: user,
       listingTitle: order.listing?.title ?? '',
       listingPrice: order.totalPrice,
       priceLabel: formatOrderPriceLabel(order),

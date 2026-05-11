@@ -735,7 +735,6 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                   const SizedBox(height: 8),
                                   SellerProfileCard(
                                     user: seller,
-                                    label: isSale ? 'SELLER' : 'LISTED BY',
                                     onMessageTap: () async {
                                       final user =
                                           ref.read(authStateProvider).value;
@@ -784,6 +783,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                           otherUserAvatar:
                                               listing.seller?.avatarUrl,
                                           otherUserEmail: listing.seller?.email,
+                                          otherUserProfile: listing.seller,
                                           listingTitle: listing.title,
                                           listingPrice: price,
                                           priceLabel: priceLabel,

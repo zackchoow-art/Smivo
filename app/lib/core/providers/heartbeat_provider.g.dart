@@ -56,7 +56,7 @@ final class HeartbeatManagerProvider
   }
 }
 
-String _$heartbeatManagerHash() => r'84a70c5a886211c52949eb9dce85f11274165180';
+String _$heartbeatManagerHash() => r'ba43e036a497eb357b5cf578374448adf568307e';
 
 /// Sends heartbeat every 5 minutes while the app is in foreground.
 /// keepAlive: true — lives for the entire app session.

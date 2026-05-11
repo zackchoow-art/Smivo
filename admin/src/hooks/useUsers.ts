@@ -172,6 +172,13 @@ export function useUserDetail(userId?: string) {
 
       if (bansError) throw bansError;
 
+      // 6. Fetch latest heartbeat (device telemetry)
+      const { data: heartbeat } = await supabase
+        .from('user_heartbeats')
+        .select('last_seen_at, app_version, build_number, device_model, os_version, platform, ip_address, locale')
+        .eq('user_id', userId)
+        .maybeSingle();
+
       return {
         user: { 
           ...user, 
@@ -181,6 +188,7 @@ export function useUserDetail(userId?: string) {
         listings: listings || [],
         orders: orders || [],
         bans: bans || [],
+        heartbeat: heartbeat || null,
       };
     },
     enabled: !!userId,

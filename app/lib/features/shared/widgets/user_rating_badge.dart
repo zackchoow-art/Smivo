@@ -51,8 +51,8 @@ class UserRatingBadge extends ConsumerWidget {
             const SizedBox(width: 4),
             Text(
               hasRating ? rating.toStringAsFixed(1) : 'New',
-              style: typo.labelSmall.copyWith(
-                fontWeight: FontWeight.bold,
+              style: typo.bodySmall.copyWith(
+                fontSize: 10,
                 color: colors.onSurface,
               ),
             ),

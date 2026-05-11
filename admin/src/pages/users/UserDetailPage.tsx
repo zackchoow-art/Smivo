@@ -387,6 +387,24 @@ export function UserDetailPage() {
               );
             })}
           </div>
+
+          {/* Device Telemetry Section */}
+          <div className="ud-telemetry-section" style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '16px', marginTop: '16px' }}>
+            <h4 className="ud-section-label">Device Telemetry</h4>
+            {data.heartbeat ? (
+              <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Last Seen:</span> <span style={{ color: 'var(--color-text-primary)' }}>{new Date(data.heartbeat.last_seen_at).toLocaleString()}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>App Version:</span> <span style={{ color: 'var(--color-text-primary)' }}>{data.heartbeat.app_version || '—'} ({data.heartbeat.build_number || '—'})</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>OS Version:</span> <span style={{ color: 'var(--color-text-primary)' }}>{data.heartbeat.os_version || '—'}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Device Model:</span> <span style={{ color: 'var(--color-text-primary)' }}>{data.heartbeat.device_model || '—'}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Platform:</span> <span style={{ color: 'var(--color-text-primary)' }}>{data.heartbeat.platform || '—'}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>IP Address:</span> <span style={{ color: 'var(--color-text-primary)' }}>{data.heartbeat.ip_address || '—'}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Locale:</span> <span style={{ color: 'var(--color-text-primary)' }}>{data.heartbeat.locale || '—'}</span></div>
+              </div>
+            ) : (
+              <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>No telemetry data available.</div>
+            )}
+          </div>
         </div>
 
         {/* Stats and Lists */}

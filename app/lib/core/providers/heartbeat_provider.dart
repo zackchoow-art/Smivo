@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart' show AppLifecycleListener;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:smivo/core/utils/device_info_service.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/data/repositories/profile_repository.dart';
 
@@ -17,13 +16,12 @@ part 'heartbeat_provider.g.dart';
 class HeartbeatManager extends _$HeartbeatManager {
   Timer? _timer;
   AppLifecycleListener? _listener;
+  Map<String, dynamic>? _deviceInfo;
 
   @override
   void build() {
-    // Start heartbeat on build
     _startHeartbeat();
 
-    // Listen to app lifecycle
     _listener = AppLifecycleListener(
       onResume: _startHeartbeat,
       onPause: _stopHeartbeat,
@@ -37,7 +35,6 @@ class HeartbeatManager extends _$HeartbeatManager {
   }
 
   void _startHeartbeat() {
-    // Send immediately, then every 5 minutes
     _sendHeartbeat();
     _timer?.cancel();
     _timer = Timer.periodic(
@@ -56,18 +53,13 @@ class HeartbeatManager extends _$HeartbeatManager {
     if (user == null) return;
 
     try {
+      _deviceInfo ??= (await DeviceInfoService.instance()).toHeartbeatPayload();
+      
       await ref
           .read(profileRepositoryProvider)
-          .sendHeartbeat(userId: user.id, platform: _getPlatform());
+          .sendHeartbeat(userId: user.id, deviceInfo: _deviceInfo!);
     } catch (_) {
       // Heartbeat failure is non-critical — silently ignore
     }
-  }
-
-  String _getPlatform() {
-    if (kIsWeb) return 'web';
-    if (Platform.isIOS) return 'ios';
-    if (Platform.isAndroid) return 'android';
-    return 'unknown';
   }
 }

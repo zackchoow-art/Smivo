@@ -191,6 +191,7 @@ class ListOrderCard extends ConsumerWidget {
         otherUserName: otherProfile?.displayName ?? 'User',
         otherUserAvatar: otherProfile?.avatarUrl,
         otherUserEmail: otherProfile?.email,
+        otherUserProfile: otherProfile,
         listingTitle: order.listing?.title ?? 'Order',
         listingPrice: order.totalPrice,
         priceLabel:

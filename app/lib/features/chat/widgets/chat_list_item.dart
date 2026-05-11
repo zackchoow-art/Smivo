@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 class ChatListItem extends StatelessWidget {
   const ChatListItem({
@@ -103,24 +104,31 @@ class ChatListItem extends StatelessWidget {
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: colors.surfaceContainer,
-                        backgroundImage:
-                            conversation.avatarUrl != null
-                                ? NetworkImage(conversation.avatarUrl!)
-                                : null,
-                        child:
-                            conversation.avatarUrl == null &&
-                                    conversation.initials != null
-                                ? Text(
-                                  conversation.initials!,
-                                  style: typo.titleMedium.copyWith(
-                                    color: colors.onSurface,
-                                  ),
-                                )
-                                : null,
-                      ),
+                      if (conversation.partnerProfile != null)
+                        SmivoUserAvatar(
+                          user: conversation.partnerProfile!,
+                          radius: 24,
+                          enableTap: false,
+                        )
+                      else
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: colors.surfaceContainer,
+                          backgroundImage:
+                              conversation.avatarUrl != null
+                                  ? NetworkImage(conversation.avatarUrl!)
+                                  : null,
+                          child:
+                              conversation.avatarUrl == null &&
+                                      conversation.initials != null
+                                  ? Text(
+                                    conversation.initials!,
+                                    style: typo.titleMedium.copyWith(
+                                      color: colors.onSurface,
+                                    ),
+                                  )
+                                  : null,
+                        ),
                       if (conversation.unreadCount > 0)
                         Positioned(
                           top: -4,

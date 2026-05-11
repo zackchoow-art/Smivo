@@ -72,15 +72,24 @@ class AuthRepository {
     }
   }
 
-  /// Delete the current user's account via RPC.
+  /// Gracefully deletes the current user's account via RPC.
   ///
-  /// Calls the `delete_own_account` Postgres function which removes
-  /// the user_profiles row and the auth.users row in a single transaction.
-  /// Signs out locally after the server-side deletion succeeds.
+  /// The `delete_own_account` function performs a soft-delete:
+  /// - Delists all active listings
+  /// - Cancels pending/active orders
+  /// - Sends farewell messages to all chat rooms
+  /// - Anonymizes the user profile (display_name → 'Deleted User')
+  /// - Disables the auth account (banned + email scrambled)
+  ///
+  /// Completed orders and chat history are preserved for counterparties.
+  /// Signs out locally after the server-side operation succeeds.
   Future<void> deleteAccount() async {
     try {
       await _client.rpc('delete_own_account');
-      await _client.auth.signOut();
+      // NOTE: Use local scope because the RPC already destroyed all
+      // server-side sessions (step H). A global signOut would hit
+      // /logout and fail with "session id doesn't exist".
+      await _client.auth.signOut(scope: SignOutScope.local);
     } on PostgrestException catch (e) {
       throw DatabaseException('Failed to delete account: ${e.message}', e);
     }

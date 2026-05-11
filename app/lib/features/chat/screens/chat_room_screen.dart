@@ -15,6 +15,7 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/moderation_aware_image.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/shared/widgets/fullscreen_image_viewer.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 import 'package:smivo/shared/widgets/report_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
@@ -368,27 +369,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         room.buyerId == currentUserId
                             ? room.seller
                             : room.buyer;
+                    if (otherUser == null) return const SizedBox();
                     return Row(
                       children: [
-                        CircleAvatar(
+                        SmivoUserAvatar(
+                          user: otherUser,
                           radius: 18,
-                          backgroundColor: colors.surfaceContainerHigh,
-                          backgroundImage:
-                              otherUser?.avatarUrl != null &&
-                                      otherUser!.avatarUrl!.trim().isNotEmpty
-                                  ? NetworkImage(otherUser.avatarUrl!)
-                                  : null,
-                          child:
-                              otherUser?.avatarUrl == null ||
-                                      otherUser!.avatarUrl!.trim().isEmpty
-                                  ? Icon(
-                                    Icons.person,
-                                    color: colors.onSurface.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    size: 18,
-                                  )
-                                  : null,
+                          role: room.buyerId == currentUserId ? 'seller' : 'buyer',
+                          enableTap: true,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -397,29 +385,25 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                otherUser?.displayName ?? 'User',
+                                otherUser.displayName ?? 'User',
                                 style: typo.titleMedium.copyWith(
                                   fontWeight: FontWeight.w700,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              if (otherUser?.email != null)
+                              if (otherUser.email.isNotEmpty)
                                 Text(
-                                  otherUser!.email,
+                                  otherUser.email,
                                   style: typo.bodySmall.copyWith(
                                     color: colors.onSurfaceVariant,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               const SizedBox(height: 4),
-                              if (otherUser != null)
-                                UserRatingBadge(
-                                  user: otherUser,
-                                  role:
-                                      room.buyerId == currentUserId
-                                          ? 'seller'
-                                          : 'buyer',
-                                ),
+                              UserRatingBadge(
+                                user: otherUser,
+                                role: room.buyerId == currentUserId ? 'seller' : 'buyer',
+                              ),
                             ],
                           ),
                         ),

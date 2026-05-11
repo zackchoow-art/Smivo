@@ -236,19 +236,17 @@ class ProfileRepository {
     }
   }
 
-  /// Upserts heartbeat for online status tracking.
+  /// Upserts heartbeat with device telemetry for online status + debugging.
   /// Uses ON CONFLICT to keep the table at one row per user.
   Future<void> sendHeartbeat({
     required String userId,
-    String? appVersion,
-    String? platform,
+    required Map<String, dynamic> deviceInfo,
   }) async {
     await _client.from('user_heartbeats').upsert({
       'user_id': userId,
       'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-      'app_version': appVersion,
-      'platform': platform,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
+      ...deviceInfo,
     }, onConflict: 'user_id');
   }
 

@@ -7,6 +7,7 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
 import 'package:smivo/data/models/user_profile.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 import 'flip_card.dart';
 
 /// Returns the other party's profile from an order's perspective.
@@ -241,12 +242,8 @@ class _BackSide extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (counterparty?.avatarUrl != null &&
-                    counterparty!.avatarUrl!.isNotEmpty)
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundImage: NetworkImage(counterparty.avatarUrl!),
-                  ),
+                if (counterparty != null)
+                  SmivoUserAvatar(user: counterparty, radius: 12),
                 const SizedBox(width: 8),
                 Text(
                   counterparty?.displayName ?? 'User',

@@ -74,6 +74,13 @@ GoRouter router(Ref ref) {
     // GoRouter object itself is NOT recreated. Navigation stack is preserved.
     refreshListenable: notifier,
     redirect: notifier.redirect,
+    // NOTE: Catch-all for any unmatched deep link URLs (e.g. full
+    // https://smivo.io/... URLs that slip past redirect). Instead of
+    // showing "Page Not Found", silently redirect to home.
+    onException: (context, state, router) {
+      debugPrint('GoRouter: unmatched route "${state.uri}", redirecting home');
+      router.go(AppRoutes.homePath);
+    },
     routes: [
       // ── Public Routes ────────────────────────────────────────────
       GoRoute(

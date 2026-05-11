@@ -3,6 +3,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/features/orders/providers/order_chat_provider.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 class ChatHistorySection extends ConsumerStatefulWidget {
   const ChatHistorySection({
@@ -94,33 +95,24 @@ class _ChatHistorySectionState extends ConsumerState<ChatHistorySection> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 14,
-                            backgroundColor:
-                                isMe
-                                    ? colors.primary.withValues(alpha: 0.1)
-                                    : colors.surfaceContainerHigh,
-                            // NOTE: Show real avatar image if sender has one set.
-                            // Falls back to initials if the URL is null or fails to load.
-                            backgroundImage:
-                                msg.sender?.avatarUrl != null
-                                    ? NetworkImage(msg.sender!.avatarUrl!)
-                                    : null,
-                            child:
-                                msg.sender?.avatarUrl == null
-                                    ? Text(
-                                      senderName.isNotEmpty
-                                          ? senderName[0].toUpperCase()
-                                          : '?',
-                                      style: typo.labelSmall.copyWith(
-                                        color:
-                                            isMe
-                                                ? colors.primary
-                                                : colors.onSurface,
-                                      ),
-                                    )
-                                    : null,
-                          ),
+                          if (msg.sender != null)
+                            SmivoUserAvatar(user: msg.sender!, radius: 14)
+                          else
+                            CircleAvatar(
+                              radius: 14,
+                              backgroundColor:
+                                  isMe
+                                      ? colors.primary.withValues(alpha: 0.1)
+                                      : colors.surfaceContainerHigh,
+                              child: Text(
+                                senderName.isNotEmpty
+                                    ? senderName[0].toUpperCase()
+                                    : '?',
+                                style: typo.labelSmall.copyWith(
+                                  color: isMe ? colors.primary : colors.onSurface,
+                                ),
+                              ),
+                            ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(

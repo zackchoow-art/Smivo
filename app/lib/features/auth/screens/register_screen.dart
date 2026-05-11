@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/constants/debug_constants.dart';
+import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
@@ -123,12 +124,68 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!kDebugBackdoorEnabled) return;
     _debugTimer?.cancel();
     _debugTimer = Timer(const Duration(seconds: 5), () {
-      _toggleDebugMode();
+      _checkPlatformAndToggle();
     });
   }
 
   void _cancelDebugTimer() {
     _debugTimer?.cancel();
+  }
+
+  /// Checks platform switch before toggling debug mode.
+  ///
+  /// NOTE: The check happens AFTER the 5-second long press completes,
+  /// so the user won't see any feedback until they've held long enough.
+  Future<void> _checkPlatformAndToggle() async {
+    // If debug is currently ON, always allow toggling OFF without check.
+    if (_isDebugMode) {
+      _toggleDebugMode();
+      return;
+    }
+
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+      final data = await supabase
+          .from('system_configs')
+          .select('config_value')
+          .eq('config_key', 'test_user.registration_enabled')
+          .maybeSingle();
+
+      // NOTE: config_value is jsonb. Supabase may return it as:
+      //   - bool true/false (if stored as bare jsonb boolean)
+      //   - String "true"/"false" (if stored as jsonb string with quotes)
+      // Handle both cases explicitly. Strip surrounding quotes
+      // that jsonb strings carry (e.g. '"true"' → 'true').
+      final raw = data?['config_value'];
+      final normalized = raw.toString().replaceAll('"', '').toLowerCase();
+      final enabled = raw == true || normalized == 'true';
+      if (!enabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Debug mode is disabled by the platform.'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+    } catch (_) {
+      // NOTE: On network error, block debug mode as a safety measure.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Unable to verify debug mode status. Please try again.',
+            ),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
+    _toggleDebugMode();
   }
 
   @override

@@ -49,6 +49,10 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
       json['last_active_at'] == null
           ? null
           : DateTime.parse(json['last_active_at'] as String),
+  deletedAt:
+      json['deleted_at'] == null
+          ? null
+          : DateTime.parse(json['deleted_at'] as String),
 );
 
 Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
@@ -81,4 +85,5 @@ Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
       'contribution_score': instance.contributionScore,
       'contribution_level': instance.contributionLevel,
       'last_active_at': instance.lastActiveAt?.toIso8601String(),
+      'deleted_at': instance.deletedAt?.toIso8601String(),
     };

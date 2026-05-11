@@ -64,6 +64,9 @@ abstract class UserProfile with _$UserProfile {
     @JsonKey(name: 'contribution_score') @Default(0) int contributionScore,
     @JsonKey(name: 'contribution_level') @Default(1) int contributionLevel,
     @JsonKey(name: 'last_active_at') DateTime? lastActiveAt,
+    // Soft-delete timestamp — set when user deletes their account.
+    // Profile row is kept (anonymized) so FK references still resolve.
+    @JsonKey(name: 'deleted_at') DateTime? deletedAt,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

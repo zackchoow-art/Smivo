@@ -2,13 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:smivo/core/utils/image_upload_service.dart';
-import 'package:smivo/features/auth/providers/auth_provider.dart';
-import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smivo/features/settings/widgets/avatar_customization_dialog.dart';
+import 'package:smivo/features/settings/widgets/delete_account_bottom_sheet.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
@@ -350,81 +348,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             const AddressManagementSection(),
 
                             const SizedBox(height: 32),
-                            // Delete Account — destructive action with confirmation dialog
+                            // Delete Account — three-step safety flow
                             Center(
-                              child: Consumer(
-                                builder: (context, ref, child) {
-                                  return TextButton(
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder:
-                                            (dialogContext) => AlertDialog(
-                                              title: const Text(
-                                                'Delete Account',
-                                              ),
-                                              content: const Text(
-                                                'This action is permanent and cannot be undone. '
-                                                'All your listings, orders, messages, and profile data will be deleted.',
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed:
-                                                      () => Navigator.pop(
-                                                        dialogContext,
-                                                      ),
-                                                  child: const Text('Cancel'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () async {
-                                                    Navigator.pop(
-                                                      dialogContext,
-                                                    );
-                                                    // NOTE: Navigate away BEFORE
-                                                    // deleteAccount completes.
-                                                    // deleteAccount() calls signOut()
-                                                    // internally, which triggers
-                                                    // profileProvider to refetch.
-                                                    // If we stay on this page, it
-                                                    // shows "No profile found" because
-                                                    // the user is already gone.
-                                                    if (context.mounted) {
-                                                      context.goNamed(
-                                                        AppRoutes.home,
-                                                      );
-                                                    }
-                                                    // Fire-and-forget: the RPC deletes
-                                                    // the account server-side, then
-                                                    // signOut clears local session.
-                                                    // GoRouter redirect will land the
-                                                    // user on the login screen.
-                                                    ref
-                                                        .read(
-                                                          authProvider.notifier,
-                                                        )
-                                                        .deleteAccount();
-                                                  },
-                                                  style: TextButton.styleFrom(
-                                                    foregroundColor:
-                                                        colors.error,
-                                                  ),
-                                                  child: const Text('Delete'),
-                                                ),
-                                              ],
-                                            ),
-                                      );
-                                    },
-                                    child: Text(
-                                      'Delete Account',
-                                      style: typo.labelLarge.copyWith(
-                                        color: colors.error.withValues(
-                                          alpha: 0.7,
-                                        ),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  );
+                              child: TextButton(
+                                onPressed: () {
+                                  DeleteAccountBottomSheet.show(context);
                                 },
+                                child: Text(
+                                  'Delete Account',
+                                  style: typo.labelLarge.copyWith(
+                                    color: colors.error.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 48),

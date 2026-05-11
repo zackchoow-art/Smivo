@@ -14,6 +14,8 @@ import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/shared/widgets/moderation_aware_image.dart';
+import 'package:smivo/data/models/user_profile.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 Future<void> showChatPopup(
   BuildContext context, {
@@ -21,6 +23,7 @@ Future<void> showChatPopup(
   required String otherUserName,
   String? otherUserAvatar,
   String? otherUserEmail,
+  UserProfile? otherUserProfile,
   required String listingTitle,
   required double listingPrice,
   String? listingImageUrl,
@@ -47,6 +50,7 @@ Future<void> showChatPopup(
               otherUserName: otherUserName,
               otherUserAvatar: otherUserAvatar,
               otherUserEmail: otherUserEmail,
+              otherUserProfile: otherUserProfile,
               listingTitle: listingTitle,
               listingPrice: listingPrice,
               listingImageUrl: listingImageUrl,
@@ -72,6 +76,7 @@ class ChatPopupWidget extends ConsumerStatefulWidget {
     required this.otherUserName,
     this.otherUserAvatar,
     this.otherUserEmail,
+    this.otherUserProfile,
     required this.listingTitle,
     required this.listingPrice,
     this.listingImageUrl,
@@ -82,6 +87,7 @@ class ChatPopupWidget extends ConsumerStatefulWidget {
   final String otherUserName;
   final String? otherUserAvatar;
   final String? otherUserEmail;
+  final UserProfile? otherUserProfile;
   final String listingTitle;
   final double listingPrice;
   final String? listingImageUrl;
@@ -273,26 +279,33 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: colors.surfaceContainerHigh,
-                        backgroundImage:
-                            widget.otherUserAvatar != null &&
-                                    widget.otherUserAvatar!.trim().isNotEmpty
-                                ? NetworkImage(widget.otherUserAvatar!)
-                                : null,
-                        child:
-                            widget.otherUserAvatar == null ||
-                                    widget.otherUserAvatar!.trim().isEmpty
-                                ? Icon(
-                                  Icons.person,
-                                  color: colors.onSurface.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                  size: 28,
-                                )
-                                : null,
-                      ),
+                      if (widget.otherUserProfile != null)
+                        SmivoUserAvatar(
+                          user: widget.otherUserProfile!,
+                          radius: 24,
+                          enableTap: true,
+                        )
+                      else
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: colors.surfaceContainerHigh,
+                          backgroundImage:
+                              widget.otherUserAvatar != null &&
+                                      widget.otherUserAvatar!.trim().isNotEmpty
+                                  ? NetworkImage(widget.otherUserAvatar!)
+                                  : null,
+                          child:
+                              widget.otherUserAvatar == null ||
+                                      widget.otherUserAvatar!.trim().isEmpty
+                                  ? Icon(
+                                    Icons.person,
+                                    color: colors.onSurface.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    size: 28,
+                                  )
+                                  : null,
+                        ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(

@@ -5,6 +5,7 @@ import 'package:smivo/data/models/user_review.dart';
 import 'package:smivo/data/models/user_profile.dart';
 import 'package:smivo/data/repositories/review_repository.dart';
 import 'package:intl/intl.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 final userReviewsProvider =
     FutureProvider.family<List<UserReview>, ({String userId, String role})>((
@@ -225,24 +226,18 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: colors.surfaceContainerHigh,
-                backgroundImage:
-                    review.reviewer?.avatarUrl != null &&
-                            review.reviewer!.avatarUrl!.trim().isNotEmpty
-                        ? NetworkImage(review.reviewer!.avatarUrl!)
-                        : null,
-                child:
-                    review.reviewer?.avatarUrl == null ||
-                            review.reviewer!.avatarUrl!.trim().isEmpty
-                        ? Icon(
-                          Icons.person,
-                          color: colors.onSurface.withValues(alpha: 0.5),
-                          size: 16,
-                        )
-                        : null,
-              ),
+              if (review.reviewer != null)
+                SmivoUserAvatar(user: review.reviewer!, radius: 16)
+              else
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: colors.surfaceContainerHigh,
+                  child: Icon(
+                    Icons.person,
+                    color: colors.onSurface.withValues(alpha: 0.5),
+                    size: 16,
+                  ),
+                ),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(

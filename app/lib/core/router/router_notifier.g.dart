@@ -80,7 +80,7 @@ final class AppRouterNotifierProvider
   }
 }
 
-String _$appRouterNotifierHash() => r'fc8f4c39546c7c6c5c1f66f2e922508d309c55fd';
+String _$appRouterNotifierHash() => r'76b5a6dcbef2ce907ed00c9a591525ad8f1d9c31';
 
 /// Bridges Riverpod auth/profile state into GoRouter's redirect mechanism
 /// WITHOUT recreating the GoRouter instance.

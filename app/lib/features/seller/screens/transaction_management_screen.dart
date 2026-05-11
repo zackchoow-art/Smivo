@@ -16,6 +16,7 @@ import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 class TransactionManagementScreen extends ConsumerWidget {
   const TransactionManagementScreen({
@@ -482,22 +483,17 @@ class _SavesTab extends ConsumerWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      backgroundColor: colors.surfaceContainerHigh,
-                      backgroundImage:
-                          save.user?.avatarUrl != null &&
-                                  save.user!.avatarUrl!.trim().isNotEmpty
-                              ? NetworkImage(save.user!.avatarUrl!)
-                              : null,
-                      child:
-                          save.user?.avatarUrl == null ||
-                                  save.user!.avatarUrl!.trim().isEmpty
-                              ? Icon(
-                                Icons.person,
-                                color: colors.onSurface.withValues(alpha: 0.5),
-                              )
-                              : null,
-                    ),
+                    if (save.user != null)
+                      SmivoUserAvatar(user: save.user!, radius: 20)
+                    else
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: colors.surfaceContainerHigh,
+                        child: Icon(
+                          Icons.person,
+                          color: colors.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -559,6 +555,7 @@ class _SavesTab extends ConsumerWidget {
                                         save.user?.displayName ?? 'User',
                                     otherUserAvatar: save.user?.avatarUrl,
                                     otherUserEmail: save.user?.email,
+                                    otherUserProfile: save.user,
                                     listingTitle: listingData?.title ?? '',
                                     listingPrice: listingData?.price ?? 0,
                                     listingImageUrl:
@@ -722,23 +719,18 @@ class _OffersTab extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  backgroundColor: colors.surfaceContainerHigh,
-                  backgroundImage:
-                      order.buyer?.avatarUrl != null &&
-                              order.buyer!.avatarUrl!.trim().isNotEmpty
-                          ? NetworkImage(order.buyer!.avatarUrl!)
-                          : null,
-                  child:
-                      order.buyer?.avatarUrl == null ||
-                              order.buyer!.avatarUrl!.trim().isEmpty
-                          ? Icon(
-                            Icons.person,
-                            color: colors.onSurface.withValues(alpha: 0.5),
-                            size: 20,
-                          )
-                          : null,
-                ),
+                if (order.buyer != null)
+                  SmivoUserAvatar(user: order.buyer!, radius: 20)
+                else
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: colors.surfaceContainerHigh,
+                    child: Icon(
+                      Icons.person,
+                      color: colors.onSurface.withValues(alpha: 0.5),
+                      size: 20,
+                    ),
+                  ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -876,6 +868,7 @@ class _OffersTab extends ConsumerWidget {
                           otherUserName: order.buyer?.displayName ?? 'Buyer',
                           otherUserAvatar: order.buyer?.avatarUrl,
                           otherUserEmail: order.buyer?.email,
+                          otherUserProfile: order.buyer,
                           listingTitle: order.listing?.title ?? '',
                           listingPrice: order.totalPrice,
                           priceLabel:

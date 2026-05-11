@@ -192,12 +192,32 @@ class Auth extends _$Auth {
   ///
   /// Calls the server-side RPC to remove all user data,
   /// then signs out locally.
+  ///
+  /// NOTE: Same disposal-race pattern as logout(). The RPC +
+  /// signOut triggers auth state changes which can dispose this
+  /// notifier before the await returns. We must invalidate
+  /// providers first and guard state writes with ref.mounted.
   Future<void> deleteAccount() async {
     state = const AsyncValue.loading();
     try {
+      // 1. Invalidate user-specific providers BEFORE async calls,
+      //    while ref is still guaranteed to be valid.
+      ref.invalidate(profileProvider);
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(chatRoomListProvider);
+      ref.invalidate(notificationListProvider);
+      ref.invalidate(mySavedListingsProvider);
+      ref.invalidate(myListingsProvider);
+      ref.invalidate(homeListingsProvider);
+
+      // 2. Delete account + sign out (triggers auth stream → disposal).
       await ref.read(authRepositoryProvider).deleteAccount();
+
+      // 3. Guard against disposal before updating state.
+      if (!ref.mounted) return;
       state = const AsyncValue.data(null);
     } catch (e, st) {
+      if (!ref.mounted) return;
       state = AsyncValue.error(_mapError(e, st), st);
     }
   }

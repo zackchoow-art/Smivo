@@ -94,6 +94,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       isPinned: room.isPinned,
       isArchived: room.isArchived,
       isUnreadOverride: room.isUnreadOverride,
+      partnerProfile: otherUser,
     );
   }
 

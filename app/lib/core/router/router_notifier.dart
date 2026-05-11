@@ -56,6 +56,19 @@ class AppRouterNotifier extends _$AppRouterNotifier implements Listenable {
   /// Called by GoRouter every time this notifier fires or the current
   /// location changes. Returns a redirect path, or null to stay put.
   String? redirect(BuildContext context, GoRouterState state) {
+    final location = state.uri.toString();
+
+    // NOTE: Deep links (e.g. https://smivo.io/auth/callback?code=xxx) are
+    // delivered to BOTH app_links AND GoRouter's routeInformationProvider
+    // simultaneously. The PKCE exchange is handled by _handleDeepLink() in
+    // app.dart, but GoRouter also tries to match the full URL as a route
+    // path, which fails because no route exists for /auth/callback.
+    // Intercept here and redirect to home — the auth state change from the
+    // PKCE handler will trigger a second redirect with the correct state.
+    if (location.contains('/auth/callback')) {
+      return AppRoutes.homePath;
+    }
+
     // Read current auth/profile state synchronously.
     final authStateValue = ref.read(authStateProvider);
 
