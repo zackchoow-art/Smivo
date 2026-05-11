@@ -61,7 +61,7 @@
 - [ ] **iOS Listing**: Create app entry in App Store Connect.
 - [ ] **Android Listing**: Create app entry in Google Play Console.
 - [ ] **Legal URLs**:
-    - [ ] Privacy Policy URL (hosted on smivo.com or similar).
+    - [ ] Privacy Policy URL (hosted on smivo.io or similar).
     - [ ] Terms of Service URL.
 - [ ] **Store Assets**:
     - [ ] Take high-quality screenshots for all required device sizes (iPhone 6.7", 6.5", 5.5", Android Phone/Tablet).
