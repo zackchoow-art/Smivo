@@ -120,19 +120,20 @@ export function UserDetailPage() {
 
   const handleDeleteUser = async () => {
     if (!user) return;
-    // NOTE: Double-confirm for destructive irreversible action
+    // NOTE: Double-confirm for destructive action. Soft-delete preserves
+    // completed orders and chat history for counterparties.
     const first = confirm(
-      `⚠️ Delete user "${user.display_name || user.email}"?\n\nThis will permanently delete ALL their data including listings, orders, messages, and chat history. This action CANNOT be undone.`
+      `⚠️ Delete user "${user.display_name || user.email}"?\n\nThis will:\n• Delist all their active listings\n• Cancel all pending/active orders\n• Send farewell message to all chat rooms\n• Anonymize their profile\n• Ban their account and force logout\n\nCompleted orders and chat history are preserved.`
     );
     if (!first) return;
     const second = confirm(
-      `Final confirmation: permanently delete user ${user.email}?`
+      `Final confirmation: delete user ${user.email}?\n\nThe user will be able to re-register with the same email later.`
     );
     if (!second) return;
 
     try {
       await deleteMutation.mutateAsync(user.id);
-      showToast(`User ${user.email} deleted successfully.`, 'success');
+      showToast(`User ${user.email} has been deleted and anonymized.`, 'success');
       navigate('/users');
     } catch (err: any) {
       console.error(err);

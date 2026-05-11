@@ -236,19 +236,19 @@ export function useUserSummary(userId: string | null) {
 }
 
 /**
- * Hard-deletes a user and all their associated data via the
- * admin_delete_user(p_user_id) SECURITY DEFINER RPC (migration 00078).
+ * Gracefully soft-deletes a user via admin_graceful_delete_user RPC
+ * (migration 00144). Same logic as the app-side delete_own_account():
+ * delists listings, cancels orders, sends farewell messages, anonymizes
+ * profile, bans auth, forces logout, and writes an audit log.
  *
- * NOTE: This bypasses the Supabase dashboard which fails due to
- * orders.listing_id ON DELETE RESTRICT blocking cascade from listings.
- * Only callable by users with admin_roles record (verified via is_admin_user() RPC).
+ * Completed orders and chat history are preserved for counterparties.
  */
 export function useAdminDeleteUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (userId: string) => {
-      const { data, error } = await supabase.rpc('admin_delete_user', {
+      const { data, error } = await supabase.rpc('admin_graceful_delete_user', {
         p_user_id: userId,
       });
       if (error) throw error;
