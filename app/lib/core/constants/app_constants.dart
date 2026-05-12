@@ -60,4 +60,15 @@ class AppConstants {
   static const int maxListingImages = 10;
   static const int maxTitleLength = 100;
   static const int maxDescriptionLength = 2000;
+
+  // ── Carpool tables ─────────────────────────────────────────────────────────
+  static const String tableCarpoolTrips = 'carpool_trips';
+  static const String tableCarpoolMembers = 'carpool_members';
+  static const String tableCarpoolProposals = 'carpool_proposals';
+  static const String tableCarpoolVotes = 'carpool_votes';
+
+  // ── Group chat tables ──────────────────────────────────────────────────────
+  static const String tableGroupChatRooms = 'group_chat_rooms';
+  static const String tableGroupChatMembers = 'group_chat_members';
+  static const String tableGroupMessages = 'group_messages';
 }

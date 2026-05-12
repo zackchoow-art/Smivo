@@ -65,6 +65,15 @@ dependencies:
   package_info_plus: ^10.1.0
   device_info_plus: ^13.1.0
 
+  # Maps — Apple Maps on iOS, text fallback on Web
+  apple_maps_flutter: ^1.0.8
+  geolocator: ^14.0.0
+  geocoding: ^3.0.0
+  map_launcher: ^3.5.0
+
+  # Calendar — write carpool trips to system calendar
+  add_2_calendar: ^3.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

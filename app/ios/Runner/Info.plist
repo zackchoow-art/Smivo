@@ -51,6 +51,8 @@
 		<string>Smivo needs to save photos to your photo library.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Smivo needs photo library access to select images for your listings.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Smivo uses your location to help set carpool departure and destination points.</string>
 		<key>UIApplicationSceneManifest</key>
 		<dict>
 			<key>UIApplicationSupportsMultipleScenes</key>

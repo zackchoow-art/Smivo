@@ -1,0 +1,297 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:smivo/core/constants/app_constants.dart';
+import 'package:smivo/core/exceptions/app_exception.dart';
+import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/data/models/carpool_member.dart';
+import 'package:smivo/data/models/carpool_proposal.dart';
+import 'package:smivo/data/models/carpool_trip.dart';
+
+part 'carpool_repository.g.dart';
+
+/// Handles all Supabase operations for carpool trips, members, and proposals.
+///
+/// All methods catch [PostgrestException] and rethrow as [DatabaseException]
+/// to prevent Supabase internals from leaking into the provider layer.
+class CarpoolRepository {
+  const CarpoolRepository(this._client);
+
+  final SupabaseClient _client;
+
+  // ── Trip queries ───────────────────────────────────────────────────────────
+
+  /// Fetches all active trips for [schoolId] with creator profile joined.
+  Future<List<CarpoolTrip>> fetchActiveTrips(String schoolId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolTrips)
+          .select('*, creator:user_profiles!creator_id(*)')
+          .eq('school_id', schoolId)
+          .eq('status', 'active')
+          .order('departure_time', ascending: true);
+      return data.map((json) => CarpoolTrip.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches a single trip by [tripId] with creator and members joined.
+  ///
+  /// Members include their user profiles for the detail page roster.
+  Future<CarpoolTrip> fetchTripDetail(String tripId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolTrips)
+          .select('''
+            *,
+            creator:user_profiles!creator_id(*),
+            members:carpool_members(*, user:user_profiles!user_id(*))
+          ''')
+          .eq('id', tripId)
+          .single();
+      return CarpoolTrip.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches all trips created by or joined by [userId].
+  ///
+  /// NOTE: Uses the carpool_members join to include trips where the user
+  /// is a member but not the creator, so both roles are covered.
+  Future<List<CarpoolTrip>> fetchMyTrips(String userId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolTrips)
+          .select('''
+            *,
+            creator:user_profiles!creator_id(*),
+            members:carpool_members!inner(user_id)
+          ''')
+          .eq('members.user_id', userId)
+          .order('departure_time', ascending: true);
+      return data.map((json) => CarpoolTrip.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Creates a new carpool trip and returns the persisted record.
+  Future<CarpoolTrip> createTrip({
+    required String creatorId,
+    required String schoolId,
+    required String role,
+    required String departureAddress,
+    required String destinationAddress,
+    required DateTime departureTime,
+    required int totalSeats,
+    double? departureLat,
+    double? departureLng,
+    String? departurePlaceId,
+    double? destinationLat,
+    double? destinationLng,
+    String? destinationPlaceId,
+    DateTime? estimatedArrivalTime,
+    String? luggageLimit,
+    String approvalMode = 'manual',
+    DateTime? closingTime,
+    String? note,
+  }) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolTrips)
+          .insert({
+            'creator_id': creatorId,
+            'school_id': schoolId,
+            'role': role,
+            'departure_address': departureAddress,
+            'departure_lat': departureLat,
+            'departure_lng': departureLng,
+            'departure_place_id': departurePlaceId,
+            'destination_address': destinationAddress,
+            'destination_lat': destinationLat,
+            'destination_lng': destinationLng,
+            'destination_place_id': destinationPlaceId,
+            'departure_time': departureTime.toUtc().toIso8601String(),
+            'estimated_arrival_time':
+                estimatedArrivalTime?.toUtc().toIso8601String(),
+            'total_seats': totalSeats,
+            'available_seats': totalSeats,
+            'luggage_limit': luggageLimit,
+            'approval_mode': approvalMode,
+            'closing_time': closingTime?.toUtc().toIso8601String(),
+            'note': note,
+          })
+          .select()
+          .single();
+      return CarpoolTrip.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Updates specific fields of a trip identified by [tripId].
+  Future<void> updateTrip(
+    String tripId,
+    Map<String, dynamic> updates,
+  ) async {
+    try {
+      await _client
+          .from(AppConstants.tableCarpoolTrips)
+          .update(updates)
+          .eq('id', tripId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Sets the trip status to 'cancelled'.
+  Future<void> cancelTrip(String tripId) async {
+    try {
+      await _client
+          .from(AppConstants.tableCarpoolTrips)
+          .update({'status': 'cancelled'})
+          .eq('id', tripId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  // ── Member queries ─────────────────────────────────────────────────────────
+
+  /// Fetches all members of [tripId] with user profiles joined.
+  Future<List<CarpoolMember>> fetchTripMembers(String tripId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolMembers)
+          .select('*, user:user_profiles!user_id(*)')
+          .eq('trip_id', tripId)
+          .order('created_at', ascending: true);
+      return data.map((json) => CarpoolMember.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Submits a join request for [userId] to [tripId] via RPC.
+  ///
+  /// NOTE: The `join_carpool_trip` RPC handles seat decrement and
+  /// auto-approval atomically, preventing race conditions on the DB side.
+  Future<CarpoolMember> requestJoinTrip(
+    String tripId,
+    String userId,
+  ) async {
+    try {
+      final data = await _client.rpc(
+        'join_carpool_trip',
+        params: {'p_trip_id': tripId, 'p_user_id': userId},
+      );
+      return CarpoolMember.fromJson(data as Map<String, dynamic>);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Approves or rejects a join request identified by [memberId].
+  Future<void> respondToJoinRequest(String memberId, bool approve) async {
+    try {
+      await _client
+          .from(AppConstants.tableCarpoolMembers)
+          .update({'status': approve ? 'approved' : 'rejected'})
+          .eq('id', memberId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Removes [userId] from [tripId] via RPC.
+  ///
+  /// NOTE: The RPC handles seat increment and group chat membership
+  /// removal atomically, keeping trip state consistent.
+  Future<void> leaveTrip(String tripId, String userId) async {
+    try {
+      await _client.rpc(
+        'leave_carpool_trip',
+        params: {'p_trip_id': tripId, 'p_user_id': userId},
+      );
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  // ── Proposal queries ───────────────────────────────────────────────────────
+
+  /// Creates a group change proposal and returns the persisted record.
+  Future<CarpoolProposal> createProposal({
+    required String tripId,
+    required String proposerId,
+    required String proposalType,
+    required int requiredVotes,
+    String? oldValue,
+    String? newValue,
+    String? targetUserId,
+    DateTime? expiresAt,
+  }) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolProposals)
+          .insert({
+            'trip_id': tripId,
+            'proposer_id': proposerId,
+            'proposal_type': proposalType,
+            'old_value': oldValue,
+            'new_value': newValue,
+            'target_user_id': targetUserId,
+            'required_votes': requiredVotes,
+            'expires_at': expiresAt?.toUtc().toIso8601String(),
+          })
+          .select()
+          .single();
+      return CarpoolProposal.fromJson(data);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches all proposals for [tripId], ordered by creation time.
+  Future<List<CarpoolProposal>> fetchProposals(String tripId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolProposals)
+          .select()
+          .eq('trip_id', tripId)
+          .order('created_at', ascending: false);
+      return data.map((json) => CarpoolProposal.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Casts [voterId]'s vote on [proposalId] via RPC.
+  ///
+  /// NOTE: The `cast_carpool_vote` RPC checks for duplicate votes and
+  /// resolves the proposal if [requiredVotes] is reached, all atomically.
+  Future<void> castVote(
+    String proposalId,
+    String voterId,
+    String vote,
+  ) async {
+    try {
+      await _client.rpc(
+        'cast_carpool_vote',
+        params: {
+          'p_proposal_id': proposalId,
+          'p_voter_id': voterId,
+          'p_vote': vote,
+        },
+      );
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+}
+
+@riverpod
+CarpoolRepository carpoolRepository(Ref ref) =>
+    CarpoolRepository(ref.watch(supabaseClientProvider));
