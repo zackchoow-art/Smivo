@@ -176,9 +176,10 @@ class CarpoolRepository {
 
   /// Submits a join request for [userId] to [tripId] via RPC.
   ///
-  /// NOTE: The `join_carpool_trip` RPC handles seat decrement and
-  /// auto-approval atomically, preventing race conditions on the DB side.
-  Future<CarpoolMember> requestJoinTrip(
+  /// NOTE: The `join_carpool_trip` RPC returns a jsonb result with
+  /// {success, status, member_id, error} — not a full CarpoolMember row.
+  /// The provider layer should re-fetch trip detail after a successful join.
+  Future<Map<String, dynamic>> requestJoinTrip(
     String tripId,
     String userId,
   ) async {
@@ -187,18 +188,51 @@ class CarpoolRepository {
         'join_carpool_trip',
         params: {'p_trip_id': tripId, 'p_user_id': userId},
       );
-      return CarpoolMember.fromJson(data as Map<String, dynamic>);
+      final result = data as Map<String, dynamic>;
+      if (result['success'] != true) {
+        throw DatabaseException(
+          result['error'] as String? ?? 'Failed to join trip',
+          null,
+        );
+      }
+      return result;
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
   }
 
-  /// Approves or rejects a join request identified by [memberId].
-  Future<void> respondToJoinRequest(String memberId, bool approve) async {
+  /// Approves a join request via RPC (handles seat decrement + group chat add).
+  ///
+  /// NOTE: We use the `accept_carpool_member` RPC instead of a direct UPDATE
+  /// because the RPC atomically: approves member, decrements available_seats,
+  /// adds the user to group_chat_members, and sends a system welcome message.
+  Future<void> approveMember(String memberId) async {
+    try {
+      final data = await _client.rpc(
+        'accept_carpool_member',
+        params: {'p_member_id': memberId},
+      );
+      final result = data as Map<String, dynamic>;
+      if (result['success'] != true) {
+        throw DatabaseException(
+          result['error'] as String? ?? 'Failed to approve member',
+          null,
+        );
+      }
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Rejects a join request by directly updating member status.
+  ///
+  /// NOTE: Rejection is a simple status update — no seat or group chat
+  /// changes needed, so we skip the RPC overhead.
+  Future<void> rejectMember(String memberId) async {
     try {
       await _client
           .from(AppConstants.tableCarpoolMembers)
-          .update({'status': approve ? 'approved' : 'rejected'})
+          .update({'status': 'rejected'})
           .eq('id', memberId);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);

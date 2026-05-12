@@ -1,0 +1,129 @@
+import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/data/models/group_chat_room.dart' as model;
+import 'package:smivo/data/models/group_message.dart';
+import 'package:smivo/data/repositories/group_chat_repository.dart';
+
+part 'group_chat_provider.g.dart';
+
+/// Fetches and manages the group chat room for a carpool trip.
+@riverpod
+class GroupChatRoomData extends _$GroupChatRoomData {
+  @override
+  Future<model.GroupChatRoom> build(String tripId) async {
+    final repo = ref.watch(groupChatRepositoryProvider);
+    return repo.fetchGroupChatRoom(tripId);
+  }
+}
+
+/// Manages group chat messages with Realtime subscription.
+///
+/// On build, fetches the full message history and subscribes to
+/// new messages via Supabase Realtime. On dispose, unsubscribes
+/// the channel to prevent memory leaks and ghost subscriptions.
+@riverpod
+class GroupChatMessages extends _$GroupChatMessages {
+  RealtimeChannel? _channel;
+  late String _roomId;
+
+  @override
+  Future<List<GroupMessage>> build(String roomId) async {
+    _roomId = roomId;
+    final repo = ref.watch(groupChatRepositoryProvider);
+    final messages = await repo.fetchGroupMessages(roomId);
+
+    // Subscribe to new messages via Realtime
+    _channel = repo.subscribeToGroupMessages(
+      roomId: roomId,
+      onMessage: _onNewMessage,
+    );
+
+    // NOTE: Cancel subscription when provider is disposed to prevent
+    // duplicate subscriptions when navigating away and back.
+    ref.onDispose(() {
+      _channel?.unsubscribe();
+      _channel = null;
+    });
+
+    return messages;
+  }
+
+  /// Handles incoming Realtime messages.
+  ///
+  /// NOTE: Realtime payloads don't include JOIN relations, so sender
+  /// will be null. We re-fetch the full list to get complete data.
+  /// This is acceptable because group chats are small (max 5 members).
+  void _onNewMessage(GroupMessage message) {
+    // Optimistic: append the partial message immediately for instant feedback
+    state.whenData((messages) {
+      // Avoid duplicates if the fetched list already contains this message
+      if (messages.any((m) => m.id == message.id)) return;
+      state = AsyncValue.data([...messages, message]);
+    });
+
+    // Then re-fetch to get sender profile data
+    _refetchMessages();
+  }
+
+  Future<void> _refetchMessages() async {
+    final repo = ref.read(groupChatRepositoryProvider);
+    final messages = await repo.fetchGroupMessages(_roomId);
+    if (state.hasValue) {
+      state = AsyncValue.data(messages);
+    }
+  }
+
+  /// Sends a text message and appends it to the local list.
+  Future<void> sendMessage(String content) async {
+    if (content.trim().isEmpty) return;
+
+    final client = ref.read(supabaseClientProvider);
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final repo = ref.read(groupChatRepositoryProvider);
+    try {
+      final message = await repo.sendGroupMessage(
+        roomId: _roomId,
+        senderId: userId,
+        content: content.trim(),
+      );
+
+      // Append to local state (Realtime will also fire, dedup handles it)
+      state.whenData((messages) {
+        if (!messages.any((m) => m.id == message.id)) {
+          state = AsyncValue.data([...messages, message]);
+        }
+      });
+    } catch (e) {
+      debugPrint('Failed to send group message: $e');
+    }
+  }
+
+  /// Sends an image message after the image has been uploaded to Storage.
+  Future<void> sendImageMessage(String imageUrl) async {
+    final client = ref.read(supabaseClientProvider);
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final repo = ref.read(groupChatRepositoryProvider);
+    try {
+      final message = await repo.sendGroupImageMessage(
+        roomId: _roomId,
+        senderId: userId,
+        imageUrl: imageUrl,
+      );
+
+      state.whenData((messages) {
+        if (!messages.any((m) => m.id == message.id)) {
+          state = AsyncValue.data([...messages, message]);
+        }
+      });
+    } catch (e) {
+      debugPrint('Failed to send group image message: $e');
+    }
+  }
+}
