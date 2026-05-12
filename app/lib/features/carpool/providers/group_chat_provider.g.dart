@@ -231,3 +231,59 @@ abstract class _$GroupChatMessages extends $AsyncNotifier<List<GroupMessage>> {
     element.handleCreate(ref, () => build(_$args));
   }
 }
+
+/// Fetches all group chat rooms where the current user is an active member.
+///
+/// Used by ChatListScreen to show group chats alongside 1-on-1 conversations.
+/// Automatically re-fetches when the provider is invalidated.
+
+@ProviderFor(userGroupChatRooms)
+final userGroupChatRoomsProvider = UserGroupChatRoomsProvider._();
+
+/// Fetches all group chat rooms where the current user is an active member.
+///
+/// Used by ChatListScreen to show group chats alongside 1-on-1 conversations.
+/// Automatically re-fetches when the provider is invalidated.
+
+final class UserGroupChatRoomsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<model.GroupChatRoom>>,
+          List<model.GroupChatRoom>,
+          FutureOr<List<model.GroupChatRoom>>
+        >
+    with
+        $FutureModifier<List<model.GroupChatRoom>>,
+        $FutureProvider<List<model.GroupChatRoom>> {
+  /// Fetches all group chat rooms where the current user is an active member.
+  ///
+  /// Used by ChatListScreen to show group chats alongside 1-on-1 conversations.
+  /// Automatically re-fetches when the provider is invalidated.
+  UserGroupChatRoomsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'userGroupChatRoomsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$userGroupChatRoomsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<model.GroupChatRoom>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<model.GroupChatRoom>> create(Ref ref) {
+    return userGroupChatRooms(ref);
+  }
+}
+
+String _$userGroupChatRoomsHash() =>
+    r'eac9b0ab50a1218117cb3ea6253660b07e97fb23';

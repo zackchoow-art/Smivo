@@ -44,6 +44,15 @@ class TripLifecycle extends _$TripLifecycle {
       ref.invalidate(carpoolDetailProvider(tripId));
     });
   }
+
+  /// Records the actual total cost and refreshes the trip detail.
+  Future<void> settleTripCost(String tripId, double actualTotalCost) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(carpoolRepositoryProvider).settleTripCost(tripId, actualTotalCost);
+      ref.invalidate(carpoolDetailProvider(tripId));
+    });
+  }
 }
 
 // ── Trip Reviews ────────────────────────────────────────────────────────────

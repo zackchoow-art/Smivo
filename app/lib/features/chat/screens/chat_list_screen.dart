@@ -6,6 +6,9 @@ import 'package:smivo/core/providers/nav_scroll_provider.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/chat_room.dart';
+import 'package:smivo/features/carpool/providers/group_chat_provider.dart';
+import 'package:smivo/features/carpool/screens/group_chat_screen.dart';
+import 'package:smivo/features/carpool/widgets/group_chat_list_tile.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/chat/screens/chat_room_screen.dart';
 import 'package:smivo/features/chat/widgets/chat_list_item.dart';
@@ -182,7 +185,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   ),
                 ),
               ),
-              // 置顶的系统消息卡片
+              // System notifications entry point
               SliverToBoxAdapter(
                 child: _SystemMessagesItem(
                   useWidthConstraint: useWidthConstraint,
@@ -193,6 +196,15 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       context.pushNamed(AppRoutes.notificationCenter);
                     }
                   },
+                ),
+              ),
+              // Group chat rooms — fetched independently of 1-on-1 chat rooms.
+              // Members who left/were kicked are already removed from
+              // group_chat_members by the RPCs, so no extra filter is needed.
+              SliverToBoxAdapter(
+                child: _GroupChatListSection(
+                  useWidthConstraint: useWidthConstraint,
+                  searchQuery: _searchQuery,
                 ),
               ),
               chatRoomsAsync.when(
@@ -552,6 +564,80 @@ class _SystemMessagesItem extends ConsumerWidget {
 
         if (!useWidthConstraint) return item;
         return ContentWidthConstraint(maxWidth: 768, child: item);
+      },
+    );
+  }
+}
+
+// ── Group Chat List Section ──────────────────────────────────────────────────
+
+/// Fetches and renders the current user's group chat rooms below the system
+/// messages entry and above the 1-on-1 chat list.
+///
+/// Hidden entirely when the user has no group chats or is not logged in.
+/// The section does not affect the rest of the ChatListScreen state.
+class _GroupChatListSection extends ConsumerWidget {
+  const _GroupChatListSection({
+    required this.useWidthConstraint,
+    required this.searchQuery,
+  });
+
+  final bool useWidthConstraint;
+  final String searchQuery;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final groupRoomsAsync = ref.watch(userGroupChatRoomsProvider);
+
+    return groupRoomsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (rooms) {
+        if (rooms.isEmpty) return const SizedBox.shrink();
+
+        // Filter rooms by search query (matches room name)
+        final filtered = searchQuery.isEmpty
+            ? rooms
+            : rooms.where((r) {
+                return r.name.toLowerCase().contains(
+                      searchQuery.toLowerCase(),
+                    );
+              }).toList();
+
+        if (filtered.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final room in filtered)
+              Builder(
+                builder: (context) {
+                  final lastMessage = room.members.isNotEmpty
+                      ? '${room.members.length} members'
+                      : 'Group chat';
+
+                  Widget tile = GroupChatListTile(
+                    roomName: room.name,
+                    members: room.members,
+                    lastMessage: lastMessage,
+                    lastMessageTime: room.updatedAt,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              GroupChatScreen(tripId: room.tripId),
+                        ),
+                      );
+                    },
+                  );
+
+                  return useWidthConstraint
+                      ? ContentWidthConstraint(maxWidth: 768, child: tile)
+                      : tile;
+                },
+              ),
+          ],
+        );
       },
     );
   }

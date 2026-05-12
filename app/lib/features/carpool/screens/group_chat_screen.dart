@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/data/models/group_chat_member.dart';
 import 'package:smivo/data/models/group_chat_room.dart' as model;
 import 'package:smivo/features/carpool/providers/group_chat_provider.dart';
 import 'package:smivo/features/carpool/widgets/group_message_bubble.dart';
@@ -95,27 +96,41 @@ class _GroupChatScreenState extends ConsumerState<GroupChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: roomAsync.when(
-          data: (room) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                room.name,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                '${room.members.length} members',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-            ],
+          data: (room) => Text(
+            room.name,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           loading: () => const Text('Loading...'),
           error: (_, __) => const Text('Group Chat'),
         ),
         actions: [
+          // Overlapping avatar row — shows up to 5 member avatars in AppBar
+          roomAsync.when(
+            data: (room) => Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Overlap avatars by using negative spacing via Transform
+                  for (int i = 0;
+                      i < room.members.take(5).length;
+                      i++)
+                    Transform.translate(
+                      // NOTE: Negative X offset creates the overlapping stack effect.
+                      offset: Offset(i * -8.0, 0),
+                      child: _MemberAvatar(
+                        member: room.members[i],
+                        theme: theme,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
           roomAsync.when(
             data: (room) => IconButton(
               icon: const Icon(Icons.group),
@@ -317,6 +332,45 @@ class _MessageInput extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A small circular avatar for a single group chat member in the AppBar.
+///
+/// Falls back to a person icon when the member has no avatar URL.
+class _MemberAvatar extends StatelessWidget {
+  const _MemberAvatar({required this.member, required this.theme});
+
+  final GroupChatMember member;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final avatarUrl = member.user?.avatarUrl;
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        // White border visually separates overlapping avatars
+        border: Border.all(color: theme.colorScheme.surface, width: 1.5),
+      ),
+      child: CircleAvatar(
+        radius: 14,
+        backgroundColor: theme.colorScheme.surfaceContainerHigh,
+        backgroundImage:
+            avatarUrl != null && avatarUrl.isNotEmpty
+                ? NetworkImage(avatarUrl)
+                : null,
+        child:
+            (avatarUrl == null || avatarUrl.isEmpty)
+                ? Icon(
+                    Icons.person,
+                    size: 14,
+                    color: theme.colorScheme.onSurfaceVariant
+                        .withValues(alpha: 0.5),
+                  )
+                : null,
       ),
     );
   }

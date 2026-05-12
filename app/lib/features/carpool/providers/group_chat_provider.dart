@@ -127,3 +127,15 @@ class GroupChatMessages extends _$GroupChatMessages {
     }
   }
 }
+
+/// Fetches all group chat rooms where the current user is an active member.
+///
+/// Used by ChatListScreen to show group chats alongside 1-on-1 conversations.
+/// Automatically re-fetches when the provider is invalidated.
+@riverpod
+Future<List<model.GroupChatRoom>> userGroupChatRooms(Ref ref) async {
+  final client = ref.read(supabaseClientProvider);
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return [];
+  return ref.read(groupChatRepositoryProvider).fetchUserGroupChatRooms(userId);
+}

@@ -151,6 +151,43 @@ class GroupChatRepository {
         )
         .subscribe();
   }
+  // ── User membership queries ────────────────────────────────────────────────
+
+  /// Fetches all group chat rooms where [userId] is an active member.
+  ///
+  /// NOTE: This queries group_chat_members directly for the user's rows,
+  /// then fetches the corresponding rooms with member profiles. Members who
+  /// have left or been kicked are already removed from group_chat_members by
+  /// the leave/kick RPCs, so no additional filtering is needed here.
+  Future<List<GroupChatRoom>> fetchUserGroupChatRooms(String userId) async {
+    try {
+      // First, get all room IDs this user belongs to
+      final memberRows = await _client
+          .from(AppConstants.tableGroupChatMembers)
+          .select('room_id')
+          .eq('user_id', userId);
+
+      if (memberRows.isEmpty) return [];
+
+      final roomIds = memberRows
+          .map((row) => row['room_id'] as String)
+          .toList();
+
+      // Then fetch full room data with members for each room
+      final data = await _client
+          .from(AppConstants.tableGroupChatRooms)
+          .select('''
+            *,
+            members:group_chat_members(*, user:user_profiles!user_id(*))
+          ''')
+          .inFilter('id', roomIds)
+          .order('updated_at', ascending: false);
+
+      return data.map((json) => GroupChatRoom.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod

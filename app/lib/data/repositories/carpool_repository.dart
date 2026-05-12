@@ -400,6 +400,27 @@ class CarpoolRepository {
   Future<void> markCompleted(String tripId) async {
     await updateTrip(tripId, {'status': 'completed'});
   }
+
+  // ── Cost settlement ───────────────────────────────────────────────────────
+
+  /// Records the actual total cost entered by the creator after arrival.
+  ///
+  /// NOTE: Only the trip creator should call this — RLS on carpool_trips
+  /// restricts UPDATE to the creator_id. settled_at is set server-side
+  /// to avoid client clock drift.
+  Future<void> settleTripCost(String tripId, double actualTotalCost) async {
+    try {
+      await _client
+          .from(AppConstants.tableCarpoolTrips)
+          .update({
+            'actual_total_cost': actualTotalCost,
+            'settled_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('id', tripId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod

@@ -62,7 +62,7 @@ final class TripLifecycleProvider
   }
 }
 
-String _$tripLifecycleHash() => r'fe016a7a37aaa79ba9603ffa2050b83e615d6aef';
+String _$tripLifecycleHash() => r'2768caf50736a5b4f63aed138ecab75967f07a15';
 
 /// Manages trip status transitions: active → departed → arrived → completed.
 ///

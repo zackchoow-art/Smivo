@@ -45,6 +45,9 @@ abstract class CarpoolTrip with _$CarpoolTrip {
     @JsonKey(name: 'destination_description') String? destinationDescription,
     // V2 — estimated total cost for the entire trip
     @JsonKey(name: 'estimated_total_price') double? estimatedTotalPrice,
+    // V2 — actual total cost recorded by creator after arrival
+    @JsonKey(name: 'actual_total_cost') double? actualTotalCost,
+    @JsonKey(name: 'settled_at') DateTime? settledAt,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
 
