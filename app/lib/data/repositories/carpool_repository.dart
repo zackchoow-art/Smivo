@@ -6,6 +6,7 @@ import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/carpool_member.dart';
 import 'package:smivo/data/models/carpool_proposal.dart';
+import 'package:smivo/data/models/carpool_review.dart';
 import 'package:smivo/data/models/carpool_trip.dart';
 
 part 'carpool_repository.g.dart';
@@ -323,6 +324,75 @@ class CarpoolRepository {
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
+  }
+
+  // ── Review queries ─────────────────────────────────────────────────────────
+
+  /// Submits a batch of reviews for all fellow members after trip completion.
+  ///
+  /// NOTE: Uses a batch insert for efficiency. The DB unique constraint on
+  /// (trip_id, reviewer_id, reviewee_id) prevents duplicate submissions.
+  Future<void> submitReviews(List<Map<String, dynamic>> reviews) async {
+    try {
+      await _client
+          .from(AppConstants.tableCarpoolReviews)
+          .insert(reviews);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches all reviews for [tripId] with reviewer and reviewee profiles.
+  Future<List<CarpoolReview>> fetchTripReviews(String tripId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolReviews)
+          .select(
+            '*, reviewer:user_profiles!reviewer_id(*), '
+            'reviewee:user_profiles!reviewee_id(*)',
+          )
+          .eq('trip_id', tripId)
+          .order('created_at', ascending: true);
+      return data.map((json) => CarpoolReview.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Fetches the average carpool rating received by [userId].
+  ///
+  /// NOTE: Computed client-side to avoid requiring a DB view or RPC.
+  /// Returns 0.0 if the user has no reviews yet.
+  Future<double> fetchUserAverageRating(String userId) async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolReviews)
+          .select('rating')
+          .eq('reviewee_id', userId);
+      if (data.isEmpty) return 0.0;
+      final total =
+          data.fold<int>(0, (sum, row) => sum + (row['rating'] as int));
+      return total / data.length;
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  // ── Lifecycle status updates ───────────────────────────────────────────────
+
+  /// Marks a trip as departed (creator confirms everyone is aboard).
+  Future<void> markDeparted(String tripId) async {
+    await updateTrip(tripId, {'status': 'departed'});
+  }
+
+  /// Marks a trip as arrived (creator confirms destination reached).
+  Future<void> markArrived(String tripId) async {
+    await updateTrip(tripId, {'status': 'arrived'});
+  }
+
+  /// Marks a trip as completed after review window closes.
+  Future<void> markCompleted(String tripId) async {
+    await updateTrip(tripId, {'status': 'completed'});
   }
 }
 

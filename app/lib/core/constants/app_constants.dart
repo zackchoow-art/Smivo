@@ -71,4 +71,7 @@ class AppConstants {
   static const String tableGroupChatRooms = 'group_chat_rooms';
   static const String tableGroupChatMembers = 'group_chat_members';
   static const String tableGroupMessages = 'group_messages';
+
+  // ── Carpool review table ───────────────────────────────────────────────────
+  static const String tableCarpoolReviews = 'carpool_reviews';
 }
