@@ -19,7 +19,8 @@ mixin _$CarpoolMember {
 // automatically; 'member' is set for everyone who joins afterward.
  String get role;// NOTE: Default 'pending' supports manual approval mode.
 // Auto-approval trips immediately set this to 'approved' via DB trigger.
- String get status;@JsonKey(name: 'joined_at') DateTime? get joinedAt;@JsonKey(name: 'created_at') DateTime get createdAt;// Nested join — populated only when queried with user join
+ String get status;@JsonKey(name: 'joined_at') DateTime? get joinedAt;@JsonKey(name: 'created_at') DateTime get createdAt;// V2 — cancellation tracking for risk assessment
+@JsonKey(name: 'cancelled_at') DateTime? get cancelledAt;@JsonKey(name: 'cancel_lead_time_minutes') int? get cancelLeadTimeMinutes;// Nested join — populated only when queried with user join
  UserProfile? get user;
 /// Create a copy of CarpoolMember
 /// with the given fields replaced by the non-null parameter values.
@@ -33,16 +34,16 @@ $CarpoolMemberCopyWith<CarpoolMember> get copyWith => _$CarpoolMemberCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CarpoolMember&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.user, user) || other.user == user));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CarpoolMember&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.cancelledAt, cancelledAt) || other.cancelledAt == cancelledAt)&&(identical(other.cancelLeadTimeMinutes, cancelLeadTimeMinutes) || other.cancelLeadTimeMinutes == cancelLeadTimeMinutes)&&(identical(other.user, user) || other.user == user));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,userId,role,status,joinedAt,createdAt,user);
+int get hashCode => Object.hash(runtimeType,id,tripId,userId,role,status,joinedAt,createdAt,cancelledAt,cancelLeadTimeMinutes,user);
 
 @override
 String toString() {
-  return 'CarpoolMember(id: $id, tripId: $tripId, userId: $userId, role: $role, status: $status, joinedAt: $joinedAt, createdAt: $createdAt, user: $user)';
+  return 'CarpoolMember(id: $id, tripId: $tripId, userId: $userId, role: $role, status: $status, joinedAt: $joinedAt, createdAt: $createdAt, cancelledAt: $cancelledAt, cancelLeadTimeMinutes: $cancelLeadTimeMinutes, user: $user)';
 }
 
 
@@ -53,7 +54,7 @@ abstract mixin class $CarpoolMemberCopyWith<$Res>  {
   factory $CarpoolMemberCopyWith(CarpoolMember value, $Res Function(CarpoolMember) _then) = _$CarpoolMemberCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId, String role, String status,@JsonKey(name: 'joined_at') DateTime? joinedAt,@JsonKey(name: 'created_at') DateTime createdAt, UserProfile? user
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId, String role, String status,@JsonKey(name: 'joined_at') DateTime? joinedAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'cancelled_at') DateTime? cancelledAt,@JsonKey(name: 'cancel_lead_time_minutes') int? cancelLeadTimeMinutes, UserProfile? user
 });
 
 
@@ -70,7 +71,7 @@ class _$CarpoolMemberCopyWithImpl<$Res>
 
 /// Create a copy of CarpoolMember
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? userId = null,Object? role = null,Object? status = null,Object? joinedAt = freezed,Object? createdAt = null,Object? user = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? userId = null,Object? role = null,Object? status = null,Object? joinedAt = freezed,Object? createdAt = null,Object? cancelledAt = freezed,Object? cancelLeadTimeMinutes = freezed,Object? user = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
@@ -79,7 +80,9 @@ as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,joinedAt: freezed == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as DateTime,cancelledAt: freezed == cancelledAt ? _self.cancelledAt : cancelledAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,cancelLeadTimeMinutes: freezed == cancelLeadTimeMinutes ? _self.cancelLeadTimeMinutes : cancelLeadTimeMinutes // ignore: cast_nullable_to_non_nullable
+as int?,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as UserProfile?,
   ));
 }
@@ -177,10 +180,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId,  String role,  String status, @JsonKey(name: 'joined_at')  DateTime? joinedAt, @JsonKey(name: 'created_at')  DateTime createdAt,  UserProfile? user)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId,  String role,  String status, @JsonKey(name: 'joined_at')  DateTime? joinedAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'cancelled_at')  DateTime? cancelledAt, @JsonKey(name: 'cancel_lead_time_minutes')  int? cancelLeadTimeMinutes,  UserProfile? user)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CarpoolMember() when $default != null:
-return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that.joinedAt,_that.createdAt,_that.user);case _:
+return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that.joinedAt,_that.createdAt,_that.cancelledAt,_that.cancelLeadTimeMinutes,_that.user);case _:
   return orElse();
 
 }
@@ -198,10 +201,10 @@ return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId,  String role,  String status, @JsonKey(name: 'joined_at')  DateTime? joinedAt, @JsonKey(name: 'created_at')  DateTime createdAt,  UserProfile? user)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId,  String role,  String status, @JsonKey(name: 'joined_at')  DateTime? joinedAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'cancelled_at')  DateTime? cancelledAt, @JsonKey(name: 'cancel_lead_time_minutes')  int? cancelLeadTimeMinutes,  UserProfile? user)  $default,) {final _that = this;
 switch (_that) {
 case _CarpoolMember():
-return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that.joinedAt,_that.createdAt,_that.user);case _:
+return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that.joinedAt,_that.createdAt,_that.cancelledAt,_that.cancelLeadTimeMinutes,_that.user);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -218,10 +221,10 @@ return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId,  String role,  String status, @JsonKey(name: 'joined_at')  DateTime? joinedAt, @JsonKey(name: 'created_at')  DateTime createdAt,  UserProfile? user)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId,  String role,  String status, @JsonKey(name: 'joined_at')  DateTime? joinedAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'cancelled_at')  DateTime? cancelledAt, @JsonKey(name: 'cancel_lead_time_minutes')  int? cancelLeadTimeMinutes,  UserProfile? user)?  $default,) {final _that = this;
 switch (_that) {
 case _CarpoolMember() when $default != null:
-return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that.joinedAt,_that.createdAt,_that.user);case _:
+return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that.joinedAt,_that.createdAt,_that.cancelledAt,_that.cancelLeadTimeMinutes,_that.user);case _:
   return null;
 
 }
@@ -233,7 +236,7 @@ return $default(_that.id,_that.tripId,_that.userId,_that.role,_that.status,_that
 @JsonSerializable()
 
 class _CarpoolMember implements CarpoolMember {
-  const _CarpoolMember({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'user_id') required this.userId, required this.role, this.status = 'pending', @JsonKey(name: 'joined_at') this.joinedAt, @JsonKey(name: 'created_at') required this.createdAt, this.user});
+  const _CarpoolMember({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'user_id') required this.userId, required this.role, this.status = 'pending', @JsonKey(name: 'joined_at') this.joinedAt, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'cancelled_at') this.cancelledAt, @JsonKey(name: 'cancel_lead_time_minutes') this.cancelLeadTimeMinutes, this.user});
   factory _CarpoolMember.fromJson(Map<String, dynamic> json) => _$CarpoolMemberFromJson(json);
 
 @override final  String id;
@@ -247,6 +250,9 @@ class _CarpoolMember implements CarpoolMember {
 @override@JsonKey() final  String status;
 @override@JsonKey(name: 'joined_at') final  DateTime? joinedAt;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
+// V2 — cancellation tracking for risk assessment
+@override@JsonKey(name: 'cancelled_at') final  DateTime? cancelledAt;
+@override@JsonKey(name: 'cancel_lead_time_minutes') final  int? cancelLeadTimeMinutes;
 // Nested join — populated only when queried with user join
 @override final  UserProfile? user;
 
@@ -263,16 +269,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CarpoolMember&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.user, user) || other.user == user));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CarpoolMember&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.cancelledAt, cancelledAt) || other.cancelledAt == cancelledAt)&&(identical(other.cancelLeadTimeMinutes, cancelLeadTimeMinutes) || other.cancelLeadTimeMinutes == cancelLeadTimeMinutes)&&(identical(other.user, user) || other.user == user));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,userId,role,status,joinedAt,createdAt,user);
+int get hashCode => Object.hash(runtimeType,id,tripId,userId,role,status,joinedAt,createdAt,cancelledAt,cancelLeadTimeMinutes,user);
 
 @override
 String toString() {
-  return 'CarpoolMember(id: $id, tripId: $tripId, userId: $userId, role: $role, status: $status, joinedAt: $joinedAt, createdAt: $createdAt, user: $user)';
+  return 'CarpoolMember(id: $id, tripId: $tripId, userId: $userId, role: $role, status: $status, joinedAt: $joinedAt, createdAt: $createdAt, cancelledAt: $cancelledAt, cancelLeadTimeMinutes: $cancelLeadTimeMinutes, user: $user)';
 }
 
 
@@ -283,7 +289,7 @@ abstract mixin class _$CarpoolMemberCopyWith<$Res> implements $CarpoolMemberCopy
   factory _$CarpoolMemberCopyWith(_CarpoolMember value, $Res Function(_CarpoolMember) _then) = __$CarpoolMemberCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId, String role, String status,@JsonKey(name: 'joined_at') DateTime? joinedAt,@JsonKey(name: 'created_at') DateTime createdAt, UserProfile? user
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId, String role, String status,@JsonKey(name: 'joined_at') DateTime? joinedAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'cancelled_at') DateTime? cancelledAt,@JsonKey(name: 'cancel_lead_time_minutes') int? cancelLeadTimeMinutes, UserProfile? user
 });
 
 
@@ -300,7 +306,7 @@ class __$CarpoolMemberCopyWithImpl<$Res>
 
 /// Create a copy of CarpoolMember
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? userId = null,Object? role = null,Object? status = null,Object? joinedAt = freezed,Object? createdAt = null,Object? user = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? userId = null,Object? role = null,Object? status = null,Object? joinedAt = freezed,Object? createdAt = null,Object? cancelledAt = freezed,Object? cancelLeadTimeMinutes = freezed,Object? user = freezed,}) {
   return _then(_CarpoolMember(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
@@ -309,7 +315,9 @@ as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,joinedAt: freezed == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as DateTime,cancelledAt: freezed == cancelledAt ? _self.cancelledAt : cancelledAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,cancelLeadTimeMinutes: freezed == cancelLeadTimeMinutes ? _self.cancelLeadTimeMinutes : cancelLeadTimeMinutes // ignore: cast_nullable_to_non_nullable
+as int?,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as UserProfile?,
   ));
 }

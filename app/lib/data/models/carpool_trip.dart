@@ -31,7 +31,7 @@ abstract class CarpoolTrip with _$CarpoolTrip {
     @JsonKey(name: 'destination_place_id') String? destinationPlaceId,
     @JsonKey(name: 'departure_time') required DateTime departureTime,
     @JsonKey(name: 'estimated_arrival_time') DateTime? estimatedArrivalTime,
-    // NOTE: DB CHECK constraint enforces total_seats between 1 and 4.
+    // NOTE: DB CHECK constraint enforces total_seats between 1 and 9.
     @JsonKey(name: 'total_seats') required int totalSeats,
     @JsonKey(name: 'available_seats') required int availableSeats,
     // NOTE: luggage_limit is advisory only — not enforced by the platform.
@@ -40,6 +40,11 @@ abstract class CarpoolTrip with _$CarpoolTrip {
     @Default('active') String status,
     @JsonKey(name: 'closing_time') DateTime? closingTime,
     String? note,
+    // V2 fields — short human-friendly labels for origin/destination
+    @JsonKey(name: 'departure_description') String? departureDescription,
+    @JsonKey(name: 'destination_description') String? destinationDescription,
+    // V2 — estimated total cost for the entire trip
+    @JsonKey(name: 'estimated_total_price') double? estimatedTotalPrice,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
 

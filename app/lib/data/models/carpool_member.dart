@@ -24,6 +24,9 @@ abstract class CarpoolMember with _$CarpoolMember {
     @Default('pending') String status,
     @JsonKey(name: 'joined_at') DateTime? joinedAt,
     @JsonKey(name: 'created_at') required DateTime createdAt,
+    // V2 — cancellation tracking for risk assessment
+    @JsonKey(name: 'cancelled_at') DateTime? cancelledAt,
+    @JsonKey(name: 'cancel_lead_time_minutes') int? cancelLeadTimeMinutes,
 
     // Nested join — populated only when queried with user join
     UserProfile? user,

@@ -18,6 +18,12 @@ _CarpoolMember _$CarpoolMemberFromJson(Map<String, dynamic> json) =>
               ? null
               : DateTime.parse(json['joined_at'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
+      cancelledAt:
+          json['cancelled_at'] == null
+              ? null
+              : DateTime.parse(json['cancelled_at'] as String),
+      cancelLeadTimeMinutes:
+          (json['cancel_lead_time_minutes'] as num?)?.toInt(),
       user:
           json['user'] == null
               ? null
@@ -33,5 +39,7 @@ Map<String, dynamic> _$CarpoolMemberToJson(_CarpoolMember instance) =>
       'status': instance.status,
       'joined_at': instance.joinedAt?.toIso8601String(),
       'created_at': instance.createdAt.toIso8601String(),
+      'cancelled_at': instance.cancelledAt?.toIso8601String(),
+      'cancel_lead_time_minutes': instance.cancelLeadTimeMinutes,
       'user': instance.user,
     };

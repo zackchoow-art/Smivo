@@ -34,6 +34,9 @@ _CarpoolTrip _$CarpoolTripFromJson(Map<String, dynamic> json) => _CarpoolTrip(
           ? null
           : DateTime.parse(json['closing_time'] as String),
   note: json['note'] as String?,
+  departureDescription: json['departure_description'] as String?,
+  destinationDescription: json['destination_description'] as String?,
+  estimatedTotalPrice: (json['estimated_total_price'] as num?)?.toDouble(),
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
   creator:
@@ -71,6 +74,9 @@ Map<String, dynamic> _$CarpoolTripToJson(
   'status': instance.status,
   'closing_time': instance.closingTime?.toIso8601String(),
   'note': instance.note,
+  'departure_description': instance.departureDescription,
+  'destination_description': instance.destinationDescription,
+  'estimated_total_price': instance.estimatedTotalPrice,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
   'creator': instance.creator,

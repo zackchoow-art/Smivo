@@ -14,8 +14,13 @@ class CalendarSyncButton extends StatelessWidget {
   final CarpoolTrip trip;
 
   void _syncToCalendar() {
+    // NOTE: Use short descriptions for event title when available,
+    // fall back to full addresses for backward compatibility.
+    final departure = trip.departureDescription ?? trip.departureAddress;
+    final destination = trip.destinationDescription ?? trip.destinationAddress;
+
     final event = Event(
-      title: 'Carpool: ${trip.departureAddress} → ${trip.destinationAddress}',
+      title: 'Carpool: $departure → $destination',
       description: trip.note ?? 'Campus carpool trip',
       location: trip.departureAddress,
       startDate: trip.departureTime,
@@ -23,6 +28,9 @@ class CalendarSyncButton extends StatelessWidget {
       // so the calendar event has a valid non-zero duration.
       endDate: trip.estimatedArrivalTime ??
           trip.departureTime.add(const Duration(hours: 1)),
+      // Remind user 1 hour before departure
+      iosParams: const IOSParams(reminder: Duration(hours: 1)),
+      androidParams: const AndroidParams(emailInvites: []),
     );
     Add2Calendar.addEvent2Cal(event);
   }
