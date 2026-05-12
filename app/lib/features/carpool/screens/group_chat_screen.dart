@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/group_chat_member.dart';
 import 'package:smivo/data/models/group_chat_room.dart' as model;
+import 'package:smivo/data/repositories/group_chat_repository.dart';
 import 'package:smivo/features/carpool/providers/group_chat_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/data/models/carpool_trip.dart';
@@ -33,21 +35,47 @@ class _GroupChatScreenState extends ConsumerState<GroupChatScreen> {
   final _scrollController = ScrollController();
   String? _roomId;
   bool _hasMarkedRead = false;
+  // Heartbeat timer: refreshes updated_at in user_active_sessions every 90s
+  // to keep the session alive within the Edge Function's 2-minute TTL window.
+  Timer? _sessionHeartbeat;
 
   @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    // Stop the heartbeat before clearing — prevents a race where the timer
+    // fires between clearGroupActiveSession and the next push delivery.
+    _sessionHeartbeat?.cancel();
     // Clear active session on leave so push notifications resume
     clearGroupChatSession(ref);
     super.dispose();
   }
 
   /// Marks the room as read once when the room ID becomes available.
+  /// Also starts the heartbeat timer for push suppression.
   void _markAsReadOnce(String roomId) {
     if (_hasMarkedRead) return;
     _hasMarkedRead = true;
     markGroupChatAsRead(ref, roomId);
+
+    // Start heartbeat to keep the session alive
+    final userId = ref.read(supabaseClientProvider).auth.currentUser?.id;
+    if (userId != null) {
+      _sessionHeartbeat = Timer.periodic(
+        const Duration(seconds: 90),
+        (_) => _writeGroupSession(userId, roomId),
+      );
+    }
+  }
+
+  /// Re-writes the group active session to refresh updated_at.
+  void _writeGroupSession(String userId, String roomId) {
+    ref
+        .read(groupChatRepositoryProvider)
+        .setGroupActiveSession(userId: userId, roomId: roomId)
+        .catchError((e) {
+          debugPrint('[GroupChat] setGroupActiveSession failed: $e');
+        });
   }
 
   void _scrollToBottom() {

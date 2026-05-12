@@ -26,6 +26,11 @@ class CarpoolDetail extends _$CarpoolDetail {
 
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
+      // Re-fetch trip to check current seat availability (race condition guard)
+      final freshTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
+      if (freshTrip == null || freshTrip.availableSeats <= 0) {
+        throw Exception('NO_SEATS');
+      }
       await ref.read(carpoolRepositoryProvider).requestJoinTrip(tripId, profile.id);
       return ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
     });

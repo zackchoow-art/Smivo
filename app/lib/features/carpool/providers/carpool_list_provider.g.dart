@@ -33,7 +33,7 @@ final class CarpoolListProvider
   CarpoolList create() => CarpoolList();
 }
 
-String _$carpoolListHash() => r'c4e28542dbb5f8a500112e6289b30b8f2d0396fc';
+String _$carpoolListHash() => r'4b459c6d4f39addb2c1b4d9ae92576bd74c9f52c';
 
 abstract class _$CarpoolList extends $AsyncNotifier<List<CarpoolTrip>> {
   FutureOr<List<CarpoolTrip>> build();
@@ -78,7 +78,7 @@ final class MyCarpoolProvider
   MyCarpool create() => MyCarpool();
 }
 
-String _$myCarpoolHash() => r'85f6d71411a4a4b5caa51d646dc0768e7937c7ef';
+String _$myCarpoolHash() => r'23d1d9c3e3145e7ea9bb782e1efda63246c49053';
 
 abstract class _$MyCarpool extends $AsyncNotifier<List<CarpoolTrip>> {
   FutureOr<List<CarpoolTrip>> build();

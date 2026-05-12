@@ -407,12 +407,33 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           child: ElevatedButton(
                             onPressed: trip.availableSeats > 0 &&
                                     trip.status == 'active'
-                                ? () {
-                                    ref
-                                        .read(
-                                            carpoolDetailProvider(tripId)
-                                                .notifier)
-                                        .requestJoin();
+                                ? () async {
+                                    try {
+                                      await ref
+                                          .read(
+                                              carpoolDetailProvider(tripId)
+                                                  .notifier)
+                                          .requestJoin();
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      if (e.toString().contains('NO_SEATS')) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'This trip is now full. Refreshing...',
+                                            ),
+                                          ),
+                                        );
+                                        // Refresh to show updated seat count
+                                        ref.invalidate(carpoolDetailProvider(tripId));
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Failed to join: $e'),
+                                          ),
+                                        );
+                                      }
+                                    }
                                   }
                                 : null,
                             child: Text(trip.availableSeats > 0

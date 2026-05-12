@@ -50,7 +50,7 @@ final class CarpoolDetailProvider
   }
 }
 
-String _$carpoolDetailHash() => r'89f7361bbf6e4694d435657745f34fa1b3278b12';
+String _$carpoolDetailHash() => r'bcdfb4a43fe316188ab8959670f2e579319df73b';
 
 final class CarpoolDetailFamily extends $Family
     with
