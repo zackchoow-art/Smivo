@@ -71,7 +71,7 @@ class CarpoolTripCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      isDriver ? '司机' : '拼车',
+                      isDriver ? 'Driver' : 'Carpool',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: isDriver
                             ? theme.colorScheme.onPrimaryContainer
@@ -114,7 +114,7 @@ class CarpoolTripCard extends StatelessWidget {
                           color: theme.colorScheme.onSurfaceVariant),
                       const SizedBox(width: 4),
                       Text(
-                        '${trip.availableSeats}/${trip.totalSeats} 座位',
+                        '${trip.availableSeats}/${trip.totalSeats} Seats',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

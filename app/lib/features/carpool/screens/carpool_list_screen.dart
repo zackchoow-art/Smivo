@@ -15,7 +15,7 @@ class CarpoolListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('拼车广场'),
+        title: const Text('Carpool'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -41,7 +41,7 @@ class CarpoolListScreen extends ConsumerWidget {
                       Icon(Icons.directions_car, size: 64, color: theme.dividerColor),
                       const SizedBox(height: 16),
                       Text(
-                        '暂无拼车信息，快来发布第一个吧！',
+                        'No carpool rides yet. Be the first to post one!',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -83,7 +83,7 @@ class CarpoolListScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.read(carpoolListProvider.notifier).refresh(),
-                child: const Text('重试'),
+                child: const Text('Retry'),
               ),
             ],
           ),

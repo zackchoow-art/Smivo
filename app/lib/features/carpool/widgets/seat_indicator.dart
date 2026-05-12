@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// 可视化指示器，用小圆点展示座位状态。
-/// 实心圆表示已被占用的座位，空心圆表示可用座位。
+/// Visual indicator showing seat status with small dots.
+/// Solid circles represent occupied seats, hollow circles represent available seats.
 class SeatIndicator extends StatelessWidget {
   const SeatIndicator({
     super.key,

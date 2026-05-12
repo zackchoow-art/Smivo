@@ -51,7 +51,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
         builder: (context, _) => Padding(
           padding: const EdgeInsets.all(16),
           child: MapLocationPicker(
-            label: isDeparture ? '选择出发地点' : '选择目的地点',
+            label: isDeparture ? 'Departure Location' : 'Destination',
             onLocationSelected: (location) {
               setState(() {
                 if (isDeparture) {
@@ -110,7 +110,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
   void _submit() async {
     if (_departureAddress == null || _destinationAddress == null || _departureTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请完善必填信息（地点和时间）')),
+        const SnackBar(content: Text('Please complete required fields (location and time)')),
       );
       return;
     }
@@ -119,16 +119,16 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
     final agreed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('拼车免责声明'),
-        content: const Text('我确认发布的信息真实有效，并同意相关拼车规则及免责条款。'),
+        title: const Text('Carpool Disclaimer'),
+        content: const Text('I confirm that the information posted is true and valid, and agree to the relevant carpool rules and disclaimers.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('同意并发布'),
+            child: const Text('Agree & Post'),
           ),
         ],
       ),
@@ -157,7 +157,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
     final error = ref.read(createCarpoolProvider).error;
     if (error == null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('发布成功！')),
+        const SnackBar(content: Text('Posted successfully')),
       );
       Navigator.pop(context);
     } else if (mounted) {
@@ -179,18 +179,18 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
     final isLoading = ref.watch(createCarpoolProvider).isLoading;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('发布拼车')),
+      appBar: AppBar(title: const Text('Post a Ride')),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text('角色身份', style: theme.textTheme.titleMedium),
+            Text('Your Role', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Row(
               children: [
                 ChoiceChip(
-                  label: const Text('我是司机'),
+                  label: const Text('I\'m the Driver'),
                   selected: _role == 'driver',
                   onSelected: (val) {
                     if (val) setState(() => _role = 'driver');
@@ -198,7 +198,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
                 ),
                 const SizedBox(width: 12),
                 ChoiceChip(
-                  label: const Text('我是发起人（找人分摊）'),
+                  label: const Text('I\'m Organizing (splitting cost)'),
                   selected: _role == 'organizer',
                   onSelected: (val) {
                     if (val) setState(() => _role = 'organizer');
@@ -207,12 +207,12 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            Text('路线信息', style: theme.textTheme.titleMedium),
+            Text('Route', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.trip_origin, color: theme.colorScheme.primary),
-              title: Text(_departureAddress ?? '选择出发地点'),
+              title: Text(_departureAddress ?? 'Select Departure Location'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _pickLocation(true),
             ),
@@ -220,19 +220,19 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.location_on, color: theme.colorScheme.error),
-              title: Text(_destinationAddress ?? '选择目的地点'),
+              title: Text(_destinationAddress ?? 'Select Destination'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _pickLocation(false),
             ),
             const SizedBox(height: 24),
-            Text('行程细节', style: theme.textTheme.titleMedium),
+            Text('Trip Details', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.access_time),
               title: Text(_departureTime != null
                   ? DateFormat('yyyy-MM-dd HH:mm').format(_departureTime!)
-                  : '出发时间（必填）'),
+                  : 'Departure Time (Required)'),
               trailing: const Icon(Icons.calendar_today, size: 20),
               onTap: () => _pickDateTime(true),
             ),
@@ -240,11 +240,11 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('座位数 (1-4)'),
+                const Text('Seats (1-4)'),
                 DropdownButton<int>(
                   value: _totalSeats,
                   items: [1, 2, 3, 4]
-                      .map((e) => DropdownMenuItem(value: e, child: Text('$e 座')))
+                      .map((e) => DropdownMenuItem(value: e, child: Text('$e Seat(s)')))
                       .toList(),
                   onChanged: (val) {
                     if (val != null) setState(() => _totalSeats = val);
@@ -256,14 +256,14 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('行李限额'),
+                const Text('Luggage Limit'),
                 DropdownButton<String>(
                   value: _luggageLimit,
                   items: const [
-                    DropdownMenuItem(value: 'none', child: Text('不限')),
-                    DropdownMenuItem(value: 'small', child: Text('仅小包')),
-                    DropdownMenuItem(value: 'medium', child: Text('中等行李')),
-                    DropdownMenuItem(value: 'large', child: Text('大件行李')),
+                    DropdownMenuItem(value: 'none', child: Text('No Limit')),
+                    DropdownMenuItem(value: 'small', child: Text('Small Bags Only')),
+                    DropdownMenuItem(value: 'medium', child: Text('Medium Luggage')),
+                    DropdownMenuItem(value: 'large', child: Text('Large Luggage OK')),
                   ],
                   onChanged: (val) {
                     if (val != null) setState(() => _luggageLimit = val);
@@ -274,8 +274,8 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             const SizedBox(height: 16),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('审核模式'),
-              subtitle: Text(_autoApproval ? '自动接受申请' : '手动审核申请'),
+              title: const Text('Approval Mode'),
+              subtitle: Text(_autoApproval ? 'Auto-approve requests' : 'Manual approval'),
               value: _autoApproval,
               onChanged: (val) => setState(() => _autoApproval = val),
             ),
@@ -285,7 +285,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
               leading: const Icon(Icons.timer_off),
               title: Text(_closingTime != null
                   ? DateFormat('yyyy-MM-dd HH:mm').format(_closingTime!)
-                  : '截止报名时间（选填）'),
+                  : 'Registration Deadline (Optional)'),
               trailing: IconButton(
                 icon: const Icon(Icons.clear, size: 20),
                 onPressed: () => setState(() => _closingTime = null),
@@ -297,7 +297,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
               controller: _noteController,
               maxLines: 3,
               decoration: const InputDecoration(
-                labelText: '备注（选填）',
+                labelText: 'Notes (Optional)',
                 border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
@@ -314,7 +314,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('发布拼车'),
+                    : const Text('Post a Ride'),
               ),
             ),
             const SizedBox(height: 32),

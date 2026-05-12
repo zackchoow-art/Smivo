@@ -21,7 +21,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('拼车详情'),
+        title: const Text('Trip Details'),
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
@@ -32,7 +32,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
       body: detailAsync.when(
         data: (trip) {
           if (trip == null) {
-            return const Center(child: Text('找不到该拼车信息'));
+            return const Center(child: Text('Trip not found'));
           }
 
           final isCreator = currentProfile?.id == trip.creatorId;
@@ -122,7 +122,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 16),
                               _InfoRow(
                                 icon: Icons.access_time,
-                                label: '出发时间',
+                                label: 'Departure Time',
                                 value: DateFormat('yyyy-MM-dd HH:mm')
                                     .format(trip.departureTime.toLocal()),
                               ),
@@ -130,7 +130,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                 const SizedBox(height: 8),
                                 _InfoRow(
                                   icon: Icons.flag,
-                                  label: '预计到达',
+                                  label: 'Est. Arrival',
                                   value: DateFormat('HH:mm').format(
                                       trip.estimatedArrivalTime!.toLocal()),
                                 ),
@@ -138,31 +138,31 @@ class CarpoolDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 8),
                               _InfoRow(
                                 icon: Icons.event_seat,
-                                label: '剩余座位',
+                                label: 'Available Seats',
                                 value:
-                                    '${trip.availableSeats}/${trip.totalSeats} 座',
+                                    '${trip.availableSeats}/${trip.totalSeats} Seats',
                               ),
                               if (trip.luggageLimit != null) ...[
                                 const SizedBox(height: 8),
                                 _InfoRow(
                                   icon: Icons.luggage,
-                                  label: '行李限额',
+                                  label: 'Luggage Limit',
                                   value: trip.luggageLimit!,
                                 ),
                               ],
                               const SizedBox(height: 8),
                               _InfoRow(
                                 icon: Icons.verified_user,
-                                label: '审核模式',
+                                label: 'Approval Mode',
                                 value: trip.approvalMode == 'auto'
-                                    ? '自动接受'
-                                    : '手动审核',
+                                    ? 'Auto-approve'
+                                    : 'Manual approval',
                               ),
                               if (trip.note != null &&
                                   trip.note!.isNotEmpty) ...[
                                 const SizedBox(height: 16),
                                 Text(
-                                  '备注:',
+                                  'Notes:',
                                   style: theme.textTheme.labelLarge?.copyWith(
                                     color:
                                         theme.colorScheme.onSurfaceVariant,
@@ -181,7 +181,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                     // Creator Card
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text('发起人',
+                      child: Text('Organizer',
                           style: theme.textTheme.titleMedium),
                     ),
                     ListTile(
@@ -197,7 +197,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       title: Text(
                           trip.creator?.displayName ?? 'Unknown'),
                       subtitle: Text(
-                          trip.role == 'driver' ? '司机' : '组织者'),
+                          trip.role == 'driver' ? 'Driver' : 'Organizer'),
                     ),
 
                     // Members Row
@@ -205,7 +205,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                     Padding(
                       padding:
                           const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text('已加入成员',
+                      child: Text('Joined Members',
                           style: theme.textTheme.titleMedium),
                     ),
                     const SizedBox(height: 12),
@@ -257,7 +257,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                   foregroundColor:
                                       theme.colorScheme.error,
                                 ),
-                                child: const Text('取消行程'),
+                                child: const Text('Cancel Trip'),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -266,7 +266,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                 onPressed: () {
                                   // TODO: Navigate to members management
                                 },
-                                child: const Text('管理成员'),
+                                child: const Text('Manage Members'),
                               ),
                             ),
                           ],
@@ -284,7 +284,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: theme.colorScheme.error,
                             ),
-                            child: const Text('退出行程'),
+                            child: const Text('Leave Trip'),
                           ),
                         ),
                       ] else if (isPending) ...[
@@ -293,7 +293,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           child: ElevatedButton(
                             onPressed: null,
                             child:
-                                const Text('申请已提交，等待审核'),
+                                const Text('Application submitted, pending approval'),
                           ),
                         ),
                       ] else ...[
@@ -311,8 +311,8 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                   }
                                 : null,
                             child: Text(trip.availableSeats > 0
-                                ? '申请加入'
-                                : '满员'),
+                                ? 'Request to Join'
+                                : 'Full'),
                           ),
                         ),
                       ],
@@ -321,7 +321,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       TextButton.icon(
                         onPressed: () {},
                         icon: const Icon(Icons.calendar_month, size: 18),
-                        label: const Text('添加到日历'),
+                        label: const Text('Add to Calendar'),
                       ),
                     ],
                   ),
@@ -332,7 +332,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) =>
-            Center(child: Text('加载失败: $error')),
+            Center(child: Text('Failed to load: $error')),
       ),
     );
   }

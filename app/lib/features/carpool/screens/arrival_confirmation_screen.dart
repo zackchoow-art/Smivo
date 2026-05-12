@@ -10,7 +10,7 @@ import 'package:smivo/features/carpool/widgets/review_batch_sheet.dart';
 
 /// Guides the trip creator through arrival confirmation and peer review.
 ///
-/// Shown after the creator taps "已到达" in the trip detail screen.
+/// Shown after the creator taps "Arrived" in the trip detail screen.
 /// On confirmation it transitions status to 'arrived' then opens the
 /// review sheet so members can be rated before the window closes.
 class ArrivalConfirmationScreen extends ConsumerWidget {
@@ -23,13 +23,13 @@ class ArrivalConfirmationScreen extends ConsumerWidget {
     final tripAsync = ref.watch(carpoolDetailProvider(tripId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('到达确认')),
+      appBar: AppBar(title: const Text('Arrival Confirmation')),
       body: tripAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('加载失败：$e')),
+        error: (e, _) => Center(child: Text('Failed to load: $e')),
         data: (trip) {
           if (trip == null) {
-            return const Center(child: Text('行程不存在'));
+            return const Center(child: Text('Trip not found'));
           }
 
           final dateFormat = DateFormat('MM/dd HH:mm');
@@ -47,32 +47,32 @@ class ArrivalConfirmationScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '行程摘要',
+                          'Trip Summary',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 12),
                         _InfoRow(
                           icon: Icons.location_on_outlined,
-                          label: '出发地',
+                          label: 'Departure',
                           value: trip.departureAddress,
                         ),
                         const SizedBox(height: 8),
                         _InfoRow(
                           icon: Icons.flag_outlined,
-                          label: '目的地',
+                          label: 'Destination',
                           value: trip.destinationAddress,
                         ),
                         const SizedBox(height: 8),
                         _InfoRow(
                           icon: Icons.schedule,
-                          label: '出发时间',
+                          label: 'Departure Time',
                           value: dateFormat.format(trip.departureTime.toLocal()),
                         ),
                         if (trip.estimatedArrivalTime != null) ...[
                           const SizedBox(height: 8),
                           _InfoRow(
                             icon: Icons.access_time_filled,
-                            label: '预计到达',
+                            label: 'Est. Arrival',
                             value: dateFormat
                                 .format(trip.estimatedArrivalTime!.toLocal()),
                           ),
@@ -85,7 +85,7 @@ class ArrivalConfirmationScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
 
                 Text(
-                  '您已到达目的地吗？',
+                  'Have you arrived at your destination?',
                   style: Theme.of(context).textTheme.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
@@ -93,7 +93,7 @@ class ArrivalConfirmationScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
 
                 Text(
-                  '确认到达后，您将可以对同行者进行评价',
+                  'After confirming arrival, you can rate your fellow riders',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -105,14 +105,14 @@ class ArrivalConfirmationScreen extends ConsumerWidget {
                 // ── Action buttons ─────────────────────────────────────────
                 ElevatedButton(
                   onPressed: () => _confirmArrival(context, ref, trip.members),
-                  child: const Text('是的，已到达'),
+                  child: const Text('Yes, arrived'),
                 ),
 
                 const SizedBox(height: 12),
 
                 OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('还没有'),
+                  child: const Text('Not yet'),
                 ),
               ],
             ),

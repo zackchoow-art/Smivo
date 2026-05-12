@@ -31,16 +31,16 @@ class ProposalCard extends ConsumerWidget {
         final target = members
             .where((m) => m.userId == proposal.targetUserId)
             .firstOrNull;
-        final name = target?.user?.displayName ?? '未知成员';
-        return '踢出成员: $name';
+        final name = target?.user?.displayName ?? 'Unknown User';
+        return 'Remove Member: $name';
       case 'change_time':
-        return '修改出发时间';
+        return 'Change Departure Time';
       case 'change_departure':
-        return '修改出发地点';
+        return 'Change Departure Location';
       case 'change_destination':
-        return '修改目的地点';
+        return 'Change Destination';
       default:
-        return '提案';
+        return 'Proposal';
     }
   }
 
@@ -48,13 +48,13 @@ class ProposalCard extends ConsumerWidget {
   (Color, String) _statusInfo(ThemeData theme) {
     switch (proposal.status) {
       case 'pending':
-        return (theme.colorScheme.primary, '投票中');
+        return (theme.colorScheme.primary, 'Voting');
       case 'approved':
-        return (Colors.green, '已通过');
+        return (Colors.green, 'Approved');
       case 'rejected':
-        return (Colors.red, '已拒绝');
+        return (Colors.red, 'Rejected');
       case 'expired':
-        return (Colors.grey, '已过期');
+        return (Colors.grey, 'Expired');
       default:
         return (Colors.grey, proposal.status);
     }
@@ -113,9 +113,9 @@ class ProposalCard extends ConsumerWidget {
                     proposal.newValue != null)) ...[
               const SizedBox(height: 12),
               if (proposal.oldValue != null)
-                _DetailRow(label: '原来', value: proposal.oldValue!),
+                _DetailRow(label: 'Previous', value: proposal.oldValue!),
               if (proposal.newValue != null)
-                _DetailRow(label: '改为', value: proposal.newValue!),
+                _DetailRow(label: 'Change to', value: proposal.newValue!),
             ],
 
             // Vote progress
@@ -135,7 +135,7 @@ class ProposalCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '${proposal.currentVotes}/${proposal.requiredVotes} 票',
+                  '${proposal.currentVotes}/${proposal.requiredVotes} votes',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
@@ -155,12 +155,12 @@ class ProposalCard extends ConsumerWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: theme.colorScheme.error,
                     ),
-                    child: const Text('反对'),
+                    child: const Text('Reject'),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () => _castVote(ref, context, 'approve'),
-                    child: const Text('赞成'),
+                    child: const Text('Approve'),
                   ),
                 ],
               ),
@@ -180,13 +180,13 @@ class ProposalCard extends ConsumerWidget {
           );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(vote == 'approve' ? '已投赞成票' : '已投反对票')),
+          SnackBar(content: Text(vote == 'approve' ? 'Voted to approve' : 'Voted to reject')),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('投票失败，您可能已投过票')),
+          const SnackBar(content: Text('Vote failed, you may have already voted')),
         );
       }
     }

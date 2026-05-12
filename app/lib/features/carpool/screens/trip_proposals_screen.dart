@@ -24,7 +24,7 @@ class TripProposalsScreen extends ConsumerWidget {
     final detailAsync = ref.watch(carpoolDetailProvider(tripId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('提案与投票')),
+      appBar: AppBar(title: const Text('Proposals & Voting')),
       body: proposalsAsync.when(
         data: (proposals) {
           // Also need members for proposal cards
@@ -45,14 +45,14 @@ class TripProposalsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '暂无提案',
+                    'No Proposals',
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: theme.colorScheme.outline,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '点击右下角 + 发起新提案',
+                    'Tap + to create a new proposal',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.outline.withValues(alpha: 0.7),
                     ),
@@ -79,11 +79,11 @@ class TripProposalsScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('加载失败: $error'),
+              Text('Failed to load: $error'),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () => ref.invalidate(tripProposalsProvider(tripId)),
-                child: const Text('重试'),
+                child: const Text('Retry'),
               ),
             ],
           ),
@@ -209,13 +209,13 @@ class _CreateProposalSheetState extends ConsumerState<_CreateProposalSheet> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('提案已提交')),
+          const SnackBar(content: Text('Proposal submitted')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('提交失败: $e')),
+          SnackBar(content: Text('Submission failed: $e')),
         );
       }
     } finally {
@@ -272,23 +272,23 @@ class _CreateProposalSheetState extends ConsumerState<_CreateProposalSheet> {
           ),
           const SizedBox(height: 16),
 
-          Text('发起新提案', style: theme.textTheme.titleLarge),
+          Text('New Proposal', style: theme.textTheme.titleLarge),
           const SizedBox(height: 16),
 
           // Type selector
           DropdownButtonFormField<String>(
             initialValue: _type,
             decoration: const InputDecoration(
-              labelText: '提案类型',
+              labelText: 'Proposal Type',
               border: OutlineInputBorder(),
             ),
             items: const [
-              DropdownMenuItem(value: 'change_time', child: Text('修改出发时间')),
+              DropdownMenuItem(value: 'change_time', child: Text('Change Departure Time')),
               DropdownMenuItem(
-                  value: 'change_departure', child: Text('修改出发地点')),
+                  value: 'change_departure', child: Text('Change Departure Location')),
               DropdownMenuItem(
-                  value: 'change_destination', child: Text('修改目的地点')),
-              DropdownMenuItem(value: 'kick_member', child: Text('踢出成员')),
+                  value: 'change_destination', child: Text('Change Destination')),
+              DropdownMenuItem(value: 'kick_member', child: Text('Remove Member')),
             ],
             onChanged: (val) {
               if (val != null) setState(() => _type = val);
@@ -301,20 +301,20 @@ class _CreateProposalSheetState extends ConsumerState<_CreateProposalSheet> {
             DropdownButtonFormField<String>(
               initialValue: _targetUserId,
               decoration: const InputDecoration(
-                labelText: '选择成员',
+                labelText: 'Select Member',
                 border: OutlineInputBorder(),
               ),
               items: _kickableMembers
                   .map((m) => DropdownMenuItem(
                         value: m.userId,
-                        child: Text(m.user?.displayName ?? '未知'),
+                        child: Text(m.user?.displayName ?? 'Unknown'),
                       ))
                   .toList(),
               onChanged: (val) => setState(() => _targetUserId = val),
             ),
           ] else if (_type == 'change_time') ...[
             Text(
-              '当前: ${_oldValueForType()}',
+              'Current: ${_oldValueForType()}',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.outline,
               ),
@@ -325,13 +325,13 @@ class _CreateProposalSheetState extends ConsumerState<_CreateProposalSheet> {
               leading: const Icon(Icons.access_time),
               title: Text(_newTime != null
                   ? DateFormat('yyyy-MM-dd HH:mm').format(_newTime!)
-                  : '选择新时间'),
+                  : 'Select New Time'),
               trailing: const Icon(Icons.calendar_today, size: 20),
               onTap: _pickNewTime,
             ),
           ] else ...[
             Text(
-              '当前: ${_oldValueForType()}',
+              'Current: ${_oldValueForType()}',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.outline,
               ),
@@ -340,7 +340,7 @@ class _CreateProposalSheetState extends ConsumerState<_CreateProposalSheet> {
             TextFormField(
               controller: _newValueController,
               decoration: const InputDecoration(
-                labelText: '新地点',
+                labelText: 'New Location',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -360,7 +360,7 @@ class _CreateProposalSheetState extends ConsumerState<_CreateProposalSheet> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('提交提案'),
+                  : const Text('Submit Proposal'),
             ),
           ),
           const SizedBox(height: 8),

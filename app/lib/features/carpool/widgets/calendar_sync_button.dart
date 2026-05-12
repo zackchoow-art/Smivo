@@ -15,8 +15,8 @@ class CalendarSyncButton extends StatelessWidget {
 
   void _syncToCalendar() {
     final event = Event(
-      title: '拼车: ${trip.departureAddress} → ${trip.destinationAddress}',
-      description: trip.note ?? '校园拼车行程',
+      title: 'Carpool: ${trip.departureAddress} → ${trip.destinationAddress}',
+      description: trip.note ?? 'Campus carpool trip',
       location: trip.departureAddress,
       startDate: trip.departureTime,
       // NOTE: Fall back to +1 hour if estimated arrival is unknown,
@@ -31,7 +31,7 @@ class CalendarSyncButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton.icon(
       icon: const Icon(Icons.calendar_month),
-      label: const Text('添加到日历'),
+      label: const Text('Add to Calendar'),
       onPressed: _syncToCalendar,
     );
   }

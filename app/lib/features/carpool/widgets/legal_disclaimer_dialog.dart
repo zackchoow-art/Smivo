@@ -9,7 +9,7 @@ class LegalDisclaimerDialog extends StatelessWidget {
 
   /// Shows the dialog and returns the user's choice.
   ///
-  /// Returns true if the user tapped "同意并继续", false otherwise.
+  /// Returns true if the user tapped "Agree & Continue", false otherwise.
   static Future<bool> show(BuildContext context) async {
     return await showDialog<bool>(
           context: context,
@@ -22,45 +22,45 @@ class LegalDisclaimerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('校园拼车免责声明'),
+      title: const Text('Campus Carpool Disclaimer'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
           _DisclaimerItem(
             index: 1,
-            text: '本拼车功能仅限校园互助出行，严禁非法营运或营利行为',
+            text: 'This carpool feature is for campus mutual aid only. Illegal operation or for-profit behavior is strictly prohibited.',
           ),
           SizedBox(height: 8),
           _DisclaimerItem(
             index: 2,
-            text: '所有行程均由用户自行协商安排，平台不承担交通事故等任何责任',
+            text: 'All trips are arranged by users. The platform is not responsible for any traffic accidents or other liabilities.',
           ),
           SizedBox(height: 8),
           _DisclaimerItem(
             index: 3,
-            text: '请核实同行人身份，注意人身和财产安全',
+            text: 'Please verify the identity of your fellow riders and pay attention to your personal and property safety.',
           ),
           SizedBox(height: 8),
           _DisclaimerItem(
             index: 4,
-            text: '发布虚假信息、恶意占座等行为将被封号处理',
+            text: 'Posting false information or maliciously reserving seats will result in account suspension.',
           ),
           SizedBox(height: 8),
           _DisclaimerItem(
             index: 5,
-            text: '使用本功能即表示您已阅读并同意以上条款',
+            text: 'By using this feature, you agree to the terms and conditions above.',
           ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('不同意'),
+          child: const Text('Decline'),
         ),
         ElevatedButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('同意并继续'),
+          child: const Text('Agree & Continue'),
         ),
       ],
     );

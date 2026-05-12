@@ -87,13 +87,13 @@ class _ReviewBatchSheetState extends ConsumerState<ReviewBatchSheet> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('评价已提交，感谢您的反馈！')),
+          const SnackBar(content: Text('Reviews submitted')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('提交失败：$e')),
+          SnackBar(content: Text('Submission failed: $e')),
         );
       }
     } finally {
@@ -133,7 +133,7 @@ class _ReviewBatchSheetState extends ConsumerState<ReviewBatchSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  '评价同行者',
+                  'Rate Fellow Riders',
                   style: theme.textTheme.titleLarge,
                 ),
               ),
@@ -174,7 +174,7 @@ class _ReviewBatchSheetState extends ConsumerState<ReviewBatchSheet> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('提交评价'),
+                        : const Text('Submit Reviews'),
                   ),
                 ),
               ),
@@ -216,7 +216,7 @@ class _MemberReviewRow extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                user?.displayName ?? '未知用户',
+                user?.displayName ?? 'Unknown User',
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(fontWeight: FontWeight.w600),
               ),
@@ -253,7 +253,7 @@ class _MemberReviewRow extends StatelessWidget {
           maxLines: 2,
           maxLength: 200,
           decoration: InputDecoration(
-            hintText: '写点评价（可选）',
+            hintText: 'Write a review (Optional)',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,

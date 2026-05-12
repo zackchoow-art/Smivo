@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:smivo/data/models/carpool_member.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
-/// 成员头像行，横排显示已加入成员的头像。
-/// 未使用的座位用虚线圆圈占位。
+/// A row of member avatars, displaying joined members horizontally.
+/// Empty seats are represented by dashed circle placeholders.
 class MemberAvatarRow extends StatelessWidget {
   const MemberAvatarRow({
     super.key,
@@ -64,7 +64,7 @@ class MemberAvatarRow extends StatelessWidget {
         ),
         const SizedBox(width: 16),
         Text(
-          '$joinedCount/$totalSeats 已加入',
+          '$joinedCount/$totalSeats joined',
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
