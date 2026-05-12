@@ -290,16 +290,16 @@ String _$userGroupChatRoomsHash() =>
 
 /// Returns a map of { roomId: unreadCount } for all group chats.
 ///
-/// Used by GroupChatListTile to show the unread badge next to the time.
-/// Invalidated whenever the user enters/leaves a group chat room.
+/// Uses keepAlive to avoid auto-dispose cycles that cause UI flicker.
+/// Invalidated explicitly when the user enters/leaves a group chat room.
 
 @ProviderFor(groupUnreadCounts)
 final groupUnreadCountsProvider = GroupUnreadCountsProvider._();
 
 /// Returns a map of { roomId: unreadCount } for all group chats.
 ///
-/// Used by GroupChatListTile to show the unread badge next to the time.
-/// Invalidated whenever the user enters/leaves a group chat room.
+/// Uses keepAlive to avoid auto-dispose cycles that cause UI flicker.
+/// Invalidated explicitly when the user enters/leaves a group chat room.
 
 final class GroupUnreadCountsProvider
     extends
@@ -311,8 +311,8 @@ final class GroupUnreadCountsProvider
     with $FutureModifier<Map<String, int>>, $FutureProvider<Map<String, int>> {
   /// Returns a map of { roomId: unreadCount } for all group chats.
   ///
-  /// Used by GroupChatListTile to show the unread badge next to the time.
-  /// Invalidated whenever the user enters/leaves a group chat room.
+  /// Uses keepAlive to avoid auto-dispose cycles that cause UI flicker.
+  /// Invalidated explicitly when the user enters/leaves a group chat room.
   GroupUnreadCountsProvider._()
     : super(
         from: null,
@@ -339,4 +339,4 @@ final class GroupUnreadCountsProvider
   }
 }
 
-String _$groupUnreadCountsHash() => r'1858f2f90c1b88dce8c2dc056d3ad5142000642f';
+String _$groupUnreadCountsHash() => r'd6112b8f9ee4889582e534bae63b66fa8bb7fcab';

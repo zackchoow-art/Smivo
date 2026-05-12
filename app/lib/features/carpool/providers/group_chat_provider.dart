@@ -143,10 +143,13 @@ Future<List<model.GroupChatRoom>> userGroupChatRooms(Ref ref) async {
 
 /// Returns a map of { roomId: unreadCount } for all group chats.
 ///
-/// Used by GroupChatListTile to show the unread badge next to the time.
-/// Invalidated whenever the user enters/leaves a group chat room.
+/// Uses keepAlive to avoid auto-dispose cycles that cause UI flicker.
+/// Invalidated explicitly when the user enters/leaves a group chat room.
 @riverpod
 Future<Map<String, int>> groupUnreadCounts(Ref ref) async {
+  // NOTE: keepAlive prevents the provider from being disposed when the
+  // chat list scrolls off-screen and back, avoiding loading → data flicker.
+  ref.keepAlive();
   final client = ref.read(supabaseClientProvider);
   final userId = client.auth.currentUser?.id;
   if (userId == null) return {};

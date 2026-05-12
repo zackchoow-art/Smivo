@@ -212,35 +212,15 @@ class GroupChatRepository {
 
   /// Returns a map of { roomId: unreadCount } for all rooms the user belongs to.
   ///
-  /// Counts messages in each room created after the member's last_read_at.
-  /// If last_read_at is null, all messages after joined_at are counted.
+  /// Uses a single RPC call instead of N+1 queries for efficiency.
   Future<Map<String, int>> fetchGroupUnreadCounts(String userId) async {
     try {
-      // Get user's memberships with last_read_at
-      final memberRows = await _client
-          .from(AppConstants.tableGroupChatMembers)
-          .select('room_id, last_read_at, joined_at')
-          .eq('user_id', userId);
-
-      if (memberRows.isEmpty) return {};
+      final result = await _client
+          .rpc('get_group_unread_counts', params: {'p_user_id': userId});
 
       final counts = <String, int>{};
-      for (final row in memberRows) {
-        final roomId = row['room_id'] as String;
-        final lastReadAt = row['last_read_at'] as String?;
-        final joinedAt = row['joined_at'] as String;
-        // Use last_read_at if available, otherwise fall back to joined_at
-        final cutoff = lastReadAt ?? joinedAt;
-
-        // Count messages after the cutoff, excluding own messages
-        final result = await _client
-            .from(AppConstants.tableGroupMessages)
-            .select('id')
-            .eq('room_id', roomId)
-            .neq('sender_id', userId)
-            .gt('created_at', cutoff);
-
-        counts[roomId] = (result as List).length;
+      for (final row in (result as List)) {
+        counts[row['room_id'] as String] = (row['unread_count'] as num).toInt();
       }
       return counts;
     } on PostgrestException catch (e) {
