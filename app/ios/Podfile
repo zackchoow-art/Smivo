@@ -30,7 +30,7 @@ flutter_ios_podfile_setup
 # NOTE: Force all pods to generate modulemap files.
 # Required because TOCropViewController 3.1.2 doesn't define a module,
 # causing "Module not found" in image_cropper on Xcode 26.
-use_modular_headers!
+use_frameworks!
 
 target 'Runner' do
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
