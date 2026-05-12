@@ -29,7 +29,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
   DateTime? _closingTime;
 
   int _totalSeats = 4;
-  String _luggageLimit = '不限';
+  String _luggageLimit = 'none';
   bool _autoApproval = false;
 
   final _noteController = TextEditingController();
@@ -142,7 +142,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
           destinationAddress: _destinationAddress!,
           departureTime: _departureTime!,
           totalSeats: _totalSeats,
-          luggageLimit: _luggageLimit == '不限' ? null : _luggageLimit,
+          luggageLimit: _luggageLimit,
           approvalMode: _autoApproval ? 'auto' : 'manual',
           closingTime: _closingTime,
           note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
@@ -259,9 +259,12 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
                 const Text('行李限额'),
                 DropdownButton<String>(
                   value: _luggageLimit,
-                  items: ['不限', '仅小包', '中等行李', '大件行李']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
+                  items: const [
+                    DropdownMenuItem(value: 'none', child: Text('不限')),
+                    DropdownMenuItem(value: 'small', child: Text('仅小包')),
+                    DropdownMenuItem(value: 'medium', child: Text('中等行李')),
+                    DropdownMenuItem(value: 'large', child: Text('大件行李')),
+                  ],
                   onChanged: (val) {
                     if (val != null) setState(() => _luggageLimit = val);
                   },
