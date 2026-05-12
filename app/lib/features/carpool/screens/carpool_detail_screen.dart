@@ -70,111 +70,153 @@ class CarpoolDetailScreen extends ConsumerWidget {
                         ),
                       ),
 
-                    // Info Card
+                    // Route & Info Cards
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Card(
-                        elevation: 0,
-                        color: theme.colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.3),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Card 1: Description Card
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
                                 children: [
-                                  Icon(Icons.trip_origin,
-                                      size: 16,
-                                      color: theme.colorScheme.primary),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(trip.departureAddress,
-                                        style: theme.textTheme.bodyLarge),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.trip_origin, color: theme.colorScheme.primary),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          trip.departureDescription ?? trip.departureAddress,
+                                          style: theme.textTheme.titleMedium,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 11),
+                                    child: Container(
+                                      width: 2, height: 24,
+                                      color: theme.colorScheme.outlineVariant,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.location_on, color: theme.colorScheme.error),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          trip.destinationDescription ?? trip.destinationAddress,
+                                          style: theme.textTheme.titleMedium,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 7.0, top: 4, bottom: 4),
-                                child: Container(
-                                    width: 2,
-                                    height: 16,
-                                    color: theme.dividerColor),
-                              ),
-                              Row(
-                                children: [
-                                  Icon(Icons.location_on,
-                                      size: 16,
-                                      color: theme.colorScheme.error),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(trip.destinationAddress,
-                                        style: theme.textTheme.bodyLarge),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              const Divider(),
-                              const SizedBox(height: 16),
-                              _InfoRow(
-                                icon: Icons.access_time,
-                                label: 'Departure Time',
-                                value: DateFormat('yyyy-MM-dd HH:mm')
-                                    .format(trip.departureTime.toLocal()),
-                              ),
-                              if (trip.estimatedArrivalTime != null) ...[
-                                const SizedBox(height: 8),
-                                _InfoRow(
-                                  icon: Icons.flag,
-                                  label: 'Est. Arrival',
-                                  value: DateFormat('HH:mm').format(
-                                      trip.estimatedArrivalTime!.toLocal()),
-                                ),
-                              ],
-                              const SizedBox(height: 8),
-                              _InfoRow(
-                                icon: Icons.event_seat,
-                                label: 'Available Seats',
-                                value:
-                                    '${trip.availableSeats}/${trip.totalSeats} Seats',
-                              ),
-                              if (trip.luggageLimit != null) ...[
-                                const SizedBox(height: 8),
-                                _InfoRow(
-                                  icon: Icons.luggage,
-                                  label: 'Luggage Limit',
-                                  value: trip.luggageLimit!,
-                                ),
-                              ],
-                              const SizedBox(height: 8),
-                              _InfoRow(
-                                icon: Icons.verified_user,
-                                label: 'Approval Mode',
-                                value: trip.approvalMode == 'auto'
-                                    ? 'Auto-approve'
-                                    : 'Manual approval',
-                              ),
-                              if (trip.note != null &&
-                                  trip.note!.isNotEmpty) ...[
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Notes:',
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    color:
-                                        theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(trip.note!,
-                                    style: theme.textTheme.bodyMedium),
-                              ],
-                            ],
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          // Card 2: Full Address Card
+                          Card(
+                            color: theme.colorScheme.surfaceContainerLow,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Full Addresses',
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant)),
+                                  const SizedBox(height: 8),
+                                  _InfoRow(icon: Icons.trip_origin, label: 'From',
+                                    value: trip.departureAddress),
+                                  const SizedBox(height: 4),
+                                  _InfoRow(icon: Icons.location_on, label: 'To',
+                                    value: trip.destinationAddress),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // Card 3: Trip Details
+                          Card(
+                            elevation: 0,
+                            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _InfoRow(
+                                    icon: Icons.access_time,
+                                    label: 'Departure Time',
+                                    value: DateFormat('yyyy-MM-dd HH:mm').format(trip.departureTime.toLocal()),
+                                  ),
+                                  if (trip.estimatedArrivalTime != null) ...[
+                                    const SizedBox(height: 8),
+                                    _InfoRow(
+                                      icon: Icons.flag,
+                                      label: 'Est. Arrival',
+                                      value: DateFormat('yyyy-MM-dd HH:mm').format(trip.estimatedArrivalTime!.toLocal()),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 8),
+                                  _InfoRow(
+                                    icon: Icons.event_seat,
+                                    label: 'Available Seats',
+                                    value: '${trip.availableSeats}',
+                                  ),
+                                  if (trip.estimatedTotalPrice != null) ...[
+                                    const SizedBox(height: 8),
+                                    _InfoRow(
+                                      icon: Icons.attach_money,
+                                      label: 'Estimated Total',
+                                      value: '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}',
+                                    ),
+                                    const SizedBox(height: 4),
+                                    _InfoRow(
+                                      icon: Icons.people,
+                                      label: 'Est. Per Person',
+                                      value: '\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}',
+                                    ),
+                                  ],
+                                  if (trip.luggageLimit != null) ...[
+                                    const SizedBox(height: 8),
+                                    _InfoRow(
+                                      icon: Icons.luggage,
+                                      label: 'Luggage Limit',
+                                      value: trip.luggageLimit!,
+                                    ),
+                                  ],
+                                  const SizedBox(height: 8),
+                                  _InfoRow(
+                                    icon: Icons.verified_user,
+                                    label: 'Approval Mode',
+                                    value: trip.approvalMode == 'auto'
+                                        ? 'Auto-approve'
+                                        : 'Manual approval',
+                                  ),
+                                  if (trip.note != null && trip.note!.isNotEmpty) ...[
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Notes:',
+                                      style: theme.textTheme.labelLarge?.copyWith(
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(trip.note!, style: theme.textTheme.bodyMedium),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
@@ -189,15 +231,21 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           ? SmivoUserAvatar(
                               user: trip.creator!,
                               radius: 24,
-                              enableTap: false,
+                              enableTap: true,
                             )
                           : const CircleAvatar(
+                              radius: 24,
                               child: Icon(Icons.person),
                             ),
-                      title: Text(
-                          trip.creator?.displayName ?? 'Unknown'),
-                      subtitle: Text(
-                          trip.role == 'driver' ? 'Driver' : 'Organizer'),
+                      title: Text(trip.creator?.displayName ?? 'Unknown'),
+                      subtitle: Text(trip.role == 'driver' ? 'Driver' : 'Organizer'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.chat_bubble_outline),
+                        tooltip: 'Group Chat',
+                        onPressed: () {
+                          // TODO: Navigate to group chat for this trip
+                        },
+                      ),
                     ),
 
                     // Members Row
@@ -214,7 +262,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           const EdgeInsets.symmetric(horizontal: 16.0),
                       child: MemberAvatarRow(
                         members: trip.members
-                            .where((m) => m.status == 'approved')
+                            .where((m) => m.status == 'approved' && m.userId != trip.creatorId)
                             .toList(),
                         totalSeats: trip.totalSeats,
                       ),
@@ -297,6 +345,17 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           ),
                         ),
                       ] else ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Text(
+                            'Price shown is an estimate and may change based on final headcount.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.outline,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
