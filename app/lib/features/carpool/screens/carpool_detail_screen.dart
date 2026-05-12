@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/features/carpool/providers/carpool_detail_provider.dart';
+import 'package:smivo/features/carpool/screens/group_chat_screen.dart';
+import 'package:smivo/features/carpool/widgets/calendar_sync_button.dart';
+import 'package:smivo/features/carpool/widgets/trip_timeline.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/core/maps/map_route_preview.dart';
 import 'package:smivo/core/maps/map_service.dart';
@@ -243,7 +246,11 @@ class CarpoolDetailScreen extends ConsumerWidget {
                         icon: const Icon(Icons.chat_bubble_outline),
                         tooltip: 'Group Chat',
                         onPressed: () {
-                          // TODO: Navigate to group chat for this trip
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => GroupChatScreen(tripId: trip.id),
+                            ),
+                          );
                         },
                       ),
                     ),
@@ -267,6 +274,28 @@ class CarpoolDetailScreen extends ConsumerWidget {
                         totalSeats: trip.totalSeats,
                       ),
                     ),
+
+                    // Trip Timeline — shows lifecycle events dynamically
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TripTimeline(trip: trip),
+                    ),
+
+                    // Cost Settlement — shows after trip arrives
+                    if (['arrived', 'completed'].contains(trip.status))
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: CostSettlementCard(
+                          trip: trip,
+                          isCreator: isCreator,
+                          activeMemberCount: trip.members
+                              .where((m) =>
+                                  m.cancelledAt == null &&
+                                  (m.status == 'approved' || m.role == 'creator'))
+                              .length,
+                        ),
+                      ),
+
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -375,13 +404,9 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           ),
                         ),
                       ],
-                      // Placeholder for CalendarSyncButton (Phase 8)
+                      // Real CalendarSyncButton with 1-hour reminder
                       const SizedBox(height: 8),
-                      TextButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.calendar_month, size: 18),
-                        label: const Text('Add to Calendar'),
-                      ),
+                      CalendarSyncButton(trip: trip),
                     ],
                   ),
                 ),
