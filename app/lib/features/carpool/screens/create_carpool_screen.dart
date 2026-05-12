@@ -28,11 +28,14 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
   DateTime? _departureTime;
   DateTime? _closingTime;
 
-  int _totalSeats = 4;
+  int _totalSeats = 3;
   String _luggageLimit = 'none';
   bool _autoApproval = false;
+  double? _estimatedTotalPrice;
 
   final _noteController = TextEditingController();
+  final _departureDescController = TextEditingController();
+  final _destinationDescController = TextEditingController();
 
   Future<void> _pickLocation(bool isDeparture) async {
     // NOTE: MapLocationPicker is an inline widget with onLocationSelected
@@ -152,6 +155,9 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
           destinationLat: _destinationLat,
           destinationLng: _destinationLng,
           destinationPlaceId: _destinationPlaceId,
+          estimatedTotalPrice: _estimatedTotalPrice,
+          departureDescription: _departureDescController.text.trim().isEmpty ? null : _departureDescController.text.trim(),
+          destinationDescription: _destinationDescController.text.trim().isEmpty ? null : _destinationDescController.text.trim(),
         );
 
     final error = ref.read(createCarpoolProvider).error;
@@ -170,6 +176,8 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
   @override
   void dispose() {
     _noteController.dispose();
+    _departureDescController.dispose();
+    _destinationDescController.dispose();
     super.dispose();
   }
 
@@ -209,6 +217,22 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             const SizedBox(height: 24),
             Text('Route', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
+            TextFormField(
+              controller: _departureDescController,
+              decoration: const InputDecoration(
+                labelText: 'Departure Name (e.g. Smith College)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _destinationDescController,
+              decoration: const InputDecoration(
+                labelText: 'Destination Name (e.g. Bradley Airport)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.trip_origin, color: theme.colorScheme.primary),
@@ -240,15 +264,41 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Seats (1-4)'),
-                DropdownButton<int>(
-                  value: _totalSeats,
-                  items: [1, 2, 3, 4]
-                      .map((e) => DropdownMenuItem(value: e, child: Text('$e Seat(s)')))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _totalSeats = val);
-                  },
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Available Seats'),
+                    Text(
+                      'Number of empty seats you can offer',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: _totalSeats > 1
+                          ? () => setState(() => _totalSeats--)
+                          : null,
+                    ),
+                    SizedBox(
+                      width: 32,
+                      child: Text(
+                        '$_totalSeats',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: _totalSeats < 9
+                          ? () => setState(() => _totalSeats++)
+                          : null,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -270,6 +320,40 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
                   },
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Estimated Total Price (\$)',
+                hintText: 'e.g. 120.00',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.attach_money),
+              ),
+              onChanged: (val) => setState(() => _estimatedTotalPrice = double.tryParse(val)),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16,
+                    color: theme.colorScheme.onSecondaryContainer),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Actual cost may vary based on final headcount and total expenses.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             SwitchListTile(

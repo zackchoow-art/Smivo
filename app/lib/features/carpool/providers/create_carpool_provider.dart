@@ -28,6 +28,9 @@ class CreateCarpool extends _$CreateCarpool {
     double? destinationLat,
     double? destinationLng,
     String? destinationPlaceId,
+    double? estimatedTotalPrice,
+    String? departureDescription,
+    String? destinationDescription,
   }) async {
     final profile = ref.read(profileProvider).value;
     if (profile == null) return;
@@ -52,6 +55,9 @@ class CreateCarpool extends _$CreateCarpool {
             destinationLat: destinationLat,
             destinationLng: destinationLng,
             destinationPlaceId: destinationPlaceId,
+            estimatedTotalPrice: estimatedTotalPrice,
+            departureDescription: departureDescription,
+            destinationDescription: destinationDescription,
           );
       // invalidate list provider to refresh data
       ref.invalidate(carpoolListProvider);

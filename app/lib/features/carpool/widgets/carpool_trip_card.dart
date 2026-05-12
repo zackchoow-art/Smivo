@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/data/models/carpool_trip.dart';
-import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 class CarpoolTripCard extends StatelessWidget {
   const CarpoolTripCard({
@@ -13,10 +12,17 @@ class CarpoolTripCard extends StatelessWidget {
   final CarpoolTrip trip;
   final VoidCallback? onTap;
 
+  String _getShortDesc(String? desc, String address) {
+    if (desc != null && desc.isNotEmpty) return desc;
+    if (address.length > 20) return '${address.substring(0, 20)}...';
+    return address;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDriver = trip.role == 'driver';
+    final depDesc = _getShortDesc(trip.departureDescription, trip.departureAddress);
+    final destDesc = _getShortDesc(trip.destinationDescription, trip.destinationAddress);
 
     return Card(
       elevation: 2,
@@ -37,146 +43,73 @@ class CarpoolTripCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _RouteLine(
-                          from: trip.departureAddress,
-                          to: trip.destinationAddress,
-                          theme: theme,
+                        Text(
+                          '$depDesc → $destDesc',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time,
-                                size: 16, color: theme.colorScheme.primary),
-                            const SizedBox(width: 6),
-                            Text(
-                              DateFormat('MM-dd HH:mm')
-                                  .format(trip.departureTime.toLocal()),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 8),
+                        Text(
+                          DateFormat('EEE, MMM d · h:mm a').format(trip.departureTime.toLocal()),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(width: 16),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
-                      color: isDriver
-                          ? theme.colorScheme.primaryContainer
-                          : theme.colorScheme.secondaryContainer,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primaryContainer,
+                          theme.colorScheme.secondaryContainer,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                    child: Text(
-                      isDriver ? 'Driver' : 'Carpool',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: isDriver
-                            ? theme.colorScheme.onPrimaryContainer
-                            : theme.colorScheme.onSecondaryContainer,
+                    child: Center(
+                      child: Icon(
+                        Icons.directions_car,
+                        size: 32,
+                        color: theme.colorScheme.onPrimaryContainer,
                       ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              Divider(height: 1, color: theme.dividerColor),
-              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      if (trip.creator != null)
-                        SmivoUserAvatar(
-                          user: trip.creator!,
-                          radius: 14,
-                          enableTap: false,
-                        )
-                      else
-                        CircleAvatar(
-                          radius: 14,
-                          child: Icon(Icons.person, size: 14),
-                        ),
-                      const SizedBox(width: 8),
-                      Text(
-                        trip.creator?.displayName ?? 'Unknown',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ],
+                  Text(
+                    '${trip.availableSeats} seats available',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  Row(
-                    children: [
-                      Icon(Icons.event_seat,
-                          size: 16,
-                          color: theme.colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${trip.availableSeats}/${trip.totalSeats} Seats',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
+                  if (trip.estimatedTotalPrice != null)
+                    Text(
+                      '\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}/person',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _RouteLine extends StatelessWidget {
-  const _RouteLine({
-    required this.from,
-    required this.to,
-    required this.theme,
-  });
-
-  final String from;
-  final String to;
-  final ThemeData theme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Column(
-          children: [
-            Icon(Icons.trip_origin, size: 12, color: theme.colorScheme.primary),
-            Container(width: 2, height: 12, color: theme.dividerColor),
-            Icon(Icons.location_on, size: 12, color: theme.colorScheme.error),
-          ],
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                from,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                to,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

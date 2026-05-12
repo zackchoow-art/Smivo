@@ -98,6 +98,9 @@ class CarpoolRepository {
     String approvalMode = 'manual',
     DateTime? closingTime,
     String? note,
+    double? estimatedTotalPrice,
+    String? departureDescription,
+    String? destinationDescription,
   }) async {
     try {
       final data = await _client
@@ -123,6 +126,9 @@ class CarpoolRepository {
             'approval_mode': approvalMode,
             'closing_time': closingTime?.toUtc().toIso8601String(),
             'note': note,
+            if (estimatedTotalPrice != null) 'estimated_total_price': estimatedTotalPrice,
+            if (departureDescription != null) 'departure_description': departureDescription,
+            if (destinationDescription != null) 'destination_description': destinationDescription,
           })
           .select()
           .single();
