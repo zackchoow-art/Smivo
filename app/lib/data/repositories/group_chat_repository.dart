@@ -188,6 +188,100 @@ class GroupChatRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  // ── Unread count tracking ──────────────────────────────────────────────────
+
+  /// Updates [last_read_at] to now for the current user's membership in [roomId].
+  ///
+  /// Called when the user opens a group chat screen so all existing messages
+  /// are marked as "read".
+  Future<void> updateLastReadAt({
+    required String roomId,
+    required String userId,
+  }) async {
+    try {
+      await _client
+          .from(AppConstants.tableGroupChatMembers)
+          .update({'last_read_at': DateTime.now().toUtc().toIso8601String()})
+          .eq('room_id', roomId)
+          .eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Returns a map of { roomId: unreadCount } for all rooms the user belongs to.
+  ///
+  /// Counts messages in each room created after the member's last_read_at.
+  /// If last_read_at is null, all messages after joined_at are counted.
+  Future<Map<String, int>> fetchGroupUnreadCounts(String userId) async {
+    try {
+      // Get user's memberships with last_read_at
+      final memberRows = await _client
+          .from(AppConstants.tableGroupChatMembers)
+          .select('room_id, last_read_at, joined_at')
+          .eq('user_id', userId);
+
+      if (memberRows.isEmpty) return {};
+
+      final counts = <String, int>{};
+      for (final row in memberRows) {
+        final roomId = row['room_id'] as String;
+        final lastReadAt = row['last_read_at'] as String?;
+        final joinedAt = row['joined_at'] as String;
+        // Use last_read_at if available, otherwise fall back to joined_at
+        final cutoff = lastReadAt ?? joinedAt;
+
+        // Count messages after the cutoff, excluding own messages
+        final result = await _client
+            .from(AppConstants.tableGroupMessages)
+            .select('id')
+            .eq('room_id', roomId)
+            .neq('sender_id', userId)
+            .gt('created_at', cutoff);
+
+        counts[roomId] = (result as List).length;
+      }
+      return counts;
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  // ── Group chat active session ──────────────────────────────────────────────
+  // Mirrors ChatRepository's setActiveSession/clearActiveSession but uses
+  // the group_chat_room_id column instead of chat_room_id.
+
+  /// Records that [userId] is currently viewing group chat [roomId].
+  Future<void> setGroupActiveSession({
+    required String userId,
+    required String roomId,
+  }) async {
+    try {
+      await _client.from('user_active_sessions').upsert({
+        'user_id': userId,
+        'group_chat_room_id': roomId,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }, onConflict: 'user_id');
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Clears the group chat room session for [userId].
+  Future<void> clearGroupActiveSession(String userId) async {
+    try {
+      await _client
+          .from('user_active_sessions')
+          .update({
+            'group_chat_room_id': null,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod

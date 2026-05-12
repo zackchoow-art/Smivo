@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/data/models/carpool_trip.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 class CarpoolTripCard extends StatelessWidget {
   const CarpoolTripCard({
@@ -23,6 +24,7 @@ class CarpoolTripCard extends StatelessWidget {
     final theme = Theme.of(context);
     final depDesc = _getShortDesc(trip.departureDescription, trip.departureAddress);
     final destDesc = _getShortDesc(trip.destinationDescription, trip.destinationAddress);
+    final isDriver = trip.role == 'driver';
 
     return Card(
       elevation: 2,
@@ -40,76 +42,169 @@ class CarpoolTripCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$depDesc → $destDesc',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          DateFormat('EEE, MMM d · h:mm a').format(trip.departureTime.toLocal()),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+                    child: _RouteLine(
+                      from: depDesc,
+                      to: destDesc,
+                      theme: theme,
                     ),
                   ),
-                  const SizedBox(width: 16),
                   Container(
-                    width: 80,
-                    height: 80,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
+                      color: isDriver ? theme.colorScheme.primaryContainer : theme.colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(12),
-                      gradient: LinearGradient(
-                        colors: [
-                          theme.colorScheme.primaryContainer,
-                          theme.colorScheme.secondaryContainer,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
                     ),
-                    child: Center(
-                      child: Icon(
-                        Icons.directions_car,
-                        size: 32,
-                        color: theme.colorScheme.onPrimaryContainer,
+                    child: Text(
+                      isDriver ? 'Driver' : 'Carpool',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: isDriver ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSecondaryContainer,
                       ),
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.access_time, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                      const SizedBox(width: 6),
+                      Text(
+                        DateFormat('MM-dd HH:mm').format(trip.departureTime.toLocal()),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (trip.estimatedTotalPrice != null)
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}/',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          TextSpan(
+                            text: 'seat',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(height: 16),
+              Divider(height: 1, color: theme.dividerColor),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${trip.availableSeats} seats available',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (trip.estimatedTotalPrice != null)
-                    Text(
-                      '\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}/person',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      if (trip.creator != null)
+                        SmivoUserAvatar(
+                          user: trip.creator!,
+                          radius: 14,
+                          enableTap: false,
+                        )
+                      else
+                        const CircleAvatar(
+                          radius: 14,
+                          child: Icon(Icons.person, size: 14),
+                        ),
+                      const SizedBox(width: 8),
+                      Text(
+                        trip.creator?.displayName ?? 'Unknown',
+                        style: theme.textTheme.bodyMedium,
                       ),
-                    ),
+                    ],
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: List.generate(trip.totalSeats, (index) {
+                      final taken = trip.totalSeats - trip.availableSeats;
+                      final isAvailable = index >= taken;
+                      return Padding(
+                        padding: EdgeInsets.only(left: index == 0 ? 0 : 4.0),
+                        child: Icon(
+                          isAvailable ? Icons.event_seat_outlined : Icons.event_seat,
+                          size: 20,
+                          color: isAvailable
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                        ),
+                      );
+                    }),
+                  ),
                 ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _RouteLine extends StatelessWidget {
+  const _RouteLine({
+    required this.from,
+    required this.to,
+    required this.theme,
+  });
+
+  final String from;
+  final String to;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            const SizedBox(height: 4),
+            Icon(Icons.trip_origin, size: 12, color: theme.colorScheme.primary),
+            Container(width: 2, height: 16, color: theme.dividerColor),
+            Icon(Icons.location_on, size: 12, color: theme.colorScheme.error),
+          ],
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                from,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                to,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

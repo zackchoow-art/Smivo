@@ -10,6 +10,7 @@ import 'package:smivo/core/maps/map_route_preview.dart';
 import 'package:smivo/core/maps/map_service.dart';
 import 'package:smivo/features/carpool/widgets/member_avatar_row.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CarpoolDetailScreen extends ConsumerWidget {
   const CarpoolDetailScreen({super.key, required this.tripId});
@@ -26,9 +27,22 @@ class CarpoolDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Trip Details'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {},
+          detailAsync.maybeWhen(
+            data: (trip) => trip != null
+                ? IconButton(
+                    icon: const Icon(Icons.share),
+                    onPressed: () {
+                      final box = context.findRenderObject() as RenderBox?;
+                      Share.shareUri(
+                        Uri.parse('https://smivo.io/carpool/${trip.id}'),
+                        sharePositionOrigin: box != null
+                            ? box.localToGlobal(Offset.zero) & box.size
+                            : null,
+                      );
+                    },
+                  )
+                : const SizedBox(),
+            orElse: () => const SizedBox(),
           ),
         ],
       ),
@@ -47,12 +61,24 @@ class CarpoolDetailScreen extends ConsumerWidget {
           final isPending =
               myMemberRecord != null && myMemberRecord.status == 'pending';
 
+          String estArrivalStr = 'Pending';
+          if (trip.estimatedArrivalTime != null) {
+            estArrivalStr = DateFormat('yyyy-MM-dd HH:mm').format(trip.estimatedArrivalTime!.toLocal());
+          } else if (trip.departureLat != null && trip.departureLng != null && trip.destinationLat != null && trip.destinationLng != null) {
+            final route = estimateRoute(
+              MapLocation(latitude: trip.departureLat!, longitude: trip.departureLng!),
+              MapLocation(latitude: trip.destinationLat!, longitude: trip.destinationLng!),
+            );
+            final calculatedTime = trip.departureTime.add(Duration(minutes: route.durationMinutes));
+            estArrivalStr = DateFormat('yyyy-MM-dd HH:mm').format(calculatedTime.toLocal());
+          }
+
           return Column(
             children: [
               Expanded(
                 child: ListView(
                   children: [
-                    // Map Route Preview — uses MapLocation objects
+                        // Map Route Preview — uses MapLocation objects
                     if (trip.departureLat != null &&
                         trip.departureLng != null &&
                         trip.destinationLat != null &&
@@ -63,12 +89,12 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           departure: MapLocation(
                             latitude: trip.departureLat!,
                             longitude: trip.departureLng!,
-                            address: trip.departureAddress,
+                            address: trip.departureDescription ?? trip.departureAddress,
                           ),
                           destination: MapLocation(
                             latitude: trip.destinationLat!,
                             longitude: trip.destinationLng!,
-                            address: trip.destinationAddress,
+                            address: trip.destinationDescription ?? trip.destinationAddress,
                           ),
                         ),
                       ),
@@ -79,49 +105,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Card 1: Description Card
-                          Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.trip_origin, color: theme.colorScheme.primary),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          trip.departureDescription ?? trip.departureAddress,
-                                          style: theme.textTheme.titleMedium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 11),
-                                    child: Container(
-                                      width: 2, height: 24,
-                                      color: theme.colorScheme.outlineVariant,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.location_on, color: theme.colorScheme.error),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          trip.destinationDescription ?? trip.destinationAddress,
-                                          style: theme.textTheme.titleMedium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          // Card 2: Full Address Card
+                          // Card 1: Full Address Card
                           Card(
                             color: theme.colorScheme.surfaceContainerLow,
                             child: Padding(
@@ -130,14 +114,14 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text('Full Addresses',
-                                    style: theme.textTheme.labelLarge?.copyWith(
+                                    style: theme.textTheme.titleSmall?.copyWith(
                                       color: theme.colorScheme.onSurfaceVariant)),
                                   const SizedBox(height: 8),
-                                  _InfoRow(icon: Icons.trip_origin, label: 'From',
-                                    value: trip.departureAddress),
+                                  _InfoRow(icon: Icons.trip_origin, iconColor: Colors.green.shade600, label: 'From',
+                                    value: trip.departureAddress, labelWidth: 45),
                                   const SizedBox(height: 4),
-                                  _InfoRow(icon: Icons.location_on, label: 'To',
-                                    value: trip.destinationAddress),
+                                  _InfoRow(icon: Icons.location_on, iconColor: Colors.red.shade600, label: 'To',
+                                    value: trip.destinationAddress, labelWidth: 45),
                                 ],
                               ),
                             ),
@@ -159,20 +143,21 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                     icon: Icons.access_time,
                                     label: 'Departure Time',
                                     value: DateFormat('yyyy-MM-dd HH:mm').format(trip.departureTime.toLocal()),
+                                    labelWidth: 130,
                                   ),
-                                  if (trip.estimatedArrivalTime != null) ...[
-                                    const SizedBox(height: 8),
-                                    _InfoRow(
-                                      icon: Icons.flag,
-                                      label: 'Est. Arrival',
-                                      value: DateFormat('yyyy-MM-dd HH:mm').format(trip.estimatedArrivalTime!.toLocal()),
-                                    ),
-                                  ],
+                                  const SizedBox(height: 8),
+                                  _InfoRow(
+                                    icon: Icons.flag,
+                                    label: 'Est. Arrival',
+                                    value: estArrivalStr,
+                                    labelWidth: 130,
+                                  ),
                                   const SizedBox(height: 8),
                                   _InfoRow(
                                     icon: Icons.event_seat,
                                     label: 'Available Seats',
                                     value: '${trip.availableSeats}',
+                                    labelWidth: 130,
                                   ),
                                   if (trip.estimatedTotalPrice != null) ...[
                                     const SizedBox(height: 8),
@@ -180,12 +165,14 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                       icon: Icons.attach_money,
                                       label: 'Estimated Total',
                                       value: '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}',
+                                      labelWidth: 130,
                                     ),
                                     const SizedBox(height: 4),
                                     _InfoRow(
                                       icon: Icons.people,
                                       label: 'Est. Per Person',
                                       value: '\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}',
+                                      labelWidth: 130,
                                     ),
                                   ],
                                   if (trip.luggageLimit != null) ...[
@@ -194,6 +181,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                       icon: Icons.luggage,
                                       label: 'Luggage Limit',
                                       value: trip.luggageLimit!,
+                                      labelWidth: 130,
                                     ),
                                   ],
                                   const SizedBox(height: 8),
@@ -203,17 +191,33 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                     value: trip.approvalMode == 'auto'
                                         ? 'Auto-approve'
                                         : 'Manual approval',
+                                    labelWidth: 130,
                                   ),
                                   if (trip.note != null && trip.note!.isNotEmpty) ...[
                                     const SizedBox(height: 16),
-                                    Text(
-                                      'Notes:',
-                                      style: theme.textTheme.labelLarge?.copyWith(
-                                        color: theme.colorScheme.onSurfaceVariant,
-                                      ),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.notes, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Notes:',
+                                          style: theme.textTheme.bodyMedium?.copyWith(
+                                            color: theme.colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(trip.note!, style: theme.textTheme.bodyMedium),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 24.0),
+                                      child: Text(
+                                        trip.note!,
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ],
                               ),
@@ -224,10 +228,11 @@ class CarpoolDetailScreen extends ConsumerWidget {
                     ),
 
                     // Creator Card
+                    const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text('Organizer',
-                          style: theme.textTheme.titleMedium),
+                          style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                     ),
                     ListTile(
                       leading: trip.creator != null
@@ -244,14 +249,16 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       subtitle: Text(trip.role == 'driver' ? 'Driver' : 'Organizer'),
                       trailing: IconButton(
                         icon: const Icon(Icons.chat_bubble_outline),
-                        tooltip: 'Group Chat',
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => GroupChatScreen(tripId: trip.id),
-                            ),
-                          );
-                        },
+                        tooltip: 'Message Organizer',
+                        onPressed: (!isCreator && (isMember || isPending))
+                            ? () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => GroupChatScreen(tripId: trip.id),
+                                  ),
+                                );
+                              }
+                            : null,
                       ),
                     ),
 
@@ -261,7 +268,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       padding:
                           const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text('Joined Members',
-                          style: theme.textTheme.titleMedium),
+                          style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                     ),
                     const SizedBox(height: 12),
                     Padding(
@@ -276,6 +283,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                     ),
 
                     // Trip Timeline — shows lifecycle events dynamically
+                    const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: TripTimeline(trip: trip),
@@ -376,13 +384,22 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       ] else ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          child: Text(
-                            'Price shown is an estimate and may change based on final headcount.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.outline,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            textAlign: TextAlign.center,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.lightbulb, size: 16, color: Colors.amber.shade600),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Price shown is an estimate and may change based on final headcount.',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.outline,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         SizedBox(
@@ -427,23 +444,31 @@ class _InfoRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.labelWidth,
+    this.iconColor,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final double? labelWidth;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+        Icon(icon, size: 16, color: iconColor ?? theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+        SizedBox(
+          width: labelWidth,
+          child: Text(
+            '$label: ',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         Expanded(

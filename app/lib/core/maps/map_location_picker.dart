@@ -74,7 +74,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
     setState(() {
       _selected = location;
       _results = [];
-      _searchController.text = location.displayName;
+      _searchController.text = location.address ?? location.displayName;
     });
     widget.onLocationSelected(location);
   }

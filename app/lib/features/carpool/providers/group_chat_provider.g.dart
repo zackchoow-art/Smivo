@@ -287,3 +287,56 @@ final class UserGroupChatRoomsProvider
 
 String _$userGroupChatRoomsHash() =>
     r'eac9b0ab50a1218117cb3ea6253660b07e97fb23';
+
+/// Returns a map of { roomId: unreadCount } for all group chats.
+///
+/// Used by GroupChatListTile to show the unread badge next to the time.
+/// Invalidated whenever the user enters/leaves a group chat room.
+
+@ProviderFor(groupUnreadCounts)
+final groupUnreadCountsProvider = GroupUnreadCountsProvider._();
+
+/// Returns a map of { roomId: unreadCount } for all group chats.
+///
+/// Used by GroupChatListTile to show the unread badge next to the time.
+/// Invalidated whenever the user enters/leaves a group chat room.
+
+final class GroupUnreadCountsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Map<String, int>>,
+          Map<String, int>,
+          FutureOr<Map<String, int>>
+        >
+    with $FutureModifier<Map<String, int>>, $FutureProvider<Map<String, int>> {
+  /// Returns a map of { roomId: unreadCount } for all group chats.
+  ///
+  /// Used by GroupChatListTile to show the unread badge next to the time.
+  /// Invalidated whenever the user enters/leaves a group chat room.
+  GroupUnreadCountsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'groupUnreadCountsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$groupUnreadCountsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<Map<String, int>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Map<String, int>> create(Ref ref) {
+    return groupUnreadCounts(ref);
+  }
+}
+
+String _$groupUnreadCountsHash() => r'1858f2f90c1b88dce8c2dc056d3ad5142000642f';

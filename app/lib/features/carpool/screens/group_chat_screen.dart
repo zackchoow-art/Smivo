@@ -5,6 +5,9 @@ import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/group_chat_member.dart';
 import 'package:smivo/data/models/group_chat_room.dart' as model;
 import 'package:smivo/features/carpool/providers/group_chat_provider.dart';
+import 'package:intl/intl.dart';
+import 'package:smivo/data/models/carpool_trip.dart';
+import 'package:smivo/features/carpool/providers/carpool_detail_provider.dart';
 import 'package:smivo/features/carpool/widgets/group_message_bubble.dart';
 import 'package:smivo/features/carpool/widgets/group_member_sheet.dart';
 
@@ -29,12 +32,22 @@ class _GroupChatScreenState extends ConsumerState<GroupChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   String? _roomId;
+  bool _hasMarkedRead = false;
 
   @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    // Clear active session on leave so push notifications resume
+    clearGroupChatSession(ref);
     super.dispose();
+  }
+
+  /// Marks the room as read once when the room ID becomes available.
+  void _markAsReadOnce(String roomId) {
+    if (_hasMarkedRead) return;
+    _hasMarkedRead = true;
+    markGroupChatAsRead(ref, roomId);
   }
 
   void _scrollToBottom() {
@@ -95,16 +108,6 @@ class _GroupChatScreenState extends ConsumerState<GroupChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: roomAsync.when(
-          data: (room) => Text(
-            room.name,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          loading: () => const Text('Loading...'),
-          error: (_, __) => const Text('Group Chat'),
-        ),
         actions: [
           // Overlapping avatar row — shows up to 5 member avatars in AppBar
           roomAsync.when(
@@ -145,6 +148,8 @@ class _GroupChatScreenState extends ConsumerState<GroupChatScreen> {
       body: roomAsync.when(
         data: (room) {
           _roomId = room.id;
+          // Mark as read on first load to clear badge + register session
+          _markAsReadOnce(room.id);
           return _buildChatBody(room.id, currentUserId, theme);
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -186,9 +191,18 @@ class _GroupChatScreenState extends ConsumerState<GroupChatScreen> {
     ThemeData theme,
   ) {
     final messagesAsync = ref.watch(groupChatMessagesProvider(roomId));
+    final tripAsync = ref.watch(carpoolDetailProvider(widget.tripId));
 
     return Column(
       children: [
+        tripAsync.when(
+          data: (trip) {
+            if (trip == null) return const SizedBox.shrink();
+            return _TripHeaderCard(trip: trip, theme: theme);
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
         // Message list
         Expanded(
           child: messagesAsync.when(
@@ -375,3 +389,95 @@ class _MemberAvatar extends StatelessWidget {
     );
   }
 }
+
+/// Header card displaying trip's from/to/time info at the top of the chat.
+class _TripHeaderCard extends StatelessWidget {
+  const _TripHeaderCard({required this.trip, required this.theme});
+
+  final CarpoolTrip trip;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 24,
+                child: Icon(Icons.trip_origin, size: 16, color: Colors.green.shade600),
+              ),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 50,
+                      child: Text('From:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                    ),
+                    Expanded(child: Text(trip.departureAddress, style: theme.textTheme.bodyMedium)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 24,
+                child: Icon(Icons.location_on, size: 16, color: Colors.red.shade600),
+              ),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 50,
+                      child: Text('To:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                    ),
+                    Expanded(child: Text(trip.destinationAddress, style: theme.textTheme.bodyMedium)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 24,
+                child: Icon(Icons.access_time, size: 16, color: theme.colorScheme.onSurfaceVariant),
+              ),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 50,
+                      child: Text('Time:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                    ),
+                    Expanded(child: Text(DateFormat('MM-dd HH:mm').format(trip.departureTime.toLocal()), style: theme.textTheme.bodyMedium)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+

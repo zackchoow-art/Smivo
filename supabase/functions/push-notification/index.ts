@@ -66,6 +66,32 @@ serve(async (req) => {
         }
       }
     }
+
+    // ── Server-side suppression for GROUP chat messages ──────────────────────
+    // Same pattern as 1-on-1 chat: check group_chat_room_id column.
+    if (notificationType === "group_message") {
+      const { data: session } = await supabase
+        .from("user_active_sessions")
+        .select("group_chat_room_id, updated_at")
+        .eq("user_id", userId)
+        .single();
+
+      // Extract the room_id from the action_url (format: /group-chat/<room_id>)
+      const actionRoomId = actionUrl ? actionUrl.replace('/group-chat/', '') : null;
+
+      if (session?.group_chat_room_id && actionRoomId &&
+          session.group_chat_room_id === actionRoomId) {
+        const sessionAge = Date.now() - new Date(session.updated_at).getTime();
+        const SESSION_TTL_MS = 2 * 60 * 1000;
+
+        if (sessionAge <= SESSION_TTL_MS) {
+          console.log(
+            `[push] Suppressed group: user ${userId} is in group room ${actionRoomId}`,
+          );
+          return new Response("Suppressed: user is currently in this group chat", { status: 200 });
+        }
+      }
+    }
     // ─────────────────────────────────────────────────────────────────────────
 
     // Fetch user profile and push preferences
@@ -98,8 +124,8 @@ serve(async (req) => {
       return new Response("User has order update notifications disabled", { status: 200 });
     }
 
-    // Message updates switch check
-    if (notificationType === "new_message" && !profile.push_messages) {
+    // Message updates switch check (covers both 1-on-1 and group messages)
+    if ((notificationType === "new_message" || notificationType === "group_message") && !profile.push_messages) {
       return new Response("User has message notifications disabled", { status: 200 });
     }
 

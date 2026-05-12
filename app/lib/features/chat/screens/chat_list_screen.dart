@@ -588,6 +588,7 @@ class _GroupChatListSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groupRoomsAsync = ref.watch(userGroupChatRoomsProvider);
+    final unreadCountsAsync = ref.watch(groupUnreadCountsProvider);
 
     return groupRoomsAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -606,37 +607,37 @@ class _GroupChatListSection extends ConsumerWidget {
 
         if (filtered.isEmpty) return const SizedBox.shrink();
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final room in filtered)
-              Builder(
-                builder: (context) {
-                  final lastMessage = room.members.isNotEmpty
-                      ? '${room.members.length} members'
-                      : 'Group chat';
+        // Resolve unread counts (default to empty map on loading/error)
+        final unreadCounts = unreadCountsAsync.value ?? {};
 
-                  Widget tile = GroupChatListTile(
-                    roomName: room.name,
-                    members: room.members,
-                    lastMessage: lastMessage,
-                    lastMessageTime: room.updatedAt,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              GroupChatScreen(tripId: room.tripId),
-                        ),
-                      );
-                    },
-                  );
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final room in filtered)
+                Builder(
+                  builder: (context) {
+                    Widget tile = GroupChatListTile(
+                      room: room,
+                      unreadCount: unreadCounts[room.id] ?? 0,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                GroupChatScreen(tripId: room.tripId),
+                          ),
+                        );
+                      },
+                    );
 
-                  return useWidthConstraint
-                      ? ContentWidthConstraint(maxWidth: 768, child: tile)
-                      : tile;
-                },
-              ),
-          ],
+                    return useWidthConstraint
+                        ? ContentWidthConstraint(maxWidth: 768, child: tile)
+                        : tile;
+                  },
+                ),
+            ],
+          ),
         );
       },
     );

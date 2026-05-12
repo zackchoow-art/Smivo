@@ -12,6 +12,10 @@ _GroupChatMember _$GroupChatMemberFromJson(Map<String, dynamic> json) =>
       roomId: json['room_id'] as String,
       userId: json['user_id'] as String,
       joinedAt: DateTime.parse(json['joined_at'] as String),
+      lastReadAt:
+          json['last_read_at'] == null
+              ? null
+              : DateTime.parse(json['last_read_at'] as String),
       user:
           json['user'] == null
               ? null
@@ -24,5 +28,6 @@ Map<String, dynamic> _$GroupChatMemberToJson(_GroupChatMember instance) =>
       'room_id': instance.roomId,
       'user_id': instance.userId,
       'joined_at': instance.joinedAt.toIso8601String(),
+      'last_read_at': instance.lastReadAt?.toIso8601String(),
       'user': instance.user,
     };

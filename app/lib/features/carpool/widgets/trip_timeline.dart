@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:smivo/data/models/carpool_trip.dart';
 import 'package:smivo/features/carpool/providers/carpool_lifecycle_provider.dart';
+import 'package:smivo/core/maps/map_service.dart';
 
 /// A vertical timeline showing the full lifecycle of a carpool trip.
 ///
@@ -32,8 +33,8 @@ class TripTimeline extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
           child: Text(
             'Trip Timeline',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
         ),
@@ -114,12 +115,24 @@ class TripTimeline extends StatelessWidget {
 
     // 5. Arrived event
     final hasArrived = ['arrived', 'completed'].contains(trip.status);
+    
+    DateTime? calculatedArrival = trip.estimatedArrivalTime;
+    if (calculatedArrival == null &&
+        trip.departureLat != null && trip.departureLng != null &&
+        trip.destinationLat != null && trip.destinationLng != null) {
+      final route = estimateRoute(
+        MapLocation(latitude: trip.departureLat!, longitude: trip.departureLng!),
+        MapLocation(latitude: trip.destinationLat!, longitude: trip.destinationLng!),
+      );
+      calculatedArrival = trip.departureTime.add(Duration(minutes: route.durationMinutes));
+    }
+
     events.add(_TimelineEvent(
       label: 'Arrived',
       subtitle: null,
       time: hasArrived
-          ? (trip.estimatedArrivalTime != null
-              ? dateFormat.format(trip.estimatedArrivalTime!.toLocal())
+          ? (calculatedArrival != null
+              ? dateFormat.format(calculatedArrival.toLocal())
               : 'Confirmed')
           : 'Pending',
       isCompleted: hasArrived,
@@ -190,7 +203,7 @@ class _TimelineRow extends StatelessWidget {
         children: [
           // Left column: date/time
           SizedBox(
-            width: 80,
+            width: 110,
             child: Padding(
               padding: const EdgeInsets.only(top: 2, right: 8),
               child: Text(

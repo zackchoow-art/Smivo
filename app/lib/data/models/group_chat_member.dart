@@ -17,6 +17,9 @@ abstract class GroupChatMember with _$GroupChatMember {
     @JsonKey(name: 'room_id') required String roomId,
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(name: 'joined_at') required DateTime joinedAt,
+    // Tracks when the user last opened this group chat.
+    // Messages created after this timestamp are considered unread.
+    @JsonKey(name: 'last_read_at') DateTime? lastReadAt,
 
     // Nested join — populated only when queried with user join
     UserProfile? user,

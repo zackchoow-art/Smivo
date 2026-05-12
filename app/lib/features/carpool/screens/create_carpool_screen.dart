@@ -58,12 +58,12 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             onLocationSelected: (location) {
               setState(() {
                 if (isDeparture) {
-                  _departureAddress = location.displayName;
+                  _departureAddress = location.address ?? location.displayName;
                   _departureLat = location.latitude;
                   _departureLng = location.longitude;
                   _departurePlaceId = location.placeId;
                 } else {
-                  _destinationAddress = location.displayName;
+                  _destinationAddress = location.address ?? location.displayName;
                   _destinationLat = location.latitude;
                   _destinationLng = location.longitude;
                   _destinationPlaceId = location.placeId;
@@ -78,11 +78,20 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
   }
 
   Future<void> _pickDateTime(bool isDeparture) async {
+    final now = DateTime.now();
+    DateTime first = now;
+    DateTime last = isDeparture ? now.add(const Duration(days: 90)) : (_departureTime ?? now.add(const Duration(days: 90)));
+    if (last.isBefore(first)) last = first;
+
+    DateTime initial = isDeparture ? (_departureTime ?? now) : (_closingTime ?? now);
+    if (initial.isBefore(first)) initial = first;
+    if (initial.isAfter(last)) initial = last;
+
     final date = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
+      initialDate: initial,
+      firstDate: first,
+      lastDate: last,
     );
     if (date == null) return;
 
@@ -104,8 +113,17 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
     setState(() {
       if (isDeparture) {
         _departureTime = selected;
+        final defaultClosing = selected.subtract(const Duration(hours: 1));
+        _closingTime = defaultClosing.isBefore(DateTime.now()) ? DateTime.now() : defaultClosing;
       } else {
-        _closingTime = selected;
+        if (_departureTime != null && selected.isAfter(_departureTime!)) {
+          _closingTime = _departureTime;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Registration deadline cannot be after departure time')),
+          );
+        } else {
+          _closingTime = selected;
+        }
       }
     });
   }
@@ -220,7 +238,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             TextFormField(
               controller: _departureDescController,
               decoration: const InputDecoration(
-                labelText: 'Departure Name (e.g. Smith College)',
+                labelText: 'Departure Name (e.g. School)',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -228,7 +246,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             TextFormField(
               controller: _destinationDescController,
               decoration: const InputDecoration(
-                labelText: 'Destination Name (e.g. Bradley Airport)',
+                labelText: 'Destination Name (e.g. Airport)',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -358,8 +376,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             const SizedBox(height: 16),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Approval Mode'),
-              subtitle: Text(_autoApproval ? 'Auto-approve requests' : 'Manual approval'),
+              title: const Text('Auto approve requests'),
               value: _autoApproval,
               onChanged: (val) => setState(() => _autoApproval = val),
             ),

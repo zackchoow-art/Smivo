@@ -100,54 +100,32 @@ class ChatListItem extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Avatar with unread indicator
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      if (conversation.partnerProfile != null)
-                        SmivoUserAvatar(
-                          user: conversation.partnerProfile!,
-                          radius: 24,
-                          enableTap: false,
-                        )
-                      else
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: colors.surfaceContainer,
-                          backgroundImage:
-                              conversation.avatarUrl != null
-                                  ? NetworkImage(conversation.avatarUrl!)
-                                  : null,
-                          child:
-                              conversation.avatarUrl == null &&
-                                      conversation.initials != null
-                                  ? Text(
-                                    conversation.initials!,
-                                    style: typo.titleMedium.copyWith(
-                                      color: colors.onSurface,
-                                    ),
-                                  )
-                                  : null,
-                        ),
-                      if (conversation.unreadCount > 0)
-                        Positioned(
-                          top: -4,
-                          right: -4,
-                          child: Badge(
-                            label: Text(
-                              conversation.unreadCount > 99
-                                  ? '99+'
-                                  : conversation.unreadCount.toString(),
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: colors.onPrimary,
-                              ),
-                            ),
-                            backgroundColor: colors.error,
-                          ),
-                        ),
-                    ],
-                  ),
+                  // Avatar (no longer has unread badge overlay)
+                  if (conversation.partnerProfile != null)
+                    SmivoUserAvatar(
+                      user: conversation.partnerProfile!,
+                      radius: 24,
+                      enableTap: false,
+                    )
+                  else
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: colors.surfaceContainer,
+                      backgroundImage:
+                          conversation.avatarUrl != null
+                              ? NetworkImage(conversation.avatarUrl!)
+                              : null,
+                      child:
+                          conversation.avatarUrl == null &&
+                                  conversation.initials != null
+                              ? Text(
+                                conversation.initials!,
+                                style: typo.titleMedium.copyWith(
+                                  color: colors.onSurface,
+                                ),
+                              )
+                              : null,
+                    ),
                   const SizedBox(width: 12),
 
                   // Name, message, and pin indicator
@@ -186,12 +164,33 @@ class ChatListItem extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            Text(
-                              conversation.time,
-                              style: typo.labelSmall.copyWith(
-                                color: colors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            // Time text + unread badge grouped together
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  conversation.time,
+                                  style: typo.labelSmall.copyWith(
+                                    color: colors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (conversation.unreadCount > 0) ...[
+                                  const SizedBox(width: 6),
+                                  Badge(
+                                    label: Text(
+                                      conversation.unreadCount > 99
+                                          ? '99+'
+                                          : conversation.unreadCount.toString(),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: colors.onPrimary,
+                                      ),
+                                    ),
+                                    backgroundColor: colors.error,
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),

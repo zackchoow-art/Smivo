@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -139,3 +140,50 @@ Future<List<model.GroupChatRoom>> userGroupChatRooms(Ref ref) async {
   if (userId == null) return [];
   return ref.read(groupChatRepositoryProvider).fetchUserGroupChatRooms(userId);
 }
+
+/// Returns a map of { roomId: unreadCount } for all group chats.
+///
+/// Used by GroupChatListTile to show the unread badge next to the time.
+/// Invalidated whenever the user enters/leaves a group chat room.
+@riverpod
+Future<Map<String, int>> groupUnreadCounts(Ref ref) async {
+  final client = ref.read(supabaseClientProvider);
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return {};
+  return ref.read(groupChatRepositoryProvider).fetchGroupUnreadCounts(userId);
+}
+
+/// Marks a group chat room as read and refreshes unread counts.
+///
+/// Called when the user enters a group chat screen to clear the badge.
+/// Also registers the group active session for push suppression.
+Future<void> markGroupChatAsRead(WidgetRef ref, String roomId) async {
+  final client = ref.read(supabaseClientProvider);
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return;
+
+  final repo = ref.read(groupChatRepositoryProvider);
+
+  // Update last_read_at so unread count resets
+  await repo.updateLastReadAt(roomId: roomId, userId: userId);
+
+  // Register active session for push suppression
+  await repo.setGroupActiveSession(userId: userId, roomId: roomId);
+
+  // Refresh the unread counts in the chat list
+  ref.invalidate(groupUnreadCountsProvider);
+}
+
+/// Clears the group chat active session when leaving the room.
+Future<void> clearGroupChatSession(WidgetRef ref) async {
+  final client = ref.read(supabaseClientProvider);
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return;
+
+  final repo = ref.read(groupChatRepositoryProvider);
+  await repo.clearGroupActiveSession(userId);
+
+  // Refresh unread counts so the list reflects any messages received
+  ref.invalidate(groupUnreadCountsProvider);
+}
+

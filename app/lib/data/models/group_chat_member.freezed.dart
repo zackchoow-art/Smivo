@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GroupChatMember {
 
- String get id;@JsonKey(name: 'room_id') String get roomId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'joined_at') DateTime get joinedAt;// Nested join — populated only when queried with user join
+ String get id;@JsonKey(name: 'room_id') String get roomId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'joined_at') DateTime get joinedAt;// Tracks when the user last opened this group chat.
+// Messages created after this timestamp are considered unread.
+@JsonKey(name: 'last_read_at') DateTime? get lastReadAt;// Nested join — populated only when queried with user join
  UserProfile? get user;
 /// Create a copy of GroupChatMember
 /// with the given fields replaced by the non-null parameter values.
@@ -29,16 +31,16 @@ $GroupChatMemberCopyWith<GroupChatMember> get copyWith => _$GroupChatMemberCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupChatMember&&(identical(other.id, id) || other.id == id)&&(identical(other.roomId, roomId) || other.roomId == roomId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.user, user) || other.user == user));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupChatMember&&(identical(other.id, id) || other.id == id)&&(identical(other.roomId, roomId) || other.roomId == roomId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.lastReadAt, lastReadAt) || other.lastReadAt == lastReadAt)&&(identical(other.user, user) || other.user == user));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,roomId,userId,joinedAt,user);
+int get hashCode => Object.hash(runtimeType,id,roomId,userId,joinedAt,lastReadAt,user);
 
 @override
 String toString() {
-  return 'GroupChatMember(id: $id, roomId: $roomId, userId: $userId, joinedAt: $joinedAt, user: $user)';
+  return 'GroupChatMember(id: $id, roomId: $roomId, userId: $userId, joinedAt: $joinedAt, lastReadAt: $lastReadAt, user: $user)';
 }
 
 
@@ -49,7 +51,7 @@ abstract mixin class $GroupChatMemberCopyWith<$Res>  {
   factory $GroupChatMemberCopyWith(GroupChatMember value, $Res Function(GroupChatMember) _then) = _$GroupChatMemberCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'room_id') String roomId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at') DateTime joinedAt, UserProfile? user
+ String id,@JsonKey(name: 'room_id') String roomId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at') DateTime joinedAt,@JsonKey(name: 'last_read_at') DateTime? lastReadAt, UserProfile? user
 });
 
 
@@ -66,13 +68,14 @@ class _$GroupChatMemberCopyWithImpl<$Res>
 
 /// Create a copy of GroupChatMember
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? roomId = null,Object? userId = null,Object? joinedAt = null,Object? user = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? roomId = null,Object? userId = null,Object? joinedAt = null,Object? lastReadAt = freezed,Object? user = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,roomId: null == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,joinedAt: null == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as DateTime,lastReadAt: freezed == lastReadAt ? _self.lastReadAt : lastReadAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as UserProfile?,
   ));
 }
@@ -170,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'room_id')  String roomId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt,  UserProfile? user)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'room_id')  String roomId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt, @JsonKey(name: 'last_read_at')  DateTime? lastReadAt,  UserProfile? user)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupChatMember() when $default != null:
-return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.user);case _:
+return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.lastReadAt,_that.user);case _:
   return orElse();
 
 }
@@ -191,10 +194,10 @@ return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.user);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'room_id')  String roomId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt,  UserProfile? user)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'room_id')  String roomId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt, @JsonKey(name: 'last_read_at')  DateTime? lastReadAt,  UserProfile? user)  $default,) {final _that = this;
 switch (_that) {
 case _GroupChatMember():
-return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.user);case _:
+return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.lastReadAt,_that.user);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -211,10 +214,10 @@ return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.user);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'room_id')  String roomId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt,  UserProfile? user)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'room_id')  String roomId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt, @JsonKey(name: 'last_read_at')  DateTime? lastReadAt,  UserProfile? user)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupChatMember() when $default != null:
-return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.user);case _:
+return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.lastReadAt,_that.user);case _:
   return null;
 
 }
@@ -226,13 +229,16 @@ return $default(_that.id,_that.roomId,_that.userId,_that.joinedAt,_that.user);ca
 @JsonSerializable()
 
 class _GroupChatMember implements GroupChatMember {
-  const _GroupChatMember({required this.id, @JsonKey(name: 'room_id') required this.roomId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'joined_at') required this.joinedAt, this.user});
+  const _GroupChatMember({required this.id, @JsonKey(name: 'room_id') required this.roomId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'joined_at') required this.joinedAt, @JsonKey(name: 'last_read_at') this.lastReadAt, this.user});
   factory _GroupChatMember.fromJson(Map<String, dynamic> json) => _$GroupChatMemberFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'room_id') final  String roomId;
 @override@JsonKey(name: 'user_id') final  String userId;
 @override@JsonKey(name: 'joined_at') final  DateTime joinedAt;
+// Tracks when the user last opened this group chat.
+// Messages created after this timestamp are considered unread.
+@override@JsonKey(name: 'last_read_at') final  DateTime? lastReadAt;
 // Nested join — populated only when queried with user join
 @override final  UserProfile? user;
 
@@ -249,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupChatMember&&(identical(other.id, id) || other.id == id)&&(identical(other.roomId, roomId) || other.roomId == roomId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.user, user) || other.user == user));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupChatMember&&(identical(other.id, id) || other.id == id)&&(identical(other.roomId, roomId) || other.roomId == roomId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.lastReadAt, lastReadAt) || other.lastReadAt == lastReadAt)&&(identical(other.user, user) || other.user == user));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,roomId,userId,joinedAt,user);
+int get hashCode => Object.hash(runtimeType,id,roomId,userId,joinedAt,lastReadAt,user);
 
 @override
 String toString() {
-  return 'GroupChatMember(id: $id, roomId: $roomId, userId: $userId, joinedAt: $joinedAt, user: $user)';
+  return 'GroupChatMember(id: $id, roomId: $roomId, userId: $userId, joinedAt: $joinedAt, lastReadAt: $lastReadAt, user: $user)';
 }
 
 
@@ -269,7 +275,7 @@ abstract mixin class _$GroupChatMemberCopyWith<$Res> implements $GroupChatMember
   factory _$GroupChatMemberCopyWith(_GroupChatMember value, $Res Function(_GroupChatMember) _then) = __$GroupChatMemberCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'room_id') String roomId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at') DateTime joinedAt, UserProfile? user
+ String id,@JsonKey(name: 'room_id') String roomId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at') DateTime joinedAt,@JsonKey(name: 'last_read_at') DateTime? lastReadAt, UserProfile? user
 });
 
 
@@ -286,13 +292,14 @@ class __$GroupChatMemberCopyWithImpl<$Res>
 
 /// Create a copy of GroupChatMember
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? roomId = null,Object? userId = null,Object? joinedAt = null,Object? user = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? roomId = null,Object? userId = null,Object? joinedAt = null,Object? lastReadAt = freezed,Object? user = freezed,}) {
   return _then(_GroupChatMember(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,roomId: null == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,joinedAt: null == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as DateTime,lastReadAt: freezed == lastReadAt ? _self.lastReadAt : lastReadAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,user: freezed == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
 as UserProfile?,
   ));
 }

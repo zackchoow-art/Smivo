@@ -1,135 +1,196 @@
 import 'package:flutter/material.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:intl/intl.dart';
 
 import 'package:smivo/data/models/group_chat_member.dart';
+import 'package:smivo/data/models/group_chat_room.dart' as model;
+import 'package:smivo/features/carpool/providers/carpool_detail_provider.dart';
+import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 /// A chat list tile representing a carpool group chat room.
-///
-/// Designed to blend into the existing ChatListScreen list alongside 1-on-1
-/// chat tiles. The overlapping avatar stack (up to 4 + overflow badge)
-/// visually distinguishes group chats from individual conversations.
-class GroupChatListTile extends StatelessWidget {
+class GroupChatListTile extends ConsumerWidget {
   const GroupChatListTile({
     super.key,
-    required this.roomName,
-    required this.members,
-    required this.lastMessage,
-    required this.lastMessageTime,
+    required this.room,
     required this.onTap,
+    this.unreadCount = 0,
   });
 
-  /// Human-friendly route label, e.g. "Smith College → Airport".
-  final String roomName;
-
-  /// All current members of the group chat (filtered by active status).
-  final List<GroupChatMember> members;
-
-  /// Preview text of the most recent message in the room.
-  final String lastMessage;
-
-  /// Timestamp of the last message for relative time display.
-  final DateTime? lastMessageTime;
-
+  final model.GroupChatRoom room;
   final VoidCallback onTap;
+  final int unreadCount;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    final tripAsync = ref.watch(carpoolDetailProvider(room.tripId));
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-      leading: _MemberAvatarStack(members: members),
-      title: Text(
-        roomName,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        lastMessage,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-      ),
-      trailing: lastMessageTime != null
-          ? Text(
-              timeago.format(lastMessageTime!, locale: 'en_short'),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.outline,
+    // Find the organizer profile
+    final organizer = room.members
+        .where((m) => m.userId == room.createdBy)
+        .firstOrNull
+        ?.user;
+    final buyers = room.members.where((m) => m.userId != room.createdBy).toList();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius.card),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerHigh,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+            // Left: Organizer Avatar
+            if (organizer != null)
+              SmivoUserAvatar(user: organizer, radius: 24, enableTap: false)
+            else
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: colors.surfaceContainer,
+                child: Icon(Icons.person, color: colors.onSurfaceVariant),
               ),
-            )
-          : null,
-      onTap: onTap,
-    );
+            const SizedBox(width: 12),
+            // Middle & Right: Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top row: Route and Time + unread badge
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          room.name,
+                          style: typo.titleMedium.copyWith(
+                            color: colors.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Time text + unread badge grouped together
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            timeago.format(room.updatedAt, locale: 'en_short'),
+                            style: typo.labelSmall.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (unreadCount > 0) ...[
+                            const SizedBox(width: 6),
+                            Badge(
+                              label: Text(
+                                unreadCount > 99 ? '99+' : unreadCount.toString(),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: colors.onPrimary,
+                                ),
+                              ),
+                              backgroundColor: colors.error,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Bottom row: Departure time (left) | Small buyer avatars
+                  Row(
+                    children: [
+                      // Departure time
+                      tripAsync.when(
+                        data: (trip) {
+                          if (trip == null) return const SizedBox.shrink();
+                          return Text(
+                            DateFormat('MM-dd HH:mm').format(trip.departureTime.toLocal()),
+                            style: typo.bodyMedium.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      ),
+                      const Spacer(),
+                      // Buyer avatars right-aligned, not overlapping
+                      if (buyers.isNotEmpty)
+                        _MemberAvatarList(members: buyers),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+);
   }
 }
 
-/// Overlapping circular avatar stack showing up to [_maxVisible] member avatars.
-///
-/// If the group has more than [_maxVisible] members, a "+N" overflow badge
-/// is shown after the last visible avatar to indicate hidden participants.
-class _MemberAvatarStack extends StatelessWidget {
-  const _MemberAvatarStack({required this.members});
+/// Side-by-side circular avatars showing up to [_maxVisible] member avatars.
+class _MemberAvatarList extends StatelessWidget {
+  const _MemberAvatarList({required this.members});
 
   final List<GroupChatMember> members;
 
-  // NOTE: Keep this low so the stack fits within a standard ListTile leading slot.
-  static const int _maxVisible = 4;
-  static const double _avatarRadius = 16.0;
-  // NOTE: Each avatar overlaps the previous by this amount to form a dense stack.
-  static const double _offset = 20.0;
+  static const int _maxVisible = 3;
+  static const double _avatarRadius = 10.0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final visible = members.take(_maxVisible).toList();
     final overflow = members.length - _maxVisible;
-    // Total width needed: first avatar + (n-1) offsets + optional overflow badge.
-    final itemCount = overflow > 0 ? visible.length + 1 : visible.length;
-    final totalWidth = _avatarRadius * 2 + (itemCount - 1) * _offset;
 
-    return SizedBox(
-      width: totalWidth.clamp(40.0, 120.0),
-      height: _avatarRadius * 2,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          for (int i = 0; i < visible.length; i++)
-            Positioned(
-              left: i * _offset,
-              child: _AvatarCircle(
-                avatarUrl: visible[i].user?.avatarUrl,
-                radius: _avatarRadius,
-                theme: theme,
-              ),
-            ),
-          if (overflow > 0)
-            Positioned(
-              left: visible.length * _offset,
-              child: CircleAvatar(
-                radius: _avatarRadius,
-                backgroundColor: theme.colorScheme.secondaryContainer,
-                child: Text(
-                  '+$overflow',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSecondaryContainer,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 9,
-                  ),
-                ),
-              ),
-            ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int i = 0; i < visible.length; i++) ...[
+          if (i > 0) const SizedBox(width: 4),
+          _AvatarCircle(
+            avatarUrl: visible[i].user?.avatarUrl,
+            radius: _avatarRadius,
+            theme: theme,
+          ),
         ],
-      ),
+        if (overflow > 0) ...[
+          const SizedBox(width: 4),
+          CircleAvatar(
+            radius: _avatarRadius,
+            backgroundColor: theme.colorScheme.secondaryContainer,
+            child: Text(
+              '+$overflow',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSecondaryContainer,
+                fontWeight: FontWeight.bold,
+                fontSize: 8,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
 
-/// A single circular avatar with border to visually separate overlapping items.
+/// A single circular avatar.
 class _AvatarCircle extends StatelessWidget {
   const _AvatarCircle({
     required this.avatarUrl,
@@ -143,32 +204,22 @@ class _AvatarCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        // White border prevents avatars from merging visually when overlapping.
-        border: Border.all(
-          color: theme.colorScheme.surface,
-          width: 1.5,
-        ),
-      ),
-      child: CircleAvatar(
-        radius: radius,
-        backgroundColor: theme.colorScheme.surfaceContainerHigh,
-        backgroundImage:
-            avatarUrl != null && avatarUrl!.isNotEmpty
-                ? NetworkImage(avatarUrl!)
-                : null,
-        child:
-            (avatarUrl == null || avatarUrl!.isEmpty)
-                ? Icon(
-                    Icons.person,
-                    size: radius,
-                    color: theme.colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.5),
-                  )
-                : null,
-      ),
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: theme.colorScheme.surfaceContainerHigh,
+      backgroundImage:
+          avatarUrl != null && avatarUrl!.isNotEmpty
+              ? NetworkImage(avatarUrl!)
+              : null,
+      child:
+          (avatarUrl == null || avatarUrl!.isEmpty)
+              ? Icon(
+                  Icons.person,
+                  size: radius,
+                  color: theme.colorScheme.onSurfaceVariant
+                      .withValues(alpha: 0.5),
+                )
+              : null,
     );
   }
 }
