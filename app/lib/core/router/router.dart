@@ -32,6 +32,12 @@ import 'package:smivo/shared/widgets/app_shell.dart';
 import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
 import 'package:smivo/features/admin/screens/admin_shell_screen.dart';
 import 'package:smivo/features/admin/screens/admin_login_screen.dart';
+import 'package:smivo/features/listing/screens/post_hub_screen.dart';
+import 'package:smivo/features/carpool/screens/carpool_list_screen.dart';
+import 'package:smivo/features/carpool/screens/carpool_detail_screen.dart';
+import 'package:smivo/features/carpool/screens/create_carpool_screen.dart';
+import 'package:smivo/features/carpool/screens/trip_proposals_screen.dart';
+import 'package:smivo/features/carpool/screens/arrival_confirmation_screen.dart';
 import 'package:smivo/features/admin/screens/admin_dashboard_screen.dart';
 import 'package:smivo/features/admin/screens/admin_users_screen.dart';
 import 'package:smivo/features/admin/screens/admin_listings_screen.dart';
@@ -238,6 +244,46 @@ GoRouter router(Ref ref) {
         name: AppRoutes.savedListings,
         path: AppRoutes.savedListingsPath,
         builder: (context, state) => const SavedListingsScreen(),
+      ),
+
+      // ── Post Hub (new entry from bottom nav) ─────────────────────
+      GoRoute(
+        name: AppRoutes.postHub,
+        path: AppRoutes.postHubPath,
+        builder: (context, state) => const PostHubScreen(),
+      ),
+
+      // ── Carpool ────────────────────────────────────────────────────
+      GoRoute(
+        name: AppRoutes.carpoolList,
+        path: AppRoutes.carpoolListPath,
+        builder: (context, state) => const CarpoolListScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.createCarpool,
+        path: AppRoutes.createCarpoolPath,
+        builder: (context, state) => const CreateCarpoolScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.carpoolDetail,
+        path: AppRoutes.carpoolDetailPath,
+        builder: (context, state) => CarpoolDetailScreen(
+          tripId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        name: AppRoutes.carpoolProposals,
+        path: AppRoutes.carpoolProposalsPath,
+        builder: (context, state) => TripProposalsScreen(
+          tripId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        name: AppRoutes.carpoolArrival,
+        path: AppRoutes.carpoolArrivalPath,
+        builder: (context, state) => ArrivalConfirmationScreen(
+          tripId: state.pathParameters['id']!,
+        ),
       ),
 
       // ── Profile & Settings ────────────────────────────────────────

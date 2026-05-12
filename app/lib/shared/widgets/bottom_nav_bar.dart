@@ -62,7 +62,7 @@ class BottomNavBar extends ConsumerWidget {
                 label: 'Post',
                 isSelected: false,
                 onTap: () {
-                  context.pushNamed(AppRoutes.createListing);
+                  context.pushNamed(AppRoutes.postHub);
                 },
               ),
               _NavBarItem(

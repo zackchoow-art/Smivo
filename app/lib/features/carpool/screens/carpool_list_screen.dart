@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/carpool/providers/carpool_list_provider.dart';
 import 'package:smivo/features/carpool/widgets/carpool_trip_card.dart';
 
@@ -19,15 +20,7 @@ class CarpoolListScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              // Note: using router directly, or generic push if no route defined yet.
-              // We'll use hardcoded push here since we shouldn't modify router.dart as per rules.
-              // Assuming Opus will configure router properly, but we can't navigate if we don't know the route.
-              // Let's use context.push('/carpool/create') assuming that will be the route, or generic navigator.
-              // Since router config is by Opus, we should probably use a placeholder or generic named route.
-              // I will use context.pushNamed('createCarpool') or similar.
-              // Actually, without modifying router, maybe GoRouter.of(context).push('/create_carpool');
-              // I will just use Navigator for now to avoid go_router path issues if not configured, or GoRouter.
-              context.push('/create_carpool');
+              context.pushNamed(AppRoutes.createCarpool);
             },
           ),
         ],
@@ -71,7 +64,10 @@ class CarpoolListScreen extends ConsumerWidget {
                 return CarpoolTripCard(
                   trip: trip,
                   onTap: () {
-                    context.push('/carpool_detail', extra: trip.id);
+                    context.pushNamed(
+                      AppRoutes.carpoolDetail,
+                      pathParameters: {'id': trip.id},
+                    );
                   },
                 );
               },

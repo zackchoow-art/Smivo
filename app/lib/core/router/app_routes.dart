@@ -42,6 +42,14 @@ class AppRoutes {
   static const String myContributionsPath = '/contributions';
   static const String savedListings = 'savedListings';
 
+  // Carpool
+  static const String postHub = 'postHub';
+  static const String carpoolList = 'carpoolList';
+  static const String carpoolDetail = 'carpoolDetail';
+  static const String createCarpool = 'createCarpool';
+  static const String carpoolProposals = 'carpoolProposals';
+  static const String carpoolArrival = 'carpoolArrival';
+
   // ── Route Paths ────────────────────────────────────────────
   static const String splashPath = '/';
   static const String loginPath = '/login';
@@ -71,6 +79,14 @@ class AppRoutes {
   static const String transactionManagementPath = '/listing/:id/transactions';
   static const String notificationCenterPath = '/notifications';
   static const String savedListingsPath = '/saved-listings';
+
+  // Carpool Paths
+  static const String postHubPath = '/post';
+  static const String carpoolListPath = '/carpool';
+  static const String carpoolDetailPath = '/carpool/:id';
+  static const String createCarpoolPath = '/carpool/create';
+  static const String carpoolProposalsPath = '/carpool/:id/proposals';
+  static const String carpoolArrivalPath = '/carpool/:id/arrival';
 
   // ── Admin Routes ───────────────────────────────────────────
   static const String adminLogin = 'adminLogin';
