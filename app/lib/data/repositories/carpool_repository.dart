@@ -165,6 +165,18 @@ class CarpoolRepository {
     }
   }
 
+  /// Acknowledges and accepts trip changes, clearing the snapshot.
+  Future<void> acceptTripChanges(String tripId) async {
+    try {
+      await _client.rpc(
+        'accept_carpool_trip_changes',
+        params: {'p_trip_id': tripId},
+      );
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   // ── Member queries ─────────────────────────────────────────────────────────
 
   /// Fetches all members of [tripId] with user profiles joined.

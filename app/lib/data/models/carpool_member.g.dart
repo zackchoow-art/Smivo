@@ -24,6 +24,8 @@ _CarpoolMember _$CarpoolMemberFromJson(Map<String, dynamic> json) =>
               : DateTime.parse(json['cancelled_at'] as String),
       cancelLeadTimeMinutes:
           (json['cancel_lead_time_minutes'] as num?)?.toInt(),
+      lastAcknowledgedSnapshot:
+          json['last_acknowledged_snapshot'] as Map<String, dynamic>?,
       user:
           json['user'] == null
               ? null
@@ -41,5 +43,6 @@ Map<String, dynamic> _$CarpoolMemberToJson(_CarpoolMember instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'cancelled_at': instance.cancelledAt?.toIso8601String(),
       'cancel_lead_time_minutes': instance.cancelLeadTimeMinutes,
+      'last_acknowledged_snapshot': instance.lastAcknowledgedSnapshot,
       'user': instance.user,
     };

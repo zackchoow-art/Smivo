@@ -9,7 +9,7 @@ import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/core/maps/map_route_preview.dart';
 import 'package:smivo/core/maps/map_service.dart';
 import 'package:smivo/features/carpool/widgets/member_avatar_row.dart';
-import 'package:smivo/features/carpool/screens/manage_members_screen.dart';
+import 'package:smivo/features/carpool/screens/manage_trip_screen.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/shared/widgets/action_error_dialog.dart';
@@ -64,6 +64,16 @@ class CarpoolDetailScreen extends ConsumerWidget {
               myMemberRecord != null && myMemberRecord.status == 'approved';
           final isPending =
               myMemberRecord != null && myMemberRecord.status == 'pending';
+
+          final snapshot = myMemberRecord?.lastAcknowledgedSnapshot;
+
+          String? getOld(String key, String currentVal, [String Function(dynamic)? fmt]) {
+            if (snapshot == null || !snapshot.containsKey(key)) return null;
+            final oldRaw = snapshot[key];
+            if (oldRaw == null) return null;
+            final oldStr = fmt != null ? fmt(oldRaw) : oldRaw.toString();
+            return oldStr != currentVal ? oldStr : null;
+          }
 
           String estArrivalStr = 'Pending';
           if (trip.estimatedArrivalTime != null) {
@@ -122,10 +132,10 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                       color: theme.colorScheme.onSurfaceVariant)),
                                   const SizedBox(height: 8),
                                   _InfoRow(icon: Icons.trip_origin, iconColor: Colors.green.shade600, label: 'From',
-                                    value: trip.departureAddress, labelWidth: 45),
+                                    value: trip.departureAddress, labelWidth: 45, oldValue: getOld('departure_address', trip.departureAddress)),
                                   const SizedBox(height: 4),
                                   _InfoRow(icon: Icons.location_on, iconColor: Colors.red.shade600, label: 'To',
-                                    value: trip.destinationAddress, labelWidth: 45),
+                                    value: trip.destinationAddress, labelWidth: 45, oldValue: getOld('destination_address', trip.destinationAddress)),
                                 ],
                               ),
                             ),
@@ -147,6 +157,8 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                     icon: Icons.access_time,
                                     label: 'Departure Time',
                                     value: DateFormat('yyyy-MM-dd HH:mm').format(trip.departureTime.toLocal()),
+                                    oldValue: getOld('departure_time', DateFormat('yyyy-MM-dd HH:mm').format(trip.departureTime.toLocal()),
+                                        (v) => DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(v as String).toLocal())),
                                     labelWidth: 130,
                                   ),
                                   const SizedBox(height: 8),
@@ -169,6 +181,8 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                       icon: Icons.attach_money,
                                       label: 'Estimated Total',
                                       value: '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}',
+                                      oldValue: getOld('estimated_total_price', '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}',
+                                          (v) => '\$${(v as num).toStringAsFixed(2)}'),
                                       labelWidth: 130,
                                     ),
                                     const SizedBox(height: 4),
@@ -185,6 +199,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                       icon: Icons.luggage,
                                       label: 'Luggage Limit',
                                       value: trip.luggageLimit!,
+                                      oldValue: getOld('luggage_limit', trip.luggageLimit!),
                                       labelWidth: 130,
                                     ),
                                   ],
@@ -355,34 +370,65 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                 onPressed: () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (_) => ManageMembersScreen(
+                                      builder: (_) => ManageTripScreen(
                                         tripId: trip.id,
                                         creatorId: trip.creatorId,
                                       ),
                                     ),
                                   );
                                 },
-                                child: const Text('Manage Members'),
+                                child: const Text('Manage Trip'),
                               ),
                             ),
                           ],
                         ),
                       ] else if (isMember) ...[
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () {
-                              ref
-                                  .read(carpoolDetailProvider(tripId)
-                                      .notifier)
-                                  .leaveTrip();
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: theme.colorScheme.error,
-                            ),
-                            child: const Text('Leave Trip'),
+                        if (snapshot != null) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    ref.read(carpoolDetailProvider(tripId).notifier).leaveTrip();
+                                  },
+                                  style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                                  child: const Text('Cancel Request'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    try {
+                                      await ref.read(carpoolRepositoryProvider).acceptTripChanges(tripId);
+                                      ref.invalidate(carpoolDetailProvider(tripId));
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+                                    }
+                                  },
+                                  child: const Text('Accept Changes'),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                        ] else ...[
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                ref
+                                    .read(carpoolDetailProvider(tripId)
+                                        .notifier)
+                                    .leaveTrip();
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: theme.colorScheme.error,
+                              ),
+                              child: const Text('Leave Trip'),
+                            ),
+                          ),
+                        ],
                       ] else if (isPending) ...[
                         SizedBox(
                           width: double.infinity,
@@ -488,6 +534,7 @@ class _InfoRow extends StatelessWidget {
     required this.value,
     this.labelWidth,
     this.iconColor,
+    this.oldValue,
   });
 
   final IconData icon;
@@ -495,6 +542,7 @@ class _InfoRow extends StatelessWidget {
   final String value;
   final double? labelWidth;
   final Color? iconColor;
+  final String? oldValue;
 
   @override
   Widget build(BuildContext context) {
@@ -514,11 +562,30 @@ class _InfoRow extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Text(
-            value,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (oldValue != null) ...[
+                Text(
+                  oldValue!,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    decoration: TextDecoration.lineThrough,
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(Icons.arrow_forward, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                value,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: oldValue != null ? Colors.green.shade600 : null,
+                ),
+              ),
+            ],
           ),
         ),
       ],

@@ -27,6 +27,7 @@ abstract class CarpoolMember with _$CarpoolMember {
     // V2 — cancellation tracking for risk assessment
     @JsonKey(name: 'cancelled_at') DateTime? cancelledAt,
     @JsonKey(name: 'cancel_lead_time_minutes') int? cancelLeadTimeMinutes,
+    @JsonKey(name: 'last_acknowledged_snapshot') Map<String, dynamic>? lastAcknowledgedSnapshot,
 
     // Nested join — populated only when queried with user join
     UserProfile? user,

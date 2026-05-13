@@ -286,7 +286,7 @@ final class UserGroupChatRoomsProvider
 }
 
 String _$userGroupChatRoomsHash() =>
-    r'eac9b0ab50a1218117cb3ea6253660b07e97fb23';
+    r'3ac96e4eb92cccbd4904fb0181f9d702ac08a4f6';
 
 /// Returns a map of { roomId: unreadCount } for all group chats.
 ///
