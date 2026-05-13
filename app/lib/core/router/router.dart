@@ -36,6 +36,7 @@ import 'package:smivo/features/listing/screens/post_hub_screen.dart';
 import 'package:smivo/features/carpool/screens/carpool_list_screen.dart';
 import 'package:smivo/features/carpool/screens/carpool_detail_screen.dart';
 import 'package:smivo/features/carpool/screens/create_carpool_screen.dart';
+import 'package:smivo/features/carpool/screens/group_chat_screen.dart';
 import 'package:smivo/features/carpool/screens/trip_proposals_screen.dart';
 import 'package:smivo/features/carpool/screens/arrival_confirmation_screen.dart';
 import 'package:smivo/features/admin/screens/admin_dashboard_screen.dart';
@@ -148,6 +149,15 @@ GoRouter router(Ref ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                name: AppRoutes.postHub,
+                path: AppRoutes.postHubPath,
+                builder: (context, state) => const PostHubScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 name: AppRoutes.orders,
                 path: AppRoutes.ordersPath,
                 builder: (context, state) => const OrdersScreen(),
@@ -198,6 +208,13 @@ GoRouter router(Ref ref) {
             (context, state) =>
                 ChatRoomScreen(chatRoomId: state.pathParameters['id']!),
       ),
+      GoRoute(
+        name: AppRoutes.groupChatRoom,
+        path: AppRoutes.groupChatRoomPath,
+        builder:
+            (context, state) =>
+                GroupChatScreen(tripId: state.pathParameters['id']!),
+      ),
 
       // ── Orders ────────────────────────────────────────────────────
       GoRoute(
@@ -244,13 +261,6 @@ GoRouter router(Ref ref) {
         name: AppRoutes.savedListings,
         path: AppRoutes.savedListingsPath,
         builder: (context, state) => const SavedListingsScreen(),
-      ),
-
-      // ── Post Hub (new entry from bottom nav) ─────────────────────
-      GoRoute(
-        name: AppRoutes.postHub,
-        path: AppRoutes.postHubPath,
-        builder: (context, state) => const PostHubScreen(),
       ),
 
       // ── Carpool ────────────────────────────────────────────────────

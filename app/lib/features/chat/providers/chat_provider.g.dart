@@ -231,7 +231,7 @@ final class ChatTotalUnreadProvider
   }
 }
 
-String _$chatTotalUnreadHash() => r'766f09408ddd139fdccccc9e3afb9a19f9986397';
+String _$chatTotalUnreadHash() => r'69fcfc7aa4c7b028dbe72271c40fb7139e7f4ef2';
 
 /// Fetches details for a single chat room.
 

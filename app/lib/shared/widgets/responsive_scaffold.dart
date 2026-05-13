@@ -119,13 +119,9 @@ class ResponsiveScaffold extends ConsumerWidget {
     );
   }
 
-  /// Maps shell branch index (0=Home, 1=Chat, 2=Orders) to rail index
-  /// (0=Home, 1=Chat, 2=Post, 3=Orders) because the rail has the
-  /// extra "Post" destination at index 2.
   int _shellToRailIndex(int shellIndex) {
-    // Shell branches: 0=Home, 1=Chat, 2=Orders
+    // Shell branches: 0=Home, 1=Chat, 2=Post, 3=Orders
     // Rail destinations: 0=Home, 1=Chat, 2=Post, 3=Orders
-    if (shellIndex >= 2) return shellIndex + 1;
     return shellIndex;
   }
 }

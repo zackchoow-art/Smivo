@@ -48,7 +48,7 @@ serve(async (req) => {
         .from("user_active_sessions")
         .select("chat_room_id, updated_at")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       if (session?.chat_room_id === chatRoomId) {
         const sessionAge = Date.now() - new Date(session.updated_at).getTime();
@@ -74,10 +74,16 @@ serve(async (req) => {
         .from("user_active_sessions")
         .select("group_chat_room_id, updated_at")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
-      // Extract the room_id from the action_url (format: /group-chat/<room_id>)
-      const actionRoomId = actionUrl ? actionUrl.replace('/group-chat/', '') : null;
+      // Extract the room_id from the action_url (format: /group-chat/<trip_id>?room_id=<room_id>)
+      let actionRoomId = null;
+      if (actionUrl && actionUrl.includes('?room_id=')) {
+        actionRoomId = actionUrl.split('?room_id=')[1];
+      } else if (actionUrl) {
+        // Fallback for old notifications that just used the room_id
+        actionRoomId = actionUrl.replace('/group-chat/', '');
+      }
 
       if (session?.group_chat_room_id && actionRoomId &&
           session.group_chat_room_id === actionRoomId) {

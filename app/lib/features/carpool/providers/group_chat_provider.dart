@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/group_chat_room.dart' as model;
 import 'package:smivo/data/models/group_message.dart';
@@ -138,6 +139,28 @@ Future<List<model.GroupChatRoom>> userGroupChatRooms(Ref ref) async {
   final client = ref.read(supabaseClientProvider);
   final userId = client.auth.currentUser?.id;
   if (userId == null) return [];
+
+  // Subscribe to new group messages to refresh the list and unread counts
+  final channel = client
+      .channel('group_chat_rooms_list:$userId')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.insert,
+        schema: 'public',
+        table: AppConstants.tableGroupMessages,
+        callback: (payload) {
+          // A new group message was inserted.
+          // Invalidate the unread counts to refresh badge.
+          ref.invalidate(groupUnreadCountsProvider);
+          // Invalidate self so the group chat list order and previews update.
+          ref.invalidateSelf();
+        },
+      )
+      .subscribe();
+
+  ref.onDispose(() {
+    channel.unsubscribe();
+  });
+
   return ref.read(groupChatRepositoryProvider).fetchUserGroupChatRooms(userId);
 }
 

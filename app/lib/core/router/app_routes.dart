@@ -19,6 +19,7 @@ class AppRoutes {
   static const String myListings = 'myListings';
   static const String chatList = 'chatList';
   static const String chatRoom = 'chatRoom';
+  static const String groupChatRoom = 'groupChatRoom';
   static const String orders = 'orders';
   static const String orderDetail = 'orderDetail';
   static const String profile = 'profile';
@@ -64,6 +65,7 @@ class AppRoutes {
   static const String myListingsPath = '/my-listings';
   static const String chatListPath = '/chats';
   static const String chatRoomPath = '/chats/:id';
+  static const String groupChatRoomPath = '/group-chat/:id';
   static const String ordersPath = '/orders';
   static const String orderDetailPath = '/orders/:id';
   static const String profilePath = '/profile';

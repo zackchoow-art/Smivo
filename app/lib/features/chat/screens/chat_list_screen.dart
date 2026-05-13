@@ -205,6 +205,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 child: _GroupChatListSection(
                   useWidthConstraint: useWidthConstraint,
                   searchQuery: _searchQuery,
+                  isDesktop: isDesktop,
+                  onSelect: (tripId) {
+                    if (isDesktop) {
+                      setState(() => _selectedChatRoomId = 'group_$tripId');
+                    } else {
+                      context.pushNamed(
+                        AppRoutes.groupChatRoom,
+                        pathParameters: {'id': tripId},
+                      );
+                    }
+                  },
                 ),
               ),
               chatRoomsAsync.when(
@@ -276,7 +287,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     // the desktop panel selection so the ghost panel disappears.
                     // Notifications screen is exempt from this cleanup.
                     if (_selectedChatRoomId != null &&
-                        _selectedChatRoomId != 'notifications') {
+                        _selectedChatRoomId != 'notifications' &&
+                        !_selectedChatRoomId!.startsWith('group_')) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         if (mounted) setState(() => _selectedChatRoomId = null);
                       });
@@ -304,6 +316,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   // Notifications screen is exempt from this cleanup.
                   if (_selectedChatRoomId != null &&
                       _selectedChatRoomId != 'notifications' &&
+                      !_selectedChatRoomId!.startsWith('group_') &&
                       !searchFiltered.any((r) => r.id == _selectedChatRoomId)) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) setState(() => _selectedChatRoomId = null);
@@ -383,11 +396,16 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             _selectedChatRoomId != null
                 ? (_selectedChatRoomId == 'notifications'
                     ? const NotificationCenterScreen(showBackButton: false)
-                    : ChatRoomScreen(
-                      key: ValueKey(_selectedChatRoomId),
-                      chatRoomId: _selectedChatRoomId!,
-                      showBackButton: false,
-                    ))
+                    : _selectedChatRoomId!.startsWith('group_')
+                        ? GroupChatScreen(
+                            key: ValueKey(_selectedChatRoomId),
+                            tripId: _selectedChatRoomId!.replaceFirst('group_', ''),
+                          )
+                        : ChatRoomScreen(
+                            key: ValueKey(_selectedChatRoomId),
+                            chatRoomId: _selectedChatRoomId!,
+                            showBackButton: false,
+                          ))
                 : null,
       );
     }
@@ -580,10 +598,14 @@ class _GroupChatListSection extends ConsumerWidget {
   const _GroupChatListSection({
     required this.useWidthConstraint,
     required this.searchQuery,
+    required this.isDesktop,
+    required this.onSelect,
   });
 
   final bool useWidthConstraint;
   final String searchQuery;
+  final bool isDesktop;
+  final void Function(String tripId) onSelect;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -621,14 +643,7 @@ class _GroupChatListSection extends ConsumerWidget {
                     Widget tile = GroupChatListTile(
                       room: room,
                       unreadCount: unreadCounts[room.id] ?? 0,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                GroupChatScreen(tripId: room.tripId),
-                          ),
-                        );
-                      },
+                      onTap: () => onSelect(room.tripId),
                     );
 
                     return useWidthConstraint

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/features/carpool/providers/create_carpool_provider.dart';
 import 'package:smivo/core/maps/map_location_picker.dart';
+import 'package:smivo/features/carpool/widgets/legal_disclaimer_dialog.dart';
 
 class CreateCarpoolScreen extends ConsumerStatefulWidget {
   const CreateCarpoolScreen({super.key});
@@ -136,24 +137,8 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
       return;
     }
 
-    // Show Disclaimer Dialog (Phase 8 placeholder)
-    final agreed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Carpool Disclaimer'),
-        content: const Text('I confirm that the information posted is true and valid, and agree to the relevant carpool rules and disclaimers.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Agree & Post'),
-          ),
-        ],
-      ),
-    );
+    // Show Legal Disclaimer before posting
+    final agreed = await LegalDisclaimerDialog.show(context);
 
     if (agreed != true) return;
 

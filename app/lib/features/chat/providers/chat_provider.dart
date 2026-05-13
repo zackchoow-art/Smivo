@@ -13,6 +13,7 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/core/providers/content_filter_provider.dart';
 import 'package:smivo/data/models/user_profile.dart';
+import 'package:smivo/features/carpool/providers/group_chat_provider.dart';
 
 part 'chat_provider.g.dart';
 
@@ -258,10 +259,19 @@ Future<int> chatTotalUnread(Ref ref) async {
   if (user == null) return 0;
 
   final rooms = await ref.watch(chatRoomListProvider.future);
-  return rooms.fold<int>(0, (sum, room) {
+  int sum = rooms.fold<int>(0, (acc, room) {
     final isBuyer = room.buyerId == user.id;
-    return sum + (isBuyer ? room.unreadCountBuyer : room.unreadCountSeller);
+    return acc + (isBuyer ? room.unreadCountBuyer : room.unreadCountSeller);
   });
+
+  try {
+    final groupUnreads = await ref.watch(groupUnreadCountsProvider.future);
+    sum += groupUnreads.values.fold(0, (a, b) => a + b);
+  } catch (_) {
+    // Ignore error if group unreads fail to fetch
+  }
+
+  return sum;
 }
 
 /// Fetches details for a single chat room.

@@ -13,37 +13,53 @@ class CarpoolDetail extends _$CarpoolDetail {
   }
 
   Future<void> cancelTrip() async {
+    final oldState = state;
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
+    try {
       await ref.read(carpoolRepositoryProvider).cancelTrip(tripId);
-      return ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
-    });
+      final updatedTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
+      state = AsyncValue.data(updatedTrip);
+    } catch (e) {
+      state = oldState;
+      rethrow;
+    }
   }
 
   Future<void> requestJoin() async {
     final profile = ref.read(profileProvider).value;
     if (profile == null) return;
 
+    final oldState = state;
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
+    try {
       // Re-fetch trip to check current seat availability (race condition guard)
       final freshTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
       if (freshTrip == null || freshTrip.availableSeats <= 0) {
         throw Exception('NO_SEATS');
       }
       await ref.read(carpoolRepositoryProvider).requestJoinTrip(tripId, profile.id);
-      return ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
-    });
+      
+      final updatedTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
+      state = AsyncValue.data(updatedTrip);
+    } catch (e) {
+      state = oldState;
+      rethrow;
+    }
   }
 
   Future<void> leaveTrip() async {
     final profile = ref.read(profileProvider).value;
     if (profile == null) return;
 
+    final oldState = state;
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
+    try {
       await ref.read(carpoolRepositoryProvider).leaveTrip(tripId, profile.id);
-      return ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
-    });
+      final updatedTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
+      state = AsyncValue.data(updatedTrip);
+    } catch (e) {
+      state = oldState;
+      rethrow;
+    }
   }
 }

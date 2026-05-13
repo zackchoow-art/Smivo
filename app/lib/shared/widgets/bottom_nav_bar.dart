@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
@@ -57,20 +55,18 @@ class BottomNavBar extends ConsumerWidget {
                 unreadCount: totalUnread,
               ),
               _NavBarItem(
-                icon: Icons.add_circle_outline,
+                icon: Icons.add_circle,
                 outlinedIcon: Icons.add_circle_outline,
                 label: 'Post',
-                isSelected: false,
-                onTap: () {
-                  context.pushNamed(AppRoutes.postHub);
-                },
+                isSelected: currentIndex == 2,
+                onTap: () => onTap(2),
               ),
               _NavBarItem(
                 icon: Icons.receipt_long,
                 outlinedIcon: Icons.receipt_long_outlined,
                 label: 'Orders',
-                isSelected: currentIndex == 2,
-                onTap: () => onTap(2),
+                isSelected: currentIndex == 3,
+                onTap: () => onTap(3),
                 unreadCount: unreadOrderUpdates,
               ),
             ],

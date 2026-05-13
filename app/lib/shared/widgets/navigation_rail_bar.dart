@@ -37,15 +37,7 @@ class NavigationRailBar extends ConsumerWidget {
     return NavigationRail(
       selectedIndex: currentIndex,
       onDestinationSelected: (index) {
-        // NOTE: Index 2 in the rail is "Post" — a push action, not a tab.
-        if (index == 2) {
-          context.pushNamed(AppRoutes.postHub);
-          return;
-        }
-        // Map rail indices to shell branch indices:
-        // Rail 0=Home(branch 0), 1=Chat(branch 1), 3=Orders(branch 2)
-        final branchIndex = index > 2 ? index - 1 : index;
-        onTap(branchIndex);
+        onTap(index);
       },
       extended: extended,
       minWidth: 72,

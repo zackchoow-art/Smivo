@@ -19,37 +19,53 @@ class PostHubScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
+    final typo = context.smivoTypo;
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = Breakpoints.isDesktop(screenWidth);
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
-      appBar: AppBar(
-        title: const Text('Publish'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: ContentWidthConstraint(
-            maxWidth: 800,
-            child: isDesktop
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _buildListingCard(context)),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildCarpoolCard(context)),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      _buildListingCard(context),
-                      const SizedBox(height: 20),
-                      _buildCarpoolCard(context),
-                    ],
-                  ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Post',
+                style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Publish an item for sale, rent, or carpool.',
+                style: typo.bodyMedium.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Expanded(
+                child: ContentWidthConstraint(
+                  maxWidth: 800,
+                  child:
+                      isDesktop
+                          ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: _buildListingCard(context)),
+                              const SizedBox(width: 16),
+                              Expanded(child: _buildCarpoolCard(context)),
+                            ],
+                          )
+                          : Column(
+                            children: [
+                              _buildListingCard(context),
+                              const SizedBox(height: 20),
+                              _buildCarpoolCard(context),
+                            ],
+                          ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

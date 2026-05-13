@@ -20,7 +20,8 @@ class NotificationRepository {
           .from('notifications')
           .select()
           .eq('user_id', userId)
-          .neq('type', 'new_message') // Filter out chat messages
+          .neq('type', 'new_message') // Filter out 1-on-1 chat messages
+          .neq('type', 'group_message') // Filter out group chat messages
           .order('created_at', ascending: false);
       return data.map((json) => AppNotification.fromJson(json)).toList();
     } on PostgrestException catch (e) {
@@ -48,6 +49,7 @@ class NotificationRepository {
           .update({'is_read': true})
           .eq('user_id', userId)
           .neq('type', 'new_message') // Only mark relevant notifications
+          .neq('type', 'group_message')
           .eq('is_read', false);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
@@ -95,7 +97,8 @@ class NotificationRepository {
           ),
           callback: (payload) {
             final notification = AppNotification.fromJson(payload.newRecord);
-            if (notification.type != 'new_message') {
+            if (notification.type != 'new_message' &&
+                notification.type != 'group_message') {
               onNotification(notification);
             }
           },

@@ -9,7 +9,11 @@ import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/core/maps/map_route_preview.dart';
 import 'package:smivo/core/maps/map_service.dart';
 import 'package:smivo/features/carpool/widgets/member_avatar_row.dart';
+import 'package:smivo/features/carpool/screens/manage_members_screen.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
+import 'package:smivo/core/exceptions/app_exception.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/features/carpool/widgets/legal_disclaimer_dialog.dart';
 import 'package:share_plus/share_plus.dart';
 
 class CarpoolDetailScreen extends ConsumerWidget {
@@ -349,7 +353,14 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () {
-                                  // TODO: Navigate to members management
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => ManageMembersScreen(
+                                        tripId: trip.id,
+                                        creatorId: trip.creatorId,
+                                      ),
+                                    ),
+                                  );
                                 },
                                 child: const Text('Manage Members'),
                               ),
@@ -408,6 +419,10 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             onPressed: trip.availableSeats > 0 &&
                                     trip.status == 'active'
                                 ? () async {
+                                    // Show Disclaimer before joining
+                                    final agreed = await LegalDisclaimerDialog.show(context);
+                                    if (agreed != true) return;
+
                                     try {
                                       await ref
                                           .read(
@@ -427,9 +442,13 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                         // Refresh to show updated seat count
                                         ref.invalidate(carpoolDetailProvider(tripId));
                                       } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Failed to join: $e'),
+                                        // Extract clean message if it's an AppException
+                                        final errorMsg = e is AppException ? e.message : e.toString();
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => ActionErrorDialog(
+                                            title: 'Cannot Join Trip',
+                                            message: errorMsg,
                                           ),
                                         );
                                       }
@@ -443,8 +462,10 @@ class CarpoolDetailScreen extends ConsumerWidget {
                         ),
                       ],
                       // Real CalendarSyncButton with 1-hour reminder
-                      const SizedBox(height: 8),
-                      CalendarSyncButton(trip: trip),
+                      if (isCreator || isMember) ...[
+                        const SizedBox(height: 8),
+                        CalendarSyncButton(trip: trip),
+                      ],
                     ],
                   ),
                 ),
