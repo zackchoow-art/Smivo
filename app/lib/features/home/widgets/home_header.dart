@@ -35,12 +35,13 @@ class HomeHeader extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Smivo',
-                      style: typo.headlineMedium.copyWith(
-                        color: colors.primary,
+                    if (MediaQuery.of(context).size.width < 600)
+                      Text(
+                        'Smivo',
+                        style: typo.headlineMedium.copyWith(
+                          color: colors.primary,
+                        ),
                       ),
-                    ),
                     Text(
                       schoolName,
                       style: typo.headlineLarge.copyWith(
