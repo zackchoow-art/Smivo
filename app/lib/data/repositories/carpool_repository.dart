@@ -72,7 +72,15 @@ class CarpoolRepository {
           ''')
           .eq('members.user_id', userId)
           .order('departure_time', ascending: true);
-      return data.map((json) => CarpoolTrip.fromJson(json)).toList();
+      return data.map((json) {
+        try {
+          return CarpoolTrip.fromJson(json);
+        } catch (e) {
+          print('Error parsing trip json: $e');
+          print('JSON: $json');
+          rethrow;
+        }
+      }).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

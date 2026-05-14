@@ -4,6 +4,13 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'school.freezed.dart';
 part 'school.g.dart';
 
+bool _parseBool(dynamic value) {
+  if (value is bool) return value;
+  if (value is num) return value > 0;
+  if (value is String) return value.toLowerCase() == 'true' || value == '1';
+  return false;
+}
+
 /// A college or university that uses Smivo.
 ///
 /// Each school is a closed community container with its own
@@ -19,7 +26,7 @@ abstract class School with _$School {
     @JsonKey(name: 'email_domain') required String emailDomain,
     @JsonKey(name: 'primary_color') String? primaryColor,
     @JsonKey(name: 'logo_url') String? logoUrl,
-    @JsonKey(name: 'is_active') @Default(false) bool isActive,
+    @JsonKey(name: 'is_active', fromJson: _parseBool) @Default(false) bool isActive,
 
     // Geographic info
     String? address,

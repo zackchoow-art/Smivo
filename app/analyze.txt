@@ -1,0 +1,47 @@
+Analyzing app...                                                
+
+   info • The import of 'package:flutter_riverpod/flutter_riverpod.dart' is unnecessary because all of the used elements are also provided by the import of 'package:riverpod_annotation/riverpod_annotation.dart' • lib/core/providers/preferences_provider.dart:1:8 • unnecessary_import
+   info • Statements in an if should be enclosed in a block • lib/features/admin/screens/admin_review_tags_screen.dart:206:27 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/features/admin/screens/admin_review_tags_screen.dart:208:27 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/features/auth/screens/forgot_password_screen.dart:214:47 • curly_braces_in_flow_control_structures
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/auth/screens/forgot_password_screen.dart:237:43 • deprecated_member_use
+   info • Statements in an if should be enclosed in a block • lib/features/auth/screens/login_screen.dart:302:47 • curly_braces_in_flow_control_structures
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/auth/screens/login_screen.dart:325:43 • deprecated_member_use
+   info • Statements in an if should be enclosed in a block • lib/features/auth/screens/register_screen.dart:335:49 • curly_braces_in_flow_control_structures
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/auth/screens/register_screen.dart:358:45 • deprecated_member_use
+warning • The operand can't be 'null', so the condition is always 'false' • lib/features/carpool/providers/carpool_detail_provider.dart:37:21 • unnecessary_null_comparison
+   info • 'Share' is deprecated and shouldn't be used. Use SharePlus instead • lib/features/carpool/screens/carpool_detail_screen.dart:41:23 • deprecated_member_use
+   info • 'shareUri' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead • lib/features/carpool/screens/carpool_detail_screen.dart:41:29 • deprecated_member_use
+  error • The named parameter 'padding' isn't defined • lib/features/carpool/screens/carpool_list_screen.dart:155:13 • undefined_named_parameter
+  error • The named parameter 'padding' isn't defined • lib/features/carpool/screens/carpool_list_screen.dart:262:11 • undefined_named_parameter
+   info • Don't use 'BuildContext's across async gaps • lib/features/chat/screens/chat_room_screen.dart:262:62 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/chat/screens/chat_room_screen.dart:825:21 • use_build_context_synchronously
+warning • Unused import: 'package:smivo/core/constants/app_constants.dart' • lib/features/home/widgets/home_header.dart:4:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps • lib/features/listing/providers/create_listing_provider.dart:59:46 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/features/listing/providers/create_listing_provider.dart:60:46 • use_build_context_synchronously
+   info • Statements in an if should be enclosed in a block • lib/features/listing/screens/create_listing_form_screen.dart:526:37 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/features/listing/screens/listing_detail_screen.dart:902:47 • curly_braces_in_flow_control_structures
+warning • The '!' will have no effect because the receiver can't be null • lib/features/listing/screens/listing_detail_screen.dart:1565:76 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/listing/screens/listing_detail_screen.dart:1567:76 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/listing/screens/listing_detail_screen.dart:1569:76 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/listing/screens/listing_detail_screen.dart:1600:72 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/listing/screens/listing_detail_screen.dart:1602:80 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/listing/screens/listing_detail_screen.dart:1604:72 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/listing/screens/listing_detail_screen.dart:1606:80 • unnecessary_non_null_assertion
+   info • Statements in an if should be enclosed in a block • lib/features/listing/screens/listing_detail_screen.dart:1730:61 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/features/listing/screens/listing_detail_screen.dart:1735:61 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/features/listing/screens/listing_detail_screen.dart:1741:61 • curly_braces_in_flow_control_structures
+   info • 'Share' is deprecated and shouldn't be used. Use SharePlus instead • lib/features/listing/screens/listing_detail_screen.dart:1917:37 • deprecated_member_use
+   info • 'share' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead • lib/features/listing/screens/listing_detail_screen.dart:1917:43 • deprecated_member_use
+warning • The declaration '_iconBgColor' isn't referenced • lib/features/notifications/widgets/notification_list_item.dart:126:9 • unused_element
+   info • Don't use 'BuildContext's across async gaps • lib/features/settings/screens/submit_feedback_screen.dart:78:47 • use_build_context_synchronously
+warning • Unused import: 'package:smivo/core/constants/debug_constants.dart' • lib/features/settings/screens/system_settings_screen.dart:21:8 • unused_import
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor or activeTrackColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/settings/screens/system_settings_screen.dart:348:35 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor or activeTrackColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/settings/screens/system_settings_screen.dart:407:35 • deprecated_member_use
+warning • The value of the local variable 'statusColor' isn't used • lib/features/settings/widgets/flippable_report_card.dart:375:12 • unused_local_variable
+warning • The value of the local variable 'statusBgColor' isn't used • lib/features/settings/widgets/flippable_report_card.dart:375:25 • unused_local_variable
+warning • The value of the local variable 'statusText' isn't used • lib/features/settings/widgets/flippable_report_card.dart:375:40 • unused_local_variable
+warning • The value of the local variable 'hasPoints' isn't used • lib/features/settings/widgets/flippable_report_card.dart:518:11 • unused_local_variable
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/shared/widgets/report_dialog.dart:93:17 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/shared/widgets/report_dialog.dart:97:17 • deprecated_member_use
+

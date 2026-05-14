@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
@@ -54,10 +56,37 @@ class BottomNavBar extends ConsumerWidget {
                 onTap: () => onTap(1),
                 unreadCount: totalUnread,
               ),
+              // Floating Action Button style Post button
+              GestureDetector(
+                onTap: () {
+                  context.pushNamed(AppRoutes.createListing);
+                },
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  margin: const EdgeInsets.only(bottom: 4),
+                  decoration: BoxDecoration(
+                    color: colors.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: colors.primary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.add,
+                    color: colors.onPrimary,
+                    size: 28,
+                  ),
+                ),
+              ),
               _NavBarItem(
-                icon: Icons.add_circle,
-                outlinedIcon: Icons.add_circle_outline,
-                label: 'Post',
+                icon: Icons.directions_car,
+                outlinedIcon: Icons.directions_car_outlined,
+                label: 'Carpool',
                 isSelected: currentIndex == 2,
                 onTap: () => onTap(2),
               ),

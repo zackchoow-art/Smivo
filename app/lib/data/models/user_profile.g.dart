@@ -13,7 +13,8 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
   avatarUrl: json['avatar_url'] as String?,
   school: json['school'] as String? ?? 'Data Not Found',
   schoolId: json['school_id'] as String,
-  isVerified: json['is_verified'] as bool? ?? false,
+  isVerified:
+      json['is_verified'] == null ? false : _parseBool(json['is_verified']),
   schoolData:
       json['schoolData'] == null
           ? null
@@ -27,18 +28,44 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
           ? null
           : DateTime.parse(json['updated_at'] as String),
   emailNotificationsEnabled:
-      json['email_notifications_enabled'] as bool? ?? false,
+      json['email_notifications_enabled'] == null
+          ? false
+          : _parseBool(json['email_notifications_enabled']),
   onesignalPlayerId: json['onesignal_player_id'] as String?,
-  pushNotificationsEnabled: json['push_notifications_enabled'] as bool? ?? true,
-  pushMessages: json['push_messages'] as bool? ?? true,
-  emailMessages: json['email_messages'] as bool? ?? false,
-  pushOrderUpdates: json['push_order_updates'] as bool? ?? true,
-  emailOrderUpdates: json['email_order_updates'] as bool? ?? false,
-  pushCampusAnnouncements: json['push_campus_announcements'] as bool? ?? true,
+  pushNotificationsEnabled:
+      json['push_notifications_enabled'] == null
+          ? true
+          : _parseBool(json['push_notifications_enabled']),
+  pushMessages:
+      json['push_messages'] == null ? true : _parseBool(json['push_messages']),
+  emailMessages:
+      json['email_messages'] == null
+          ? false
+          : _parseBool(json['email_messages']),
+  pushOrderUpdates:
+      json['push_order_updates'] == null
+          ? true
+          : _parseBool(json['push_order_updates']),
+  emailOrderUpdates:
+      json['email_order_updates'] == null
+          ? false
+          : _parseBool(json['email_order_updates']),
+  pushCampusAnnouncements:
+      json['push_campus_announcements'] == null
+          ? true
+          : _parseBool(json['push_campus_announcements']),
   emailCampusAnnouncements:
-      json['email_campus_announcements'] as bool? ?? false,
-  pushAnnouncements: json['push_announcements'] as bool? ?? true,
-  emailAnnouncements: json['email_announcements'] as bool? ?? false,
+      json['email_campus_announcements'] == null
+          ? false
+          : _parseBool(json['email_campus_announcements']),
+  pushAnnouncements:
+      json['push_announcements'] == null
+          ? true
+          : _parseBool(json['push_announcements']),
+  emailAnnouncements:
+      json['email_announcements'] == null
+          ? false
+          : _parseBool(json['email_announcements']),
   buyerRating: (json['buyer_rating'] as num?)?.toDouble() ?? 0.0,
   buyerRatingCount: (json['buyer_rating_count'] as num?)?.toInt() ?? 0,
   sellerRating: (json['seller_rating'] as num?)?.toDouble() ?? 0.0,

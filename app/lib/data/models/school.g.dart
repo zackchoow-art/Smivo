@@ -13,7 +13,7 @@ _School _$SchoolFromJson(Map<String, dynamic> json) => _School(
   emailDomain: json['email_domain'] as String,
   primaryColor: json['primary_color'] as String?,
   logoUrl: json['logo_url'] as String?,
-  isActive: json['is_active'] as bool? ?? false,
+  isActive: json['is_active'] == null ? false : _parseBool(json['is_active']),
   address: json['address'] as String?,
   city: json['city'] as String?,
   state: json['state'] as String?,

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$School {
 
- String get id; String get slug; String get name;@JsonKey(name: 'email_domain') String get emailDomain;@JsonKey(name: 'primary_color') String? get primaryColor;@JsonKey(name: 'logo_url') String? get logoUrl;@JsonKey(name: 'is_active') bool get isActive;// Geographic info
+ String get id; String get slug; String get name;@JsonKey(name: 'email_domain') String get emailDomain;@JsonKey(name: 'primary_color') String? get primaryColor;@JsonKey(name: 'logo_url') String? get logoUrl;@JsonKey(name: 'is_active', fromJson: _parseBool) bool get isActive;// Geographic info
  String? get address; String? get city; String? get state;@JsonKey(name: 'zip_code') String? get zipCode; String get country; double? get latitude; double? get longitude; String get timezone;// School profile
 @JsonKey(name: 'website_url') String? get websiteUrl; String? get description;@JsonKey(name: 'student_count') int? get studentCount;@JsonKey(name: 'cover_image_url') String? get coverImageUrl;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of School
@@ -50,7 +50,7 @@ abstract mixin class $SchoolCopyWith<$Res>  {
   factory $SchoolCopyWith(School value, $Res Function(School) _then) = _$SchoolCopyWithImpl;
 @useResult
 $Res call({
- String id, String slug, String name,@JsonKey(name: 'email_domain') String emailDomain,@JsonKey(name: 'primary_color') String? primaryColor,@JsonKey(name: 'logo_url') String? logoUrl,@JsonKey(name: 'is_active') bool isActive, String? address, String? city, String? state,@JsonKey(name: 'zip_code') String? zipCode, String country, double? latitude, double? longitude, String timezone,@JsonKey(name: 'website_url') String? websiteUrl, String? description,@JsonKey(name: 'student_count') int? studentCount,@JsonKey(name: 'cover_image_url') String? coverImageUrl,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id, String slug, String name,@JsonKey(name: 'email_domain') String emailDomain,@JsonKey(name: 'primary_color') String? primaryColor,@JsonKey(name: 'logo_url') String? logoUrl,@JsonKey(name: 'is_active', fromJson: _parseBool) bool isActive, String? address, String? city, String? state,@JsonKey(name: 'zip_code') String? zipCode, String country, double? latitude, double? longitude, String timezone,@JsonKey(name: 'website_url') String? websiteUrl, String? description,@JsonKey(name: 'student_count') int? studentCount,@JsonKey(name: 'cover_image_url') String? coverImageUrl,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -175,7 +175,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String slug,  String name, @JsonKey(name: 'email_domain')  String emailDomain, @JsonKey(name: 'primary_color')  String? primaryColor, @JsonKey(name: 'logo_url')  String? logoUrl, @JsonKey(name: 'is_active')  bool isActive,  String? address,  String? city,  String? state, @JsonKey(name: 'zip_code')  String? zipCode,  String country,  double? latitude,  double? longitude,  String timezone, @JsonKey(name: 'website_url')  String? websiteUrl,  String? description, @JsonKey(name: 'student_count')  int? studentCount, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String slug,  String name, @JsonKey(name: 'email_domain')  String emailDomain, @JsonKey(name: 'primary_color')  String? primaryColor, @JsonKey(name: 'logo_url')  String? logoUrl, @JsonKey(name: 'is_active', fromJson: _parseBool)  bool isActive,  String? address,  String? city,  String? state, @JsonKey(name: 'zip_code')  String? zipCode,  String country,  double? latitude,  double? longitude,  String timezone, @JsonKey(name: 'website_url')  String? websiteUrl,  String? description, @JsonKey(name: 'student_count')  int? studentCount, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _School() when $default != null:
 return $default(_that.id,_that.slug,_that.name,_that.emailDomain,_that.primaryColor,_that.logoUrl,_that.isActive,_that.address,_that.city,_that.state,_that.zipCode,_that.country,_that.latitude,_that.longitude,_that.timezone,_that.websiteUrl,_that.description,_that.studentCount,_that.coverImageUrl,_that.createdAt,_that.updatedAt);case _:
@@ -196,7 +196,7 @@ return $default(_that.id,_that.slug,_that.name,_that.emailDomain,_that.primaryCo
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String slug,  String name, @JsonKey(name: 'email_domain')  String emailDomain, @JsonKey(name: 'primary_color')  String? primaryColor, @JsonKey(name: 'logo_url')  String? logoUrl, @JsonKey(name: 'is_active')  bool isActive,  String? address,  String? city,  String? state, @JsonKey(name: 'zip_code')  String? zipCode,  String country,  double? latitude,  double? longitude,  String timezone, @JsonKey(name: 'website_url')  String? websiteUrl,  String? description, @JsonKey(name: 'student_count')  int? studentCount, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String slug,  String name, @JsonKey(name: 'email_domain')  String emailDomain, @JsonKey(name: 'primary_color')  String? primaryColor, @JsonKey(name: 'logo_url')  String? logoUrl, @JsonKey(name: 'is_active', fromJson: _parseBool)  bool isActive,  String? address,  String? city,  String? state, @JsonKey(name: 'zip_code')  String? zipCode,  String country,  double? latitude,  double? longitude,  String timezone, @JsonKey(name: 'website_url')  String? websiteUrl,  String? description, @JsonKey(name: 'student_count')  int? studentCount, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _School():
 return $default(_that.id,_that.slug,_that.name,_that.emailDomain,_that.primaryColor,_that.logoUrl,_that.isActive,_that.address,_that.city,_that.state,_that.zipCode,_that.country,_that.latitude,_that.longitude,_that.timezone,_that.websiteUrl,_that.description,_that.studentCount,_that.coverImageUrl,_that.createdAt,_that.updatedAt);case _:
@@ -216,7 +216,7 @@ return $default(_that.id,_that.slug,_that.name,_that.emailDomain,_that.primaryCo
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String slug,  String name, @JsonKey(name: 'email_domain')  String emailDomain, @JsonKey(name: 'primary_color')  String? primaryColor, @JsonKey(name: 'logo_url')  String? logoUrl, @JsonKey(name: 'is_active')  bool isActive,  String? address,  String? city,  String? state, @JsonKey(name: 'zip_code')  String? zipCode,  String country,  double? latitude,  double? longitude,  String timezone, @JsonKey(name: 'website_url')  String? websiteUrl,  String? description, @JsonKey(name: 'student_count')  int? studentCount, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String slug,  String name, @JsonKey(name: 'email_domain')  String emailDomain, @JsonKey(name: 'primary_color')  String? primaryColor, @JsonKey(name: 'logo_url')  String? logoUrl, @JsonKey(name: 'is_active', fromJson: _parseBool)  bool isActive,  String? address,  String? city,  String? state, @JsonKey(name: 'zip_code')  String? zipCode,  String country,  double? latitude,  double? longitude,  String timezone, @JsonKey(name: 'website_url')  String? websiteUrl,  String? description, @JsonKey(name: 'student_count')  int? studentCount, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _School() when $default != null:
 return $default(_that.id,_that.slug,_that.name,_that.emailDomain,_that.primaryColor,_that.logoUrl,_that.isActive,_that.address,_that.city,_that.state,_that.zipCode,_that.country,_that.latitude,_that.longitude,_that.timezone,_that.websiteUrl,_that.description,_that.studentCount,_that.coverImageUrl,_that.createdAt,_that.updatedAt);case _:
@@ -231,7 +231,7 @@ return $default(_that.id,_that.slug,_that.name,_that.emailDomain,_that.primaryCo
 @JsonSerializable()
 
 class _School implements School {
-  const _School({required this.id, required this.slug, required this.name, @JsonKey(name: 'email_domain') required this.emailDomain, @JsonKey(name: 'primary_color') this.primaryColor, @JsonKey(name: 'logo_url') this.logoUrl, @JsonKey(name: 'is_active') this.isActive = false, this.address, this.city, this.state, @JsonKey(name: 'zip_code') this.zipCode, this.country = 'US', this.latitude, this.longitude, this.timezone = 'America/New_York', @JsonKey(name: 'website_url') this.websiteUrl, this.description, @JsonKey(name: 'student_count') this.studentCount, @JsonKey(name: 'cover_image_url') this.coverImageUrl, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _School({required this.id, required this.slug, required this.name, @JsonKey(name: 'email_domain') required this.emailDomain, @JsonKey(name: 'primary_color') this.primaryColor, @JsonKey(name: 'logo_url') this.logoUrl, @JsonKey(name: 'is_active', fromJson: _parseBool) this.isActive = false, this.address, this.city, this.state, @JsonKey(name: 'zip_code') this.zipCode, this.country = 'US', this.latitude, this.longitude, this.timezone = 'America/New_York', @JsonKey(name: 'website_url') this.websiteUrl, this.description, @JsonKey(name: 'student_count') this.studentCount, @JsonKey(name: 'cover_image_url') this.coverImageUrl, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
   factory _School.fromJson(Map<String, dynamic> json) => _$SchoolFromJson(json);
 
 @override final  String id;
@@ -240,7 +240,7 @@ class _School implements School {
 @override@JsonKey(name: 'email_domain') final  String emailDomain;
 @override@JsonKey(name: 'primary_color') final  String? primaryColor;
 @override@JsonKey(name: 'logo_url') final  String? logoUrl;
-@override@JsonKey(name: 'is_active') final  bool isActive;
+@override@JsonKey(name: 'is_active', fromJson: _parseBool) final  bool isActive;
 // Geographic info
 @override final  String? address;
 @override final  String? city;
@@ -291,7 +291,7 @@ abstract mixin class _$SchoolCopyWith<$Res> implements $SchoolCopyWith<$Res> {
   factory _$SchoolCopyWith(_School value, $Res Function(_School) _then) = __$SchoolCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String slug, String name,@JsonKey(name: 'email_domain') String emailDomain,@JsonKey(name: 'primary_color') String? primaryColor,@JsonKey(name: 'logo_url') String? logoUrl,@JsonKey(name: 'is_active') bool isActive, String? address, String? city, String? state,@JsonKey(name: 'zip_code') String? zipCode, String country, double? latitude, double? longitude, String timezone,@JsonKey(name: 'website_url') String? websiteUrl, String? description,@JsonKey(name: 'student_count') int? studentCount,@JsonKey(name: 'cover_image_url') String? coverImageUrl,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id, String slug, String name,@JsonKey(name: 'email_domain') String emailDomain,@JsonKey(name: 'primary_color') String? primaryColor,@JsonKey(name: 'logo_url') String? logoUrl,@JsonKey(name: 'is_active', fromJson: _parseBool) bool isActive, String? address, String? city, String? state,@JsonKey(name: 'zip_code') String? zipCode, String country, double? latitude, double? longitude, String timezone,@JsonKey(name: 'website_url') String? websiteUrl, String? description,@JsonKey(name: 'student_count') int? studentCount,@JsonKey(name: 'cover_image_url') String? coverImageUrl,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 

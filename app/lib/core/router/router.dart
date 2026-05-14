@@ -32,7 +32,7 @@ import 'package:smivo/shared/widgets/app_shell.dart';
 import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
 import 'package:smivo/features/admin/screens/admin_shell_screen.dart';
 import 'package:smivo/features/admin/screens/admin_login_screen.dart';
-import 'package:smivo/features/listing/screens/post_hub_screen.dart';
+
 import 'package:smivo/features/carpool/screens/carpool_list_screen.dart';
 import 'package:smivo/features/carpool/screens/carpool_detail_screen.dart';
 import 'package:smivo/features/carpool/screens/create_carpool_screen.dart';
@@ -149,9 +149,9 @@ GoRouter router(Ref ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                name: AppRoutes.postHub,
-                path: AppRoutes.postHubPath,
-                builder: (context, state) => const PostHubScreen(),
+                name: AppRoutes.carpoolList,
+                path: AppRoutes.carpoolListPath,
+                builder: (context, state) => const CarpoolListScreen(),
               ),
             ],
           ),
@@ -264,11 +264,6 @@ GoRouter router(Ref ref) {
       ),
 
       // ── Carpool ────────────────────────────────────────────────────
-      GoRoute(
-        name: AppRoutes.carpoolList,
-        path: AppRoutes.carpoolListPath,
-        builder: (context, state) => const CarpoolListScreen(),
-      ),
       GoRoute(
         name: AppRoutes.createCarpool,
         path: AppRoutes.createCarpoolPath,

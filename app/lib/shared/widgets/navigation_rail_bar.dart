@@ -56,13 +56,24 @@ class NavigationRailBar extends ConsumerWidget {
               : NavigationRailLabelType.selected,
       leading: Padding(
         padding: const EdgeInsets.only(top: 8, bottom: 16),
-        child: Text(
-          'Smivo',
-          style: typo.titleMedium.copyWith(
-            color: colors.primary,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-          ),
+        child: Column(
+          children: [
+            Text(
+              'Smivo',
+              style: typo.titleMedium.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            FloatingActionButton(
+              elevation: 0,
+              backgroundColor: colors.primary,
+              onPressed: () => context.pushNamed(AppRoutes.createListing),
+              child: Icon(Icons.add, color: colors.onPrimary),
+            ),
+          ],
         ),
       ),
       // NOTE: Trailing area provides Settings access since desktop/tablet
@@ -126,9 +137,9 @@ class NavigationRailBar extends ConsumerWidget {
           label: const Text('Chat'),
         ),
         const NavigationRailDestination(
-          icon: Icon(Icons.add_circle_outline),
-          selectedIcon: Icon(Icons.add_circle_outline),
-          label: Text('Post'),
+          icon: Icon(Icons.directions_car_outlined),
+          selectedIcon: Icon(Icons.directions_car),
+          label: Text('Carpool'),
         ),
         NavigationRailDestination(
           icon: Badge(
