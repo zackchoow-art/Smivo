@@ -339,7 +339,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
 
               // Bottom Actions
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   boxShadow: [
@@ -352,13 +352,14 @@ class CarpoolDetailScreen extends ConsumerWidget {
                   ],
                 ),
                 child: SafeArea(
+                  minimum: const EdgeInsets.only(bottom: 16),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isCreator) ...[
                         Row(
                           children: [
-                            if (trip.status == 'active' || trip.status == 'inactive' || trip.status == 'confirmed') ...[
+                            if (trip.status == 'active' || trip.status == 'inactive') ...[
                               Expanded(
                                 child: OutlinedButton(
                                   onPressed: () {
@@ -397,7 +398,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                         if (snapshot != null) ...[
                           Row(
                             children: [
-                              if (trip.status == 'active' || trip.status == 'inactive' || trip.status == 'confirmed') ...[
+                              if (trip.status == 'active' || trip.status == 'inactive') ...[
                                 Expanded(
                                   child: OutlinedButton(
                                     onPressed: () {
@@ -426,7 +427,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             ],
                           ),
                         ] else ...[
-                          if (trip.status == 'active' || trip.status == 'inactive' || trip.status == 'confirmed')
+                          if (trip.status == 'active' || trip.status == 'inactive')
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(
@@ -526,7 +527,11 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       // Real CalendarSyncButton with 1-hour reminder
                       if (isCreator || isMember) ...[
                         const SizedBox(height: 8),
-                        CalendarSyncButton(trip: trip),
+                        SizedBox(
+                          height: 48,
+                          width: double.infinity,
+                          child: CalendarSyncButton(trip: trip),
+                        ),
                       ],
                     ],
                   ),
