@@ -51,15 +51,7 @@ class CarpoolRepository {
           ''')
           .eq('id', tripId)
           .single();
-      try {
-        return CarpoolTrip.fromJson(data);
-      } catch (e, st) {
-        // FIXME: Remove once type mismatch is resolved.
-        _debugPrintJson('detail_trip', data);
-        print('DETAIL PARSE ERROR: $e');
-        print('Stack: $st');
-        rethrow;
-      }
+      return CarpoolTrip.fromJson(data);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -80,42 +72,9 @@ class CarpoolRepository {
           ''')
           .eq('members.user_id', userId)
           .order('departure_time', ascending: true);
-      final result = data.map((json) {
-        try {
-          return CarpoolTrip.fromJson(json);
-        } catch (e, st) {
-          // FIXME: Remove this debug block once the type mismatch is resolved.
-          // Print the full JSON tree to identify the problematic field.
-          _debugPrintJson('mytrip', json);
-          print('MYTRIPS PARSE ERROR: $e');
-          print('Stack: $st');
-          rethrow;
-        }
-      }).toList();
-      print('MYTRIPS SUCCESS: loaded ${result.length} trips');
-      return result;
+      return data.map((json) => CarpoolTrip.fromJson(json)).toList();
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
-    }
-  }
-
-  // Prints all fields and their runtime types for a given JSON map.
-  // Recurses into nested maps and lists to surface type mismatches.
-  void _debugPrintJson(String prefix, dynamic value, {int depth = 0}) {
-    if (depth > 4) return;
-    if (value is Map) {
-      value.forEach((k, v) {
-        final path = '$prefix.$k';
-        if (v is Map || v is List) {
-          _debugPrintJson(path, v, depth: depth + 1);
-        } else {
-          print('  $path = $v (${v.runtimeType})');
-        }
-      });
-    } else if (value is List) {
-      for (int i = 0; i < value.length && i < 3; i++) {
-        _debugPrintJson('$prefix[$i]', value[i], depth: depth + 1);
-      }
     }
   }
 

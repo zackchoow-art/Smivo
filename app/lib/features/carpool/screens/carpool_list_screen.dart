@@ -304,21 +304,19 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      // FIXME: Remove verbose debug display once bug is resolved.
-      error: (error, stack) => SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: SelectableText(
-          'ERROR: $error\n\nSTACK:\n$stack',
-          style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
-        ),
-      ),
+      error: (error, stack) => Center(child: Text(error.toString())),
     );
   }
 
   Widget _buildTripSection(BuildContext context, ThemeData theme, String title, List<CarpoolTrip> trips) {
     return Theme(
       data: theme.copyWith(dividerColor: Colors.transparent),
+      // NOTE: PageStorageKey is required here to give the ExpansionTile its own
+      // storage namespace. Without it, it reads from the same PageStorage bucket
+      // as the CustomScrollView (which stores scroll offset as a double), causing
+      // 'type double is not a subtype of bool?' crash in initState.
       child: ExpansionTile(
+        key: PageStorageKey<String>('carpool_section_$title'),
         title: Text(
           '$title (${trips.length})',
           style: theme.textTheme.titleSmall?.copyWith(
