@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/carpool_trip.dart';
 import 'package:smivo/features/carpool/providers/carpool_list_provider.dart';
 import 'package:smivo/features/carpool/widgets/carpool_trip_card.dart';
@@ -239,13 +240,36 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
 
   Widget _buildMyTripsTab(BuildContext context, ThemeData theme) {
     final myTripsAsync = ref.watch(myCarpoolProvider);
+    final currentUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
 
     return myTripsAsync.when(
       data: (trips) {
         final filteredTrips = trips.where(_matchesFilter).toList();
-        final pendingConfirmation = filteredTrips.where((t) => t.status == 'active' || t.status == 'inactive').toList();
-        final waitingForDeparture = filteredTrips.where((t) => t.status == 'confirmed').toList();
-        final pastTrips = filteredTrips.where((t) => t.status == 'departed' || t.status == 'completed' || t.status == 'cancelled').toList();
+        
+        bool isMemberCancelled(CarpoolTrip t) {
+          if (currentUserId == null || t.creatorId == currentUserId) return false;
+          try {
+            final m = t.members.firstWhere((m) => m.userId == currentUserId);
+            return m.status == 'cancelled' || m.status == 'rejected';
+          } catch (_) {
+            return false;
+          }
+        }
+
+        final pastTrips = filteredTrips.where((t) => 
+            t.status == 'departed' || 
+            t.status == 'completed' || 
+            t.status == 'cancelled' ||
+            isMemberCancelled(t)
+        ).toList();
+
+        final pendingConfirmation = filteredTrips.where((t) => 
+            (t.status == 'active' || t.status == 'inactive') && !isMemberCancelled(t)
+        ).toList();
+
+        final waitingForDeparture = filteredTrips.where((t) => 
+            t.status == 'confirmed' && !isMemberCancelled(t)
+        ).toList();
 
         return CustomScrollView(
           key: const PageStorageKey('my_trips_tab'),
@@ -333,15 +357,15 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
                       ),
                     ),
                   if (pendingConfirmation.isNotEmpty) ...[
-                    _buildTripSection(context, theme, 'Pending Confirmation', pendingConfirmation),
+                    _buildTripSection(context, theme, 'Pending Confirmation', pendingConfirmation, currentUserId),
                     const SizedBox(height: 16),
                   ],
                   if (waitingForDeparture.isNotEmpty) ...[
-                    _buildTripSection(context, theme, 'Waiting for Departure', waitingForDeparture),
+                    _buildTripSection(context, theme, 'Waiting for Departure', waitingForDeparture, currentUserId),
                     const SizedBox(height: 16),
                   ],
                   if (pastTrips.isNotEmpty) ...[
-                    _buildTripSection(context, theme, 'Past Trips', pastTrips),
+                    _buildTripSection(context, theme, 'Past Trips', pastTrips, currentUserId),
                     const SizedBox(height: 16),
                   ],
                 ]),
@@ -355,7 +379,7 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
     );
   }
 
-  Widget _buildTripSection(BuildContext context, ThemeData theme, String title, List<CarpoolTrip> trips) {
+  Widget _buildTripSection(BuildContext context, ThemeData theme, String title, List<CarpoolTrip> trips, String? currentUserId) {
     return Theme(
       data: theme.copyWith(dividerColor: Colors.transparent),
       // NOTE: PageStorageKey is required here to give the ExpansionTile its own
@@ -379,6 +403,7 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
             padding: const EdgeInsets.only(bottom: 12),
             child: CarpoolTripCard(
               trip: trip,
+              currentUserId: currentUserId,
               onTap: () {
                 context.pushNamed(
                   AppRoutes.carpoolDetail,

@@ -358,7 +358,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       if (isCreator) ...[
                         Row(
                           children: [
-                            if (trip.status == 'active' || trip.status == 'inactive') ...[
+                            if (trip.status == 'active' || trip.status == 'inactive' || trip.status == 'confirmed') ...[
                               Expanded(
                                 child: OutlinedButton(
                                   onPressed: () {
@@ -397,7 +397,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                         if (snapshot != null) ...[
                           Row(
                             children: [
-                              if (trip.status == 'active' || trip.status == 'inactive') ...[
+                              if (trip.status == 'active' || trip.status == 'inactive' || trip.status == 'confirmed') ...[
                                 Expanded(
                                   child: OutlinedButton(
                                     onPressed: () {
@@ -426,7 +426,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             ],
                           ),
                         ] else ...[
-                          if (trip.status == 'active' || trip.status == 'inactive')
+                          if (trip.status == 'active' || trip.status == 'inactive' || trip.status == 'confirmed')
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(

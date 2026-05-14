@@ -7,10 +7,12 @@ class CarpoolTripCard extends StatelessWidget {
   const CarpoolTripCard({
     super.key,
     required this.trip,
+    this.currentUserId,
     this.onTap,
   });
 
   final CarpoolTrip trip;
+  final String? currentUserId;
   final VoidCallback? onTap;
 
   String _getShortDesc(String? desc, String address) {
@@ -25,6 +27,34 @@ class CarpoolTripCard extends StatelessWidget {
     final depDesc = _getShortDesc(trip.departureDescription, trip.departureAddress);
     final destDesc = _getShortDesc(trip.destinationDescription, trip.destinationAddress);
     final isDriver = trip.role == 'driver';
+    
+    String? displayStatus;
+    Color? statusColor;
+    
+    if (trip.status == 'cancelled') {
+      displayStatus = 'Cancelled by Organizer';
+      statusColor = theme.colorScheme.error;
+    } else if (trip.status == 'departed') {
+      displayStatus = 'Departed';
+      statusColor = theme.colorScheme.onSurfaceVariant;
+    } else if (trip.status == 'completed') {
+      displayStatus = 'Completed';
+      statusColor = theme.colorScheme.onSurfaceVariant;
+    } else if (currentUserId != null && currentUserId != trip.creatorId) {
+      try {
+        final member = trip.members.firstWhere((m) => m.userId == currentUserId);
+        if (member.status == 'cancelled') {
+          displayStatus = 'You Cancelled';
+          statusColor = theme.colorScheme.error;
+        } else if (member.status == 'rejected') {
+          displayStatus = 'Request Rejected';
+          statusColor = theme.colorScheme.error;
+        } else if (member.status == 'pending') {
+          displayStatus = 'Pending Approval';
+          statusColor = Colors.orange;
+        }
+      } catch (_) {}
+    }
 
     return Card(
       elevation: 2,
@@ -51,13 +81,17 @@ class CarpoolTripCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isDriver ? theme.colorScheme.primaryContainer : theme.colorScheme.tertiaryContainer,
+                      color: displayStatus != null 
+                          ? statusColor!.withValues(alpha: 0.1) 
+                          : (isDriver ? theme.colorScheme.primaryContainer : theme.colorScheme.tertiaryContainer),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      isDriver ? 'Fixed Price' : 'Split Cost',
+                      displayStatus ?? (isDriver ? 'Fixed Price' : 'Split Cost'),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: isDriver ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onTertiaryContainer,
+                        color: displayStatus != null 
+                            ? statusColor 
+                            : (isDriver ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onTertiaryContainer),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
