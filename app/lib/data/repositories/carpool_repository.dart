@@ -51,7 +51,15 @@ class CarpoolRepository {
           ''')
           .eq('id', tripId)
           .single();
-      return CarpoolTrip.fromJson(data);
+      try {
+        return CarpoolTrip.fromJson(data);
+      } catch (e, st) {
+        // FIXME: Remove once type mismatch is resolved.
+        _debugPrintJson('detail_trip', data);
+        print('DETAIL PARSE ERROR: $e');
+        print('Stack: $st');
+        rethrow;
+      }
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -72,18 +80,20 @@ class CarpoolRepository {
           ''')
           .eq('members.user_id', userId)
           .order('departure_time', ascending: true);
-      return data.map((json) {
+      final result = data.map((json) {
         try {
           return CarpoolTrip.fromJson(json);
         } catch (e, st) {
           // FIXME: Remove this debug block once the type mismatch is resolved.
           // Print the full JSON tree to identify the problematic field.
-          _debugPrintJson('trip', json);
-          print('CARPOOL PARSE ERROR: $e');
+          _debugPrintJson('mytrip', json);
+          print('MYTRIPS PARSE ERROR: $e');
           print('Stack: $st');
           rethrow;
         }
       }).toList();
+      print('MYTRIPS SUCCESS: loaded ${result.length} trips');
+      return result;
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
