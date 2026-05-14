@@ -196,12 +196,12 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text('Your Role', style: theme.textTheme.titleMedium),
+            Text('Pricing Model', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Row(
               children: [
                 ChoiceChip(
-                  label: const Text('I\'m the Driver'),
+                  label: const Text('Fixed Price'),
                   selected: _role == 'driver',
                   onSelected: (val) {
                     if (val) setState(() => _role = 'driver');
@@ -209,11 +209,27 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
                 ),
                 const SizedBox(width: 12),
                 ChoiceChip(
-                  label: const Text('I\'m Organizing (splitting cost)'),
+                  label: const Text('Split Cost'),
                   selected: _role == 'organizer',
                   onSelected: (val) {
                     if (val) setState(() => _role = 'organizer');
                   },
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.lightbulb, color: Colors.amber, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _role == 'driver'
+                        ? 'Fixed Price: Each passenger pays a set amount regardless of total people or final expenses. Ideal for driving yourself and covering gas/tolls.'
+                        : 'Split Cost: The total expense is divided equally among everyone (including you). Ideal for rideshares like Uber/Lyft to a shared destination.',
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
                 ),
               ],
             ),
@@ -327,11 +343,11 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             const SizedBox(height: 16),
             TextFormField(
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Estimated Total Price (\$)',
-                hintText: 'e.g. 120.00',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.attach_money),
+              decoration: InputDecoration(
+                labelText: _role == 'driver' ? 'Fixed Price per person (\$)' : 'Estimated Total Cost (\$)',
+                hintText: _role == 'driver' ? 'e.g. 30.00' : 'e.g. 100.00',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.attach_money),
               ),
               onChanged: (val) => setState(() => _estimatedTotalPrice = double.tryParse(val)),
             ),
@@ -349,7 +365,9 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Actual cost may vary based on final headcount and total expenses.',
+                      _role == 'driver'
+                          ? 'Passengers will pay exactly this amount upon completion.'
+                          : 'Actual cost per person may vary based on the final total expenses and the final headcount.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSecondaryContainer,
                       ),

@@ -462,7 +462,9 @@ class CarpoolDetailScreen extends ConsumerWidget {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Price shown is an estimate and may change based on final headcount.',
+                                  trip.role == 'driver'
+                                      ? 'Fixed Price: You will pay exactly the fixed amount shown upon completion.'
+                                      : 'Split Cost: Price shown is an estimate and may change based on final total expenses and headcount.',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: theme.colorScheme.outline,
                                     fontStyle: FontStyle.italic,

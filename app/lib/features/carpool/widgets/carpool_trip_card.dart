@@ -51,13 +51,14 @@ class CarpoolTripCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isDriver ? theme.colorScheme.primaryContainer : theme.colorScheme.secondaryContainer,
+                      color: isDriver ? theme.colorScheme.primaryContainer : theme.colorScheme.tertiaryContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      isDriver ? 'Driver' : 'Carpool',
+                      isDriver ? 'Fixed Price' : 'Split Cost',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: isDriver ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSecondaryContainer,
+                        color: isDriver ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onTertiaryContainer,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -86,7 +87,9 @@ class CarpoolTripCard extends StatelessWidget {
                       TextSpan(
                         children: [
                           TextSpan(
-                            text: '\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}/',
+                            text: isDriver
+                                ? '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}/'
+                                : '~\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}/',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w900,
                               color: theme.colorScheme.primary,
