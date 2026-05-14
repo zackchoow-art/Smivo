@@ -15,6 +15,7 @@ import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/features/carpool/widgets/legal_disclaimer_dialog.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:smivo/data/repositories/carpool_repository.dart';
 
 class CarpoolDetailScreen extends ConsumerWidget {
   const CarpoolDetailScreen({super.key, required this.tripId});
@@ -166,6 +167,14 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                     icon: Icons.flag,
                                     label: 'Est. Arrival',
                                     value: estArrivalStr,
+                                    labelWidth: 130,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _InfoRow(
+                                    icon: Icons.groups,
+                                    label: 'Total Seats',
+                                    value: '${trip.totalSeats}',
+                                    oldValue: getOld('total_seats', '${trip.totalSeats}', (v) => '$v'),
                                     labelWidth: 130,
                                   ),
                                   const SizedBox(height: 8),
@@ -349,22 +358,24 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       if (isCreator) ...[
                         Row(
                           children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  ref
-                                      .read(carpoolDetailProvider(tripId)
-                                          .notifier)
-                                      .cancelTrip();
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor:
-                                      theme.colorScheme.error,
+                            if (trip.status == 'active' || trip.status == 'inactive') ...[
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    ref
+                                        .read(carpoolDetailProvider(tripId)
+                                            .notifier)
+                                        .cancelTrip();
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor:
+                                        theme.colorScheme.error,
+                                  ),
+                                  child: const Text('Cancel Trip'),
                                 ),
-                                child: const Text('Cancel Trip'),
                               ),
-                            ),
-                            const SizedBox(width: 12),
+                              const SizedBox(width: 12),
+                            ],
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () {
@@ -386,16 +397,18 @@ class CarpoolDetailScreen extends ConsumerWidget {
                         if (snapshot != null) ...[
                           Row(
                             children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    ref.read(carpoolDetailProvider(tripId).notifier).leaveTrip();
-                                  },
-                                  style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
-                                  child: const Text('Cancel Request'),
+                              if (trip.status == 'active' || trip.status == 'inactive') ...[
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () {
+                                      ref.read(carpoolDetailProvider(tripId).notifier).leaveTrip();
+                                    },
+                                    style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                                    child: const Text('Cancel Request'),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
+                                const SizedBox(width: 12),
+                              ],
                               Expanded(
                                 child: ElevatedButton(
                                   onPressed: () async {
@@ -413,21 +426,22 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             ],
                           ),
                         ] else ...[
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: () {
-                                ref
-                                    .read(carpoolDetailProvider(tripId)
-                                        .notifier)
-                                    .leaveTrip();
-                              },
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: theme.colorScheme.error,
+                          if (trip.status == 'active' || trip.status == 'inactive')
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  ref
+                                      .read(carpoolDetailProvider(tripId)
+                                          .notifier)
+                                      .leaveTrip();
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: theme.colorScheme.error,
+                                ),
+                                child: const Text('Leave Trip'),
                               ),
-                              child: const Text('Leave Trip'),
                             ),
-                          ),
                         ],
                       ] else if (isPending) ...[
                         SizedBox(

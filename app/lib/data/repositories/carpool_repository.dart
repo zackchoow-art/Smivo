@@ -68,7 +68,7 @@ class CarpoolRepository {
           .select('''
             *,
             creator:user_profiles!creator_id(*),
-            members:carpool_members!inner(user_id)
+            members:carpool_members!inner(*, user:user_profiles!user_id(*))
           ''')
           .eq('members.user_id', userId)
           .order('departure_time', ascending: true);
@@ -238,6 +238,15 @@ class CarpoolRepository {
           null,
         );
       }
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Confirms a trip via RPC.
+  Future<void> confirmTrip(String tripId) async {
+    try {
+      await _client.rpc('confirm_carpool_trip', params: {'p_trip_id': tripId});
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }

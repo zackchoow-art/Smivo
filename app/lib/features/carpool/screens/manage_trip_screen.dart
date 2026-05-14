@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import 'package:go_router/go_router.dart';
+import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/data/models/carpool_member.dart';
 import 'package:smivo/data/models/carpool_trip.dart';
 import 'package:smivo/features/carpool/providers/carpool_detail_provider.dart';
 import 'package:smivo/features/carpool/providers/carpool_members_provider.dart';
-import 'package:smivo/features/carpool/providers/carpool_repository_provider.dart';
+import 'package:smivo/data/repositories/carpool_repository.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 import 'package:smivo/core/maps/map_location_picker.dart';
 import 'package:smivo/shared/widgets/collapsible_section.dart';
@@ -52,12 +54,14 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
   final _noteController = TextEditingController();
   final _departureDescController = TextEditingController();
   final _destinationDescController = TextEditingController();
+  final _priceController = TextEditingController();
 
   @override
   void dispose() {
     _noteController.dispose();
     _departureDescController.dispose();
     _destinationDescController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
@@ -84,6 +88,9 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
     _noteController.text = trip.note ?? '';
     _departureDescController.text = trip.departureDescription ?? '';
     _destinationDescController.text = trip.destinationDescription ?? '';
+    if (trip.estimatedTotalPrice != null) {
+      _priceController.text = trip.estimatedTotalPrice.toString();
+    }
 
     _isInit = true;
   }
@@ -378,7 +385,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
           ),
           const SizedBox(height: 16),
           TextFormField(
-            initialValue: _estimatedTotalPrice?.toString() ?? '',
+            controller: _priceController,
             keyboardType:
                 const TextInputType.numberWithOptions(decimal: true),
             decoration: const InputDecoration(
@@ -439,7 +446,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
     );
   }
 
-  Widget _buildReviewApplicantsSection(ThemeData theme) {
+  Widget _buildMembersSection(ThemeData theme, CarpoolTrip trip) {
     final membersAsync = ref.watch(carpoolTripMembersProvider(widget.tripId));
 
     return membersAsync.when(
@@ -487,7 +494,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
                   count: pending.length,
                   color: Colors.orange),
               ...pending.map((m) => _MemberTile(
-                  member: m, tripId: widget.tripId, status: 'pending')),
+                  member: m, trip: trip, status: 'pending')),
             ],
             if (approved.isNotEmpty) ...[
               _SectionHeader(
@@ -495,7 +502,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
                   count: approved.length,
                   color: Colors.green),
               ...approved.map((m) => _MemberTile(
-                  member: m, tripId: widget.tripId, status: 'approved')),
+                  member: m, trip: trip, status: 'approved')),
             ],
             if (others.isNotEmpty) ...[
               _SectionHeader(
@@ -503,7 +510,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
                   count: others.length,
                   color: Colors.grey),
               ...others.map((m) => _MemberTile(
-                  member: m, tripId: widget.tripId, status: m.status)),
+                  member: m, trip: trip, status: m.status)),
             ],
           ],
         );
@@ -541,6 +548,10 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
       appBar: AppBar(title: const Text('Manage Trip')),
       body: tripAsync.when(
         data: (trip) {
+          if (trip == null) {
+            return const Center(child: Text('Trip not found.'));
+          }
+
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _initFields(trip);
           });
@@ -555,7 +566,6 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
               children: [
                 CollapsibleSection(
                   title: 'Edit Trip Details',
-                  icon: Icons.edit_note,
                   initiallyExpanded: false,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 16),
@@ -564,14 +574,16 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
                 ),
                 const SizedBox(height: 24),
                 CollapsibleSection(
-                  title: 'Review Applicants',
-                  icon: Icons.people_alt_outlined,
+                  title: 'Members',
                   initiallyExpanded: true,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: _buildReviewApplicantsSection(theme),
+                    child: _buildMembersSection(theme, trip),
                   ),
                 ),
+                const SizedBox(height: 32),
+                if (trip.status == 'active' || trip.status == 'inactive')
+                  _buildConfirmTripButton(context, theme, trip),
                 const SizedBox(height: 32),
               ],
             ),
@@ -581,6 +593,64 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
         error: (error, stack) => Center(child: Text(error.toString())),
       ),
     );
+  }
+
+  Widget _buildConfirmTripButton(BuildContext context, ThemeData theme, CarpoolTrip trip) {
+    return ElevatedButton.icon(
+      onPressed: () => _handleConfirmTrip(context, trip),
+      icon: const Icon(Icons.check_circle, size: 24),
+      label: const Text('Confirm Trip'),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        textStyle: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleConfirmTrip(BuildContext context, CarpoolTrip trip) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Trip?'),
+        content: const Text(
+          'Confirming this trip will lock all details and send a notification to all members. '
+          'Once confirmed, the trip can no longer be cancelled. Are you sure?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Wait'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: const Text('Yes, Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(carpoolRepositoryProvider).confirmTrip(trip.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Trip confirmed successfully!')),
+      );
+      ref.invalidate(carpoolDetailProvider(trip.id));
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to confirm trip: $e')),
+      );
+    }
   }
 }
 
@@ -644,12 +714,12 @@ class _SectionHeader extends StatelessWidget {
 class _MemberTile extends ConsumerWidget {
   const _MemberTile({
     required this.member,
-    required this.tripId,
+    required this.trip,
     required this.status,
   });
 
   final CarpoolMember member;
-  final String tripId;
+  final CarpoolTrip trip;
   final String status;
 
   @override
@@ -716,26 +786,77 @@ class _MemberTile extends ConsumerWidget {
       );
     }
 
+    bool isPendingChanges = false;
+    // Basic heuristic: if lastAcknowledgedSnapshot exists but is older than trip update?
+    // Or just check if snapshot doesn't match current trip fields
+    if (status == 'approved' && member.lastAcknowledgedSnapshot != null) {
+       final snap = member.lastAcknowledgedSnapshot!;
+       if (snap['estimated_total_price'] != trip.estimatedTotalPrice || 
+           snap['departure_time'] != trip.departureTime.toIso8601String() ||
+           snap['departure_address'] != trip.departureAddress) {
+           isPendingChanges = true;
+       }
+    }
+
     final (label, chipColor) = switch (status) {
-      'approved' => ('Joined', Colors.green),
+      'approved' => isPendingChanges 
+          ? ('Pending Changes', Colors.orange) 
+          : ('Accepted', Colors.green),
       'rejected' => ('Rejected', Colors.red),
       'left' => ('Left', Colors.grey),
       _ => (status, Colors.grey),
     };
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: chipColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: chipColor,
-          fontWeight: FontWeight.w600,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (status == 'approved') ...[
+          IconButton(
+            icon: const Icon(Icons.forum, size: 20),
+            tooltip: 'Group Chat',
+            color: theme.colorScheme.primary,
+            onPressed: () => context.pushNamed(
+              AppRoutes.groupChatRoom,
+              pathParameters: {'id': trip.id},
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline, size: 20),
+            tooltip: 'Private Chat',
+            color: theme.colorScheme.secondary,
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Private chat coming soon')),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_remove, size: 20),
+            tooltip: 'Kick Out',
+            color: theme.colorScheme.error,
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Kick voting coming soon')),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: chipColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: chipColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -743,7 +864,7 @@ class _MemberTile extends ConsumerWidget {
     try {
       await ref
           .read(carpoolMemberActionsProvider.notifier)
-          .approveMember(member.id, tripId);
+          .approveMember(member.id, trip.id);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -788,7 +909,7 @@ class _MemberTile extends ConsumerWidget {
     try {
       await ref
           .read(carpoolMemberActionsProvider.notifier)
-          .rejectMember(member.id, tripId);
+          .rejectMember(member.id, trip.id);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

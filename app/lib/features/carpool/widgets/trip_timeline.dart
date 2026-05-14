@@ -98,6 +98,19 @@ class TripTimeline extends StatelessWidget {
       ));
     }
 
+    // 3.5. Trip Confirmed
+    final hasConfirmed = ['confirmed', 'departed', 'arrived', 'completed']
+        .contains(trip.status);
+    if (hasConfirmed) {
+      events.add(_TimelineEvent(
+        label: 'Trip Confirmed',
+        subtitle: 'Trip locked and members finalized',
+        time: 'Confirmed',
+        isCompleted: true,
+        isHighlighted: false,
+      ));
+    }
+
     // 4. Departed event
     final hasDeparted = ['departed', 'arrived', 'completed']
         .contains(trip.status);

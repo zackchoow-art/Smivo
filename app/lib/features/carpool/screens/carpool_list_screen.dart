@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/data/models/carpool_trip.dart';
 import 'package:smivo/features/carpool/providers/carpool_list_provider.dart';
 import 'package:smivo/features/carpool/widgets/carpool_trip_card.dart';
 
@@ -60,9 +61,17 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
     final theme = Theme.of(context);
     final tripListAsync = ref.watch(carpoolListProvider);
 
-    return Scaffold(
-      appBar: AppBar(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
         title: const Text('Carpool'),
+        bottom: const TabBar(
+          tabs: [
+            Tab(text: 'Explore'),
+            Tab(text: 'My Trips'),
+          ],
+        ),
         actions: [
           IconButton(
             icon: Icon(
@@ -79,8 +88,19 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: TabBarView(
         children: [
+          _buildExploreTab(context, theme, tripListAsync),
+          _buildMyTripsTab(context, theme),
+        ],
+      ),
+      ),
+    );
+  }
+
+  Widget _buildExploreTab(BuildContext context, ThemeData theme, AsyncValue<List<CarpoolTrip>> tripListAsync) {
+    return Column(
+      children: [
           // Search & date filter bar
           _FilterBar(
             searchController: _searchController,
@@ -226,6 +246,75 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
             ),
           ),
         ],
+      );
+  }
+
+  Widget _buildMyTripsTab(BuildContext context, ThemeData theme) {
+    final myTripsAsync = ref.watch(myCarpoolProvider);
+
+    return myTripsAsync.when(
+      data: (trips) {
+        if (trips.isEmpty) {
+          return Center(
+            child: Text(
+              'No trips yet.',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          );
+        }
+
+        final pendingConfirmation = trips.where((t) => t.status == 'active' || t.status == 'inactive').toList();
+        final waitingForDeparture = trips.where((t) => t.status == 'confirmed').toList();
+        final pastTrips = trips.where((t) => t.status == 'departed' || t.status == 'completed' || t.status == 'cancelled').toList();
+
+        return ListView(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          children: [
+            if (pendingConfirmation.isNotEmpty) ...[
+              _buildTripSection(context, theme, 'Pending Confirmation', pendingConfirmation),
+              const SizedBox(height: 16),
+            ],
+            if (waitingForDeparture.isNotEmpty) ...[
+              _buildTripSection(context, theme, 'Waiting for Departure', waitingForDeparture),
+              const SizedBox(height: 16),
+            ],
+            if (pastTrips.isNotEmpty) ...[
+              _buildTripSection(context, theme, 'Past Trips', pastTrips),
+              const SizedBox(height: 16),
+            ],
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text(error.toString())),
+    );
+  }
+
+  Widget _buildTripSection(BuildContext context, ThemeData theme, String title, List<CarpoolTrip> trips) {
+    return Theme(
+      data: theme.copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        title: Text(
+          '$title (${trips.length})',
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        initiallyExpanded: true,
+        children: trips.map((trip) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: CarpoolTripCard(
+              trip: trip,
+              onTap: () {
+                context.pushNamed(
+                  AppRoutes.carpoolDetail,
+                  pathParameters: {'id': trip.id},
+                );
+              },
+            ),
+          );
+        }).toList(),
       ),
     );
   }

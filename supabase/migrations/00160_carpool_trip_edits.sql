@@ -4,7 +4,10 @@ ADD COLUMN IF NOT EXISTS last_acknowledged_snapshot jsonb;
 
 -- Trigger function to handle trip edits
 CREATE OR REPLACE FUNCTION public.handle_carpool_trip_update()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
 BEGIN
   -- Only trigger on manual edits (not status changes like departed/arrived/cancelled)
   IF NEW.status = OLD.status AND (
@@ -46,14 +49,15 @@ BEGIN
       
     -- Notify all active members about the edit
     INSERT INTO public.notifications (
-      user_id, type, title, body, data
+      user_id, type, title, body, action_type, action_url
     )
     SELECT 
       user_id,
-      'system_message',
+      'system',
       'Trip Updated',
       'The organizer has modified the trip details. Please review and accept the changes.',
-      jsonb_build_object('trip_id', NEW.id, 'action_url', '/carpool/' || NEW.id)
+      'route',
+      '/carpool/' || NEW.id
     FROM public.carpool_members
     WHERE trip_id = NEW.id 
       AND user_id != NEW.creator_id 
@@ -63,7 +67,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Attach trigger to carpool_trips
 DROP TRIGGER IF EXISTS trg_carpool_trip_update ON public.carpool_trips;
