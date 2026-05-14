@@ -304,7 +304,14 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text(error.toString())),
+      // FIXME: Remove verbose debug display once bug is resolved.
+      error: (error, stack) => SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: SelectableText(
+          'ERROR: $error\n\nSTACK:\n$stack',
+          style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+        ),
+      ),
     );
   }
 
