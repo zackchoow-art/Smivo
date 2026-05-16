@@ -13,6 +13,7 @@ import 'package:smivo/shared/widgets/responsive_grid.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/features/buyer/widgets/flat_buyer_order_card.dart';
+import 'package:smivo/shared/widgets/unified_page_header.dart';
 
 class BuyerCenterScreen extends ConsumerStatefulWidget {
   const BuyerCenterScreen({super.key});
@@ -54,10 +55,15 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              const CollapsingTitleAppBar(
-                title: 'Buyer Center',
-                subtitle: 'Track your purchase requests and orders.',
-              ),
+              if (Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                const CollapsingTitleAppBar(
+                  title: 'Buyer Center',
+                  subtitle: 'Track your purchase requests and orders.',
+                ),
+              if (!Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                const SliverToBoxAdapter(
+                  child: UnifiedPageHeader(title: 'Buyer Center'),
+                ),
               SliverPersistentHeader(
                 pinned: true,
                 delegate: StickyHeaderDelegate(

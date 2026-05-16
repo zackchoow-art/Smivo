@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
@@ -129,9 +128,10 @@ class HomeHeader extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              Row(
-                children: [
-                  _NotificationBellIcon(unreadCount: unreadCount),
+              if (MediaQuery.of(context).size.width < 600)
+                Row(
+                  children: [
+                    _NotificationBellIcon(unreadCount: unreadCount),
                   const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () => context.pushNamed(AppRoutes.settings),

@@ -1,11 +1,11 @@
 PODS:
-  - add_2_calendar (0.0.1):
-    - Flutter
   - app_links (7.0.0):
     - Flutter
   - app_settings (6.1.2):
     - Flutter
   - apple_maps_flutter (0.0.1):
+    - Flutter
+  - device_calendar (0.0.1):
     - Flutter
   - device_info_plus (0.0.1):
     - Flutter
@@ -18,6 +18,8 @@ PODS:
     - SDWebImage
     - SDWebImageWebPCoder
   - flutter_native_splash (2.4.3):
+    - Flutter
+  - flutter_timezone (0.0.1):
     - Flutter
   - gal (1.0.0):
     - Flutter
@@ -123,15 +125,16 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
-  - add_2_calendar (from `.symlinks/plugins/add_2_calendar/ios`)
   - app_links (from `.symlinks/plugins/app_links/ios`)
   - app_settings (from `.symlinks/plugins/app_settings/ios`)
   - apple_maps_flutter (from `.symlinks/plugins/apple_maps_flutter/ios`)
+  - device_calendar (from `.symlinks/plugins/device_calendar/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - Flutter (from `Flutter`)
   - flutter_app_badger (from `.symlinks/plugins/flutter_app_badger/ios`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
+  - flutter_timezone (from `.symlinks/plugins/flutter_timezone/ios`)
   - gal (from `.symlinks/plugins/gal/darwin`)
   - geocoding_ios (from `.symlinks/plugins/geocoding_ios/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
@@ -157,14 +160,14 @@ SPEC REPOS:
     - TOCropViewController
 
 EXTERNAL SOURCES:
-  add_2_calendar:
-    :path: ".symlinks/plugins/add_2_calendar/ios"
   app_links:
     :path: ".symlinks/plugins/app_links/ios"
   app_settings:
     :path: ".symlinks/plugins/app_settings/ios"
   apple_maps_flutter:
     :path: ".symlinks/plugins/apple_maps_flutter/ios"
+  device_calendar:
+    :path: ".symlinks/plugins/device_calendar/ios"
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
   Flutter:
@@ -175,6 +178,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_image_compress_common/ios"
   flutter_native_splash:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
+  flutter_timezone:
+    :path: ".symlinks/plugins/flutter_timezone/ios"
   gal:
     :path: ".symlinks/plugins/gal/darwin"
   geocoding_ios:
@@ -205,15 +210,16 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
-  add_2_calendar: 5eee66d5a3b99cd5e1487a7e03abd4e3ac4aff11
   app_links: 6d01271b3907b0ee7325c5297c75d697c4226c4d
   app_settings: 9217ccbe946aa9a3751b5459dcf50dabc87517b2
   apple_maps_flutter: c59725efea39e13e703cde52a1d2b14866ad68a8
+  device_calendar: 9cb33f88a02e19652ec7b8b122ca778f751b1f7b
   device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_app_badger: b87fc231847b03b92ce1412aa351842e7e97932f
   flutter_image_compress_common: ec1d45c362c9d30a3f6a0426c297f47c52007e3e
   flutter_native_splash: df59bb2e1421aa0282cb2e95618af4dcb0c56c29
+  flutter_timezone: ac3da59ac941ff1c98a2e1f0293420e020120282
   gal: 6a522c75909f1244732d4596d11d6a2f86ff37a5
   geocoding_ios: eafacae6ad11a1eb56681f7d11df602a5fd49416
   geolocator_apple: 66b711889fd333205763b83c9dcf0a57a28c7afd

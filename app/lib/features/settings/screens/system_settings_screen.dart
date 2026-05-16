@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/core/providers/theme_provider.dart';
+import 'package:smivo/core/providers/color_scheme_provider.dart';
 import 'package:smivo/core/providers/shake_feedback_provider.dart';
 import 'package:smivo/core/providers/preferences_provider.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
@@ -18,7 +19,7 @@ import 'package:smivo/features/settings/widgets/setting_card_container.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
-import 'package:smivo/core/constants/debug_constants.dart';
+
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class SystemSettingsScreen extends ConsumerWidget {
@@ -27,6 +28,7 @@ class SystemSettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentTheme = ref.watch(themeProvider);
+    final currentScheme = ref.watch(colorSchemeProvider);
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
 
@@ -133,6 +135,61 @@ class SystemSettingsScreen extends ConsumerWidget {
                                         ),
                                       ),
                                     ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Color scheme picker
+                      SettingCardContainer(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: colors.surfaceContainerLowest,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.color_lens_outlined,
+                                color: colors.settingsIcon,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Color Palette',
+                                    style: typo.bodyLarge.copyWith(
+                                      color: colors.onSurface,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Choose a color palette',
+                                    style: typo.bodySmall.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _ColorSchemeRow(
+                                    selected: currentScheme,
+                                    onSelected: (scheme) {
+                                      ref
+                                          .read(
+                                            colorSchemeProvider.notifier,
+                                          )
+                                          .setScheme(scheme);
+                                    },
                                   ),
                                 ],
                               ),
@@ -345,7 +402,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                                 );
                                 return Switch.adaptive(
                                   value: isEnabled,
-                                  activeColor: colors.primary,
+                                  activeTrackColor: colors.primary,
                                   onChanged: (value) {
                                     ref
                                         .read(shakeFeedbackProvider.notifier)
@@ -404,7 +461,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                                 );
                                 return Switch.adaptive(
                                   value: isEnabled,
-                                  activeColor: colors.primary,
+                                  activeTrackColor: colors.primary,
                                   onChanged: (value) {
                                     ref
                                         .read(showFloatingNavProvider.notifier)
@@ -490,6 +547,144 @@ class SystemSettingsScreen extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Horizontal row of color scheme swatches with labels.
+///
+/// Each swatch shows the primary color of the scheme. The selected
+/// one gets a highlight ring and a checkmark overlay.
+class _ColorSchemeRow extends StatelessWidget {
+  const _ColorSchemeRow({
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final SmivoColorScheme selected;
+  final ValueChanged<SmivoColorScheme> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: SmivoColorScheme.values.map((scheme) {
+        return Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: _SchemeCircle(
+            scheme: scheme,
+            isSelected: scheme == selected,
+            onTap: () => onSelected(scheme),
+            accentColor: colors.primary,
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+/// A single color scheme swatch: circle with the scheme's primary
+/// color, label underneath, and a ring + check when selected.
+class _SchemeCircle extends StatelessWidget {
+  const _SchemeCircle({
+    required this.scheme,
+    required this.isSelected,
+    required this.onTap,
+    required this.accentColor,
+  });
+
+  final SmivoColorScheme scheme;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Color accentColor;
+
+  /// Preview colors for each scheme (shown as gradient in circle).
+  static const _previewColors = {
+    SmivoColorScheme.defaultScheme: [
+      Color(0xFF2D5BFF),
+      Color(0xFF4C73FF),
+    ],
+    SmivoColorScheme.rose: [
+      Color(0xFFA57480),
+      Color(0xFFD4A373),
+    ],
+    SmivoColorScheme.pastel: [
+      Color(0xFF8B7EC8),
+      Color(0xFFE8A0BF),
+    ],
+    SmivoColorScheme.sage: [
+      Color(0xFF7D8B6E),
+      Color(0xFFB49082),
+    ],
+  };
+
+  static const _labels = {
+    SmivoColorScheme.defaultScheme: 'Default',
+    SmivoColorScheme.rose: 'Rosé',
+    SmivoColorScheme.pastel: 'Pastel',
+    SmivoColorScheme.sage: 'Sage',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final typo = context.smivoTypo;
+    final colors = context.smivoColors;
+    final previewPair = _previewColors[scheme]!;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: isSelected
+                  ? Border.all(color: accentColor, width: 2.5)
+                  : Border.all(
+                      color: colors.outlineVariant,
+                      width: 1,
+                    ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: previewPair,
+                  ),
+                ),
+                child: isSelected
+                    ? const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 18,
+                      )
+                    : null,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _labels[scheme]!,
+            style: typo.labelSmall.copyWith(
+              color: isSelected
+                  ? colors.onSurface
+                  : colors.onSurfaceVariant,
+              fontWeight:
+                  isSelected ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }

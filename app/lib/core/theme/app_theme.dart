@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'color_scheme_variant.dart';
 import 'smivo_colors.dart';
 import 'smivo_radius.dart';
 import 'smivo_shadows.dart';
@@ -8,22 +9,21 @@ import 'theme_variant.dart';
 
 /// Centralized ThemeData factory for the Smivo app.
 ///
-/// Call [buildTheme] with a [SmivoThemeVariant] to produce a fully
-/// configured [ThemeData] with all four Smivo [ThemeExtension]s
-/// (colors, radii, shadows, typography) injected.
-///
-/// The old static [lightTheme] getter is kept for backward compatibility
-/// during the migration period but delegates to the new system.
+/// Call [buildTheme] with a [SmivoThemeVariant] and an optional
+/// [SmivoColorScheme] to produce a fully configured [ThemeData]
+/// with all four Smivo [ThemeExtension]s injected.
 class AppTheme {
   AppTheme._();
 
-  /// Build a complete [ThemeData] for the given [variant].
+  /// Build a complete [ThemeData] for the given [variant] and [scheme].
   ///
-  /// This is the single entry point used by [MaterialApp.theme].
-  /// All component themes (buttons, inputs, cards, nav) are derived
-  /// from the variant's token set so they stay in sync automatically.
-  static ThemeData buildTheme(SmivoThemeVariant variant) {
-    final colors = SmivoColors.fromVariant(variant);
+  /// [variant] controls structural tokens (radius, shadows, typography).
+  /// [scheme] controls the color palette.
+  static ThemeData buildTheme(
+    SmivoThemeVariant variant, [
+    SmivoColorScheme scheme = SmivoColorScheme.defaultScheme,
+  ]) {
+    final colors = SmivoColors.fromVariantAndScheme(variant, scheme);
     final radius = SmivoRadius.fromVariant(variant);
     final shadows = SmivoShadows.fromVariant(variant);
     final typo = SmivoTypography.fromVariant(variant);

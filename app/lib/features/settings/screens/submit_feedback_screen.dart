@@ -60,6 +60,8 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
       return;
     }
 
+    final platform = Theme.of(context).platform.toString();
+
     try {
       Uint8List? imageBytes;
       String? imageFileName;
@@ -69,18 +71,20 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
         imageFileName = _selectedImage!.name;
       }
 
+      if (!mounted) return;
+
       await ref
           .read(submitFeedbackActionProvider.notifier)
           .submit(
             type: _selectedType,
             title: title,
             description: description,
-            deviceInfo: {'platform': Theme.of(context).platform.toString()},
+            deviceInfo: {'platform': platform},
             imageBytes: imageBytes,
             imageFileName: imageFileName,
           );
 
-      if (!mounted || !context.mounted) return;
+      if (!mounted) return;
 
       showDialog(
         context: context,

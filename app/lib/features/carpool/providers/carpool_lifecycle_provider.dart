@@ -12,7 +12,7 @@ part 'carpool_lifecycle_provider.g.dart';
 ///
 /// Each state change invalidates the detail provider so the UI reflects
 /// the latest status without a manual pull-to-refresh.
-@riverpod
+@Riverpod(keepAlive: true)
 class TripLifecycle extends _$TripLifecycle {
   @override
   Future<void> build(String tripId) async {}
@@ -20,45 +20,60 @@ class TripLifecycle extends _$TripLifecycle {
   /// Marks the trip as departed and refreshes the trip detail.
   Future<void> markDeparted() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       await ref.read(carpoolRepositoryProvider).markDeparted(tripId);
-      // Invalidate so all watchers (detail screen, list) pick up new status.
       ref.invalidate(carpoolDetailProvider(tripId));
-    });
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
   }
 
   /// Marks the trip as arrived and refreshes the trip detail.
   Future<void> markArrived() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       await ref.read(carpoolRepositoryProvider).markArrived(tripId);
       ref.invalidate(carpoolDetailProvider(tripId));
-    });
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
   }
 
   /// Marks the trip as completed and refreshes the trip detail.
   Future<void> markCompleted() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       await ref.read(carpoolRepositoryProvider).markCompleted(tripId);
       ref.invalidate(carpoolDetailProvider(tripId));
-    });
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
   }
 
   /// Records the actual total cost and refreshes the trip detail.
   Future<void> settleTripCost(String tripId, double actualTotalCost) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       await ref.read(carpoolRepositoryProvider).settleTripCost(tripId, actualTotalCost);
       ref.invalidate(carpoolDetailProvider(tripId));
-    });
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
   }
 }
 
 // ── Trip Reviews ────────────────────────────────────────────────────────────
 
 /// Loads and manages peer reviews for a completed carpool trip.
-@riverpod
+@Riverpod(keepAlive: true)
 class TripReviews extends _$TripReviews {
   @override
   Future<List<CarpoolReview>> build(String tripId) async {
@@ -74,11 +89,14 @@ class TripReviews extends _$TripReviews {
     List<Map<String, dynamic>> reviews,
   ) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       await ref.read(carpoolRepositoryProvider).submitReviews(reviews);
-      // Refresh so newly submitted reviews are shown immediately.
-      return ref.read(carpoolRepositoryProvider).fetchTripReviews(tripId);
-    });
+      final newReviews = await ref.read(carpoolRepositoryProvider).fetchTripReviews(tripId);
+      state = AsyncData(newReviews);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
   }
 }
 

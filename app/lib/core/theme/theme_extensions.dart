@@ -5,6 +5,7 @@ import 'smivo_radius.dart';
 import 'smivo_shadows.dart';
 import 'smivo_typography.dart';
 
+export 'color_scheme_variant.dart';
 export 'smivo_colors.dart';
 export 'smivo_radius.dart';
 export 'smivo_shadows.dart';

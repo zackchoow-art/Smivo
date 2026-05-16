@@ -32,7 +32,7 @@ final class TripLifecycleProvider
   }) : super(
          retry: null,
          name: r'tripLifecycleProvider',
-         isAutoDispose: true,
+         isAutoDispose: false,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -62,7 +62,7 @@ final class TripLifecycleProvider
   }
 }
 
-String _$tripLifecycleHash() => r'2768caf50736a5b4f63aed138ecab75967f07a15';
+String _$tripLifecycleHash() => r'61e258e110101380e82aa5321d5e241c11d9d4e6';
 
 /// Manages trip status transitions: active → departed → arrived → completed.
 ///
@@ -84,7 +84,7 @@ final class TripLifecycleFamily extends $Family
         name: r'tripLifecycleProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: true,
+        isAutoDispose: false,
       );
 
   /// Manages trip status transitions: active → departed → arrived → completed.
@@ -140,7 +140,7 @@ final class TripReviewsProvider
   }) : super(
          retry: null,
          name: r'tripReviewsProvider',
-         isAutoDispose: true,
+         isAutoDispose: false,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -170,7 +170,7 @@ final class TripReviewsProvider
   }
 }
 
-String _$tripReviewsHash() => r'c76705b065502cf356f3f5cd74522c0524d84854';
+String _$tripReviewsHash() => r'015128855df9f57577ec9ff817f577a1c9d91c22';
 
 /// Loads and manages peer reviews for a completed carpool trip.
 
@@ -189,7 +189,7 @@ final class TripReviewsFamily extends $Family
         name: r'tripReviewsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: true,
+        isAutoDispose: false,
       );
 
   /// Loads and manages peer reviews for a completed carpool trip.

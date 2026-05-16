@@ -7,6 +7,8 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/shared/widgets/unified_page_header.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 
 final _settingsConfigProvider = FutureProvider.autoDispose<Map<String, bool>>((
   ref,
@@ -46,11 +48,16 @@ class SettingsScreen extends ConsumerWidget {
           maxWidth: 640,
           child: CustomScrollView(
             slivers: [
-              const CollapsingTitleAppBar(
-                title: 'Settings',
-                subtitle:
-                    'Manage your account preferences and\nconfigurations.',
-              ),
+              if (Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                const CollapsingTitleAppBar(
+                  title: 'Settings',
+                  subtitle:
+                      'Manage your account preferences and\nconfigurations.',
+                ),
+              if (!Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                const SliverToBoxAdapter(
+                  child: UnifiedPageHeader(title: 'Settings'),
+                ),
               SliverPadding(
                 padding: const EdgeInsets.only(left: 24, right: 24, bottom: 8),
                 sliver: SliverToBoxAdapter(

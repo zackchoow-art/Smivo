@@ -7,6 +7,10 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
+
 import 'app.dart';
 
 /// App entry point.
@@ -16,6 +20,9 @@ import 'app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+  tz.initializeTimeZones();
+  final timeZoneInfo = await FlutterTimezone.getLocalTimezone();
+  tz.setLocalLocation(tz.getLocation(timeZoneInfo.identifier));
 
   // Load environment variables from assets/env file.
   await dotenv.load(fileName: 'assets/env');

@@ -48,6 +48,7 @@ class AppRoutes {
   static const String carpoolList = 'carpoolList';
   static const String carpoolDetail = 'carpoolDetail';
   static const String createCarpool = 'createCarpool';
+  static const String carpoolManage = 'carpoolManage';
   static const String carpoolProposals = 'carpoolProposals';
   static const String carpoolArrival = 'carpoolArrival';
 
@@ -87,6 +88,7 @@ class AppRoutes {
   static const String carpoolListPath = '/carpool';
   static const String carpoolDetailPath = '/carpool/:id';
   static const String createCarpoolPath = '/carpool/create';
+  static const String carpoolManagePath = '/carpool/:id/manage';
   static const String carpoolProposalsPath = '/carpool/:id/proposals';
   static const String carpoolArrivalPath = '/carpool/:id/arrival';
 

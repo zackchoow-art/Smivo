@@ -138,6 +138,8 @@ export function TestDataCleanupPage() {
     `All listings from ${currentSchool?.name ?? 'the selected school'}`,
     'Orders, rentals, and user reviews tied to those listings',
     'Chat rooms and messages for those listings',
+    'Carpool trips, members, proposals, votes, and reviews',
+    'Group chat rooms, members, and messages for carpool trips',
     'AI moderation logs and tasks for school content',
     'Reports, feedback, bans, and contribution points for school users',
     'Notifications and push jobs for school users',

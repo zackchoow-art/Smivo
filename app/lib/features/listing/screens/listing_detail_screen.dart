@@ -898,8 +898,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                               (_, __) =>
                                                   const SizedBox.shrink(),
                                           data: (hasOrder) {
-                                            if (hasOrder)
+                                            if (hasOrder) {
                                               return const SizedBox.shrink();
+                                            }
                                             return SizedBox(
                                               width: double.infinity,
                                               child: OutlinedButton.icon(
@@ -1562,11 +1563,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                               );
                                                           final normalizedRentalStart =
                                                               DateTime(
-                                                                rentalStart!
+                                                                rentalStart
                                                                     .year,
-                                                                rentalStart!
+                                                                rentalStart
                                                                     .month,
-                                                                rentalStart!
+                                                                rentalStart
                                                                     .day,
                                                               );
 
@@ -1597,13 +1598,13 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                             rentalEnd != null &&
                                                             rentalStart !=
                                                                 null) {
-                                                          if (rentalEnd!
+                                                          if (rentalEnd
                                                                   .isBefore(
-                                                                    rentalStart!,
+                                                                    rentalStart,
                                                                   ) ||
-                                                              rentalEnd!
+                                                              rentalEnd
                                                                   .isAtSameMomentAs(
-                                                                    rentalStart!,
+                                                                    rentalStart,
                                                                   )) {
                                                             ScaffoldMessenger.of(
                                                               context,
@@ -1726,19 +1727,22 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                 school:
                                                                     schoolName,
                                                               );
-                                                          if (!context.mounted)
+                                                          if (!context.mounted) {
                                                             return;
+                                                          }
                                                           await _showOrderSuccessDialog(
                                                             context,
                                                           );
-                                                          if (!context.mounted)
+                                                          if (!context.mounted) {
                                                             return;
+                                                          }
                                                           context.goNamed(
                                                             AppRoutes.home,
                                                           );
                                                         } catch (e) {
-                                                          if (!context.mounted)
+                                                          if (!context.mounted) {
                                                             return;
+                                                          }
 
                                                           if (e
                                                               .toString()
@@ -1914,12 +1918,14 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                         '$baseUrl/listing/${listing.id}';
                                     final box =
                                         context.findRenderObject() as RenderBox?;
-                                    Share.share(
-                                      listingUrl,
-                                      sharePositionOrigin: box != null
-                                          ? box.localToGlobal(Offset.zero) &
-                                              box.size
-                                          : null,
+                                    SharePlus.instance.share(
+                                      ShareParams(
+                                        uri: Uri.parse(listingUrl),
+                                        sharePositionOrigin: box != null
+                                            ? box.localToGlobal(Offset.zero) &
+                                                box.size
+                                            : null,
+                                      ),
                                     );
                                   },
                           );

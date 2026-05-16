@@ -7,6 +7,8 @@ import 'package:smivo/data/models/notification.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 import 'package:smivo/features/notifications/widgets/notification_list_item.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/unified_page_header.dart';
+import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NotificationCenterScreen extends ConsumerStatefulWidget {
@@ -35,46 +37,48 @@ class _NotificationCenterScreenState
 
     return Scaffold(
       backgroundColor: colors.background,
-      appBar: AppBar(
-        backgroundColor: colors.surfaceContainerLowest,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        leading:
-            widget.showBackButton
-                ? IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios_new,
-                    size: 20,
-                    color: colors.onSurface,
-                  ),
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.goNamed(AppRoutes.home);
-                    }
+      appBar: Breakpoints.isMobile(MediaQuery.of(context).size.width)
+          ? AppBar(
+              backgroundColor: colors.surfaceContainerLowest,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              leading:
+                  widget.showBackButton
+                      ? IconButton(
+                        icon: Icon(
+                          Icons.arrow_back_ios_new,
+                          size: 20,
+                          color: colors.onSurface,
+                        ),
+                        onPressed: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.goNamed(AppRoutes.home);
+                          }
+                        },
+                      )
+                      : null,
+              title: Text(
+                'Notifications',
+                style: typo.headlineSmall.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    await ref.read(notificationListProvider.notifier).markAllAsRead();
                   },
-                )
-                : null,
-        title: Text(
-          'Notifications',
-          style: typo.headlineSmall.copyWith(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await ref.read(notificationListProvider.notifier).markAllAsRead();
-            },
-            child: Text(
-              'Mark Read',
-              style: typo.labelLarge.copyWith(color: colors.primary),
-            ),
-          ),
-        ],
-      ),
+                  child: Text(
+                    'Mark Read',
+                    style: typo.labelLarge.copyWith(color: colors.primary),
+                  ),
+                ),
+              ],
+            )
+          : null,
       body: SelectionArea(
         child: Center(
           child: ContentWidthConstraint(
@@ -142,6 +146,29 @@ class _NotificationCenterScreenState
                   return ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
+                      if (!Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                        Padding(
+                          padding: const EdgeInsets.only(right: 24),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const UnifiedPageHeader(title: 'Notifications'),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 32),
+                                child: TextButton(
+                                  onPressed: () async {
+                                    await ref.read(notificationListProvider.notifier).markAllAsRead();
+                                  },
+                                  child: Text(
+                                    'Mark Read',
+                                    style: typo.labelLarge.copyWith(color: colors.primary),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       if (unread.isNotEmpty)
                         _buildSection(
                           title: 'Unread',

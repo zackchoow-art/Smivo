@@ -1,45 +1,90 @@
-import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smivo/data/models/carpool_trip.dart';
+import 'package:smivo/features/carpool/services/calendar_sync_service.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 
 /// A button that adds the carpool trip to the user's system calendar.
 ///
-/// Uses the `add_2_calendar` package which handles iOS/Android calendar
-/// intents natively. No permissions are required on modern OS versions
-/// since the package uses the native calendar UI flow.
-class CalendarSyncButton extends StatelessWidget {
+/// Uses the `device_calendar` package which handles iOS/Android calendar
+/// natively. Requires permissions, requested at runtime.
+class CalendarSyncButton extends ConsumerStatefulWidget {
   const CalendarSyncButton({super.key, required this.trip});
 
   final CarpoolTrip trip;
 
-  void _syncToCalendar() {
-    // NOTE: Use short descriptions for event title when available,
-    // fall back to full addresses for backward compatibility.
-    final departure = trip.departureDescription ?? trip.departureAddress;
-    final destination = trip.destinationDescription ?? trip.destinationAddress;
+  @override
+  ConsumerState<CalendarSyncButton> createState() => _CalendarSyncButtonState();
+}
 
-    final event = Event(
-      title: 'Carpool: $departure → $destination',
-      description: trip.note ?? 'Campus carpool trip',
-      location: trip.departureAddress,
-      startDate: trip.departureTime,
-      // NOTE: Fall back to +1 hour if estimated arrival is unknown,
-      // so the calendar event has a valid non-zero duration.
-      endDate: trip.estimatedArrivalTime ??
-          trip.departureTime.add(const Duration(hours: 1)),
-      // Remind user 1 hour before departure
-      iosParams: const IOSParams(reminder: Duration(hours: 1)),
-      androidParams: const AndroidParams(emailInvites: []),
-    );
-    Add2Calendar.addEvent2Cal(event);
+class _CalendarSyncButtonState extends ConsumerState<CalendarSyncButton> {
+  bool _isLoading = false;
+  bool _hasSynced = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSyncStatus();
+  }
+
+  Future<void> _checkSyncStatus() async {
+    final hasSynced = await ref.read(calendarSyncServiceProvider).hasSyncedTrip(widget.trip.id);
+    if (mounted) {
+      setState(() => _hasSynced = hasSynced);
+    }
+  }
+
+  Future<void> _syncToCalendar() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    try {
+      await ref.read(calendarSyncServiceProvider).syncTrip(widget.trip);
+      if (!mounted) return;
+      
+      setState(() => _hasSynced = true);
+      
+      showDialog(
+        context: context,
+        builder: (ctx) => const ActionSuccessDialog(
+          title: 'Success',
+          message: 'Added to your system calendar.',
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionErrorDialog(
+          title: 'Calendar Sync Failed',
+          message: e.toString().replaceFirst('Exception: ', ''),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const TextButton(
+        onPressed: null,
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
     return TextButton.icon(
-      icon: const Icon(Icons.calendar_month),
-      label: const Text('Add to Calendar'),
+      icon: Icon(_hasSynced ? Icons.edit_calendar : Icons.calendar_month),
+      label: Text(_hasSynced ? 'Update Calendar' : 'Add to Calendar'),
       onPressed: _syncToCalendar,
     );
   }

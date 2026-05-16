@@ -44,16 +44,9 @@ class NavigationRailBar extends ConsumerWidget {
 
     return NavigationRail(
       selectedIndex: currentIndex,
-      onDestinationSelected: (index) {
-        if (index == 2) {
-          context.pushNamed(AppRoutes.createListing);
-          return;
-        }
-        final shellIndex = index > 2 ? index - 1 : index;
-        onTap(shellIndex);
-      },
+      onDestinationSelected: onTap,
       extended: false,
-      minWidth: 96,
+      minWidth: 120,
       minExtendedWidth: 200,
       backgroundColor: colors.surfaceContainerLowest,
       indicatorColor: colors.navActiveBackground,
@@ -73,7 +66,8 @@ class NavigationRailBar extends ConsumerWidget {
           'Smivo',
           style: typo.headlineLarge.copyWith(
             color: colors.primary,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
             letterSpacing: -0.5,
           ),
         ),
@@ -162,11 +156,13 @@ class NavigationRailBar extends ConsumerWidget {
       ),
       destinations: [
         const NavigationRailDestination(
+          padding: EdgeInsets.symmetric(vertical: 16),
           icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home),
           label: Text('Home'),
         ),
         NavigationRailDestination(
+          padding: const EdgeInsets.symmetric(vertical: 16),
           icon: Badge(
             label: Text(
               totalUnread > 99 ? '99+' : totalUnread.toString(),
@@ -188,16 +184,19 @@ class NavigationRailBar extends ConsumerWidget {
           label: const Text('Chat'),
         ),
         const NavigationRailDestination(
+          padding: EdgeInsets.symmetric(vertical: 16),
           icon: Icon(Icons.add_circle_outline),
           selectedIcon: Icon(Icons.add_circle),
           label: Text('Post'),
         ),
         const NavigationRailDestination(
+          padding: EdgeInsets.symmetric(vertical: 16),
           icon: Icon(Icons.directions_car_outlined),
           selectedIcon: Icon(Icons.directions_car),
           label: Text('Carpool'),
         ),
         NavigationRailDestination(
+          padding: const EdgeInsets.symmetric(vertical: 16),
           icon: Badge(
             label: Text(
               unreadOrderUpdates > 99 ? '99+' : unreadOrderUpdates.toString(),

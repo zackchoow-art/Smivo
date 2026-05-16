@@ -298,12 +298,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     if (_selectedSchool == null) {
                                       WidgetsBinding.instance
                                           .addPostFrameCallback((_) {
-                                            if (mounted)
+                                            if (mounted) {
                                               setState(
                                                 () =>
                                                     _selectedSchool =
                                                         schools.first,
                                               );
+                                            }
                                           });
                                     }
 
@@ -322,7 +323,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         ),
                                         const SizedBox(height: 8),
                                         DropdownButtonFormField<School>(
-                                          value:
+                                          initialValue:
                                               _selectedSchool ?? schools.first,
                                           items:
                                               schools

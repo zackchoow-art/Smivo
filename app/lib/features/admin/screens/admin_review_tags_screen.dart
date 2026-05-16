@@ -202,10 +202,11 @@ class _AdminReviewTagsScreenState extends ConsumerState<AdminReviewTagsScreen> {
                         Color typeColor;
                         if (type == 'buyer') {
                           typeColor = const Color(0xFF0891B2);
-                        } else if (type == 'seller')
+                        } else if (type == 'seller') {
                           typeColor = const Color(0xFF059669);
-                        else
+                        } else {
                           typeColor = const Color(0xFF7C3AED);
+                        }
 
                         return Card(
                           elevation: 0,

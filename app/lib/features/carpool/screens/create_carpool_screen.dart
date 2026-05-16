@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:smivo/features/carpool/providers/create_carpool_provider.dart';
 import 'package:smivo/core/maps/map_location_picker.dart';
 import 'package:smivo/features/carpool/widgets/legal_disclaimer_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 
 class CreateCarpoolScreen extends ConsumerStatefulWidget {
   const CreateCarpoolScreen({super.key});
@@ -31,7 +33,7 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
 
   int _totalSeats = 3;
   String _luggageLimit = 'none';
-  bool _autoApproval = false;
+  bool _autoApproval = true;
   double? _estimatedTotalPrice;
 
   final _noteController = TextEditingController();
@@ -130,6 +132,9 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
   }
 
   void _submit() async {
+    // NOTE: Validate TextFormFields (e.g. price) before running location checks.
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
     if (_departureAddress == null || _destinationAddress == null || _departureTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please complete required fields (location and time)')),
@@ -165,13 +170,21 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
 
     final error = ref.read(createCarpoolProvider).error;
     if (error == null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Posted successfully')),
+      await showDialog(
+        context: context,
+        builder: (ctx) => const ActionSuccessDialog(
+          title: 'Posted successfully',
+          message: 'Your carpool trip has been posted.',
+        ),
       );
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionErrorDialog(
+          title: 'Failed to post',
+          message: error.toString(),
+        ),
       );
     }
   }
@@ -342,14 +355,32 @@ class _CreateCarpoolScreenState extends ConsumerState<CreateCarpoolScreen> {
             ),
             const SizedBox(height: 16),
             TextFormField(
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: _role == 'driver' ? 'Fixed Price per person (\$)' : 'Estimated Total Cost (\$)',
+                labelText: _role == 'driver'
+                    ? 'Fixed Price per person (\$)'
+                    : 'Estimated Total Cost (\$)',
                 hintText: _role == 'driver' ? 'e.g. 30.00' : 'e.g. 100.00',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.attach_money),
               ),
-              onChanged: (val) => setState(() => _estimatedTotalPrice = double.tryParse(val)),
+              onChanged: (val) =>
+                  setState(() => _estimatedTotalPrice = double.tryParse(val)),
+              // NOTE: Price is required for both modes — driver sets a fixed
+              // per-person rate; organizer provides an estimate so potential
+              // passengers can evaluate cost before joining.
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) {
+                  return _role == 'driver'
+                      ? 'Fixed price is required'
+                      : 'Please enter an estimated total cost';
+                }
+                if (double.tryParse(val.trim()) == null) {
+                  return 'Enter a valid number';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 8),
             Container(

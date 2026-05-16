@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smivo/core/providers/nav_scroll_provider.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/shared/widgets/bottom_nav_bar.dart';
-import 'package:smivo/shared/widgets/navigation_rail_bar.dart';
+
 
 // NOTE: HomeScrollControllerScope is kept here because HomeScreen still wraps
 // itself with it for PrimaryScrollController / iOS status-bar tap-to-top
@@ -84,44 +84,22 @@ class ResponsiveScaffold extends ConsumerWidget {
           return Scaffold(
             body: navigationShell,
             extendBody: true,
-            bottomNavigationBar: BottomNavBar(
-              currentIndex: navigationShell.currentIndex,
-              onTap: onTap,
-            ),
+            bottomNavigationBar:
+                navigationShell.currentIndex == 2
+                    ? null
+                    : BottomNavBar(
+                      currentIndex: navigationShell.currentIndex,
+                      onTap: onTap,
+                    ),
           );
         }
 
-        // --- Tablet / Desktop: side rail + content ---
-        final isDesktop = Breakpoints.isDesktop(width);
-
-        return Scaffold(
-          body: Row(
-            children: [
-              // NOTE: NavigationRail is wrapped in a themed container
-              // to visually separate it from the main content area.
-              NavigationRailBar(
-                currentIndex: _shellToRailIndex(navigationShell.currentIndex),
-                onTap: onTap,
-                extended: isDesktop,
-              ),
-              // Vertical divider between rail and content
-              VerticalDivider(
-                thickness: 1,
-                width: 1,
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.12),
-              ),
-              // Main content area fills remaining space
-              Expanded(child: navigationShell),
-            ],
-          ),
-        );
+        // --- Tablet / Desktop ---
+        // GlobalLayoutShell handles the sidebar on iPad/Desktop.
+        // We just return the shell content here.
+        return navigationShell;
       },
     );
   }
 
-  int _shellToRailIndex(int shellIndex) {
-    // Shell branches: 0=Home, 1=Chat, 2=Post, 3=Orders
-    // Rail destinations: 0=Home, 1=Chat, 2=Post, 3=Orders
-    return shellIndex;
-  }
 }

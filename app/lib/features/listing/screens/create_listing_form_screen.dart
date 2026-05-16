@@ -16,6 +16,7 @@ import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/pickup_address_selector.dart';
 
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
+import 'package:smivo/shared/widgets/unified_page_header.dart';
 
 class CreateListingFormScreen extends ConsumerStatefulWidget {
   const CreateListingFormScreen({super.key, required this.initialMode});
@@ -195,13 +196,20 @@ class _CreateListingFormScreenState
             bottom: false,
             child: CustomScrollView(
               slivers: [
-                CollapsingTitleAppBar(
-                  title: isSale ? 'List an Item' : 'List a Rental',
-                  subtitle:
-                      isSale
-                          ? 'Turn your unused gear into cash on campus.'
-                          : 'Make money by renting out your stuff.',
-                ),
+                if (Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                  CollapsingTitleAppBar(
+                    title: isSale ? 'List an Item' : 'List a Rental',
+                    subtitle:
+                        isSale
+                            ? 'Turn your unused gear into cash on campus.'
+                            : 'Make money by renting out your stuff.',
+                  ),
+                if (!Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                  SliverToBoxAdapter(
+                    child: UnifiedPageHeader(
+                      title: isSale ? 'List an Item' : 'List a Rental',
+                    ),
+                  ),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   sliver: SliverToBoxAdapter(
@@ -522,8 +530,9 @@ class _CreateListingFormScreenState
                                 loading: () => const SizedBox.shrink(),
                                 error: (_, __) => const SizedBox.shrink(),
                                 data: (school) {
-                                  if (school == null)
+                                  if (school == null) {
                                     return const SizedBox.shrink();
+                                  }
                                   return Padding(
                                     padding: const EdgeInsets.only(
                                       top: 8,

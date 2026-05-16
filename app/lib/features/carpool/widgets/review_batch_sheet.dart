@@ -59,6 +59,25 @@ class _ReviewBatchSheetState extends ConsumerState<ReviewBatchSheet> {
         ref.read(supabaseClientProvider).auth.currentUser?.id;
     if (currentUserId == null) return;
 
+    // Check if user already submitted a review
+    final hasReviewed = ref
+            .read(tripReviewsProvider(widget.tripId))
+            .value
+            ?.any((r) => r.reviewerId == currentUserId) ??
+        false;
+    if (hasReviewed) {
+      // NOTE: Re-write trip status to 'completed' in case the previous write
+      // failed (e.g. network error). Errors are silently ignored so they don't
+      // block the user from dismissing the sheet.
+      try {
+        await ref
+            .read(tripLifecycleProvider(widget.tripId).notifier)
+            .markCompleted();
+      } catch (_) {}
+      if (mounted) Navigator.of(context).pop(true);
+      return;
+    }
+
     // Build the reviews payload — skip members with no user data.
     final reviews = widget.members
         .where((m) => m.user != null)
@@ -84,11 +103,17 @@ class _ReviewBatchSheetState extends ConsumerState<ReviewBatchSheet> {
           .read(tripReviewsProvider(widget.tripId).notifier)
           .submitReviews(widget.tripId, reviews);
 
+      // NOTE: After reviews are saved, attempt to advance trip status to
+      // 'completed'. Silently ignore errors — the review itself already
+      // succeeded and the status can be retried on next open.
+      try {
+        await ref
+            .read(tripLifecycleProvider(widget.tripId).notifier)
+            .markCompleted();
+      } catch (_) {}
+
       if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reviews submitted')),
-        );
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {

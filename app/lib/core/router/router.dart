@@ -29,6 +29,7 @@ import 'package:smivo/features/seller/screens/transaction_management_screen.dart
 import 'package:smivo/features/buyer/screens/buyer_center_screen.dart';
 import 'package:smivo/features/settings/screens/debug_data_screen.dart';
 import 'package:smivo/shared/widgets/app_shell.dart';
+import 'package:smivo/shared/widgets/global_layout_shell.dart';
 import 'package:smivo/features/notifications/screens/notification_center_screen.dart';
 import 'package:smivo/features/admin/screens/admin_shell_screen.dart';
 import 'package:smivo/features/admin/screens/admin_login_screen.dart';
@@ -37,6 +38,7 @@ import 'package:smivo/features/carpool/screens/carpool_list_screen.dart';
 import 'package:smivo/features/carpool/screens/carpool_detail_screen.dart';
 import 'package:smivo/features/carpool/screens/create_carpool_screen.dart';
 import 'package:smivo/features/carpool/screens/group_chat_screen.dart';
+import 'package:smivo/features/carpool/screens/manage_trip_screen.dart';
 import 'package:smivo/features/carpool/screens/trip_proposals_screen.dart';
 import 'package:smivo/features/carpool/screens/arrival_confirmation_screen.dart';
 import 'package:smivo/features/admin/screens/admin_dashboard_screen.dart';
@@ -123,7 +125,12 @@ GoRouter router(Ref ref) {
       ),
 
       // ── Main App Shell (Stateful indexed stack) ───────────────────
-      StatefulShellRoute.indexedStack(
+      ShellRoute(
+        builder: (context, state, child) {
+          return GlobalLayoutShell(state: state, child: child);
+        },
+        routes: [
+          StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);
         },
@@ -149,6 +156,18 @@ GoRouter router(Ref ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                name: AppRoutes.createListing,
+                path: AppRoutes.createListingPath,
+                builder:
+                    (context, state) => CreateListingFormScreen(
+                      initialMode: state.uri.queryParameters['type'] ?? 'sale',
+                    ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 name: AppRoutes.carpoolList,
                 path: AppRoutes.carpoolListPath,
                 builder: (context, state) => const CarpoolListScreen(),
@@ -168,14 +187,6 @@ GoRouter router(Ref ref) {
       ),
 
       // ── Listings ──────────────────────────────────────────────────
-      GoRoute(
-        name: AppRoutes.createListing,
-        path: AppRoutes.createListingPath,
-        builder:
-            (context, state) => CreateListingFormScreen(
-              initialMode: state.uri.queryParameters['type'] ?? 'sale',
-            ),
-      ),
       GoRoute(
         name: AppRoutes.listingDetail,
         path: AppRoutes.listingDetailPath,
@@ -290,6 +301,18 @@ GoRouter router(Ref ref) {
           tripId: state.pathParameters['id']!,
         ),
       ),
+      GoRoute(
+        name: AppRoutes.carpoolManage,
+        path: AppRoutes.carpoolManagePath,
+        // NOTE: creatorId is passed as a query param because GoRouter
+        // doesn't support multiple path parameters at this nesting level.
+        // The push notification action_url only contains the trip ID;
+        // ManageTripScreen fetches the full trip (including creatorId) on load.
+        builder: (context, state) => ManageTripScreen(
+          tripId: state.pathParameters['id']!,
+          creatorId: state.uri.queryParameters['creatorId'] ?? '',
+        ),
+      ),
 
       // ── Profile & Settings ────────────────────────────────────────
       GoRoute(
@@ -353,6 +376,8 @@ GoRouter router(Ref ref) {
         name: AppRoutes.myContributions,
         path: AppRoutes.myContributionsPath,
         builder: (context, state) => const MyContributionsScreen(),
+      ),
+        ], // End of GlobalLayoutShell routes
       ),
 
       // ── Admin Login ───────────────────────────────────────────────

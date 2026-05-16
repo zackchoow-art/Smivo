@@ -148,6 +148,13 @@ class CarpoolRepository {
           .from(AppConstants.tableCarpoolTrips)
           .update(updates)
           .eq('id', tripId);
+
+      // Clear 'left' or 'cancelled' members so they can rejoin after details change
+      await _client
+          .from(AppConstants.tableCarpoolMembers)
+          .delete()
+          .eq('trip_id', tripId)
+          .inFilter('status', ['left', 'cancelled']);
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -412,9 +419,13 @@ class CarpoolRepository {
     await updateTrip(tripId, {'status': 'departed'});
   }
 
-  /// Marks a trip as arrived (creator confirms destination reached).
+  /// Marks a trip as arrived (creator or member confirms destination reached).
   Future<void> markArrived(String tripId) async {
-    await updateTrip(tripId, {'status': 'arrived'});
+    try {
+      await _client.rpc('mark_carpool_arrived', params: {'p_trip_id': tripId});
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
   }
 
   /// Marks a trip as completed after review window closes.

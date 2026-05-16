@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'color_scheme_variant.dart';
 import 'theme_variant.dart';
 
 /// Semantic color tokens for the Smivo design system.
@@ -7,8 +8,9 @@ import 'theme_variant.dart';
 /// Injected as a [ThemeExtension] so that every widget can resolve
 /// colours from the active theme variant via `context.smivoColors`.
 ///
-/// NOTE: Two factory constructors ([teal] and [ikea]) define the
-/// complete palettes. Adding a new theme only requires a new factory.
+/// The palette is resolved by [fromVariantAndScheme], which combines
+/// a structural theme variant (teal / flat) with a color scheme
+/// (default / rosé / pastel / sage).
 class SmivoColors extends ThemeExtension<SmivoColors> {
   const SmivoColors({
     // Brand
@@ -275,7 +277,7 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
     shadow: Color(0x0F1A1C1C),
   );
 
-  /// Resolve the correct palette for a given [variant].
+  /// Resolve the correct palette for a given [variant] (default scheme).
   factory SmivoColors.fromVariant(SmivoThemeVariant variant) {
     switch (variant) {
       case SmivoThemeVariant.teal:
@@ -284,6 +286,215 @@ class SmivoColors extends ThemeExtension<SmivoColors> {
         return SmivoColors.flat();
     }
   }
+
+  /// Resolve the palette for a [variant] + [scheme] combination.
+  ///
+  /// The [variant] determines structural properties (useDividers, shadow
+  /// opacity), while [scheme] determines the hue palette.
+  factory SmivoColors.fromVariantAndScheme(
+    SmivoThemeVariant variant,
+    SmivoColorScheme scheme,
+  ) {
+    if (scheme == SmivoColorScheme.defaultScheme) {
+      return SmivoColors.fromVariant(variant);
+    }
+    return switch (scheme) {
+      SmivoColorScheme.rose => _buildRose(variant),
+      SmivoColorScheme.pastel => _buildPastel(variant),
+      SmivoColorScheme.sage => _buildSage(variant),
+      SmivoColorScheme.defaultScheme => SmivoColors.fromVariant(variant),
+    };
+  }
+
+  // ── Palette: Rosé (warm dusty rose + peach + cream) ────────
+  static SmivoColors _buildRose(SmivoThemeVariant variant) {
+    final isTeal = variant == SmivoThemeVariant.teal;
+    return SmivoColors(
+      primary: const Color(0xFFA57480),
+      primaryContainer: const Color(0xFF8E5F6A),
+      secondary: const Color(0xFFD4A373),
+      secondaryContainer: const Color(0xFFF5E0D0),
+      tertiary: const Color(0xFF6B4150),
+      onPrimary: const Color(0xFFFFFFFF),
+      onSecondaryContainer: const Color(0xFF5C3A28),
+      background: const Color(0xFFFDF6F3),
+      surface: const Color(0xFFFDF6F3),
+      surfaceContainerLowest: const Color(0xFFFFFFFF),
+      surfaceContainerLow: const Color(0xFFFBF1ED),
+      surfaceContainer: const Color(0xFFF5E8E2),
+      surfaceContainerHigh: const Color(0xFFEFDDD6),
+      surfaceContainerHighest: const Color(0xFFE9D2CA),
+      surfaceBright: const Color(0xFFFDF6F3),
+      onSurface: const Color(0xFF3D2B2B),
+      onSurfaceVariant: const Color(0xFF7D6060),
+      outline: const Color(0xFFBDA0A0),
+      outlineVariant: const Color(0xFFE0CCCC),
+      error: const Color(0xFFBA1A1A),
+      errorContainer: const Color(0xFFFFDAD6),
+      success: const Color(0xFF2E7D32),
+      successContainer: const Color(0xFFCCF7E5),
+      warning: const Color(0xFFE65100),
+      warningContainer: const Color(0xFFFFBBAA),
+      priceAccent:
+          isTeal ? const Color(0xFFA57480) : const Color(0xFF3D2B2B),
+      priceAccentContainer: const Color(0xFFF5E0D0),
+      settingsIcon: const Color(0xFFA57480),
+      settingsIconBg: const Color(0xFFFBF1ED),
+      settingsText: const Color(0xFF3D2B2B),
+      settingsTextSecondary: const Color(0xFF7D6060),
+      gradientStart: const Color(0xFFA57480),
+      gradientEnd:
+          isTeal ? const Color(0xFFC9A0A8) : const Color(0xFFA57480),
+      secondaryGradientStart: const Color(0xFFD4A373),
+      secondaryGradientEnd: const Color(0xFFE0B899),
+      dividerColor: const Color(0xFFE0CCCC),
+      useDividers: isTeal,
+      borderLight: const Color(0xFFEFDDD6),
+      navActiveBackground:
+          isTeal ? const Color(0xFFA57480) : const Color(0xFFF5E0D0),
+      navActiveIcon:
+          isTeal ? const Color(0xFFFFFFFF) : const Color(0xFFA57480),
+      chatBubbleSelf: const Color(0xFFA57480),
+      chatBubbleOther: const Color(0xFFFBF1ED),
+      chatBubbleTextSelf: const Color(0xFFFFFFFF),
+      chatBubbleTextOther: const Color(0xFF3D2B2B),
+      statusConfirmed: const Color(0xFFFFB4C2),
+      statusCompleted:
+          isTeal ? const Color(0xFFF5E0D0) : const Color(0xFFEFDDD6),
+      statusPending: const Color(0xFFFFD4A3),
+      statusCancelled: const Color(0xFFEF4444),
+      shadow: isTeal
+          ? const Color(0x11000000)
+          : const Color(0x0F3D2B2B),
+    );
+  }
+
+  // ── Palette: Pastel (pink + sky blue + butter + lavender) ──
+  static SmivoColors _buildPastel(SmivoThemeVariant variant) {
+    final isTeal = variant == SmivoThemeVariant.teal;
+    return SmivoColors(
+      primary: const Color(0xFF8B7EC8),
+      primaryContainer: const Color(0xFF7568B5),
+      secondary: const Color(0xFFE8A0BF),
+      secondaryContainer: const Color(0xFFF9E4ED),
+      tertiary: const Color(0xFF5B5087),
+      onPrimary: const Color(0xFFFFFFFF),
+      onSecondaryContainer: const Color(0xFF5A3248),
+      background: const Color(0xFFF9F7FE),
+      surface: const Color(0xFFF9F7FE),
+      surfaceContainerLowest: const Color(0xFFFFFFFF),
+      surfaceContainerLow: const Color(0xFFF5F2FB),
+      surfaceContainer: const Color(0xFFEDEAF7),
+      surfaceContainerHigh: const Color(0xFFE4E0F2),
+      surfaceContainerHighest: const Color(0xFFDAD5EB),
+      surfaceBright: const Color(0xFFF9F7FE),
+      onSurface: const Color(0xFF2B2640),
+      onSurfaceVariant: const Color(0xFF6B6485),
+      outline: const Color(0xFFA9A2C0),
+      outlineVariant: const Color(0xFFD6D0E8),
+      error: const Color(0xFFBA1A1A),
+      errorContainer: const Color(0xFFFFDAD6),
+      success: const Color(0xFF2E7D32),
+      successContainer: const Color(0xFFCCF7E5),
+      warning: const Color(0xFFE65100),
+      warningContainer: const Color(0xFFFFBBAA),
+      priceAccent:
+          isTeal ? const Color(0xFF8B7EC8) : const Color(0xFF2B2640),
+      priceAccentContainer: const Color(0xFFF9E4ED),
+      settingsIcon: const Color(0xFF8B7EC8),
+      settingsIconBg: const Color(0xFFF5F2FB),
+      settingsText: const Color(0xFF2B2640),
+      settingsTextSecondary: const Color(0xFF6B6485),
+      gradientStart: const Color(0xFF8B7EC8),
+      gradientEnd:
+          isTeal ? const Color(0xFFB0A5DC) : const Color(0xFF8B7EC8),
+      secondaryGradientStart: const Color(0xFFE8A0BF),
+      secondaryGradientEnd: const Color(0xFFF0BCCF),
+      dividerColor: const Color(0xFFD6D0E8),
+      useDividers: isTeal,
+      borderLight: const Color(0xFFE4E0F2),
+      navActiveBackground:
+          isTeal ? const Color(0xFF8B7EC8) : const Color(0xFFF9E4ED),
+      navActiveIcon:
+          isTeal ? const Color(0xFFFFFFFF) : const Color(0xFF8B7EC8),
+      chatBubbleSelf: const Color(0xFF8B7EC8),
+      chatBubbleOther: const Color(0xFFF5F2FB),
+      chatBubbleTextSelf: const Color(0xFFFFFFFF),
+      chatBubbleTextOther: const Color(0xFF2B2640),
+      statusConfirmed: const Color(0xFFB5D8EB),
+      statusCompleted:
+          isTeal ? const Color(0xFFE0D5F5) : const Color(0xFFE4E0F2),
+      statusPending: const Color(0xFFF5E6B8),
+      statusCancelled: const Color(0xFFEF4444),
+      shadow: isTeal
+          ? const Color(0x11000000)
+          : const Color(0x0F2B2640),
+    );
+  }
+
+  // ── Palette: Sage (sage green + blush + cream + taupe) ─────
+  static SmivoColors _buildSage(SmivoThemeVariant variant) {
+    final isTeal = variant == SmivoThemeVariant.teal;
+    return SmivoColors(
+      primary: const Color(0xFF7D8B6E),
+      primaryContainer: const Color(0xFF6B7A5E),
+      secondary: const Color(0xFFB49082),
+      secondaryContainer: const Color(0xFFF0EAD6),
+      tertiary: const Color(0xFF5A6650),
+      onPrimary: const Color(0xFFFFFFFF),
+      onSecondaryContainer: const Color(0xFF4A3830),
+      background: const Color(0xFFF7F5EF),
+      surface: const Color(0xFFF7F5EF),
+      surfaceContainerLowest: const Color(0xFFFFFFFF),
+      surfaceContainerLow: const Color(0xFFF2F0EA),
+      surfaceContainer: const Color(0xFFECE9E0),
+      surfaceContainerHigh: const Color(0xFFE5E2D7),
+      surfaceContainerHighest: const Color(0xFFDDDACE),
+      surfaceBright: const Color(0xFFF7F5EF),
+      onSurface: const Color(0xFF2D2D25),
+      onSurfaceVariant: const Color(0xFF6B6B5A),
+      outline: const Color(0xFFA5A590),
+      outlineVariant: const Color(0xFFD5D5C5),
+      error: const Color(0xFFBA1A1A),
+      errorContainer: const Color(0xFFFFDAD6),
+      success: const Color(0xFF2E7D32),
+      successContainer: const Color(0xFFCCF7E5),
+      warning: const Color(0xFFE65100),
+      warningContainer: const Color(0xFFFFBBAA),
+      priceAccent:
+          isTeal ? const Color(0xFF7D8B6E) : const Color(0xFF2D2D25),
+      priceAccentContainer: const Color(0xFFF0EAD6),
+      settingsIcon: const Color(0xFF7D8B6E),
+      settingsIconBg: const Color(0xFFF2F0EA),
+      settingsText: const Color(0xFF2D2D25),
+      settingsTextSecondary: const Color(0xFF6B6B5A),
+      gradientStart: const Color(0xFF7D8B6E),
+      gradientEnd:
+          isTeal ? const Color(0xFFA0AD90) : const Color(0xFF7D8B6E),
+      secondaryGradientStart: const Color(0xFFB49082),
+      secondaryGradientEnd: const Color(0xFFC8A898),
+      dividerColor: const Color(0xFFD5D5C5),
+      useDividers: isTeal,
+      borderLight: const Color(0xFFE5E2D7),
+      navActiveBackground:
+          isTeal ? const Color(0xFF7D8B6E) : const Color(0xFFF0EAD6),
+      navActiveIcon:
+          isTeal ? const Color(0xFFFFFFFF) : const Color(0xFF7D8B6E),
+      chatBubbleSelf: const Color(0xFF7D8B6E),
+      chatBubbleOther: const Color(0xFFF2F0EA),
+      chatBubbleTextSelf: const Color(0xFFFFFFFF),
+      chatBubbleTextOther: const Color(0xFF2D2D25),
+      statusConfirmed: const Color(0xFFB8D4A8),
+      statusCompleted:
+          isTeal ? const Color(0xFFF0EAD6) : const Color(0xFFE5E2D7),
+      statusPending: const Color(0xFFE8D4B8),
+      statusCancelled: const Color(0xFFEF4444),
+      shadow: isTeal
+          ? const Color(0x11000000)
+          : const Color(0x0F2D2D25),
+    );
+  }
+
 
   @override
   SmivoColors copyWith({

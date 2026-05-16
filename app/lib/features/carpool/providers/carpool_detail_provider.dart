@@ -16,6 +16,11 @@ class CarpoolDetail extends _$CarpoolDetail {
     final oldState = state;
     state = const AsyncValue.loading();
     try {
+      final freshTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
+      if (freshTrip.status != 'active' && freshTrip.status != 'inactive') {
+        throw Exception('TRIP_LOCKED');
+      }
+
       await ref.read(carpoolRepositoryProvider).cancelTrip(tripId);
       final updatedTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
       state = AsyncValue.data(updatedTrip);
@@ -34,7 +39,10 @@ class CarpoolDetail extends _$CarpoolDetail {
     try {
       // Re-fetch trip to check current seat availability (race condition guard)
       final freshTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
-      if (freshTrip == null || freshTrip.availableSeats <= 0) {
+      if (freshTrip.status == 'cancelled') {
+        throw Exception('TRIP_CANCELLED');
+      }
+      if (freshTrip.availableSeats <= 0) {
         throw Exception('NO_SEATS');
       }
       await ref.read(carpoolRepositoryProvider).requestJoinTrip(tripId, profile.id);
@@ -54,6 +62,11 @@ class CarpoolDetail extends _$CarpoolDetail {
     final oldState = state;
     state = const AsyncValue.loading();
     try {
+      final freshTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
+      if (freshTrip.status != 'active' && freshTrip.status != 'inactive') {
+        throw Exception('TRIP_LOCKED');
+      }
+
       await ref.read(carpoolRepositoryProvider).leaveTrip(tripId, profile.id);
       final updatedTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(tripId);
       state = AsyncValue.data(updatedTrip);

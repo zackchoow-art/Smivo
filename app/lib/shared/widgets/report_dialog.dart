@@ -81,28 +81,33 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
               ),
             ),
             const SizedBox(height: 12),
-            ...categories.entries.map((entry) {
-              return RadioListTile<String>(
-                title: Text(
-                  entry.value,
-                  style: context.smivoTypo.bodyMedium.copyWith(
-                    color: context.smivoColors.onSurface,
-                  ),
-                ),
-                value: entry.key,
-                groupValue: _selectedCategory,
-                activeColor: context.smivoColors.primary,
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                  }
-                },
-              );
-            }),
+            RadioGroup<String>(
+              groupValue: _selectedCategory,
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                }
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: categories.entries.map((entry) {
+                  return RadioListTile<String>(
+                    title: Text(
+                      entry.value,
+                      style: context.smivoTypo.bodyMedium.copyWith(
+                        color: context.smivoColors.onSurface,
+                      ),
+                    ),
+                    value: entry.key,
+                    activeColor: context.smivoColors.primary,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                  );
+                }).toList(),
+              ),
+            ),
             if (_selectedCategory == 'other') ...[
               const SizedBox(height: 16),
               TextField(

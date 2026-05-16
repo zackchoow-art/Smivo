@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
@@ -58,9 +56,7 @@ class BottomNavBar extends ConsumerWidget {
               ),
               // Floating Action Button style Post button
               GestureDetector(
-                onTap: () {
-                  context.pushNamed(AppRoutes.createListing);
-                },
+                onTap: () => onTap(2),
                 child: Container(
                   width: 52,
                   height: 52,
@@ -87,15 +83,15 @@ class BottomNavBar extends ConsumerWidget {
                 icon: Icons.directions_car,
                 outlinedIcon: Icons.directions_car_outlined,
                 label: 'Carpool',
-                isSelected: currentIndex == 2,
-                onTap: () => onTap(2),
+                isSelected: currentIndex == 3,
+                onTap: () => onTap(3),
               ),
               _NavBarItem(
                 icon: Icons.receipt_long,
                 outlinedIcon: Icons.receipt_long_outlined,
                 label: 'Orders',
-                isSelected: currentIndex == 3,
-                onTap: () => onTap(3),
+                isSelected: currentIndex == 4,
+                onTap: () => onTap(4),
                 unreadCount: unreadOrderUpdates,
               ),
             ],

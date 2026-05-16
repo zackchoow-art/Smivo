@@ -54,10 +54,14 @@ class ListingPhotos extends _$ListingPhotos {
     if (!context.mounted) return;
 
     final service = ImageUploadService();
-    final xFile =
-        source == ImageSource.camera
-            ? await service.takePhotoAndCrop(context)
-            : await service.pickAndCropImage(context);
+    XFile? xFile;
+    if (source == ImageSource.camera) {
+      if (!context.mounted) return;
+      xFile = await service.takePhotoAndCrop(context);
+    } else {
+      if (!context.mounted) return;
+      xFile = await service.pickAndCropImage(context);
+    }
 
     if (xFile != null) {
       state = [...state, xFile];

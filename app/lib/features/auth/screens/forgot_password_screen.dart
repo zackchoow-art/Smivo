@@ -210,12 +210,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                     if (_selectedSchool == null) {
                                       WidgetsBinding.instance
                                           .addPostFrameCallback((_) {
-                                            if (mounted)
+                                            if (mounted) {
                                               setState(
                                                 () =>
                                                     _selectedSchool =
                                                         schools.first,
                                               );
+                                            }
                                           });
                                     }
 
@@ -234,12 +235,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                         ),
                                         const SizedBox(height: 8),
                                         DropdownButtonFormField<School>(
-                                          value:
+                                          initialValue:
                                               _selectedSchool ?? schools.first,
                                           items:
                                               schools
                                                   .map(
-                                                    (s) => DropdownMenuItem(
+                                                    (s) => DropdownMenuItem<School>(
                                                       value: s,
                                                       child: Text(
                                                         s.name,

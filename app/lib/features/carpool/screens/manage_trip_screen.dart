@@ -12,6 +12,9 @@ import 'package:smivo/data/repositories/carpool_repository.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 import 'package:smivo/core/maps/map_location_picker.dart';
 import 'package:smivo/shared/widgets/collapsible_section.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/features/carpool/services/calendar_sync_service.dart';
 
 class ManageTripScreen extends ConsumerStatefulWidget {
   const ManageTripScreen({
@@ -48,7 +51,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
 
   int _totalSeats = 3;
   String _luggageLimit = 'none';
-  bool _autoApproval = false;
+  bool _autoApproval = true;
   double? _estimatedTotalPrice;
 
   final _noteController = TextEditingController();
@@ -192,6 +195,9 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
   }
 
   Future<void> _saveChanges(CarpoolTrip originalTrip) async {
+    // NOTE: Validate TextFormFields (price, etc.) before running other checks.
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
     if (_departureAddress == null ||
         _destinationAddress == null ||
         _departureTime == null) {
@@ -241,9 +247,28 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
       };
 
       if (updates.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No changes to save.')),
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionErrorDialog(
+            title: 'No Changes',
+            message: 'There are no changes to save.',
+          ),
         );
+        setState(() => _isSaving = false);
+        return;
+      }
+
+      final freshTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(widget.tripId);
+      if (freshTrip.status != 'active' && freshTrip.status != 'inactive') {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => const ActionErrorDialog(
+              title: 'Cannot Modify',
+              message: 'Cannot modify this trip as it has already been confirmed or cancelled.',
+            ),
+          );
+        }
         setState(() => _isSaving = false);
         return;
       }
@@ -255,14 +280,22 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
       ref.invalidate(carpoolDetailProvider(widget.tripId));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Trip updated successfully.')),
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Success',
+            message: 'Trip updated successfully.',
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update: $e')),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Failed to update',
+            message: e.toString(),
+          ),
         );
       }
     } finally {
@@ -271,11 +304,17 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
   }
 
   Widget _buildEditTripForm(ThemeData theme, CarpoolTrip trip) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final isEditable = trip.status == 'active' || trip.status == 'inactive';
+
+    return IgnorePointer(
+      ignoring: !isEditable,
+      child: Opacity(
+        opacity: isEditable ? 1.0 : 0.6,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           TextFormField(
             controller: _departureDescController,
             decoration: const InputDecoration(
@@ -388,14 +427,28 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
             controller: _priceController,
             keyboardType:
                 const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-              labelText: 'Estimated Total Price (\$)',
+            decoration: InputDecoration(
+              labelText: trip.role == 'driver'
+                  ? 'Fixed Price per person (\$)'
+                  : 'Estimated Total Cost (\$)',
               hintText: 'e.g. 120.00',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.attach_money),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.attach_money),
             ),
             onChanged: (val) =>
                 setState(() => _estimatedTotalPrice = double.tryParse(val)),
+            // NOTE: Price is required so passengers can see expected cost.
+            validator: (val) {
+              if (val == null || val.trim().isEmpty) {
+                return trip.role == 'driver'
+                    ? 'Fixed price is required'
+                    : 'Please enter an estimated total cost';
+              }
+              if (double.tryParse(val.trim()) == null) {
+                return 'Enter a valid number';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           SwitchListTile(
@@ -442,6 +495,8 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
             ),
           ),
         ],
+      ),
+      ),
       ),
     );
   }
@@ -596,8 +651,14 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
   }
 
   Widget _buildConfirmTripButton(BuildContext context, ThemeData theme, CarpoolTrip trip) {
+    final membersAsync = ref.watch(carpoolTripMembersProvider(widget.tripId));
+    final hasParticipants = membersAsync.maybeWhen(
+      data: (members) => members.any((m) => m.status == 'approved' && m.userId != widget.creatorId),
+      orElse: () => false,
+    );
+
     return ElevatedButton.icon(
-      onPressed: () => _handleConfirmTrip(context, trip),
+      onPressed: hasParticipants ? () => _handleConfirmTrip(context, trip) : null,
       icon: const Icon(Icons.check_circle, size: 24),
       label: const Text('Confirm Trip'),
       style: ElevatedButton.styleFrom(
@@ -638,17 +699,45 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
 
     if (confirmed != true) return;
 
+    final freshTrip = await ref.read(carpoolRepositoryProvider).fetchTripDetail(trip.id);
+    if (freshTrip.status != 'active' && freshTrip.status != 'inactive') {
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionErrorDialog(
+            title: 'Cannot Confirm',
+            message: 'Cannot confirm this trip as it has already been confirmed or cancelled.',
+          ),
+        );
+      }
+      return;
+    }
+
     try {
       await ref.read(carpoolRepositoryProvider).confirmTrip(trip.id);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Trip confirmed successfully!')),
+      showDialog(
+        context: context,
+        builder: (ctx) => const ActionSuccessDialog(
+          title: 'Success',
+          message: 'Trip confirmed successfully!',
+        ),
       );
       ref.invalidate(carpoolDetailProvider(trip.id));
+
+      try {
+        await ref.read(calendarSyncServiceProvider).syncTrip(trip);
+      } catch (syncError) {
+        debugPrint('Failed to auto-sync calendar: $syncError');
+      }
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to confirm trip: $e')),
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionErrorDialog(
+          title: 'Failed to confirm',
+          message: e.toString(),
+        ),
       );
     }
   }
@@ -866,15 +955,21 @@ class _MemberTile extends ConsumerWidget {
           .read(carpoolMemberActionsProvider.notifier)
           .approveMember(member.id, trip.id);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${member.user?.displayName ?? "Member"} approved'),
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionSuccessDialog(
+          title: 'Success',
+          message: '${member.user?.displayName ?? "Member"} approved',
         ),
       );
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to approve: $e')),
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionErrorDialog(
+          title: 'Failed to approve',
+          message: e.toString(),
+        ),
       );
     }
   }
@@ -911,15 +1006,21 @@ class _MemberTile extends ConsumerWidget {
           .read(carpoolMemberActionsProvider.notifier)
           .rejectMember(member.id, trip.id);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${member.user?.displayName ?? "Member"} rejected'),
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionSuccessDialog(
+          title: 'Success',
+          message: '${member.user?.displayName ?? "Member"} rejected',
         ),
       );
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to reject: $e')),
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionErrorDialog(
+          title: 'Failed to reject',
+          message: e.toString(),
+        ),
       );
     }
   }

@@ -6,6 +6,9 @@
         android:maxSdkVersion="32" />
     <!-- Storage: Android 13+ uses granular media permissions -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Calendar permissions for auto-sync -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <application
         android:label="Smivo"
         android:name="${applicationName}"

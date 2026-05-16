@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/carpool_trip.dart';
@@ -77,12 +78,14 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final typo = context.smivoTypo;
+    final colors = context.smivoColors;
     final tripListAsync = ref.watch(carpoolListProvider);
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: theme.colorScheme.surfaceContainerLowest,
+        backgroundColor: colors.surfaceContainerLowest,
         body: SafeArea(
           child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -95,13 +98,13 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
                       children: [
                         Text(
                           'Carpool',
-                          style: theme.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900),
+                          style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Find or offer a ride on campus.',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          style: typo.bodyMedium.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -250,7 +253,7 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
           if (currentUserId == null || t.creatorId == currentUserId) return false;
           try {
             final m = t.members.firstWhere((m) => m.userId == currentUserId);
-            return m.status == 'cancelled' || m.status == 'rejected';
+            return m.status == 'cancelled' || m.status == 'rejected' || m.status == 'left';
           } catch (_) {
             return false;
           }
@@ -258,6 +261,7 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
 
         final pastTrips = filteredTrips.where((t) => 
             t.status == 'departed' || 
+            t.status == 'arrived' ||
             t.status == 'completed' || 
             t.status == 'cancelled' ||
             isMemberCancelled(t)

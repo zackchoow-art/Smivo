@@ -123,21 +123,6 @@ class NotificationListItem extends StatelessWidget {
     _ => Icons.notifications_outlined,
   };
 
-  Color _iconBgColor(SmivoColors colors) => switch (notification.type) {
-    'order_placed' => colors.primary,
-    'order_accepted' => colors.success,
-    'order_cancelled' => colors.error,
-    'order_delivered' => colors.warning,
-    'order_completed' => colors.statusPending,
-    'system' => colors.outlineVariant,
-    // NOTE: Moderation notification types — use distinct semantic colors.
-    'report_resolved' => colors.success,
-    'report_dismissed' => colors.outlineVariant,
-    'moderation_warned' => colors.warning,
-    'moderation_restricted' => colors.error,
-    'feedback_responded' => colors.primary,
-    _ => colors.outlineVariant,
-  };
 
   String _formatTimeAgo(DateTime dateTime) {
     final diff = DateTime.now().difference(dateTime.toLocal());

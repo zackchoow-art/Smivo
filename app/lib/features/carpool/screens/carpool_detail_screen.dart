@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:smivo/features/carpool/providers/carpool_detail_provider.dart';
 import 'package:smivo/features/carpool/screens/group_chat_screen.dart';
 import 'package:smivo/features/carpool/widgets/calendar_sync_button.dart';
+import 'package:smivo/features/carpool/providers/carpool_lifecycle_provider.dart';
 import 'package:smivo/features/carpool/widgets/trip_timeline.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/core/maps/map_route_preview.dart';
@@ -13,9 +14,14 @@ import 'package:smivo/features/carpool/screens/manage_trip_screen.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/shared/widgets/action_error_dialog.dart';
+// NOTE: ActionSuccessDialog removed — review completion uses a SnackBar instead.
 import 'package:smivo/features/carpool/widgets/legal_disclaimer_dialog.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smivo/features/carpool/services/calendar_sync_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smivo/data/repositories/carpool_repository.dart';
+import 'package:smivo/features/carpool/widgets/review_batch_sheet.dart';
+import 'package:smivo/data/models/carpool_member.dart';
 
 class CarpoolDetailScreen extends ConsumerWidget {
   const CarpoolDetailScreen({super.key, required this.tripId});
@@ -26,6 +32,22 @@ class CarpoolDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final detailAsync = ref.watch(carpoolDetailProvider(tripId));
+
+    // Auto-update calendar if previously synced
+    ref.listen(carpoolDetailProvider(tripId), (previous, next) async {
+      final trip = next.value;
+      if (trip != null && trip.status == 'active') {
+        final syncService = ref.read(calendarSyncServiceProvider);
+        if (await syncService.hasSyncedTrip(trip.id)) {
+          try {
+            await syncService.syncTrip(trip);
+          } catch (e) {
+            debugPrint('Auto-sync failed: $e');
+          }
+        }
+      }
+    });
+
     final currentProfile = ref.watch(profileProvider).value;
 
     return Scaffold(
@@ -38,11 +60,13 @@ class CarpoolDetailScreen extends ConsumerWidget {
                     icon: const Icon(Icons.share),
                     onPressed: () {
                       final box = context.findRenderObject() as RenderBox?;
-                      Share.shareUri(
-                        Uri.parse('https://smivo.io/carpool/${trip.id}'),
-                        sharePositionOrigin: box != null
-                            ? box.localToGlobal(Offset.zero) & box.size
-                            : null,
+                      SharePlus.instance.share(
+                        ShareParams(
+                          uri: Uri.parse('https://smivo.io/carpool/${trip.id}'),
+                          sharePositionOrigin: box != null
+                              ? box.localToGlobal(Offset.zero) & box.size
+                              : null,
+                        ),
                       );
                     },
                   )
@@ -65,6 +89,31 @@ class CarpoolDetailScreen extends ConsumerWidget {
               myMemberRecord != null && myMemberRecord.status == 'approved';
           final isPending =
               myMemberRecord != null && myMemberRecord.status == 'pending';
+
+          final now = DateTime.now();
+          final isPastDeparture = trip.departureTime.isBefore(now);
+          final canConfirmArrival = isPastDeparture && trip.status == 'confirmed' && (isCreator || isMember);
+          
+          final reviewsAsync = ref.watch(tripReviewsProvider(trip.id));
+          final hasReviewed = reviewsAsync.value?.any(
+                (r) => r.reviewerId == currentProfile?.id,
+              ) ??
+              false;
+          // NOTE: isReviewEligible = status qualifies AND user is a participant.
+          // canReview adds the !hasReviewed guard so the button hides after submission.
+          final isReviewEligible =
+              (trip.status == 'arrived' || trip.status == 'completed') &&
+              (isCreator || isMember);
+          final canReview = isReviewEligible && !hasReviewed;
+          // NOTE: Counts creator + all non-cancelled approved members.
+          // Used for final per-person cost in settled split-cost trips.
+          final activeMemberCount = trip.members
+              .where(
+                (m) =>
+                    m.cancelledAt == null &&
+                    (m.status == 'approved' || m.role == 'creator'),
+              )
+              .length;
 
           final snapshot = myMemberRecord?.lastAcknowledgedSnapshot;
 
@@ -104,12 +153,14 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           departure: MapLocation(
                             latitude: trip.departureLat!,
                             longitude: trip.departureLng!,
-                            address: trip.departureDescription ?? trip.departureAddress,
+                            name: trip.departureDescription,
+                            address: trip.departureAddress,
                           ),
                           destination: MapLocation(
                             latitude: trip.destinationLat!,
                             longitude: trip.destinationLng!,
-                            address: trip.destinationDescription ?? trip.destinationAddress,
+                            name: trip.destinationDescription,
+                            address: trip.destinationAddress,
                           ),
                         ),
                       ),
@@ -120,11 +171,15 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Card 1: Full Address Card
+                          // Card 1: Full Addresses Card
                           Card(
-                            color: theme.colorScheme.surfaceContainerLow,
+                            elevation: 0,
+                            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(16.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -184,21 +239,72 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                     value: '${trip.availableSeats}',
                                     labelWidth: 130,
                                   ),
-                                  if (trip.estimatedTotalPrice != null) ...[
+                                  // --- Driver: fixed per-person price ---
+                                  if (trip.role == 'driver' &&
+                                      trip.estimatedTotalPrice != null) ...[
                                     const SizedBox(height: 8),
                                     _InfoRow(
                                       icon: Icons.attach_money,
-                                      label: 'Estimated Total',
-                                      value: '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}',
-                                      oldValue: getOld('estimated_total_price', '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}',
-                                          (v) => '\$${(v as num).toStringAsFixed(2)}'),
+                                      label: 'Fixed Price',
+                                      value:
+                                          '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}/person',
+                                      oldValue: getOld(
+                                        'estimated_total_price',
+                                        '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}/person',
+                                        (v) =>
+                                            '\$${(v as num).toStringAsFixed(2)}/person',
+                                      ),
+                                      labelWidth: 130,
+                                    ),
+                                  ],
+                                  // --- Organizer: estimated total + per-person ---
+                                  if (trip.role != 'driver' &&
+                                      trip.estimatedTotalPrice != null) ...[
+                                    const SizedBox(height: 8),
+                                    _InfoRow(
+                                      icon: Icons.attach_money,
+                                      label: 'Est. Total',
+                                      value:
+                                          '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}',
+                                      oldValue: getOld(
+                                        'estimated_total_price',
+                                        '\$${trip.estimatedTotalPrice!.toStringAsFixed(2)}',
+                                        (v) =>
+                                            '\$${(v as num).toStringAsFixed(2)}',
+                                      ),
                                       labelWidth: 130,
                                     ),
                                     const SizedBox(height: 4),
                                     _InfoRow(
                                       icon: Icons.people,
                                       label: 'Est. Per Person',
-                                      value: '\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}',
+                                      // NOTE: totalSeats = passenger seats only;
+                                      // +1 includes the organizer in the split.
+                                      value:
+                                          '~\$${(trip.estimatedTotalPrice! / (trip.totalSeats + 1)).toStringAsFixed(2)}',
+                                      labelWidth: 130,
+                                    ),
+                                  ],
+                                  // --- Organizer settled: actual final cost ---
+                                  if (trip.role != 'driver' &&
+                                      trip.actualTotalCost != null &&
+                                      activeMemberCount > 0) ...[
+                                    const SizedBox(height: 8),
+                                    _InfoRow(
+                                      icon: Icons.check_circle_outline,
+                                      label: 'Final Total',
+                                      value:
+                                          '\$${trip.actualTotalCost!.toStringAsFixed(2)}',
+                                      labelWidth: 130,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    _InfoRow(
+                                      icon: Icons.person,
+                                      label: 'Final Per Person',
+                                      // NOTE: activeMemberCount = creator + non-cancelled
+                                      // approved members (the real headcount at settlement).
+                                      value:
+                                          '\$${(trip.actualTotalCost! / activeMemberCount).toStringAsFixed(2)} ($activeMemberCount people)',
                                       labelWidth: 130,
                                     ),
                                   ],
@@ -317,8 +423,8 @@ class CarpoolDetailScreen extends ConsumerWidget {
                       child: TripTimeline(trip: trip),
                     ),
 
-                    // Cost Settlement — shows after trip arrives
-                    if (['arrived', 'completed'].contains(trip.status))
+                    // Cost Settlement — shows after trip arrives (only for organizers, hidden for fixed-price drivers)
+                    if ((trip.status == 'arrived' || trip.status == 'completed') && trip.role == 'organizer')
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: CostSettlementCard(
@@ -356,17 +462,236 @@ class CarpoolDetailScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (isCreator) ...[
-                        Row(
-                          children: [
-                            if (trip.status == 'active' || trip.status == 'inactive') ...[
+                      if (trip.status == 'cancelled' || trip.status == 'completed') ...[
+                        Center(
+                          child: Text(
+                            'This trip was ${trip.status} on ${DateFormat('yyyy-MM-dd').format(trip.updatedAt.toLocal())}',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: trip.status == 'cancelled' ? theme.colorScheme.error : theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (canReview) ...[
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                final membersToReview =
+                                    List<CarpoolMember>.from(trip.members);
+                                if (trip.creator != null) {
+                                  membersToReview.add(CarpoolMember(
+                                    id: 'creator',
+                                    tripId: trip.id,
+                                    userId: trip.creatorId,
+                                    role: 'creator',
+                                    status: 'approved',
+                                    createdAt: DateTime.now(),
+                                    user: trip.creator,
+                                  ));
+                                }
+                                // Ensure current user is filtered out
+                                final filteredMembers = membersToReview
+                                    .where((m) => m.userId != currentProfile!.id)
+                                    .toList();
+                                final result =
+                                    await showModalBottomSheet<bool>(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (ctx) => ReviewBatchSheet(
+                                    tripId: trip.id,
+                                    members: filteredMembers,
+                                  ),
+                                );
+
+                                if (result == true) {
+                                  if (!context.mounted) return;
+                                  // NOTE: Capture messenger before pop so the
+                                  // SnackBar displays on the previous screen.
+                                  final messenger =
+                                      ScaffoldMessenger.of(context);
+                                  context.pop();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: const Row(
+                                        children: [
+                                          Icon(
+                                            Icons.check_circle_rounded,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 10),
+                                          Text(
+                                            'Thank you for rating your trip!',
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: Colors.green.shade600,
+                                      behavior: SnackBarBehavior.floating,
+                                      duration: const Duration(seconds: 3),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text('Rate your Trip'),
+                            ),
+                          ),
+                        ] else if (isReviewEligible) ...[
+                          const SizedBox(height: 16),
+                          // Show confirmation that user has already rated
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: Colors.green.shade600,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                "You've already rated this trip",
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.green.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ] else ...[
+                        if (canConfirmArrival) ...[
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                try {
+                                  await ref.read(carpoolRepositoryProvider).markArrived(tripId);
+                                  ref.invalidate(carpoolDetailProvider(tripId));
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                }
+                              },
+                              child: const Text('Confirm Arrival'),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (canReview) ...[
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                final membersToReview =
+                                    List<CarpoolMember>.from(trip.members);
+                                if (trip.creator != null) {
+                                  membersToReview.add(CarpoolMember(
+                                    id: 'creator',
+                                    tripId: trip.id,
+                                    userId: trip.creatorId,
+                                    role: 'creator',
+                                    status: 'approved',
+                                    createdAt: DateTime.now(),
+                                    user: trip.creator,
+                                  ));
+                                }
+                                // Ensure current user is filtered out
+                                final filteredMembers = membersToReview
+                                    .where((m) => m.userId != currentProfile!.id)
+                                    .toList();
+                                final result =
+                                    await showModalBottomSheet<bool>(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (ctx) => ReviewBatchSheet(
+                                    tripId: trip.id,
+                                    members: filteredMembers,
+                                  ),
+                                );
+
+                                if (result == true) {
+                                  if (!context.mounted) return;
+                                  // NOTE: Capture messenger before pop so the
+                                  // SnackBar displays on the previous screen.
+                                  final messenger =
+                                      ScaffoldMessenger.of(context);
+                                  context.pop();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: const Row(
+                                        children: [
+                                          Icon(
+                                            Icons.check_circle_rounded,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 10),
+                                          Text(
+                                            'Thank you for rating your trip!',
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: Colors.green.shade600,
+                                      behavior: SnackBarBehavior.floating,
+                                      duration: const Duration(seconds: 3),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text('Rate your Trip'),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ] else if (isReviewEligible) ...[
+                          // Show confirmation that user has already rated
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: Colors.green.shade600,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                "You've already rated this trip",
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.green.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (isCreator) ...[
+                          Row(
+                            children: [
+                              if (trip.status == 'active' || trip.status == 'inactive') ...[
                               Expanded(
                                 child: OutlinedButton(
-                                  onPressed: () {
-                                    ref
-                                        .read(carpoolDetailProvider(tripId)
-                                            .notifier)
-                                        .cancelTrip();
+                                  onPressed: () async {
+                                    try {
+                                      await ref.read(carpoolDetailProvider(tripId).notifier).cancelTrip();
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => ActionErrorDialog(
+                                          title: 'Cannot Cancel',
+                                          message: e.toString().contains('TRIP_LOCKED')
+                                              ? 'Cannot cancel this trip as it has already been confirmed.'
+                                              : e.toString(),
+                                        ),
+                                      );
+                                    }
                                   },
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor:
@@ -377,22 +702,24 @@ class CarpoolDetailScreen extends ConsumerWidget {
                               ),
                               const SizedBox(width: 12),
                             ],
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => ManageTripScreen(
-                                        tripId: trip.id,
-                                        creatorId: trip.creatorId,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: const Text('Manage Trip'),
-                              ),
-                            ),
-                          ],
+                              if (trip.status == 'active' || trip.status == 'inactive') ...[
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => ManageTripScreen(
+                                            tripId: trip.id,
+                                            creatorId: trip.creatorId,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('Manage Trip'),
+                                  ),
+                                ),
+                              ],
+                            ],
                         ),
                       ] else if (isMember) ...[
                         if (snapshot != null) ...[
@@ -401,8 +728,38 @@ class CarpoolDetailScreen extends ConsumerWidget {
                               if (trip.status == 'active' || trip.status == 'inactive') ...[
                                 Expanded(
                                   child: OutlinedButton(
-                                    onPressed: () {
-                                      ref.read(carpoolDetailProvider(tripId).notifier).leaveTrip();
+                                    onPressed: () async {
+                                      final confirmed = await showDialog<bool>(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          title: const Text('Cancel Request?'),
+                                          content: const Text('Are you sure you want to cancel your request? You will not be able to rejoin unless the organizer updates the trip details.'),
+                                          actions: [
+                                            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Wait')),
+                                            TextButton(
+                                              onPressed: () => Navigator.of(ctx).pop(true),
+                                              style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                                              child: const Text('Yes, Cancel'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirmed != true) return;
+
+                                      try {
+                                        await ref.read(carpoolDetailProvider(tripId).notifier).leaveTrip();
+                                      } catch (e) {
+                                        if (!context.mounted) return;
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => ActionErrorDialog(
+                                            title: 'Cannot Cancel',
+                                            message: e.toString().contains('TRIP_LOCKED')
+                                                ? 'Cannot leave this trip as it has already been confirmed.'
+                                                : e.toString(),
+                                          ),
+                                        );
+                                      }
                                     },
                                     style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
                                     child: const Text('Cancel Request'),
@@ -418,7 +775,13 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                       ref.invalidate(carpoolDetailProvider(tripId));
                                     } catch (e) {
                                       if (!context.mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => ActionErrorDialog(
+                                          title: 'Failed',
+                                          message: e.toString(),
+                                        ),
+                                      );
                                     }
                                   },
                                   child: const Text('Accept Changes'),
@@ -431,11 +794,38 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(
-                                onPressed: () {
-                                  ref
-                                      .read(carpoolDetailProvider(tripId)
-                                          .notifier)
-                                      .leaveTrip();
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Leave Trip?'),
+                                      content: const Text('Are you sure you want to leave this trip? You will not be able to rejoin unless the organizer updates the trip details.'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Wait')),
+                                        TextButton(
+                                          onPressed: () => Navigator.of(ctx).pop(true),
+                                          style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                                          child: const Text('Yes, Leave'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed != true) return;
+
+                                  try {
+                                    await ref.read(carpoolDetailProvider(tripId).notifier).leaveTrip();
+                                  } catch (e) {
+                                    if (!context.mounted) return;
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => ActionErrorDialog(
+                                        title: 'Cannot Leave',
+                                        message: e.toString().contains('TRIP_LOCKED')
+                                            ? 'Cannot leave this trip as it has already been confirmed.'
+                                            : e.toString(),
+                                      ),
+                                    );
+                                  }
                                 },
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: theme.colorScheme.error,
@@ -495,14 +885,23 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                     } catch (e) {
                                       if (!context.mounted) return;
                                       if (e.toString().contains('NO_SEATS')) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'This trip is now full. Refreshing...',
-                                            ),
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => const ActionErrorDialog(
+                                            title: 'Trip Full',
+                                            message: 'This trip is now full. Refreshing...',
                                           ),
                                         );
                                         // Refresh to show updated seat count
+                                        ref.invalidate(carpoolDetailProvider(tripId));
+                                      } else if (e.toString().contains('TRIP_CANCELLED')) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => const ActionErrorDialog(
+                                            title: 'Trip Cancelled',
+                                            message: 'This trip has been cancelled by the organizer.',
+                                          ),
+                                        );
                                         ref.invalidate(carpoolDetailProvider(tripId));
                                       } else {
                                         // Extract clean message if it's an AppException
@@ -524,8 +923,9 @@ class CarpoolDetailScreen extends ConsumerWidget {
                           ),
                         ),
                       ],
-                      // Real CalendarSyncButton with 1-hour reminder
-                      if (isCreator || isMember) ...[
+                    ],
+                      // Real CalendarSyncButton with 1-hour reminder (hidden for past trips)
+                      if ((trip.status == 'active' || trip.status == 'inactive' || trip.status == 'confirmed') && (isCreator || isMember)) ...[
                         const SizedBox(height: 8),
                         SizedBox(
                           height: 48,
@@ -571,7 +971,7 @@ class _InfoRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: iconColor ?? theme.colorScheme.onSurfaceVariant),
+        Icon(icon, size: 20, color: iconColor ?? theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: 8),
         SizedBox(
           width: labelWidth,

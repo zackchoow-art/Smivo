@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/providers/color_scheme_provider.dart';
 import 'core/providers/preferences_provider.dart';
 import 'core/providers/push_notification_provider.dart';
 import 'core/providers/theme_provider.dart';
@@ -168,6 +169,7 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
 
     final router = ref.watch(routerProvider);
     final themeVariant = ref.watch(themeProvider);
+    final colorScheme = ref.watch(colorSchemeProvider);
     final isShakeFeedbackEnabled = ref.watch(shakeFeedbackProvider);
 
     final showFloating = ref.watch(showFloatingNavProvider);
@@ -175,7 +177,7 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
     final app = MaterialApp.router(
       title: 'Smivo',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.buildTheme(themeVariant),
+      theme: AppTheme.buildTheme(themeVariant, colorScheme),
       routerConfig: router,
       builder: (context, child) {
         final content = child ?? const SizedBox.shrink();

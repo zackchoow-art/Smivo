@@ -8,6 +8,7 @@ import 'package:smivo/features/listing/widgets/saved_listing_card.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/responsive_grid.dart';
+import 'package:smivo/shared/widgets/unified_page_header.dart';
 import 'package:smivo/data/models/saved_listing.dart';
 
 class SavedListingsScreen extends ConsumerStatefulWidget {
@@ -43,10 +44,15 @@ class _SavedListingsScreenState extends ConsumerState<SavedListingsScreen> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              const CollapsingTitleAppBar(
-                title: 'Saved Items',
-                subtitle: 'Items you have bookmarked for later.',
-              ),
+              if (Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                const CollapsingTitleAppBar(
+                  title: 'Saved Items',
+                  subtitle: 'Items you have bookmarked for later.',
+                ),
+              if (!Breakpoints.isMobile(MediaQuery.of(context).size.width))
+                const SliverToBoxAdapter(
+                  child: UnifiedPageHeader(title: 'Saved Items'),
+                ),
               savedAsync.when(
                 loading:
                     () => const SliverFillRemaining(

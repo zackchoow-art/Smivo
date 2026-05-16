@@ -372,12 +372,7 @@ class _FlippableReportCardState extends State<FlippableReportCard>
         f.status == 'resolved' &&
         (f.actionTaken == 'warn' || f.actionTaken == 'restrict');
 
-    final (statusColor, statusBgColor, statusText) = _statusMeta(
-      f.status,
-      f.actionTaken,
-      colors,
-      isReporter: true,
-    );
+
 
     return Transform(
       transform: Matrix4.rotationY(pi),
@@ -515,7 +510,7 @@ class _ReporterOutcomeContent extends StatelessWidget {
     final penaltyColor =
         report.actionTaken == 'warn' ? colors.warning : colors.error;
 
-    final hasPoints = report.reporterRewardPoints > 0;
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

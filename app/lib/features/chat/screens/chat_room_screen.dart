@@ -259,6 +259,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       return;
     }
 
+    if (!mounted) return;
     final source = await ImageUploadService.showSourcePicker(context);
     if (source == null) return;
     if (!mounted) return;
@@ -820,7 +821,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   _selectedMessageIds.clear();
                 });
 
-                if (context.mounted) {
+                if (mounted) {
                   showDialog(
                     context: context,
                     builder:
@@ -832,7 +833,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   );
                 }
               } catch (e) {
-                if (context.mounted) {
+                if (mounted) {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text(e.toString().replaceAll('Exception: ', '')),

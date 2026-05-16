@@ -134,9 +134,9 @@ class MapRoutePreview extends StatelessWidget {
     if (availableMaps.isNotEmpty) {
       await availableMaps.first.showDirections(
         origin: Coords(departure.latitude, departure.longitude),
-        originTitle: departure.displayName,
+        originTitle: departure.address ?? departure.displayName,
         destination: Coords(destination.latitude, destination.longitude),
-        destinationTitle: destination.displayName,
+        destinationTitle: destination.address ?? destination.displayName,
       );
     }
   }
