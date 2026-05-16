@@ -795,6 +795,7 @@ class _ErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
+    final typo = context.smivoTypo;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -805,7 +806,12 @@ class _ErrorCard extends StatelessWidget {
         children: [
           Icon(Icons.error_outline, color: colors.error),
           const SizedBox(width: 12),
-          Expanded(child: Text(message, style: TextStyle(color: colors.error))),
+          Expanded(
+            child: Text(
+              message,
+              style: typo.bodyMedium.copyWith(color: colors.error),
+            ),
+          ),
         ],
       ),
     );

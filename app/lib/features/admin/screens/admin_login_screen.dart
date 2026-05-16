@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 /// Admin login screen — placeholder with no real auth.
 ///
@@ -69,12 +70,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  'Smivo Admin',
-                  style: typo.headlineLarge.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: colors.onSurface,
-                  ),
+                SmivoBrandText(
+                  size: SmivoBrandSize.medium,
+                  suffix: 'Admin',
+                  color: colors.onSurface,
                 ),
                 const SizedBox(height: 8),
                 Text(

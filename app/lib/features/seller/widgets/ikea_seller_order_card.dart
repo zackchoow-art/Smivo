@@ -564,11 +564,11 @@ class IkeaSellerOrderCard extends ConsumerWidget {
                                             '',
                                           ),
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
+                                      style: typo.labelSmall.copyWith(
                                         color: Colors.white,
-                                        fontSize: 8,
                                         fontWeight: FontWeight.bold,
                                         height: 1.1,
+                                        fontSize: 8,
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,

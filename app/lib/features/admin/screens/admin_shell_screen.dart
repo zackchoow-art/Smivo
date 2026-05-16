@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
+import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 /// Admin shell with sidebar navigation (desktop) and drawer (mobile).
 ///
@@ -184,7 +185,6 @@ class AdminShellScreen extends ConsumerWidget {
 
   Widget _buildSidebar(BuildContext context, List<_NavItem> items) {
     final colors = context.smivoColors;
-    final typo = context.smivoTypo;
     final currentPath = GoRouterState.of(context).uri.path;
 
     return Container(
@@ -220,12 +220,10 @@ class AdminShellScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Smivo Admin',
-                  style: typo.titleMedium.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: colors.onSurface,
-                  ),
+                SmivoBrandText(
+                  size: SmivoBrandSize.small,
+                  suffix: 'Admin',
+                  color: colors.onSurface,
                 ),
               ],
             ),
@@ -295,11 +293,9 @@ class AdminShellScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    'Smivo Admin',
-                    style: typo.titleMedium.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                  const SmivoBrandText(
+                    size: SmivoBrandSize.small,
+                    suffix: 'Admin',
                   ),
                 ],
               ),

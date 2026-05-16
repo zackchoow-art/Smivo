@@ -1,0 +1,1604 @@
+[
+  {
+    "file": "features/seller/screens/seller_center_screen.dart",
+    "line": 1565,
+    "text": "Awaiting\\nDelivery",
+    "code": "Text( 'Awaiting\\nDelivery', textAlign: TextAlign.center, style: typo.labelSmall.copyWith( color: colors.surfaceContainerLowest, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/seller/screens/seller_center_screen.dart",
+    "line": 1794,
+    "text": "Close",
+    "code": "Text( 'Close', style: TextStyle( color: colors.primary, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/seller/screens/transaction_management_screen.dart",
+    "line": 58,
+    "text": "Manage Transactions",
+    "code": "Text( 'Manage Transactions', style: typo.headlineSmall.copyWith( fontSize: 18, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/seller/screens/transaction_management_screen.dart",
+    "line": 245,
+    "text": "No views yet",
+    "code": "Text( 'No views yet', style: typo.bodyMedium.copyWith( color: colors.outlineVariant, ), )"
+  },
+  {
+    "file": "features/seller/screens/transaction_management_screen.dart",
+    "line": 385,
+    "text": "Viewed on $timeStr",
+    "code": "Text( 'Viewed on $timeStr', style: typo.bodySmall.copyWith( color: colors.onSurface.withValues( alpha: 0.6, ), ), )"
+  },
+  {
+    "file": "features/seller/screens/transaction_management_screen.dart",
+    "line": 453,
+    "text": "No saves yet",
+    "code": "Text( 'No saves yet', style: typo.bodyMedium.copyWith( color: colors.outlineVariant, ), )"
+  },
+  {
+    "file": "features/seller/screens/transaction_management_screen.dart",
+    "line": 581,
+    "text": "Saved on $dateStr",
+    "code": "Text( 'Saved on $dateStr', style: typo.bodySmall.copyWith( color: colors.onSurface.withValues( alpha: 0.6, ), ), )"
+  },
+  {
+    "file": "features/seller/screens/transaction_management_screen.dart",
+    "line": 649,
+    "text": "No offers yet",
+    "code": "Text( 'No offers yet', style: typo.bodyMedium.copyWith( color: colors.outlineVariant, ), )"
+  },
+  {
+    "file": "features/seller/screens/transaction_management_screen.dart",
+    "line": 780,
+    "text": "Submitted on $dateStr",
+    "code": "Text( 'Submitted on $dateStr', style: typo.bodySmall.copyWith( color: colors.onSurface.withValues(alpha: 0.6), ), )"
+  },
+  {
+    "file": "features/seller/widgets/ikea_seller_order_card.dart",
+    "line": 231,
+    "text": "Awaiting",
+    "code": "Text( 'Awaiting', style: typo.labelSmall.copyWith( color: Colors.white, fontWeight: FontWeight.bold, fontSize: 9, ), )"
+  },
+  {
+    "file": "features/seller/widgets/flat_seller_order_card.dart",
+    "line": 231,
+    "text": "Awaiting",
+    "code": "Text( 'Awaiting', style: typo.labelSmall.copyWith( color: Colors.white, fontWeight: FontWeight.bold, fontSize: 9, ), )"
+  },
+  {
+    "file": "features/settings/screens/settings_screen.dart",
+    "line": 157,
+    "text": "Logout",
+    "code": "Text( 'Logout', style: typo.labelLarge.copyWith( color: colors.error, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/notification_settings_screen.dart",
+    "line": 155,
+    "text": "Master Switches",
+    "code": "Text( 'Master Switches', style: typo.headlineSmall.copyWith( fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/settings/screens/notification_settings_screen.dart",
+    "line": 198,
+    "text": "Category Preferences",
+    "code": "Text( 'Category Preferences', style: typo.headlineSmall.copyWith( fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 56,
+    "text": "Display",
+    "code": "Text( 'Display', style: typo.titleMedium.copyWith( color: colors.onSurface, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 86,
+    "text": "App Theme",
+    "code": "Text( 'App Theme', style: typo.bodyLarge.copyWith( color: colors.onSurface, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 94,
+    "text": "Choose a visual style",
+    "code": "Text( 'Choose a visual style', style: typo.bodySmall.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 169,
+    "text": "Color Palette",
+    "code": "Text( 'Color Palette', style: typo.bodyLarge.copyWith( color: colors.onSurface, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 177,
+    "text": "Choose a color palette",
+    "code": "Text( 'Choose a color palette', style: typo.bodySmall.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 222,
+    "text": "Language",
+    "code": "Text( 'Language', style: typo.bodyLarge.copyWith( color: colors.onSurface, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 230,
+    "text": "English (US)",
+    "code": "Text( 'English (US)', style: typo.bodySmall.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 244,
+    "text": "Storage",
+    "code": "Text( 'Storage', style: typo.titleMedium.copyWith( color: colors.onSurface, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 326,
+    "text": "Clear Local Cache",
+    "code": "Text( 'Clear Local Cache', style: typo.bodyLarge.copyWith( color: colors.onSurface, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 352,
+    "text": "Feedback",
+    "code": "Text( 'Feedback', style: typo.titleMedium.copyWith( color: colors.onSurface, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 381,
+    "text": "Shake to Report",
+    "code": "Text( 'Shake to Report', style: typo.bodyLarge.copyWith( color: colors.onSurface, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 440,
+    "text": "Quick Navigation",
+    "code": "Text( 'Quick Navigation', style: typo.bodyLarge.copyWith( color: colors.onSurface, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 483,
+    "text": "Developer",
+    "code": "Text( 'Developer', style: typo.titleMedium.copyWith( color: colors.onSurface, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/settings/screens/system_settings_screen.dart",
+    "line": 516,
+    "text": "Debug Backend Data",
+    "code": "Text( 'Debug Backend Data', style: typo.bodyLarge.copyWith( color: colors.onSurface, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/debug_data_screen.dart",
+    "line": 158,
+    "text": "Debug Backend Data",
+    "code": "Text('Debug Backend Data', style: typo.titleMedium)"
+  },
+  {
+    "file": "features/settings/screens/trust_and_safety_screen.dart",
+    "line": 26,
+    "text": "Trust & Safety",
+    "code": "Text( 'Trust & Safety', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w600), )"
+  },
+  {
+    "file": "features/settings/screens/trust_and_safety_screen.dart",
+    "line": 61,
+    "text": "Blocked Users",
+    "code": "Text( 'Blocked Users', style: typo.titleMedium.copyWith( color: colors.primary, ), )"
+  },
+  {
+    "file": "features/settings/screens/trust_and_safety_screen.dart",
+    "line": 93,
+    "text": "No blocked users.",
+    "code": "Text( 'No blocked users.', style: typo.bodyMedium.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/screens/trust_and_safety_screen.dart",
+    "line": 303,
+    "text": "No Reported Content",
+    "code": "Text( 'No Reported Content', style: typo.titleMedium.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/screens/submit_feedback_screen.dart",
+    "line": 157,
+    "text": "Report an Issue",
+    "code": "Text('Report an Issue', style: typo.titleMedium)"
+  },
+  {
+    "file": "features/settings/screens/submit_feedback_screen.dart",
+    "line": 169,
+    "text": "Feedback Type",
+    "code": "Text('Feedback Type', style: typo.labelLarge)"
+  },
+  {
+    "file": "features/settings/screens/submit_feedback_screen.dart",
+    "line": 173,
+    "text": "Title",
+    "code": "Text('Title', style: typo.labelLarge)"
+  },
+  {
+    "file": "features/settings/screens/submit_feedback_screen.dart",
+    "line": 188,
+    "text": "Description",
+    "code": "Text('Description', style: typo.labelLarge)"
+  },
+  {
+    "file": "features/settings/screens/submit_feedback_screen.dart",
+    "line": 205,
+    "text": "Screenshot (Optional)",
+    "code": "Text('Screenshot (Optional)', style: typo.labelLarge)"
+  },
+  {
+    "file": "features/settings/screens/submit_feedback_screen.dart",
+    "line": 271,
+    "text": "Tap to select image",
+    "code": "Text( 'Tap to select image', style: typo.bodyMedium.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/screens/edit_profile_screen.dart",
+    "line": 48,
+    "text": "Error: $e",
+    "code": "Text( 'Error: $e', style: typo.bodyMedium.copyWith(color: colors.error), )"
+  },
+  {
+    "file": "features/settings/screens/edit_profile_screen.dart",
+    "line": 56,
+    "text": "No profile found.",
+    "code": "Text( 'No profile found.', style: typo.bodyMedium.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/settings/screens/edit_profile_screen.dart",
+    "line": 280,
+    "text": "Display Name",
+    "code": "Text( 'Display Name', style: typo.bodyMedium.copyWith( color: colors.onSurface, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/settings/screens/edit_profile_screen.dart",
+    "line": 357,
+    "text": "Delete Account",
+    "code": "Text( 'Delete Account', style: typo.labelLarge.copyWith( color: colors.error.withValues( alpha: 0.7, ), fontWeight: FontWeight.w500, ), )"
+  },
+  {
+    "file": "features/settings/screens/edit_profile_screen.dart",
+    "line": 401,
+    "text": "Take a Photo",
+    "code": "Text('Take a Photo', style: typo.bodyLarge)"
+  },
+  {
+    "file": "features/settings/screens/edit_profile_screen.dart",
+    "line": 406,
+    "text": "Choose from Gallery",
+    "code": "Text('Choose from Gallery', style: typo.bodyLarge)"
+  },
+  {
+    "file": "features/settings/screens/edit_profile_screen.dart",
+    "line": 411,
+    "text": "Customize Avatar",
+    "code": "Text('Customize Avatar', style: typo.bodyLarge)"
+  },
+  {
+    "file": "features/settings/screens/my_contributions_screen.dart",
+    "line": 26,
+    "text": "My Contributions",
+    "code": "Text('My Contributions', style: typo.titleMedium)"
+  },
+  {
+    "file": "features/settings/screens/my_contributions_screen.dart",
+    "line": 79,
+    "text": "Max Level Reached!",
+    "code": "Text( 'Max Level Reached!', style: typo.labelSmall.copyWith( color: Colors.white70, ), )"
+  },
+  {
+    "file": "features/settings/screens/my_contributions_screen.dart",
+    "line": 93,
+    "text": "Contribution History",
+    "code": "Text('Contribution History', style: typo.titleMedium)"
+  },
+  {
+    "file": "features/settings/screens/my_feedbacks_screen.dart",
+    "line": 25,
+    "text": "My Feedbacks",
+    "code": "Text('My Feedbacks', style: typo.titleMedium)"
+  },
+  {
+    "file": "features/settings/screens/my_feedbacks_screen.dart",
+    "line": 99,
+    "text": "New Feedback",
+    "code": "Text( 'New Feedback', style: TextStyle(color: Colors.white), )"
+  },
+  {
+    "file": "features/settings/screens/my_feedbacks_screen.dart",
+    "line": 433,
+    "text": "Smivo Support",
+    "code": "Text( 'Smivo Support', style: typo.labelLarge.copyWith(color: colors.onSurface), )"
+  },
+  {
+    "file": "features/settings/screens/help_screen.dart",
+    "line": 126,
+    "text": "Failed to load FAQs.",
+    "code": "Text( 'Failed to load FAQs.', style: typo.bodyMedium.copyWith( color: colors.error, ), )"
+  },
+  {
+    "file": "features/settings/screens/help_screen.dart",
+    "line": 154,
+    "text": "No matching questions found",
+    "code": "Text( 'No matching questions found', style: typo.bodyMedium.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/widgets/flippable_report_card.dart",
+    "line": 206,
+    "text": "Reason: ${f.reason}",
+    "code": "Text( 'Reason: ${f.reason}', style: typo.bodyMedium.copyWith( color: colors.onSurface, ), maxLines: _isExpanded ? null : 1, overflow: _isExpanded ? null : TextOverflow.ellipsis, )"
+  },
+  {
+    "file": "features/settings/widgets/flippable_report_card.dart",
+    "line": 409,
+    "text": "Trust & Safety Team",
+    "code": "Text( 'Trust & Safety Team', style: typo.labelLarge.copyWith(color: colors.onSurface), )"
+  },
+  {
+    "file": "features/settings/widgets/flippable_report_card.dart",
+    "line": 760,
+    "text": "Trust & Safety Team",
+    "code": "Text( 'Trust & Safety Team', style: typo.labelLarge.copyWith(color: colors.onSurface), )"
+  },
+  {
+    "file": "features/settings/widgets/avatar_customization_dialog.dart",
+    "line": 47,
+    "text": "Customize Avatar",
+    "code": "Text('Customize Avatar', style: typo.headlineSmall)"
+  },
+  {
+    "file": "features/settings/widgets/avatar_customization_dialog.dart",
+    "line": 119,
+    "text": "Cancel",
+    "code": "Text('Cancel', style: TextStyle(color: colors.outlineVariant))"
+  },
+  {
+    "file": "features/settings/widgets/address_management_section.dart",
+    "line": 67,
+    "text": "Saved Addresses",
+    "code": "Text( 'Saved Addresses', style: typo.titleMedium.copyWith( fontWeight: FontWeight.w700, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/settings/widgets/category_notification_row.dart",
+    "line": 85,
+    "text": "Push Notification",
+    "code": "Text( 'Push Notification', style: typo.bodyLarge.copyWith( fontWeight: FontWeight.w600, color: pushEnabled ? colors.onSurface : colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/widgets/category_notification_row.dart",
+    "line": 104,
+    "text": "Email",
+    "code": "Text( 'Email', style: typo.bodyLarge.copyWith( fontWeight: FontWeight.w600, color: emailEnabled ? colors.onSurface : colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/settings/widgets/delete_account_bottom_sheet.dart",
+    "line": 118,
+    "text": "Delete Your Account",
+    "code": "Text( 'Delete Your Account', style: typo.headlineSmall.copyWith( fontWeight: FontWeight.bold, color: colors.error, ), )"
+  },
+  {
+    "file": "features/settings/widgets/delete_account_bottom_sheet.dart",
+    "line": 195,
+    "text": "Cancel",
+    "code": "Text( 'Cancel', style: typo.labelLarge.copyWith( color: colors.onSurface.withValues(alpha: 0.7), ), )"
+  },
+  {
+    "file": "features/settings/widgets/delete_account_bottom_sheet.dart",
+    "line": 214,
+    "text": "Continue",
+    "code": "Text( 'Continue', style: typo.labelLarge.copyWith(color: colors.onPrimary), )"
+  },
+  {
+    "file": "features/settings/widgets/delete_account_bottom_sheet.dart",
+    "line": 291,
+    "text": "Confirm Deletion",
+    "code": "Text( 'Confirm Deletion', style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold), )"
+  },
+  {
+    "file": "features/settings/widgets/delete_account_bottom_sheet.dart",
+    "line": 400,
+    "text": "Permanently Delete My Account",
+    "code": "Text( 'Permanently Delete My Account', style: typo.labelLarge.copyWith( color: isValid ? colors.onPrimary : colors.onPrimary.withValues(alpha: 0.5), ), )"
+  },
+  {
+    "file": "features/settings/widgets/delete_account_bottom_sheet.dart",
+    "line": 436,
+    "text": "Deleting your account...",
+    "code": "Text( 'Deleting your account...', style: typo.titleMedium.copyWith(fontWeight: FontWeight.w600), )"
+  },
+  {
+    "file": "features/home/screens/home_screen.dart",
+    "line": 136,
+    "text": "Error loading listings",
+    "code": "Text( 'Error loading listings', style: typo.bodyMedium.copyWith( color: colors.error, ), )"
+  },
+  {
+    "file": "features/home/screens/home_screen.dart",
+    "line": 149,
+    "text": "No listings found.",
+    "code": "Text( 'No listings found.', style: typo.bodyLarge, )"
+  },
+  {
+    "file": "features/home/widgets/home_header.dart",
+    "line": 38,
+    "text": "Smivo",
+    "code": "Text( 'Smivo', style: typo.headlineMedium.copyWith( color: colors.primary, ), )"
+  },
+  {
+    "file": "features/home/widgets/home_header.dart",
+    "line": 88,
+    "text": "Verified",
+    "code": "Text( 'Verified', style: typo.labelSmall.copyWith( color: colors.success, fontSize: 10, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/home/widgets/home_header.dart",
+    "line": 119,
+    "text": "Not logged in",
+    "code": "Text( 'Not logged in', style: typo.labelSmall.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/carpool/screens/arrival_confirmation_screen.dart",
+    "line": 49,
+    "text": "Trip Summary",
+    "code": "Text( 'Trip Summary', style: Theme.of(context).textTheme.titleMedium, )"
+  },
+  {
+    "file": "features/carpool/screens/group_chat_screen.dart",
+    "line": 196,
+    "text": "Failed to load chat",
+    "code": "Text( 'Failed to load chat', style: theme.textTheme.titleMedium, )"
+  },
+  {
+    "file": "features/carpool/screens/group_chat_screen.dart",
+    "line": 254,
+    "text": "No messages yet",
+    "code": "Text( 'No messages yet', style: theme.textTheme.bodyLarge?.copyWith( color: theme.colorScheme.outline, ), )"
+  },
+  {
+    "file": "features/carpool/screens/group_chat_screen.dart",
+    "line": 261,
+    "text": "Start the conversation!",
+    "code": "Text( 'Start the conversation!', style: theme.textTheme.bodySmall?.copyWith( color: theme.colorScheme.outline.withValues(alpha: 0.7), ), )"
+  },
+  {
+    "file": "features/carpool/screens/group_chat_screen.dart",
+    "line": 454,
+    "text": "From:",
+    "code": "Text('From:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))"
+  },
+  {
+    "file": "features/carpool/screens/group_chat_screen.dart",
+    "line": 476,
+    "text": "To:",
+    "code": "Text('To:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))"
+  },
+  {
+    "file": "features/carpool/screens/group_chat_screen.dart",
+    "line": 498,
+    "text": "Time:",
+    "code": "Text('Time:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))"
+  },
+  {
+    "file": "features/carpool/screens/carpool_list_screen.dart",
+    "line": 99,
+    "text": "Carpool",
+    "code": "Text( 'Carpool', style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900), )"
+  },
+  {
+    "file": "features/carpool/screens/carpool_list_screen.dart",
+    "line": 323,
+    "text": "Start a Carpool Trip",
+    "code": "Text( 'Start a Carpool Trip', style: theme.textTheme.titleMedium?.copyWith( fontWeight: FontWeight.w800, color: theme.colorScheme.onPrimary, ), )"
+  },
+  {
+    "file": "features/carpool/screens/carpool_list_screen.dart",
+    "line": 355,
+    "text": "No trips yet.",
+    "code": "Text( 'No trips yet.', style: theme.textTheme.titleMedium?.copyWith( color: theme.colorScheme.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/carpool/screens/trip_proposals_screen.dart",
+    "line": 47,
+    "text": "No Proposals",
+    "code": "Text( 'No Proposals', style: theme.textTheme.titleMedium?.copyWith( color: theme.colorScheme.outline, ), )"
+  },
+  {
+    "file": "features/carpool/screens/trip_proposals_screen.dart",
+    "line": 275,
+    "text": "New Proposal",
+    "code": "Text('New Proposal', style: theme.textTheme.titleLarge)"
+  },
+  {
+    "file": "features/carpool/screens/trip_proposals_screen.dart",
+    "line": 316,
+    "text": "Current: ${_oldValueForType()}",
+    "code": "Text( 'Current: ${_oldValueForType()}', style: theme.textTheme.bodyMedium?.copyWith( color: theme.colorScheme.outline, ), )"
+  },
+  {
+    "file": "features/carpool/screens/trip_proposals_screen.dart",
+    "line": 333,
+    "text": "Current: ${_oldValueForType()}",
+    "code": "Text( 'Current: ${_oldValueForType()}', style: theme.textTheme.bodyMedium?.copyWith( color: theme.colorScheme.outline, ), )"
+  },
+  {
+    "file": "features/carpool/screens/manage_trip_screen.dart",
+    "line": 350,
+    "text": "Trip Details",
+    "code": "Text('Trip Details', style: theme.textTheme.titleMedium)"
+  },
+  {
+    "file": "features/carpool/screens/manage_trip_screen.dart",
+    "line": 523,
+    "text": "No members yet",
+    "code": "Text( 'No members yet', style: theme.textTheme.titleMedium?.copyWith( color: theme.colorScheme.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/carpool/screens/create_carpool_screen.dart",
+    "line": 212,
+    "text": "Pricing Model",
+    "code": "Text('Pricing Model', style: theme.textTheme.titleMedium)"
+  },
+  {
+    "file": "features/carpool/screens/create_carpool_screen.dart",
+    "line": 250,
+    "text": "Route",
+    "code": "Text('Route', style: theme.textTheme.titleMedium)"
+  },
+  {
+    "file": "features/carpool/screens/create_carpool_screen.dart",
+    "line": 284,
+    "text": "Trip Details",
+    "code": "Text('Trip Details', style: theme.textTheme.titleMedium)"
+  },
+  {
+    "file": "features/carpool/screens/carpool_detail_screen.dart",
+    "line": 186,
+    "text": "Full Addresses",
+    "code": "Text('Full Addresses', style: theme.textTheme.titleSmall?.copyWith( color: theme.colorScheme.onSurfaceVariant))"
+  },
+  {
+    "file": "features/carpool/screens/carpool_detail_screen.dart",
+    "line": 337,
+    "text": "Notes:",
+    "code": "Text( 'Notes:', style: theme.textTheme.bodyMedium?.copyWith( color: theme.colorScheme.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/carpool/screens/carpool_detail_screen.dart",
+    "line": 368,
+    "text": "Organizer",
+    "code": "Text('Organizer', style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant))"
+  },
+  {
+    "file": "features/carpool/screens/carpool_detail_screen.dart",
+    "line": 404,
+    "text": "Joined Members",
+    "code": "Text('Joined Members', style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant))"
+  },
+  {
+    "file": "features/carpool/widgets/review_batch_sheet.dart",
+    "line": 160,
+    "text": "Rate Fellow Riders",
+    "code": "Text( 'Rate Fellow Riders', style: theme.textTheme.titleLarge, )"
+  },
+  {
+    "file": "features/carpool/widgets/group_member_sheet.dart",
+    "line": 53,
+    "text": "Trip Members",
+    "code": "Text( 'Trip Members', style: theme.textTheme.titleMedium?.copyWith( fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/carpool/widgets/group_member_sheet.dart",
+    "line": 141,
+    "text": "Creator",
+    "code": "Text( 'Creator', style: theme.textTheme.labelSmall?.copyWith( color: Colors.amber.shade800, fontWeight: FontWeight.w600, ), )"
+  },
+  {
+    "file": "features/carpool/widgets/trip_timeline.dart",
+    "line": 34,
+    "text": "Trip Timeline",
+    "code": "Text( 'Trip Timeline', style: Theme.of(context).textTheme.titleSmall?.copyWith( color: Theme.of(context).colorScheme.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/carpool/widgets/trip_timeline.dart",
+    "line": 380,
+    "text": "Cost Settlement",
+    "code": "Text( 'Cost Settlement', style: theme.textTheme.titleMedium?.copyWith( fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/chat/screens/chat_list_screen.dart",
+    "line": 538,
+    "text": "System Messages",
+    "code": "Text( 'System Messages', style: typo.titleMedium.copyWith( fontWeight: FontWeight.w800, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/chat/screens/chat_room_screen.dart",
+    "line": 427,
+    "text": "Report",
+    "code": "Text( 'Report', style: typo.labelLarge.copyWith( color: _selectedMessageIds.isEmpty ? colors.onSurfaceVariant : colors.error, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/chat/screens/chat_room_screen.dart",
+    "line": 465,
+    "text": "Block",
+    "code": "Text( 'Block', style: TextStyle(color: Colors.red), )"
+  },
+  {
+    "file": "features/chat/widgets/chat_split_view.dart",
+    "line": 48,
+    "text": "Select a conversation",
+    "code": "Text( 'Select a conversation', style: typo.titleMedium.copyWith( color: colors.outlineVariant, ), )"
+  },
+  {
+    "file": "features/auth/screens/register_screen.dart",
+    "line": 268,
+    "text": "Smivo",
+    "code": "Text( 'Smivo', style: typo.displayLarge.copyWith( fontSize: 24, fontStyle: FontStyle.italic, color: colors.primary, ), )"
+  },
+  {
+    "file": "features/auth/screens/register_screen.dart",
+    "line": 307,
+    "text": "Join the Quad.",
+    "code": "Text( 'Join the Quad.', textAlign: TextAlign.center, style: typo.headlineLarge, )"
+  },
+  {
+    "file": "features/auth/screens/register_screen.dart",
+    "line": 352,
+    "text": "SELECT SCHOOL",
+    "code": "Text( 'SELECT SCHOOL', style: typo.labelUppercase, )"
+  },
+  {
+    "file": "features/auth/screens/register_screen.dart",
+    "line": 630,
+    "text": "Create Account",
+    "code": "Text( 'Create Account', style: typo.labelLarge.copyWith( color: colors.onPrimary, fontSize: 18, ), )"
+  },
+  {
+    "file": "features/auth/screens/login_screen.dart",
+    "line": 240,
+    "text": "Smivo",
+    "code": "Text( 'Smivo', style: typo.displayLarge.copyWith( fontStyle: FontStyle.italic, color: colors.primary, fontSize: 48, ), )"
+  },
+  {
+    "file": "features/auth/screens/login_screen.dart",
+    "line": 272,
+    "text": "Welcome back.",
+    "code": "Text( 'Welcome back.', textAlign: TextAlign.center, style: typo.headlineLarge.copyWith( fontSize: 26, ), )"
+  },
+  {
+    "file": "features/auth/screens/login_screen.dart",
+    "line": 319,
+    "text": "SELECT SCHOOL",
+    "code": "Text( 'SELECT SCHOOL', style: typo.labelUppercase, )"
+  },
+  {
+    "file": "features/auth/screens/login_screen.dart",
+    "line": 442,
+    "text": "Forgot Password?",
+    "code": "Text( 'Forgot Password?', style: typo.bodyMedium.copyWith( color: colors.primary, fontWeight: FontWeight.w600, ), )"
+  },
+  {
+    "file": "features/auth/screens/login_screen.dart",
+    "line": 504,
+    "text": "Sign In",
+    "code": "Text( 'Sign In', style: typo.labelLarge.copyWith( color: colors.onPrimary, fontSize: 18, ), )"
+  },
+  {
+    "file": "features/auth/screens/login_screen.dart",
+    "line": 534,
+    "text": "NEW TO THE QUAD?",
+    "code": "Text( 'NEW TO THE QUAD?', style: typo.bodyLarge.copyWith( fontSize: 12, letterSpacing: 1.2, color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/auth/screens/login_screen.dart",
+    "line": 575,
+    "text": "Join with .edu email",
+    "code": "Text( 'Join with .edu email', style: typo.labelLarge.copyWith( color: colors.primary, fontSize: 16, ), )"
+  },
+  {
+    "file": "features/auth/screens/email_verification_screen.dart",
+    "line": 181,
+    "text": "Check your email",
+    "code": "Text( 'Check your email', textAlign: TextAlign.center, style: typo.headlineLarge, )"
+  },
+  {
+    "file": "features/auth/screens/email_verification_screen.dart",
+    "line": 229,
+    "text": "Continue to Home",
+    "code": "Text( 'Continue to Home', style: typo.bodyMedium.copyWith( color: colors.primary, fontWeight: FontWeight.w700, fontSize: 16, ), )"
+  },
+  {
+    "file": "features/auth/screens/forgot_password_screen.dart",
+    "line": 153,
+    "text": "Smivo",
+    "code": "Text( 'Smivo', style: typo.displayLarge.copyWith( fontSize: 24, fontStyle: FontStyle.italic, color: colors.primary, ), )"
+  },
+  {
+    "file": "features/auth/screens/forgot_password_screen.dart",
+    "line": 187,
+    "text": "Forgot Password",
+    "code": "Text( 'Forgot Password', textAlign: TextAlign.center, style: typo.headlineLarge, )"
+  },
+  {
+    "file": "features/auth/screens/forgot_password_screen.dart",
+    "line": 231,
+    "text": "SELECT SCHOOL",
+    "code": "Text( 'SELECT SCHOOL', style: typo.labelUppercase, )"
+  },
+  {
+    "file": "features/auth/screens/forgot_password_screen.dart",
+    "line": 371,
+    "text": "Send Reset Link",
+    "code": "Text( 'Send Reset Link', style: typo.labelLarge.copyWith( color: colors.onPrimary, fontSize: 18, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_users_screen.dart",
+    "line": 32,
+    "text": "Manage Users",
+    "code": "Text( 'Manage Users', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_users_screen.dart",
+    "line": 141,
+    "text": "Error: $err",
+    "code": "Text( 'Error: $err', style: TextStyle(color: colors.error), )"
+  },
+  {
+    "file": "features/admin/screens/admin_users_screen.dart",
+    "line": 179,
+    "text": "No users found.",
+    "code": "Text( 'No users found.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_roles_screen.dart",
+    "line": 34,
+    "text": "Manage Roles",
+    "code": "Text( 'Manage Roles', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_roles_screen.dart",
+    "line": 89,
+    "text": "Error: $err",
+    "code": "Text( 'Error: $err', style: TextStyle(color: colors.error), )"
+  },
+  {
+    "file": "features/admin/screens/admin_roles_screen.dart",
+    "line": 114,
+    "text": "No roles found.",
+    "code": "Text( 'No roles found.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_listings_screen.dart",
+    "line": 32,
+    "text": "Manage Listings",
+    "code": "Text( 'Manage Listings', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_listings_screen.dart",
+    "line": 109,
+    "text": "Error: $err",
+    "code": "Text( 'Error: $err', style: TextStyle(color: colors.error), )"
+  },
+  {
+    "file": "features/admin/screens/admin_listings_screen.dart",
+    "line": 141,
+    "text": "No listings found.",
+    "code": "Text( 'No listings found.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dictionary_screen.dart",
+    "line": 35,
+    "text": "System Dictionary",
+    "code": "Text( 'System Dictionary', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dictionary_screen.dart",
+    "line": 75,
+    "text": "Filter: ",
+    "code": "Text('Filter: ', style: typo.labelLarge)"
+  },
+  {
+    "file": "features/admin/screens/admin_dictionary_screen.dart",
+    "line": 104,
+    "text": "Error: $e",
+    "code": "Text( 'Error: $e', style: TextStyle(color: colors.error), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dictionary_screen.dart",
+    "line": 119,
+    "text": "No entries.",
+    "code": "Text( 'No entries.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_faqs_screen.dart",
+    "line": 41,
+    "text": "Manage FAQs",
+    "code": "Text( 'Manage FAQs', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_faqs_screen.dart",
+    "line": 148,
+    "text": "Error: $e",
+    "code": "Text( 'Error: $e', style: TextStyle(color: colors.error), )"
+  },
+  {
+    "file": "features/admin/screens/admin_faqs_screen.dart",
+    "line": 183,
+    "text": "No FAQs found.",
+    "code": "Text( 'No FAQs found.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_faqs_screen.dart",
+    "line": 258,
+    "text": "Global",
+    "code": "Text( 'Global', style: typo.labelSmall.copyWith( color: colors.primary, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_orders_screen.dart",
+    "line": 31,
+    "text": "Manage Orders",
+    "code": "Text( 'Manage Orders', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_orders_screen.dart",
+    "line": 118,
+    "text": "Error: $err",
+    "code": "Text( 'Error: $err', style: TextStyle(color: colors.error), )"
+  },
+  {
+    "file": "features/admin/screens/admin_orders_screen.dart",
+    "line": 150,
+    "text": "No orders found.",
+    "code": "Text( 'No orders found.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_shell_screen.dart",
+    "line": 73,
+    "text": "Admin",
+    "code": "Text( 'Admin', style: typo.labelLarge.copyWith( fontWeight: FontWeight.w600, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_shell_screen.dart",
+    "line": 223,
+    "text": "Smivo Admin",
+    "code": "Text( 'Smivo Admin', style: typo.titleMedium.copyWith( fontWeight: FontWeight.w800, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_shell_screen.dart",
+    "line": 298,
+    "text": "Smivo Admin",
+    "code": "Text( 'Smivo Admin', style: typo.titleMedium.copyWith( fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_shell_screen.dart",
+    "line": 336,
+    "text": "Logout",
+    "code": "Text( 'Logout', style: typo.labelLarge.copyWith(color: colors.onSurfaceVariant), )"
+  },
+  {
+    "file": "features/admin/screens/admin_shell_screen.dart",
+    "line": 347,
+    "text": "Back to App",
+    "code": "Text( 'Back to App', style: typo.labelLarge.copyWith(color: colors.onSurfaceVariant), )"
+  },
+  {
+    "file": "features/admin/screens/admin_login_screen.dart",
+    "line": 72,
+    "text": "Smivo Admin",
+    "code": "Text( 'Smivo Admin', style: typo.headlineLarge.copyWith( fontWeight: FontWeight.w900, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_login_screen.dart",
+    "line": 80,
+    "text": "Management Console",
+    "code": "Text( 'Management Console', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_login_screen.dart",
+    "line": 101,
+    "text": "Sign In",
+    "code": "Text( 'Sign In', style: typo.headlineSmall.copyWith( fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_login_screen.dart",
+    "line": 169,
+    "text": "Log In",
+    "code": "Text( 'Log In', style: typo.labelLarge.copyWith( color: colors.onPrimary, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_schools_screen.dart",
+    "line": 97,
+    "text": "Active",
+    "code": "Text( 'Active', style: typo.labelSmall.copyWith( color: colors.primary, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_schools_screen.dart",
+    "line": 155,
+    "text": "Error loading schools: $err",
+    "code": "Text( 'Error loading schools: $err', style: TextStyle(color: colors.error), )"
+  },
+  {
+    "file": "features/admin/screens/admin_schools_screen.dart",
+    "line": 333,
+    "text": "Basic Info",
+    "code": "Text( 'Basic Info', style: Theme.of(context).textTheme.titleSmall, )"
+  },
+  {
+    "file": "features/admin/screens/admin_schools_screen.dart",
+    "line": 387,
+    "text": "Location",
+    "code": "Text('Location', style: Theme.of(context).textTheme.titleSmall)"
+  },
+  {
+    "file": "features/admin/screens/admin_schools_screen.dart",
+    "line": 444,
+    "text": "Branding",
+    "code": "Text('Branding', style: Theme.of(context).textTheme.titleSmall)"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 29,
+    "text": "Dashboard",
+    "code": "Text( 'Dashboard', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 57,
+    "text": "Platform Overview",
+    "code": "Text( 'Platform Overview', style: typo.headlineMedium.copyWith( fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 125,
+    "text": "Quick Actions",
+    "code": "Text( 'Quick Actions', style: typo.headlineMedium.copyWith( fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 187,
+    "text": "Danger Zone",
+    "code": "Text( 'Danger Zone', style: typo.headlineMedium.copyWith( fontWeight: FontWeight.w700, color: colors.error, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 216,
+    "text": "Clear All Test Data",
+    "code": "Text( 'Clear All Test Data', style: typo.titleMedium.copyWith( fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 256,
+    "text": "Recent Orders",
+    "code": "Text( 'Recent Orders', style: typo.headlineMedium.copyWith( fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 269,
+    "text": "No recent orders.",
+    "code": "Text( 'No recent orders.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 436,
+    "text": "This will permanently delete:",
+    "code": "Text( 'This will permanently delete:', style: typo.bodyMedium.copyWith( fontWeight: FontWeight.w600, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_dashboard_screen.dart",
+    "line": 480,
+    "text": "Type DELETE to confirm:",
+    "code": "Text( 'Type DELETE to confirm:', style: typo.bodyMedium.copyWith( fontWeight: FontWeight.w600, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_pickup_locations_screen.dart",
+    "line": 36,
+    "text": "Manage Pickup Locations",
+    "code": "Text( 'Manage Pickup Locations', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_pickup_locations_screen.dart",
+    "line": 124,
+    "text": "Error: $e",
+    "code": "Text('Error: $e', style: TextStyle(color: colors.error))"
+  },
+  {
+    "file": "features/admin/screens/admin_pickup_locations_screen.dart",
+    "line": 132,
+    "text": "No pickup locations.",
+    "code": "Text( 'No pickup locations.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_categories_screen.dart",
+    "line": 35,
+    "text": "Manage Categories",
+    "code": "Text( 'Manage Categories', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_categories_screen.dart",
+    "line": 125,
+    "text": "Error: $e",
+    "code": "Text('Error: $e', style: TextStyle(color: colors.error))"
+  },
+  {
+    "file": "features/admin/screens/admin_categories_screen.dart",
+    "line": 133,
+    "text": "No categories.",
+    "code": "Text( 'No categories.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_review_tags_screen.dart",
+    "line": 103,
+    "text": "Review Tags",
+    "code": "Text( 'Review Tags', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_review_tags_screen.dart",
+    "line": 131,
+    "text": "Add New Tag",
+    "code": "Text( 'Add New Tag', style: typo.headlineSmall.copyWith( fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/admin/screens/admin_conditions_screen.dart",
+    "line": 35,
+    "text": "Manage Conditions",
+    "code": "Text( 'Manage Conditions', style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800), )"
+  },
+  {
+    "file": "features/admin/screens/admin_conditions_screen.dart",
+    "line": 121,
+    "text": "Error: $e",
+    "code": "Text('Error: $e', style: TextStyle(color: colors.error))"
+  },
+  {
+    "file": "features/admin/screens/admin_conditions_screen.dart",
+    "line": 129,
+    "text": "No conditions.",
+    "code": "Text( 'No conditions.', style: typo.bodyLarge.copyWith( color: colors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "features/shared/widgets/user_reviews_bottom_sheet.dart",
+    "line": 149,
+    "text": "No reviews yet.",
+    "code": "Text('No reviews yet.', style: typo.bodyLarge)"
+  },
+  {
+    "file": "features/shared/widgets/order_review_form.dart",
+    "line": 80,
+    "text": "Rate the ${widget.role}",
+    "code": "Text( 'Rate the ${widget.role}', style: typo.titleMedium.copyWith(fontWeight: FontWeight.bold), )"
+  },
+  {
+    "file": "features/shared/widgets/order_review_form.dart",
+    "line": 104,
+    "text": "Failed to load tags",
+    "code": "Text( 'Failed to load tags', style: typo.bodySmall.copyWith(color: colors.error), )"
+  },
+  {
+    "file": "features/profile/screens/profile_setup_screen.dart",
+    "line": 92,
+    "text": "Set up your Profile",
+    "code": "Text( 'Set up your Profile', style: typo.headlineLarge, textAlign: TextAlign.center, )"
+  },
+  {
+    "file": "features/profile/screens/profile_setup_screen.dart",
+    "line": 205,
+    "text": "Finish Setup",
+    "code": "Text( 'Finish Setup', style: typo.labelLarge.copyWith( color: colors.onPrimary, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/orders/screens/orders_screen.dart",
+    "line": 49,
+    "text": "My Orders",
+    "code": "Text( 'My Orders', style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900), )"
+  },
+  {
+    "file": "features/orders/screens/orders_screen.dart",
+    "line": 136,
+    "text": "My Orders",
+    "code": "Text( 'My Orders', style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900), )"
+  },
+  {
+    "file": "features/orders/screens/rental_order_detail_screen.dart",
+    "line": 251,
+    "text": "Order completed successfully",
+    "code": "Text( 'Order completed successfully', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w500), )"
+  },
+  {
+    "file": "features/orders/screens/rental_order_detail_screen.dart",
+    "line": 534,
+    "text": "Delivery Confirmation",
+    "code": "Text( 'Delivery Confirmation', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5, ), )"
+  },
+  {
+    "file": "features/orders/screens/rental_order_detail_screen.dart",
+    "line": 955,
+    "text": "OK",
+    "code": "Text('OK', style: typo.titleMedium)"
+  },
+  {
+    "file": "features/orders/screens/rental_order_detail_screen.dart",
+    "line": 1027,
+    "text": "Relisted",
+    "code": "Text( 'Relisted', style: typo.labelLarge.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/screens/sale_order_detail_screen.dart",
+    "line": 148,
+    "text": "Order completed successfully",
+    "code": "Text( 'Order completed successfully', style: typo.bodyMedium.copyWith(fontWeight: FontWeight.w500), )"
+  },
+  {
+    "file": "features/orders/screens/sale_order_detail_screen.dart",
+    "line": 361,
+    "text": "DELIVERY CONFIRMATION",
+    "code": "Text( 'DELIVERY CONFIRMATION', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5, ), )"
+  },
+  {
+    "file": "features/orders/screens/sale_order_detail_screen.dart",
+    "line": 592,
+    "text": "Relisted",
+    "code": "Text( 'Relisted', style: typo.labelLarge.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/screens/order_detail_screen.dart",
+    "line": 46,
+    "text": "Order Details",
+    "code": "Text( 'Order Details', style: context.smivoTypo.headlineSmall.copyWith( fontSize: 18, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_reminder_settings.dart",
+    "line": 130,
+    "text": "RENTAL REMINDER",
+    "code": "Text( 'RENTAL REMINDER', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5, ), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_reminder_settings.dart",
+    "line": 140,
+    "text": "Return Reminder Timing",
+    "code": "Text('Return Reminder Timing', style: typo.titleMedium)"
+  },
+  {
+    "file": "features/orders/widgets/rental_reminder_settings.dart",
+    "line": 149,
+    "text": "Days before:",
+    "code": "Text('Days before:', style: typo.bodyMedium)"
+  },
+  {
+    "file": "features/orders/widgets/rental_reminder_settings.dart",
+    "line": 188,
+    "text": "Also send email notification",
+    "code": "Text('Also send email notification', style: typo.bodyMedium)"
+  },
+  {
+    "file": "features/orders/widgets/rental_reminder_settings.dart",
+    "line": 212,
+    "text": "Reminder already sent",
+    "code": "Text( 'Reminder already sent', style: typo.bodySmall.copyWith( color: colors.success, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/orders/widgets/order_card.dart",
+    "line": 236,
+    "text": "COUNTERPARTY",
+    "code": "Text( 'COUNTERPARTY', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w600, letterSpacing: 1.2, ), )"
+  },
+  {
+    "file": "features/orders/widgets/order_card.dart",
+    "line": 294,
+    "text": "PICKUP",
+    "code": "Text( 'PICKUP', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w600, letterSpacing: 1.2, ), )"
+  },
+  {
+    "file": "features/orders/widgets/order_card.dart",
+    "line": 332,
+    "text": "View Order Snapshot",
+    "code": "Text( 'View Order Snapshot', style: typo.labelSmall.copyWith( color: colors.primary.withValues(alpha: 0.7), fontWeight: FontWeight.w500, decoration: TextDecoration.underline, ), )"
+  },
+  {
+    "file": "features/orders/widgets/order_card.dart",
+    "line": 360,
+    "text": "View Details",
+    "code": "Text( 'View Details', style: typo.labelLarge.copyWith(color: colors.onPrimary), )"
+  },
+  {
+    "file": "features/orders/widgets/transaction_snapshot_modal.dart",
+    "line": 75,
+    "text": "Transaction Snapshot",
+    "code": "Text( 'Transaction Snapshot', style: typo.labelSmall.copyWith( color: colors.primary, fontWeight: FontWeight.bold, letterSpacing: 1.0, ), )"
+  },
+  {
+    "file": "features/orders/widgets/evidence_photo_section.dart",
+    "line": 48,
+    "text": "No evidence photos uploaded.",
+    "code": "Text( 'No evidence photos uploaded.', style: typo.bodySmall.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/widgets/order_info_section.dart",
+    "line": 59,
+    "text": "Order Info",
+    "code": "Text( 'Order Info', style: typo.titleMedium.copyWith( fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/orders/widgets/list_order_card.dart",
+    "line": 111,
+    "text": "View Order Snapshot",
+    "code": "Text( 'View Order Snapshot', style: typo.labelSmall.copyWith( color: colors.primary.withValues(alpha: 0.7), fontWeight: FontWeight.w500, decoration: TextDecoration.underline, ), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 100,
+    "text": "RENTAL PERIOD CHANGES",
+    "code": "Text( 'RENTAL PERIOD CHANGES', maxLines: 1, overflow: TextOverflow.ellipsis, style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5, ), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 114,
+    "text": "Error: $err",
+    "code": "Text( 'Error: $err', style: typo.bodySmall.copyWith(color: colors.error), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 120,
+    "text": "No change requests yet.",
+    "code": "Text( 'No change requests yet.', style: typo.bodySmall.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 196,
+    "text": "Adjust Rental Period",
+    "code": "Text('Adjust Rental Period', style: typo.titleMedium)"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 209,
+    "text": "Rate:",
+    "code": "Text( 'Rate:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 223,
+    "text": "Quantity:",
+    "code": "Text( 'Quantity:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 275,
+    "text": "New end date:",
+    "code": "Text( 'New end date:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 289,
+    "text": "Days change:",
+    "code": "Text( 'Days change:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 303,
+    "text": "Price change:",
+    "code": "Text( 'Price change:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 317,
+    "text": "New rental total:",
+    "code": "Text( 'New rental total:', style: typo.bodyMedium.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 502,
+    "text": "Note: ${ext.rejectionNote}",
+    "code": "Text( 'Note: ${ext.rejectionNote}', style: typo.bodySmall.copyWith(color: colors.error), )"
+  },
+  {
+    "file": "features/orders/widgets/rental_extension_card.dart",
+    "line": 519,
+    "text": "Reject",
+    "code": "Text( 'Reject', style: TextStyle(color: colors.error), )"
+  },
+  {
+    "file": "features/orders/widgets/chat_history_section.dart",
+    "line": 44,
+    "text": "Chat History",
+    "code": "Text( 'Chat History', style: typo.titleMedium.copyWith( fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/orders/widgets/chat_history_section.dart",
+    "line": 71,
+    "text": "No messages yet.",
+    "code": "Text( 'No messages yet.', style: typo.bodySmall.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/listing/screens/create_listing_form_screen.dart",
+    "line": 158,
+    "text": "Listing Privileges Suspended",
+    "code": "Text( 'Listing Privileges Suspended', style: typo.headlineSmall.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), textAlign: TextAlign.center, )"
+  },
+  {
+    "file": "features/listing/screens/create_listing_form_screen.dart",
+    "line": 282,
+    "text": "Category",
+    "code": "Text( 'Category', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/create_listing_form_screen.dart",
+    "line": 302,
+    "text": "Condition",
+    "code": "Text( 'Condition', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/create_listing_form_screen.dart",
+    "line": 339,
+    "text": "Rental Pricing",
+    "code": "Text( 'Rental Pricing', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/create_listing_form_screen.dart",
+    "line": 419,
+    "text": "Security Deposit",
+    "code": "Text( 'Security Deposit', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/create_listing_form_screen.dart",
+    "line": 496,
+    "text": "Pickup Location",
+    "code": "Text( 'Pickup Location', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/create_listing_form_screen.dart",
+    "line": 549,
+    "text": "Campus: ${school.name}",
+    "code": "Text( 'Campus: ${school.name}', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/create_listing_form_screen.dart",
+    "line": 586,
+    "text": "Available Date",
+    "code": "Text( 'Available Date', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/post_hub_screen.dart",
+    "line": 34,
+    "text": "Post",
+    "code": "Text( 'Post', style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900), )"
+  },
+  {
+    "file": "features/listing/screens/post_hub_screen.dart",
+    "line": 101,
+    "text": "Sell / Rent",
+    "code": "Text( 'Sell / Rent', style: typo.headlineSmall.copyWith( color: colors.onPrimary, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/listing/screens/post_hub_screen.dart",
+    "line": 119,
+    "text": "Create Listing",
+    "code": "Text( 'Create Listing', style: typo.labelLarge.copyWith( color: colors.onPrimary, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "features/listing/screens/post_hub_screen.dart",
+    "line": 165,
+    "text": "Carpool",
+    "code": "Text( 'Carpool', style: typo.headlineSmall.copyWith( color: colors.onPrimary, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 210,
+    "text": "Error loading listing: $err",
+    "code": "Text( 'Error loading listing: $err', style: typo.bodyMedium.copyWith(color: colors.error), textAlign: TextAlign.center, )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 320,
+    "text": "Description",
+    "code": "Text( 'Description', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 373,
+    "text": "Listing Rejected",
+    "code": "Text( 'Listing Rejected', style: typo.titleMedium.copyWith( color: Theme.of( context, ).colorScheme.error, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 491,
+    "text": "Pickup Location",
+    "code": "Text( 'Pickup Location', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 555,
+    "text": "Campus: ${school.name}",
+    "code": "Text( 'Campus: ${school.name}', style: typo.labelLarge .copyWith( fontWeight: FontWeight .bold, color: colors .onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 583,
+    "text": "Available Date",
+    "code": "Text( 'Available Date', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 704,
+    "text": "Campus: ${school.name}",
+    "code": "Text( 'Campus: ${school.name}', style: typo .labelLarge .copyWith( fontWeight: FontWeight .bold, color: colors .onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 734,
+    "text": "Seller",
+    "code": "Text('Seller', style: typo.labelLarge)"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 818,
+    "text": "Listing Stats",
+    "code": "Text( 'Listing Stats', style: typo.labelLarge.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 917,
+    "text": "Delist This Item",
+    "code": "Text( 'Delist This Item', style: TextStyle( color: Colors.red, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 1220,
+    "text": "Item Unavailable",
+    "code": "Text( 'Item Unavailable', style: typo.titleMedium .copyWith( color: colors.onSurface, fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 1260,
+    "text": "Item Unavailable",
+    "code": "Text( 'Item Unavailable', style: typo.titleMedium .copyWith( fontWeight: FontWeight.bold, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 1298,
+    "text": "Expected Delivery/Pickup",
+    "code": "Text( 'Expected Delivery/Pickup', style: typo.labelLarge .copyWith( fontWeight: FontWeight .bold, color: colors .onSurface, ), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 2114,
+    "text": "Block",
+    "code": "Text( 'Block', style: TextStyle(color: Colors.red), )"
+  },
+  {
+    "file": "features/listing/screens/listing_detail_screen.dart",
+    "line": 2157,
+    "text": "Block User",
+    "code": "Text( 'Block User', style: TextStyle(color: Colors.red), )"
+  },
+  {
+    "file": "features/listing/screens/saved_listings_screen.dart",
+    "line": 78,
+    "text": "No saved items yet",
+    "code": "Text( 'No saved items yet', style: typo.bodyMedium.copyWith( color: colors.outlineVariant, ), )"
+  },
+  {
+    "file": "features/listing/widgets/photo_picker_section.dart",
+    "line": 39,
+    "text": "Add Photos",
+    "code": "Text( 'Add Photos', style: typo.titleMedium.copyWith( fontWeight: FontWeight.bold, color: colors.onSurface, ), )"
+  },
+  {
+    "file": "features/listing/widgets/photo_picker_section.dart",
+    "line": 118,
+    "text": "COVER",
+    "code": "Text( 'COVER', style: typo.labelSmall.copyWith(color: Colors.white), )"
+  },
+  {
+    "file": "features/listing/widgets/saved_listing_card.dart",
+    "line": 125,
+    "text": "Saved on $dateStr",
+    "code": "Text( 'Saved on $dateStr', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.6), ), )"
+  },
+  {
+    "file": "features/listing/widgets/rental_options_section.dart",
+    "line": 120,
+    "text": "Rental Period",
+    "code": "Text('Rental Period', style: typo.headlineSmall)"
+  },
+  {
+    "file": "features/listing/widgets/rental_options_section.dart",
+    "line": 168,
+    "text": "SECURITY DEPOSIT",
+    "code": "Text( 'SECURITY DEPOSIT', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.5), letterSpacing: 0.5, ), )"
+  },
+  {
+    "file": "features/listing/widgets/rental_options_section.dart",
+    "line": 319,
+    "text": "START DATE",
+    "code": "Text( 'START DATE', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.5), ), )"
+  },
+  {
+    "file": "features/listing/widgets/rental_options_section.dart",
+    "line": 364,
+    "text": "END DATE",
+    "code": "Text( 'END DATE', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.5), ), )"
+  },
+  {
+    "file": "features/listing/widgets/rental_options_section.dart",
+    "line": 431,
+    "text": "Rental Period: $periodText",
+    "code": "Text( 'Rental Period: $periodText', style: typo.bodyMedium.copyWith(color: colors.onSurface), )"
+  },
+  {
+    "file": "features/listing/widgets/rental_options_section.dart",
+    "line": 550,
+    "text": "START DATE",
+    "code": "Text( 'START DATE', style: typo.labelSmall.copyWith( color: colors.onSurface.withValues(alpha: 0.5), ), )"
+  },
+  {
+    "file": "features/notifications/screens/notification_center_screen.dart",
+    "line": 62,
+    "text": "Notifications",
+    "code": "Text( 'Notifications', style: typo.headlineSmall.copyWith( fontSize: 18, fontWeight: FontWeight.w800, ), )"
+  },
+  {
+    "file": "features/notifications/screens/notification_center_screen.dart",
+    "line": 74,
+    "text": "Mark Read",
+    "code": "Text( 'Mark Read', style: typo.labelLarge.copyWith(color: colors.primary), )"
+  },
+  {
+    "file": "features/notifications/screens/notification_center_screen.dart",
+    "line": 99,
+    "text": "Error loading notifications",
+    "code": "Text( 'Error loading notifications', style: typo.bodyMedium.copyWith( color: colors.error, ), )"
+  },
+  {
+    "file": "features/notifications/screens/notification_center_screen.dart",
+    "line": 163,
+    "text": "Mark Read",
+    "code": "Text( 'Mark Read', style: typo.labelLarge.copyWith(color: colors.primary), )"
+  },
+  {
+    "file": "features/notifications/screens/notification_center_screen.dart",
+    "line": 331,
+    "text": "No notifications yet",
+    "code": "Text( 'No notifications yet', style: typo.bodyLarge.copyWith(color: colors.outlineVariant), )"
+  },
+  {
+    "file": "features/buyer/screens/buyer_center_screen.dart",
+    "line": 491,
+    "text": "Awaiting\\nPickup",
+    "code": "Text( 'Awaiting\\nPickup', textAlign: TextAlign.center, style: typo.labelSmall.copyWith( color: colors .surfaceContainerLowest, fontWeight: FontWeight.w700, ), )"
+  },
+  {
+    "file": "shared/widgets/navigation_rail_bar.dart",
+    "line": 65,
+    "text": "Smivo",
+    "code": "Text( 'Smivo', style: typo.headlineLarge.copyWith( color: colors.primary, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic, letterSpacing: -0.5, ), )"
+  },
+  {
+    "file": "shared/widgets/report_dialog.dart",
+    "line": 77,
+    "text": "Please select a reason:",
+    "code": "Text( 'Please select a reason:', style: context.smivoTypo.bodyMedium.copyWith( color: context.smivoColors.onSurface, ), )"
+  },
+  {
+    "file": "shared/widgets/report_dialog.dart",
+    "line": 132,
+    "text": "Cancel",
+    "code": "Text( 'Cancel', style: context.smivoTypo.labelLarge.copyWith( color: context.smivoColors.onSurfaceVariant, ), )"
+  },
+  {
+    "file": "shared/widgets/report_dialog.dart",
+    "line": 156,
+    "text": "Submit",
+    "code": "Text( 'Submit', style: context.smivoTypo.labelLarge.copyWith( color: context.smivoColors.error, ), )"
+  },
+  {
+    "file": "shared/widgets/pickup_address_selector.dart",
+    "line": 301,
+    "text": "Specify Address",
+    "code": "Text( 'Specify Address', style: typo.bodyMedium.copyWith(color: colors.primary), )"
+  },
+  {
+    "file": "shared/widgets/pickup_address_selector.dart",
+    "line": 332,
+    "text": "Select pickup location",
+    "code": "Text( 'Select pickup location', style: typo.bodyMedium.copyWith(color: colors.onSurfaceVariant), )"
+  }
+]

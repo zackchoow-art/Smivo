@@ -50,7 +50,7 @@ class ActionSuccessDialog extends StatelessWidget {
               ),
               child: Text(
                 buttonText,
-                style: TextStyle(color: colors.onPrimary),
+                style: typo.labelLarge.copyWith(color: colors.onPrimary),
               ),
             ),
           ),

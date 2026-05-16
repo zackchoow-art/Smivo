@@ -12,6 +12,7 @@ import 'package:smivo/data/models/school.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
+import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -150,14 +151,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             onTapDown: (_) => _startDebugTimer(),
                             onTapUp: (_) => _cancelDebugTimer(),
                             onTapCancel: _cancelDebugTimer,
-                            child: Text(
-                              'Smivo',
-                              style: typo.displayLarge.copyWith(
-                                fontSize: 24,
-                                fontStyle: FontStyle.italic,
-                                color: colors.primary,
-                              ),
-                            ),
+                            child: const SmivoBrandText(size: SmivoBrandSize.small),
                           ),
                           const Spacer(),
                           const SizedBox(width: 48), // Balance for back button

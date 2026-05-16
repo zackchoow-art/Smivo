@@ -443,7 +443,7 @@ class _TripHeaderCard extends StatelessWidget {
             children: [
               SizedBox(
                 width: 24,
-                child: Icon(Icons.trip_origin, size: 16, color: Colors.green.shade600),
+                child: Icon(Icons.trip_origin, size: 16, color: theme.colorScheme.primary),
               ),
               Expanded(
                 child: Row(
@@ -465,7 +465,7 @@ class _TripHeaderCard extends StatelessWidget {
             children: [
               SizedBox(
                 width: 24,
-                child: Icon(Icons.location_on, size: 16, color: Colors.red.shade600),
+                child: Icon(Icons.location_on, size: 16, color: theme.colorScheme.error),
               ),
               Expanded(
                 child: Row(

@@ -24,12 +24,13 @@ class SmivoUserAvatar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
-    
+
     final platformShowDot = ref.watch(presenceConfigProvider).value ?? true;
     final effectiveShowDot = showOnlineDot ?? platformShowDot;
 
     // Check if the user was active in the last 10 minutes
-    final isOnline = user.lastActiveAt != null &&
+    final isOnline =
+        user.lastActiveAt != null &&
         DateTime.now().difference(user.lastActiveAt!).inMinutes <= 10;
 
     final avatarImage =
@@ -51,19 +52,19 @@ class SmivoUserAvatar extends ConsumerWidget {
     );
 
     return GestureDetector(
-      onTap: enableTap
-          ? () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => UserReviewsBottomSheet(
-                  user: user,
-                  initialRole: role,
-                ),
-              );
-            }
-          : null,
+      onTap:
+          enableTap
+              ? () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder:
+                      (context) =>
+                          UserReviewsBottomSheet(user: user, initialRole: role),
+                );
+              }
+              : null,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -76,12 +77,9 @@ class SmivoUserAvatar extends ConsumerWidget {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: Colors.green,
+                  color: colors.success,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: colors.background,
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: colors.background, width: 1.5),
                 ),
               ),
             ),

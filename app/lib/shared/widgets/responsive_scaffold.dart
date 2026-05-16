@@ -5,7 +5,6 @@ import 'package:smivo/core/providers/nav_scroll_provider.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/shared/widgets/bottom_nav_bar.dart';
 
-
 // NOTE: HomeScrollControllerScope is kept here because HomeScreen still wraps
 // itself with it for PrimaryScrollController / iOS status-bar tap-to-top
 // behaviour. It is no longer used by ResponsiveScaffold's own tap logic
@@ -53,7 +52,6 @@ class ResponsiveScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     // NOTE: Defined inside build() so it can close over `ref` without
     // converting ResponsiveScaffold to a StatefulWidget.
     void onTap(int index) {
@@ -101,5 +99,4 @@ class ResponsiveScaffold extends ConsumerWidget {
       },
     );
   }
-
 }

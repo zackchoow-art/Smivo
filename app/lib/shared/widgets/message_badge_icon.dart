@@ -11,6 +11,7 @@ class MessageBadgeIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
+    final typo = context.smivoTypo;
 
     return IconButton(
       onPressed: () {
@@ -40,7 +41,7 @@ class MessageBadgeIcon extends StatelessWidget {
                 child: Center(
                   child: Text(
                     unreadCount.toString(),
-                    style: TextStyle(
+                    style: typo.labelSmall.copyWith(
                       color: colors.onPrimary,
                       fontSize: 11,
                       fontWeight: FontWeight.w900,

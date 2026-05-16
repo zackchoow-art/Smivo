@@ -82,7 +82,7 @@ class MapRoutePreview extends StatelessWidget {
           // Departure → Destination visual
           _RouteStopRow(
             icon: Icons.trip_origin,
-            iconColor: Colors.green.shade600,
+            iconColor: theme.colorScheme.primary,
             label: 'From',
             address: departure.displayName,
             theme: theme,
@@ -100,7 +100,7 @@ class MapRoutePreview extends StatelessWidget {
 
           _RouteStopRow(
             icon: Icons.location_on,
-            iconColor: Colors.red.shade600,
+            iconColor: theme.colorScheme.error,
             label: 'To',
             address: destination.displayName,
             theme: theme,

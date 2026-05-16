@@ -18,6 +18,7 @@ import 'package:smivo/features/shared/providers/system_urls_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -265,14 +266,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             onTapDown: (_) => _startDebugTimer(),
                             onTapUp: (_) => _cancelDebugTimer(),
                             onTapCancel: _cancelDebugTimer,
-                            child: Text(
-                              'Smivo',
-                              style: typo.displayLarge.copyWith(
-                                fontSize: 24,
-                                fontStyle: FontStyle.italic,
-                                color: colors.primary,
-                              ),
-                            ),
+                            child: const SmivoBrandText(size: SmivoBrandSize.small),
                           ),
                           const Spacer(),
                           const SizedBox(width: 48), // Balance for back button

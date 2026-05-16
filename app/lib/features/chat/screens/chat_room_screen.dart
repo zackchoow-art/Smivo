@@ -142,7 +142,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         content: const Text(
           'Message failed: You have been blocked by the recipient',
         ),
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: context.smivoColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -159,7 +159,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         content: Text(
           'Message sent, but the recipient is currently $reason by the platform and may not receive it',
         ),
-        backgroundColor: Colors.orange.shade700,
+        backgroundColor: context.smivoColors.warning,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -172,7 +172,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         content: const Text(
           'You are currently muted by the platform and cannot send messages',
         ),
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: context.smivoColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -462,9 +462,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text(
+                              child: Text(
                                 'Block',
-                                style: TextStyle(color: Colors.red),
+                                style: TextStyle(color: ctx.smivoColors.error),
                               ),
                             ),
                           ],

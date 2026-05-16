@@ -147,7 +147,7 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
                       (e, _) => Center(
                         child: Text(
                           'Error: $e',
-                          style: TextStyle(color: colors.error),
+                          style: typo.bodyMedium.copyWith(color: colors.error),
                         ),
                       ),
                   data: (allFaqs) {
@@ -220,9 +220,9 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
                                 ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.help_outline,
-                                color: Color(0xFFEA580C),
+                                color: colors.warning,
                                 size: 20,
                               ),
                             ),

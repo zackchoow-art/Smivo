@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
@@ -63,6 +64,8 @@ class ModerationAwareImage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
     final flaggedUrlsAsync = ref.watch(flaggedImageUrlsProvider);
     final modeAsync = ref.watch(imageModerationModeProvider);
 
@@ -96,7 +99,7 @@ class ModerationAwareImage extends ConsumerWidget {
       // NOTE: Use a fallback height when the caller didn't specify one.
       // Without this, the placeholder has zero height inside a scrollable
       // (e.g. chat message ListView), making it invisible.
-      return _buildRemovedPlaceholder(violationLabel);
+      return _buildRemovedPlaceholder(violationLabel, colors, typo);
     }
 
     // ── Build the actual image widget ───────────────────────────────────────
@@ -109,8 +112,8 @@ class ModerationAwareImage extends ConsumerWidget {
           (context, error, stack) => Container(
             width: width,
             height: height,
-            color: Colors.grey[200],
-            child: const Icon(Icons.broken_image, color: Colors.grey),
+            color: colors.surfaceContainerHigh,
+            child: Icon(Icons.broken_image, color: colors.outlineVariant),
           ),
       loadingBuilder: (context, child, progress) {
         if (progress == null) return child;
@@ -118,7 +121,7 @@ class ModerationAwareImage extends ConsumerWidget {
             Container(
               width: width,
               height: height,
-              color: Colors.grey[100],
+              color: colors.surfaceContainer,
               child: const Center(
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
@@ -160,24 +163,24 @@ class ModerationAwareImage extends ConsumerWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
               child: Container(
-                color: Colors.black.withValues(alpha: 0.4),
+                color: colors.shadow.withValues(alpha: 0.4),
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.visibility_off,
-                          color: Colors.white,
+                          color: colors.surfaceContainerLowest,
                           size: 20,
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'This image has been restricted for: $violationLabel',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: typo.bodyMedium.copyWith(
+                            color: colors.surfaceContainerLowest,
                             fontSize: 11,
                             height: 1.4,
                           ),
@@ -194,17 +197,16 @@ class ModerationAwareImage extends ConsumerWidget {
     );
   }
 
-
   /// Placeholder shown in auto_reject mode — no image is loaded.
   /// [violationLabel] is displayed to explain why the image was removed.
-  Widget _buildRemovedPlaceholder(String violationLabel) {
+  Widget _buildRemovedPlaceholder(String violationLabel, SmivoColors colors, SmivoTypography typo) {
     // NOTE: Use fallback height to prevent zero-height in scrollable contexts.
     final effectiveHeight = height ?? 150.0;
     return Container(
       width: width,
       height: effectiveHeight,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: colors.surfaceContainerHigh,
         borderRadius: borderRadius,
       ),
       child: Center(
@@ -213,13 +215,13 @@ class ModerationAwareImage extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.block, color: Colors.grey, size: 28),
+              Icon(Icons.block, color: colors.outlineVariant, size: 28),
               const SizedBox(height: 8),
               Text(
                 'This image has been removed for: $violationLabel',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.grey,
+                style: typo.bodyMedium.copyWith(
+                  color: colors.outlineVariant,
                   fontSize: 12,
                   height: 1.4,
                 ),
@@ -231,4 +233,3 @@ class ModerationAwareImage extends ConsumerWidget {
     );
   }
 }
-

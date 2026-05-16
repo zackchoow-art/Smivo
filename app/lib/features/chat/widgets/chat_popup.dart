@@ -149,6 +149,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
+    final colors = context.smivoColors;
 
     // Pre-send eligibility check — mirrors ChatRoomScreen._handleSend logic.
     Map<String, bool>? eligibility;
@@ -161,7 +162,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     if (eligibility?['isBlockedByRecipient'] == true) {
       _showSnackBar(
         'Message failed: You have been blocked by the recipient',
-        color: Colors.red.shade700,
+        color: colors.error,
       );
       return;
     }
@@ -169,7 +170,7 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
     if (eligibility?['senderIsMuted'] == true) {
       _showSnackBar(
         'You are currently muted by the platform and cannot send messages',
-        color: Colors.red.shade700,
+        color: colors.error,
       );
       return;
     }
@@ -195,11 +196,11 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
         final reason = isFrozen ? 'frozen' : 'muted';
         _showSnackBar(
           'Message sent, but the recipient is currently $reason by the platform',
-          color: Colors.orange.shade700,
+          color: colors.warning,
         );
       }
     } catch (e) {
-      _showSnackBar('Send failed: ${e.toString()}', color: Colors.red.shade700);
+      _showSnackBar('Send failed: ${e.toString()}', color: colors.error);
     }
   }
 

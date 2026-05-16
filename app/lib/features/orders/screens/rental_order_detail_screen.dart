@@ -15,12 +15,15 @@ import 'package:smivo/features/orders/widgets/order_timeline.dart';
 import 'package:smivo/features/orders/widgets/rental_date_section.dart';
 import 'package:smivo/features/orders/widgets/rental_extension_card.dart';
 import 'package:smivo/features/orders/widgets/rental_reminder_settings.dart';
-import 'package:smivo/shared/widgets/collapsible_section.dart';
-import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/features/seller/providers/seller_center_provider.dart';
+import 'package:smivo/features/shared/providers/order_review_provider.dart';
 import 'package:smivo/features/shared/widgets/order_review_form.dart';
 import 'package:smivo/features/shared/widgets/submitted_review_card.dart';
-import 'package:smivo/features/shared/providers/order_review_provider.dart';
-import 'package:smivo/features/seller/providers/seller_center_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/collapsible_section.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 class RentalOrderDetailScreen extends ConsumerWidget {
   const RentalOrderDetailScreen({
@@ -900,67 +903,18 @@ class RentalOrderDetailScreen extends ConsumerWidget {
     );
   }
 
+  // NOTE: Replaced hand-rolled styled AlertDialog with ActionErrorDialog
   void _showErrorDialog(BuildContext context, String title, String message) {
-    final colors = context.smivoColors;
-    final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
-
     showDialog(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            backgroundColor: colors.surface,
-            surfaceTintColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radius.lg),
-            ),
-            contentPadding: const EdgeInsets.all(24),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colors.error.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.close, color: colors.error, size: 48),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  style: typo.headlineSmall.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  message,
-                  style: typo.bodyMedium.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.7),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: colors.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: Text('OK', style: typo.titleMedium),
-                  ),
-                ),
-              ],
-            ),
-          ),
+      builder: (ctx) => ActionErrorDialog(
+        title: title,
+        message: message,
+      ),
     );
   }
 
+  // NOTE: Replaced raw AlertDialog with ThemedConfirmDialog
   Future<bool?> _showConfirmDialog(
     BuildContext context,
     String title,
@@ -968,21 +922,13 @@ class RentalOrderDetailScreen extends ConsumerWidget {
   ) {
     return showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('No'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text('Yes'),
-              ),
-            ],
-          ),
+      builder: (ctx) => ThemedConfirmDialog(
+        title: title,
+        message: message,
+        confirmText: 'Yes',
+        cancelText: 'No',
+        isDestructive: true,
+      ),
     );
   }
 
@@ -1058,20 +1004,22 @@ class _RelistButtonState extends ConsumerState<_RelistButton> {
                     });
                   }
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Item relisted — it\'s live on the marketplace again.',
-                        ),
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => const ActionSuccessDialog(
+                        title: 'Item Relisted',
+                        message: 'Your item is live on the marketplace again.',
                       ),
                     );
                   }
                 } catch (_) {
                   if (mounted) setState(() => _isRelisting = false);
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Failed to relist. Please try again.'),
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => const ActionErrorDialog(
+                        title: 'Relist Failed',
+                        message: 'Failed to relist. Please try again.',
                       ),
                     );
                   }

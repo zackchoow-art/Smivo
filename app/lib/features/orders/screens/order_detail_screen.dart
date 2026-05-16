@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
-import 'package:smivo/features/orders/providers/orders_provider.dart';
-import 'package:smivo/features/orders/screens/sale_order_detail_screen.dart';
-import 'package:smivo/features/orders/screens/rental_order_detail_screen.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
+import 'package:smivo/features/orders/providers/orders_provider.dart';
+import 'package:smivo/features/orders/screens/rental_order_detail_screen.dart';
+import 'package:smivo/features/orders/screens/sale_order_detail_screen.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 
 class OrderDetailScreen extends ConsumerWidget {
   const OrderDetailScreen({super.key, required this.orderId});
@@ -15,15 +16,17 @@ class OrderDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final orderAsync = ref.watch(orderDetailProvider(orderId));
     final currentUserId = ref.watch(authStateProvider).value?.id;
+    // ignore: unused_local_variable
     final colors = context.smivoColors;
 
-    // Listen for global action errors
+    // Listen for global action errors and show a themed dialog instead of SnackBar
     ref.listen(orderActionsProvider, (previous, next) {
       if (next.hasError && !next.isLoading) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Action failed: ${next.error}'),
-            backgroundColor: colors.error,
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Action Failed',
+            message: next.error.toString(),
           ),
         );
       }

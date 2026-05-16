@@ -158,9 +158,7 @@ class _FloatingQuickNavState extends ConsumerState<FloatingQuickNav>
               child: GestureDetector(
                 onTap: _close,
                 behavior: HitTestBehavior.opaque,
-                child: ColoredBox(
-                  color: Colors.black.withValues(alpha: 0.25),
-                ),
+                child: ColoredBox(color: colors.shadow.withValues(alpha: 0.25)),
               ),
             ),
 
@@ -180,11 +178,7 @@ class _FloatingQuickNavState extends ConsumerState<FloatingQuickNav>
                 });
               },
               onPanEnd: (_) => _snapToEdge(screen),
-              child: _MainFab(
-                isOpen: _isOpen,
-                colors: colors,
-                size: _fabSize,
-              ),
+              child: _MainFab(isOpen: _isOpen, colors: colors, size: _fabSize),
             ),
           ),
         ],
@@ -310,7 +304,7 @@ class _MiniFab extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
+                color: colors.shadow.withValues(alpha: 0.15),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),

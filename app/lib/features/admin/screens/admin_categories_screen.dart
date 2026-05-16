@@ -122,7 +122,10 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error:
           (e, _) => Center(
-            child: Text('Error: $e', style: TextStyle(color: colors.error)),
+            child: Text(
+              'Error: $e',
+              style: typo.bodyMedium.copyWith(color: colors.error),
+            ),
           ),
       data: (categories) {
         if (categories.isEmpty) {

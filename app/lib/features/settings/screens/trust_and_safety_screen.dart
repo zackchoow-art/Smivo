@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/settings/widgets/flippable_report_card.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class TrustAndSafetyScreen extends ConsumerWidget {
@@ -168,13 +169,13 @@ class TrustAndSafetyScreen extends ConsumerWidget {
                                                         )
                                                         .unblockUser(user.id);
                                                     if (context.mounted) {
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            '${user.displayName ?? 'User'} unblocked.',
-                                                          ),
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (ctx) =>
+                                                            ActionSuccessDialog(
+                                                          title: 'Unblocked',
+                                                          message:
+                                                              '${user.displayName ?? 'User'} has been unblocked.',
                                                         ),
                                                       );
                                                     }

@@ -10,12 +10,15 @@ import 'package:smivo/features/orders/widgets/order_financial_summary.dart';
 import 'package:smivo/features/orders/widgets/order_header_card.dart';
 import 'package:smivo/features/orders/widgets/order_info_section.dart';
 import 'package:smivo/features/orders/widgets/order_timeline.dart';
-import 'package:smivo/shared/widgets/collapsible_section.dart';
-import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/features/seller/providers/seller_center_provider.dart';
+import 'package:smivo/features/shared/providers/order_review_provider.dart';
 import 'package:smivo/features/shared/widgets/order_review_form.dart';
 import 'package:smivo/features/shared/widgets/submitted_review_card.dart';
-import 'package:smivo/features/shared/providers/order_review_provider.dart';
-import 'package:smivo/features/seller/providers/seller_center_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/collapsible_section.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 class SaleOrderDetailScreen extends ConsumerWidget {
   const SaleOrderDetailScreen({
@@ -528,6 +531,7 @@ class SaleOrderDetailScreen extends ConsumerWidget {
     );
   }
 
+  // NOTE: Replaced raw AlertDialog with ThemedConfirmDialog for consistent styling
   Future<bool?> _showConfirmDialog(
     BuildContext context,
     String title,
@@ -535,21 +539,13 @@ class SaleOrderDetailScreen extends ConsumerWidget {
   ) {
     return showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('No'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text('Yes'),
-              ),
-            ],
-          ),
+      builder: (ctx) => ThemedConfirmDialog(
+        title: title,
+        message: message,
+        confirmText: 'Yes',
+        cancelText: 'No',
+        isDestructive: true,
+      ),
     );
   }
 
@@ -620,20 +616,22 @@ class _RelistButtonState extends ConsumerState<_RelistButton> {
                     });
                   }
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Item relisted — it\'s live on the marketplace again.',
-                        ),
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => const ActionSuccessDialog(
+                        title: 'Item Relisted',
+                        message: 'Your item is live on the marketplace again.',
                       ),
                     );
                   }
                 } catch (_) {
                   if (mounted) setState(() => _isRelisting = false);
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Failed to relist. Please try again.'),
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => const ActionErrorDialog(
+                        title: 'Relist Failed',
+                        message: 'Failed to relist. Please try again.',
                       ),
                     );
                   }

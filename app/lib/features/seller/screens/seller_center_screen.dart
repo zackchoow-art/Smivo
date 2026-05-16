@@ -1221,11 +1221,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                                                                 ' · ',
                                                                               )
                                                                               .first,
-                                                                      style: TextStyle(
-                                                                        color:
-                                                                            colors.primary,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
+                                                                      style: typo.bodyMedium.copyWith(
+                                                                        color: colors.primary,
+                                                                        fontWeight: FontWeight.bold,
                                                                       ),
                                                                     ),
                                                                     TextSpan(
@@ -1398,7 +1396,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       children: [
                         TextSpan(
                           text: '\$${listing.price.toStringAsFixed(0)}',
-                          style: TextStyle(
+                          style: typo.bodyMedium.copyWith(
                             color: colors.primary,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1516,7 +1514,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       children: [
                         TextSpan(
                           text: '\$${order.totalPrice.toStringAsFixed(0)}',
-                          style: TextStyle(
+                          style: typo.bodyMedium.copyWith(
                             color: colors.primary,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1651,7 +1649,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       children: [
                         TextSpan(
                           text: formatOrderPrice(order),
-                          style: TextStyle(
+                          style: typo.bodySmall.copyWith(
                             color: colors.primary,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1793,7 +1791,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: Text(
                   'Close',
-                  style: TextStyle(
+                  style: typo.labelLarge.copyWith(
                     color: colors.primary,
                     fontWeight: FontWeight.bold,
                   ),
@@ -2015,11 +2013,11 @@ class _FlaggedListingTile extends StatelessWidget {
                                             '',
                                           ),
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
+                                      style: typo.labelSmall.copyWith(
                                         color: Colors.white,
-                                        fontSize: 8,
                                         fontWeight: FontWeight.bold,
                                         height: 1.1,
+                                        fontSize: 8,
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -2097,10 +2095,10 @@ class _FlaggedListingTile extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         statusLabel,
-                        style: TextStyle(
-                          fontSize: 11,
+                        style: typo.labelSmall.copyWith(
                           fontWeight: FontWeight.w600,
                           color: statusColor,
+                          fontSize: 11,
                         ),
                       ),
                     ],

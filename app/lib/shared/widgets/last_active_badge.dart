@@ -38,7 +38,7 @@ class LastActiveBadge extends ConsumerWidget {
           margin: const EdgeInsets.only(bottom: 2.5),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isOnline ? Colors.green : Colors.grey,
+            color: isOnline ? context.smivoColors.success : context.smivoColors.outline,
           ),
         ),
         const SizedBox(width: 4),
@@ -47,7 +47,7 @@ class LastActiveBadge extends ConsumerWidget {
           style: context.smivoTypo.bodySmall.copyWith(
             fontSize: 9,
             color:
-                isOnline ? Colors.green : context.smivoColors.onSurfaceVariant,
+                isOnline ? context.smivoColors.success : context.smivoColors.onSurfaceVariant,
           ),
         ),
       ],

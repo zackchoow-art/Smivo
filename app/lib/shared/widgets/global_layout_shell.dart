@@ -18,7 +18,7 @@ class GlobalLayoutShell extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        
+
         // Mobile uses the standard layout (handled by ResponsiveScaffold inside StatefulShellRoute)
         // For top-level routes outside StatefulShellRoute, Mobile just shows them full screen.
         if (Breakpoints.isMobile(width)) {
@@ -27,20 +27,20 @@ class GlobalLayoutShell extends StatelessWidget {
 
         // --- Tablet / Desktop Global Sidebar ---
         final isDesktop = Breakpoints.isDesktop(width);
-        
+
         // Determine the active tab based on the current URI path
         final location = state.uri.path;
         int currentIndex = 0; // Default to Home
-        
+
         if (location.startsWith('/chat')) {
           currentIndex = 1;
         } else if (location.startsWith('/create-listing')) {
           currentIndex = 2;
         } else if (location.startsWith('/carpool')) {
           currentIndex = 3;
-        } else if (location.startsWith('/orders') || 
-                   location.startsWith('/buyer') || 
-                   location.startsWith('/seller')) {
+        } else if (location.startsWith('/orders') ||
+            location.startsWith('/buyer') ||
+            location.startsWith('/seller')) {
           currentIndex = 4;
         }
         // Notification, Profile, Settings default to 0 (Home active) or we could add another logic.
@@ -77,9 +77,7 @@ class GlobalLayoutShell extends StatelessWidget {
                 width: 1,
                 color: Theme.of(context).dividerColor.withValues(alpha: 0.12),
               ),
-              Expanded(
-                child: child,
-              ),
+              Expanded(child: child),
             ],
           ),
         );

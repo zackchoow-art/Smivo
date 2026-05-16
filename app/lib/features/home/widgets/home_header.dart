@@ -5,6 +5,9 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
+import 'package:smivo/core/providers/theme_provider.dart';
+import 'package:smivo/core/theme/theme_variant.dart';
+import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key});
@@ -35,16 +38,15 @@ class HomeHeader extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (MediaQuery.of(context).size.width < 600)
-                      Text(
-                        'Smivo',
-                        style: typo.headlineMedium.copyWith(
-                          color: colors.primary,
-                        ),
-                      ),
+                      const SmivoBrandText(),
                     Text(
                       schoolName,
                       style: typo.headlineLarge.copyWith(
                         color: colors.secondaryGradientStart,
+                        fontWeight:
+                            ref.watch(themeProvider) == SmivoThemeVariant.flat
+                                ? FontWeight.w700
+                                : null,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -175,6 +177,7 @@ class _NotificationBellIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.smivoColors;
+    final typo = context.smivoTypo;
 
     return IconButton(
       onPressed: () => context.pushNamed(AppRoutes.notificationCenter),
@@ -206,7 +209,7 @@ class _NotificationBellIcon extends StatelessWidget {
                 child: Center(
                   child: Text(
                     unreadCount > 9 ? '9+' : unreadCount.toString(),
-                    style: TextStyle(
+                    style: typo.labelSmall.copyWith(
                       color: colors.onPrimary,
                       fontSize: 10,
                       fontWeight: FontWeight.w900,

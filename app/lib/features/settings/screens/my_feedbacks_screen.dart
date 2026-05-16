@@ -7,6 +7,7 @@ import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/user_feedback.dart';
 import 'package:smivo/features/settings/providers/feedback_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class MyFeedbacksScreen extends ConsumerWidget {
@@ -83,11 +84,11 @@ class MyFeedbacksScreen extends ConsumerWidget {
                 isPermanent
                     ? 'Feedback privileges permanently suspended.'
                     : 'Feedback privileges suspended until $dateStr.';
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(msg),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 5),
+            showDialog(
+              context: context,
+              builder: (ctx) => ActionErrorDialog(
+                title: 'Cannot Submit Feedback',
+                message: msg,
               ),
             );
           } else {

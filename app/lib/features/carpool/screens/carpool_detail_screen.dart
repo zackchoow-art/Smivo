@@ -187,10 +187,10 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                     style: theme.textTheme.titleSmall?.copyWith(
                                       color: theme.colorScheme.onSurfaceVariant)),
                                   const SizedBox(height: 8),
-                                  _InfoRow(icon: Icons.trip_origin, iconColor: Colors.green.shade600, label: 'From',
+                                  _InfoRow(icon: Icons.trip_origin, iconColor: theme.colorScheme.primary, label: 'From',
                                     value: trip.departureAddress, labelWidth: 45, oldValue: getOld('departure_address', trip.departureAddress)),
                                   const SizedBox(height: 4),
-                                  _InfoRow(icon: Icons.location_on, iconColor: Colors.red.shade600, label: 'To',
+                                  _InfoRow(icon: Icons.location_on, iconColor: theme.colorScheme.error, label: 'To',
                                     value: trip.destinationAddress, labelWidth: 45, oldValue: getOld('destination_address', trip.destinationAddress)),
                                 ],
                               ),
@@ -526,7 +526,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                           ),
                                         ],
                                       ),
-                                      backgroundColor: Colors.green.shade600,
+                                      backgroundColor: theme.colorScheme.primary,
                                       behavior: SnackBarBehavior.floating,
                                       duration: const Duration(seconds: 3),
                                       shape: RoundedRectangleBorder(
@@ -548,14 +548,14 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             children: [
                               Icon(
                                 Icons.check_circle_rounded,
-                                color: Colors.green.shade600,
+                                color: theme.colorScheme.primary,
                                 size: 18,
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 "You've already rated this trip",
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: Colors.green.shade600,
+                                  color: theme.colorScheme.primary,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -634,7 +634,7 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                           ),
                                         ],
                                       ),
-                                      backgroundColor: Colors.green.shade600,
+                                      backgroundColor: theme.colorScheme.primary,
                                       behavior: SnackBarBehavior.floating,
                                       duration: const Duration(seconds: 3),
                                       shape: RoundedRectangleBorder(
@@ -656,14 +656,14 @@ class CarpoolDetailScreen extends ConsumerWidget {
                             children: [
                               Icon(
                                 Icons.check_circle_rounded,
-                                color: Colors.green.shade600,
+                                color: theme.colorScheme.primary,
                                 size: 18,
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 "You've already rated this trip",
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: Colors.green.shade600,
+                                  color: theme.colorScheme.primary,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1003,7 +1003,7 @@ class _InfoRow extends StatelessWidget {
                 value,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: oldValue != null ? Colors.green.shade600 : null,
+                  color: oldValue != null ? theme.colorScheme.primary : null,
                 ),
               ),
             ],

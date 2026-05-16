@@ -51,7 +51,7 @@ class CarpoolTripCard extends StatelessWidget {
           statusColor = theme.colorScheme.error;
         } else if (member.status == 'pending') {
           displayStatus = 'Pending Approval';
-          statusColor = Colors.orange;
+          statusColor = theme.colorScheme.tertiary;
         }
       } catch (_) {}
     }

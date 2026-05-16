@@ -121,7 +121,10 @@ class _AdminPickupLocationsScreenState
       loading: () => const Center(child: CircularProgressIndicator()),
       error:
           (e, _) => Center(
-            child: Text('Error: $e', style: TextStyle(color: colors.error)),
+            child: Text(
+              'Error: $e',
+              style: typo.bodyMedium.copyWith(color: colors.error),
+            ),
           ),
       data: (locations) {
         if (locations.isEmpty) {
@@ -175,9 +178,9 @@ class _AdminPickupLocationsScreenState
                     color: const Color(0xFF059669).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.location_on,
-                    color: Color(0xFF059669),
+                    color: colors.success,
                     size: 20,
                   ),
                 ),

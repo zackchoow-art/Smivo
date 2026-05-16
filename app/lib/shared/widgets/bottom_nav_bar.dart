@@ -72,11 +72,7 @@ class BottomNavBar extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.add,
-                    color: colors.onPrimary,
-                    size: 28,
-                  ),
+                  child: Icon(Icons.add, color: colors.onPrimary, size: 28),
                 ),
               ),
               _NavBarItem(
@@ -145,7 +141,10 @@ class _NavBarItem extends StatelessWidget {
             Badge(
               label: Text(
                 unreadCount > 99 ? '99+' : unreadCount.toString(),
-                style: TextStyle(fontSize: 10, color: colors.onPrimary),
+                style: typo.labelSmall.copyWith(
+                  fontSize: 10,
+                  color: colors.onPrimary,
+                ),
               ),
               isLabelVisible: unreadCount > 0,
               backgroundColor: colors.error,

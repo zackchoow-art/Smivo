@@ -24,6 +24,9 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
     required this.labelSmall,
     required this.labelUppercase,
     required this.priceStyle,
+    required this.brandLarge,
+    required this.brandMedium,
+    required this.brandSmall,
   });
 
   final TextStyle displayLarge;
@@ -36,6 +39,15 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
   final TextStyle titleMedium;
   final TextStyle labelLarge;
   final TextStyle labelSmall;
+
+  /// Brand title style (large) - used on Login.
+  final TextStyle brandLarge;
+
+  /// Brand title style (medium) - used on Admin/NavRail.
+  final TextStyle brandMedium;
+
+  /// Brand title style (small) - used on HomeHeader/Register.
+  final TextStyle brandSmall;
 
   /// All-caps utility label (categories, statuses).
   final TextStyle labelUppercase;
@@ -99,6 +111,27 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
         fontWeight: FontWeight.w800,
         color: const Color(0xFF00FFAA),
       ),
+      brandLarge: headline(
+        fontSize: 48,
+        fontWeight: FontWeight.w800,
+        color: c,
+        fontStyle: FontStyle.italic,
+        letterSpacing: -1.0,
+      ),
+      brandMedium: headline(
+        fontSize: 32,
+        fontWeight: FontWeight.w800,
+        color: c,
+        fontStyle: FontStyle.italic,
+        letterSpacing: -0.5,
+      ),
+      brandSmall: headline(
+        fontSize: 24,
+        fontWeight: FontWeight.w800,
+        color: c,
+        fontStyle: FontStyle.italic,
+        letterSpacing: -0.25,
+      ),
     );
   }
 
@@ -155,6 +188,27 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
         color: c,
         letterSpacing: -0.4,
       ),
+      brandLarge: font(
+        fontSize: 48,
+        fontWeight: FontWeight.w800,
+        color: c,
+        fontStyle: FontStyle.italic,
+        letterSpacing: -1.0,
+      ),
+      brandMedium: font(
+        fontSize: 32,
+        fontWeight: FontWeight.w800,
+        color: c,
+        fontStyle: FontStyle.italic,
+        letterSpacing: -0.5,
+      ),
+      brandSmall: font(
+        fontSize: 24,
+        fontWeight: FontWeight.w800,
+        color: c,
+        fontStyle: FontStyle.italic,
+        letterSpacing: -0.25,
+      ),
     );
   }
 
@@ -182,6 +236,9 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
     TextStyle? labelSmall,
     TextStyle? labelUppercase,
     TextStyle? priceStyle,
+    TextStyle? brandLarge,
+    TextStyle? brandMedium,
+    TextStyle? brandSmall,
   }) {
     return SmivoTypography(
       displayLarge: displayLarge ?? this.displayLarge,
@@ -196,6 +253,9 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
       labelSmall: labelSmall ?? this.labelSmall,
       labelUppercase: labelUppercase ?? this.labelUppercase,
       priceStyle: priceStyle ?? this.priceStyle,
+      brandLarge: brandLarge ?? this.brandLarge,
+      brandMedium: brandMedium ?? this.brandMedium,
+      brandSmall: brandSmall ?? this.brandSmall,
     );
   }
 
@@ -215,6 +275,9 @@ class SmivoTypography extends ThemeExtension<SmivoTypography> {
       labelSmall: TextStyle.lerp(labelSmall, other.labelSmall, t)!,
       labelUppercase: TextStyle.lerp(labelUppercase, other.labelUppercase, t)!,
       priceStyle: TextStyle.lerp(priceStyle, other.priceStyle, t)!,
+      brandLarge: TextStyle.lerp(brandLarge, other.brandLarge, t)!,
+      brandMedium: TextStyle.lerp(brandMedium, other.brandMedium, t)!,
+      brandSmall: TextStyle.lerp(brandSmall, other.brandSmall, t)!,
     );
   }
 }

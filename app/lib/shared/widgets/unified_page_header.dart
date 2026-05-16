@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 
-/// A unified page header used on iPad/Desktop layouts 
+/// A unified page header used on iPad/Desktop layouts
 /// to replace the standard AppBar for a cleaner, consistent look.
 class UnifiedPageHeader extends StatelessWidget {
-  const UnifiedPageHeader({
-    super.key,
-    required this.title,
-  });
+  const UnifiedPageHeader({super.key, required this.title});
 
   final String title;
 
@@ -24,9 +21,7 @@ class UnifiedPageHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Text(
         title,
-        style: typo.headlineLarge.copyWith(
-          fontWeight: FontWeight.w900,
-        ),
+        style: typo.headlineLarge.copyWith(fontWeight: FontWeight.w900),
       ),
     );
   }

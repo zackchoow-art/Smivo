@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/shared/providers/order_review_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
 
 class OrderReviewSection extends ConsumerStatefulWidget {
@@ -46,8 +47,13 @@ class _OrderReviewSectionState extends ConsumerState<OrderReviewSection> {
 
     ref.listen(orderReviewActionsProvider, (prev, next) {
       if (next.hasError && !next.isLoading) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit review: ${next.error}')),
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Review Failed',
+                message: 'Failed to submit review. Please try again.',
+              ),
         );
       } else if (!next.hasError && !next.isLoading && next.hasValue) {
         showDialog(
@@ -90,7 +96,7 @@ class _OrderReviewSectionState extends ConsumerState<OrderReviewSection> {
                   index < _rating
                       ? Icons.star_rounded
                       : Icons.star_outline_rounded,
-                  color: Colors.amber,
+                  color: colors.warning,
                   size: 40,
                 ),
                 onPressed: () => setState(() => _rating = index + 1),
@@ -182,12 +188,12 @@ class _OrderReviewSectionState extends ConsumerState<OrderReviewSection> {
             ),
             child:
                 isSubmitting
-                    ? const SizedBox(
+                    ? SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: colors.onPrimary,
                       ),
                     )
                     : const Text('Submit Review'),

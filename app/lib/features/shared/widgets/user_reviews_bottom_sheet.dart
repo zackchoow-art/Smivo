@@ -125,7 +125,7 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
       children: [
         Row(
           children: [
-            Icon(Icons.star_rounded, color: Colors.amber, size: 28),
+            Icon(Icons.star_rounded, color: colors.warning, size: 28),
             const SizedBox(width: 4),
             Text(
               count > 0 ? rating.toStringAsFixed(1) : 'New',
@@ -264,7 +264,7 @@ class _UserReviewsBottomSheetState extends ConsumerState<UserReviewsBottomSheet>
                     index < review.rating
                         ? Icons.star_rounded
                         : Icons.star_outline_rounded,
-                    color: Colors.amber,
+                    color: colors.warning,
                     size: 16,
                   );
                 }),

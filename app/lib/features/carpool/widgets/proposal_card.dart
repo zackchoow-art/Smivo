@@ -50,13 +50,13 @@ class ProposalCard extends ConsumerWidget {
       case 'pending':
         return (theme.colorScheme.primary, 'Voting');
       case 'approved':
-        return (Colors.green, 'Approved');
+        return (theme.colorScheme.primary, 'Approved');
       case 'rejected':
-        return (Colors.red, 'Rejected');
+        return (theme.colorScheme.error, 'Rejected');
       case 'expired':
-        return (Colors.grey, 'Expired');
+        return (theme.colorScheme.outline, 'Expired');
       default:
-        return (Colors.grey, proposal.status);
+        return (theme.colorScheme.outline, proposal.status);
     }
   }
 

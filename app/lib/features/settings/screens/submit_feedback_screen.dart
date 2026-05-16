@@ -8,6 +8,7 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/settings/providers/feedback_provider.dart';
 import 'package:smivo/features/shared/providers/system_dictionary_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
@@ -101,9 +102,13 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to submit: $e')));
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionErrorDialog(
+          title: 'Submission Failed',
+          message: 'Failed to submit feedback. Please try again.',
+        ),
+      );
     }
   }
 

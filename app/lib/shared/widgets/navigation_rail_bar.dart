@@ -7,6 +7,7 @@ import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
+import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 /// Vertical navigation rail for tablet-sized screens (600–1024px).
 ///
@@ -33,7 +34,7 @@ class NavigationRailBar extends ConsumerWidget {
     final totalUnread = totalUnreadAsync.value ?? 0;
     final unreadOrderUpdatesAsync = ref.watch(unreadOrderUpdatesCountProvider);
     final unreadOrderUpdates = unreadOrderUpdatesAsync.value ?? 0;
-    
+
     final profileAsync = ref.watch(profileProvider);
     final profile = profileAsync.value;
     final unreadSystemAsync = ref.watch(totalUnreadNotificationsProvider);
@@ -51,7 +52,10 @@ class NavigationRailBar extends ConsumerWidget {
       backgroundColor: colors.surfaceContainerLowest,
       indicatorColor: colors.navActiveBackground,
       selectedIconTheme: IconThemeData(color: colors.navActiveIcon, size: 48),
-      unselectedIconTheme: IconThemeData(color: colors.onSurfaceVariant, size: 48),
+      unselectedIconTheme: IconThemeData(
+        color: colors.onSurfaceVariant,
+        size: 48,
+      ),
       labelType: NavigationRailLabelType.all,
       selectedLabelTextStyle: typo.labelLarge.copyWith(
         color: colors.primary,
@@ -62,15 +66,7 @@ class NavigationRailBar extends ConsumerWidget {
       ),
       leading: Padding(
         padding: const EdgeInsets.only(top: 16, bottom: 24),
-        child: Text(
-          'Smivo',
-          style: typo.headlineLarge.copyWith(
-            color: colors.primary,
-            fontWeight: FontWeight.bold,
-            fontStyle: FontStyle.italic,
-            letterSpacing: -0.5,
-          ),
-        ),
+        child: const SmivoBrandText(size: SmivoBrandSize.medium),
       ),
       trailing: Expanded(
         child: Align(
@@ -81,7 +77,8 @@ class NavigationRailBar extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  onPressed: () => context.pushNamed(AppRoutes.notificationCenter),
+                  onPressed:
+                      () => context.pushNamed(AppRoutes.notificationCenter),
                   icon: Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -106,10 +103,15 @@ class NavigationRailBar extends ConsumerWidget {
                                 width: 1.5,
                               ),
                             ),
-                            constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
                             child: Center(
                               child: Text(
-                                unreadSystemCount > 9 ? '9+' : unreadSystemCount.toString(),
+                                unreadSystemCount > 9
+                                    ? '9+'
+                                    : unreadSystemCount.toString(),
                                 style: TextStyle(
                                   color: colors.onPrimary,
                                   fontSize: 10,
@@ -166,7 +168,10 @@ class NavigationRailBar extends ConsumerWidget {
           icon: Badge(
             label: Text(
               totalUnread > 99 ? '99+' : totalUnread.toString(),
-              style: TextStyle(fontSize: 9, color: colors.onPrimary),
+              style: typo.labelSmall.copyWith(
+                fontSize: 9,
+                color: colors.onPrimary,
+              ),
             ),
             isLabelVisible: totalUnread > 0,
             backgroundColor: colors.error,
@@ -175,7 +180,10 @@ class NavigationRailBar extends ConsumerWidget {
           selectedIcon: Badge(
             label: Text(
               totalUnread > 99 ? '99+' : totalUnread.toString(),
-              style: TextStyle(fontSize: 9, color: colors.onPrimary),
+              style: typo.labelSmall.copyWith(
+                fontSize: 9,
+                color: colors.onPrimary,
+              ),
             ),
             isLabelVisible: totalUnread > 0,
             backgroundColor: colors.error,
@@ -200,7 +208,10 @@ class NavigationRailBar extends ConsumerWidget {
           icon: Badge(
             label: Text(
               unreadOrderUpdates > 99 ? '99+' : unreadOrderUpdates.toString(),
-              style: TextStyle(fontSize: 9, color: colors.onPrimary),
+              style: typo.labelSmall.copyWith(
+                fontSize: 9,
+                color: colors.onPrimary,
+              ),
             ),
             isLabelVisible: unreadOrderUpdates > 0,
             backgroundColor: colors.error,
@@ -209,7 +220,10 @@ class NavigationRailBar extends ConsumerWidget {
           selectedIcon: Badge(
             label: Text(
               unreadOrderUpdates > 99 ? '99+' : unreadOrderUpdates.toString(),
-              style: TextStyle(fontSize: 9, color: colors.onPrimary),
+              style: typo.labelSmall.copyWith(
+                fontSize: 9,
+                color: colors.onPrimary,
+              ),
             ),
             isLabelVisible: unreadOrderUpdates > 0,
             backgroundColor: colors.error,

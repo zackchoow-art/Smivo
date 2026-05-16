@@ -35,7 +35,12 @@ class SmivoUserIdentity extends ConsumerWidget {
     Widget content = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SmivoUserAvatar(user: user, radius: 24, role: role, showOnlineDot: showPresence),
+        SmivoUserAvatar(
+          user: user,
+          radius: 24,
+          role: role,
+          showOnlineDot: showPresence,
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -68,9 +73,7 @@ class SmivoUserIdentity extends ConsumerWidget {
               const SizedBox(height: 2),
               Text(
                 user.email,
-                style: typo.bodySmall.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
+                style: typo.bodySmall.copyWith(color: colors.onSurfaceVariant),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

@@ -9,6 +9,7 @@ import 'package:smivo/features/settings/widgets/avatar_customization_dialog.dart
 import 'package:smivo/features/settings/widgets/delete_account_bottom_sheet.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
 import 'package:smivo/features/settings/widgets/address_management_section.dart';
@@ -234,7 +235,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.orange.withAlpha(20),
+                                          color: colors.warningContainer,
                                           borderRadius: BorderRadius.circular(
                                             radius.sm,
                                           ),
@@ -243,7 +244,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                           '🎖️ Lv.${profile.contributionLevel} (${profile.contributionScore} pts)',
                                           style: typo.labelSmall.copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.orange,
+                                            color: colors.warning,
                                           ),
                                         ),
                                       ),
@@ -464,30 +465,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
+  // NOTE: message param used to display context-specific success text
   void _showSuccess(String message) {
     if (!mounted) return;
     showDialog(
       context: context,
-      builder:
-          (context) => ActionSuccessDialog(
-            title: 'Success',
-            message: 'Submitted successfully. Under platform review.',
-          ),
+      builder: (context) => ActionSuccessDialog(
+        title: 'Success',
+        message: message,
+      ),
     );
   }
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red,
+    showDialog(
+      context: context,
+      builder: (ctx) => ActionErrorDialog(
+        title: 'Error',
+        message: message,
       ),
     );
   }

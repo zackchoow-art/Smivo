@@ -103,7 +103,7 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
                       (e, _) => Center(
                         child: Text(
                           'Error: $e',
-                          style: TextStyle(color: colors.error),
+                          style: typo.bodyMedium.copyWith(color: colors.error),
                         ),
                       ),
                   data: (entries) {

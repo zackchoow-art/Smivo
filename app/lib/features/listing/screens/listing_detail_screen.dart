@@ -137,7 +137,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     showDialog(
       context: context,
       builder:
-          (ctx) => AlertDialog(
+          (ctx) {
+            final colors = context.smivoColors;
+            return AlertDialog(
             title: const Text('Delist Item'),
             content: Text(
               'Are you sure you want to delist "${listing.title}"? '
@@ -165,11 +167,12 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     context.goNamed(AppRoutes.home);
                   }
                 },
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                style: TextButton.styleFrom(foregroundColor: colors.error),
                 child: const Text('Delist'),
               ),
             ],
-          ),
+          );
+          },
     );
   }
 
@@ -625,7 +628,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                             : Icons
                                                                 .edit_location_alt_outlined,
                                                         size: 18,
-                                                        color: Colors.blue,
+                                                        color: colors.primary,
                                                       ),
                                                       const SizedBox(width: 6),
                                                       Text(
@@ -638,7 +641,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                   FontWeight
                                                                       .bold,
                                                               color:
-                                                                  Colors.blue,
+                                                                  colors.primary,
                                                             ),
                                                       ),
                                                     ],
@@ -910,14 +913,14 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                       ref,
                                                       listing,
                                                     ),
-                                                icon: const Icon(
+                                                icon: Icon(
                                                   Icons.remove_circle_outline,
-                                                  color: Colors.red,
+                                                  color: colors.error,
                                                 ),
-                                                label: const Text(
+                                                label: Text(
                                                   'Delist This Item',
-                                                  style: TextStyle(
-                                                    color: Colors.red,
+                                                  style: typo.labelLarge.copyWith(
+                                                    color: colors.error,
                                                   ),
                                                 ),
                                                 style: OutlinedButton.styleFrom(
@@ -925,8 +928,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                       const EdgeInsets.symmetric(
                                                         vertical: 12,
                                                       ),
-                                                  side: const BorderSide(
-                                                    color: Colors.red,
+                                                  side: BorderSide(
+                                                    color: colors.error,
                                                     width: 1.5,
                                                   ),
                                                   shape: RoundedRectangleBorder(
@@ -1117,8 +1120,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                           ),
                                                                   style: TextButton.styleFrom(
                                                                     foregroundColor:
-                                                                        Colors
-                                                                            .red,
+                                                                        colors.error,
                                                                   ),
                                                                   child: Text(
                                                                     order.status ==
@@ -2111,9 +2113,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                         TextButton(
                                           onPressed:
                                               () => Navigator.pop(ctx, true),
-                                          child: const Text(
+                                          child: Text(
                                             'Block',
-                                            style: TextStyle(color: Colors.red),
+                                            style: typo.labelLarge.copyWith(color: colors.error),
                                           ),
                                         ),
                                       ],
@@ -2152,11 +2154,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                   value: 'report',
                                   child: Text('Report Listing'),
                                 ),
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'block',
                                   child: Text(
                                     'Block User',
-                                    style: TextStyle(color: Colors.red),
+                                    style: typo.labelLarge.copyWith(color: colors.error),
                                   ),
                                 ),
                               ],

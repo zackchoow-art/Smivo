@@ -92,20 +92,21 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
               },
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: categories.entries.map((entry) {
-                  return RadioListTile<String>(
-                    title: Text(
-                      entry.value,
-                      style: context.smivoTypo.bodyMedium.copyWith(
-                        color: context.smivoColors.onSurface,
-                      ),
-                    ),
-                    value: entry.key,
-                    activeColor: context.smivoColors.primary,
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                  );
-                }).toList(),
+                children:
+                    categories.entries.map((entry) {
+                      return RadioListTile<String>(
+                        title: Text(
+                          entry.value,
+                          style: context.smivoTypo.bodyMedium.copyWith(
+                            color: context.smivoColors.onSurface,
+                          ),
+                        ),
+                        value: entry.key,
+                        activeColor: context.smivoColors.primary,
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                      );
+                    }).toList(),
               ),
             ),
             if (_selectedCategory == 'other') ...[

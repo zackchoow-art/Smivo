@@ -764,7 +764,7 @@ class _CreateListingFormScreenState
               ),
               filled: true,
               fillColor:
-                  enabled ? colors.surfaceContainerLow : Colors.grey.shade100,
+                  enabled ? colors.surfaceContainerLow : colors.surfaceContainerHighest,
               contentPadding: const EdgeInsets.all(12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(radius.input),
@@ -789,7 +789,7 @@ class _CreateListingFormScreenState
               ),
               disabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(radius.input),
-                borderSide: BorderSide(color: Colors.grey.shade200),
+                borderSide: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.5)),
               ),
             ),
           ),
@@ -799,6 +799,7 @@ class _CreateListingFormScreenState
   }
 
   Future<void> _handleSubmit(BuildContext context) async {
+    final colors = context.smivoColors;
     setState(() {
       _dailyHasError = false;
       _weeklyHasError = false;
@@ -861,7 +862,7 @@ class _CreateListingFormScreenState
     if (errors.isNotEmpty) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errors.first), backgroundColor: Colors.red),
+        SnackBar(content: Text(errors.first), backgroundColor: colors.error),
       );
       return;
     }
@@ -954,7 +955,7 @@ class _CreateListingFormScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to post: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: colors.error,
         ),
       );
     } finally {

@@ -6,7 +6,9 @@ import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/rental_extension.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/orders/providers/rental_extension_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 class RentalExtensionCard extends ConsumerStatefulWidget {
   const RentalExtensionCard({
@@ -392,16 +394,11 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(child: Text('Error: ${e.toString()}')),
-              ],
-            ),
-            backgroundColor: Colors.red,
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Submission Failed',
+            message: e.toString(),
           ),
         );
       }
@@ -586,23 +583,13 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
   Future<void> _handleApprove(WidgetRef ref, RentalExtension ext) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Approve Change'),
-            content: const Text(
-              'This will update the order dates and total price. Continue?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Approve'),
-              ),
-            ],
-          ),
+      builder: (ctx) => const ThemedConfirmDialog(
+        title: 'Approve Change',
+        message:
+            'This will update the order dates and total price. Continue?',
+        confirmText: 'Approve',
+        cancelText: 'Cancel',
+      ),
     );
 
     if (confirmed == true) {
@@ -628,35 +615,22 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
     final noteController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Reject Change'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Optional: Add a reason for rejection'),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: noteController,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Item is reserved by another student',
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 2,
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Reject'),
-              ),
-            ],
+      // NOTE: ThemedConfirmDialog supports a 'child' widget for the TextField
+      builder: (ctx) => ThemedConfirmDialog(
+        title: 'Reject Change',
+        message: 'Optional: Add a reason for rejection.',
+        confirmText: 'Reject',
+        cancelText: 'Cancel',
+        isDestructive: true,
+        child: TextField(
+          controller: noteController,
+          decoration: const InputDecoration(
+            hintText: 'e.g. Item is reserved by another student',
+            border: OutlineInputBorder(),
           ),
+          maxLines: 2,
+        ),
+      ),
     );
 
     if (confirmed == true) {
@@ -670,16 +644,11 @@ class _RentalExtensionCardState extends ConsumerState<RentalExtensionCard> {
       // NOTE: Refresh order data after rejection
       ref.invalidate(orderDetailProvider(widget.order.id));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Extension rejected'),
-              ],
-            ),
-            backgroundColor: Colors.red,
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionErrorDialog(
+            title: 'Request Rejected',
+            message: 'The extension request has been rejected.',
           ),
         );
       }

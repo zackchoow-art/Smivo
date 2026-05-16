@@ -547,7 +547,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
               _SectionHeader(
                   title: 'Pending Requests',
                   count: pending.length,
-                  color: Colors.orange),
+                  color: theme.colorScheme.tertiary),
               ...pending.map((m) => _MemberTile(
                   member: m, trip: trip, status: 'pending')),
             ],
@@ -555,7 +555,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
               _SectionHeader(
                   title: 'Approved',
                   count: approved.length,
-                  color: Colors.green),
+                  color: theme.colorScheme.primary),
               ...approved.map((m) => _MemberTile(
                   member: m, trip: trip, status: 'approved')),
             ],
@@ -563,7 +563,7 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
               _SectionHeader(
                   title: 'Rejected / Left',
                   count: others.length,
-                  color: Colors.grey),
+                  color: theme.colorScheme.outline),
               ...others.map((m) => _MemberTile(
                   member: m, trip: trip, status: m.status)),
             ],
@@ -864,10 +864,10 @@ class _MemberTile extends ConsumerWidget {
           ),
           const SizedBox(width: 4),
           IconButton(
-            icon: Icon(Icons.check, color: Colors.green.shade600),
+            icon: Icon(Icons.check, color: theme.colorScheme.primary),
             tooltip: 'Approve',
             style: IconButton.styleFrom(
-              backgroundColor: Colors.green.shade50,
+              backgroundColor: theme.colorScheme.primaryContainer,
             ),
             onPressed: () => _handleApprove(context, ref),
           ),
@@ -889,11 +889,11 @@ class _MemberTile extends ConsumerWidget {
 
     final (label, chipColor) = switch (status) {
       'approved' => isPendingChanges 
-          ? ('Pending Changes', Colors.orange) 
-          : ('Accepted', Colors.green),
-      'rejected' => ('Rejected', Colors.red),
-      'left' => ('Left', Colors.grey),
-      _ => (status, Colors.grey),
+          ? ('Pending Changes', theme.colorScheme.tertiary) 
+          : ('Accepted', theme.colorScheme.primary),
+      'rejected' => ('Rejected', theme.colorScheme.error),
+      'left' => ('Left', theme.colorScheme.outline),
+      _ => (status, theme.colorScheme.outline),
     };
 
     return Row(

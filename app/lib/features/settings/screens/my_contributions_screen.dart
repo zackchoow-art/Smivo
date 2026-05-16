@@ -136,7 +136,7 @@ class MyContributionsScreen extends ConsumerWidget {
                             trailing: Text(
                               '${isPositive ? '+' : ''}${entry.points}',
                               style: typo.titleMedium.copyWith(
-                                color: isPositive ? Colors.green : Colors.red,
+                                color: isPositive ? colors.success : colors.error,
                               ),
                             ),
                           );

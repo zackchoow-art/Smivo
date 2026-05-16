@@ -19,6 +19,8 @@ import 'package:smivo/features/shared/providers/system_urls_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
 
+import 'package:smivo/shared/widgets/smivo_brand_text.dart';
+
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -237,14 +239,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           onTapDown: (_) => _startDebugTimer(),
                           onTapUp: (_) => _cancelDebugTimer(),
                           onTapCancel: _cancelDebugTimer,
-                          child: Text(
-                            'Smivo',
-                            style: typo.displayLarge.copyWith(
-                              fontStyle: FontStyle.italic,
-                              color: colors.primary,
-                              fontSize: 48,
-                            ),
-                          ),
+                          child: const SmivoBrandText(size: SmivoBrandSize.large),
                         ),
                       ),
                       const SizedBox(height: 12),

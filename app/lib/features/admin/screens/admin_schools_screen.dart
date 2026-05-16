@@ -67,9 +67,9 @@ class AdminSchoolsScreen extends ConsumerWidget {
                           color: const Color(0xFF2563EB).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.school,
-                          color: Color(0xFF2563EB),
+                          color: colors.primary,
                           size: 20,
                         ),
                       ),
@@ -154,7 +154,7 @@ class AdminSchoolsScreen extends ConsumerWidget {
                 (err, stack) => Center(
                   child: Text(
                     'Error loading schools: $err',
-                    style: TextStyle(color: colors.error),
+                    style: typo.bodyMedium.copyWith(color: colors.error),
                   ),
                 ),
           ),

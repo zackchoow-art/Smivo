@@ -16,11 +16,12 @@ import 'package:smivo/features/listing/providers/saved_listing_provider.dart';
 import 'package:smivo/features/seller/providers/seller_center_provider.dart';
 import 'package:smivo/features/home/providers/home_provider.dart';
 import 'package:smivo/features/settings/widgets/setting_card_container.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
+import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
-
-import 'package:smivo/shared/widgets/content_width_constraint.dart';
 
 class SystemSettingsScreen extends ConsumerWidget {
   const SystemSettingsScreen({super.key});
@@ -281,22 +282,22 @@ class SystemSettingsScreen extends ConsumerWidget {
 
                             if (context.mounted) {
                               Navigator.pop(context); // Close loading
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text(
-                                    'Local cache cleared successfully',
-                                  ),
-                                  backgroundColor: colors.primary,
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => const ActionSuccessDialog(
+                                  title: 'Cache Cleared',
+                                  message: 'Local cache cleared successfully.',
                                 ),
                               );
                             }
                           } catch (e) {
                             if (context.mounted) {
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to clear cache: $e'),
-                                  backgroundColor: colors.error,
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => ActionErrorDialog(
+                                  title: 'Failed to Clear Cache',
+                                  message: e.toString(),
                                 ),
                               );
                             }

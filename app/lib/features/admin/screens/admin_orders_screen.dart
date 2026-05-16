@@ -117,7 +117,7 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
                       (err, _) => Center(
                         child: Text(
                           'Error: $err',
-                          style: TextStyle(color: colors.error),
+                          style: typo.bodyMedium.copyWith(color: colors.error),
                         ),
                       ),
                   data: (orders) {

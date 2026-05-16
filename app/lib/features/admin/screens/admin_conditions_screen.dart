@@ -118,7 +118,10 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error:
           (e, _) => Center(
-            child: Text('Error: $e', style: TextStyle(color: colors.error)),
+            child: Text(
+              'Error: $e',
+              style: typo.bodyMedium.copyWith(color: colors.error),
+            ),
           ),
       data: (conditions) {
         if (conditions.isEmpty) {
@@ -172,9 +175,9 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
                     color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.star_half,
-                    color: Color(0xFF7C3AED),
+                    color: colors.primary,
                     size: 20,
                   ),
                 ),

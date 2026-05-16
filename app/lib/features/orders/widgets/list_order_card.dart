@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/utils/price_format.dart';
 import 'package:smivo/data/models/order.dart';
-import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
+import 'package:smivo/features/orders/widgets/transaction_snapshot_modal.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 
 class ListOrderCard extends ConsumerWidget {
   const ListOrderCard({super.key, required this.order});
@@ -201,9 +202,13 @@ class ListOrderCard extends ConsumerWidget {
       );
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      showDialog(
+        context: context,
+        builder: (ctx) => ActionErrorDialog(
+          title: 'Failed to Open Chat',
+          message: e.toString(),
+        ),
+      );
     }
   }
 

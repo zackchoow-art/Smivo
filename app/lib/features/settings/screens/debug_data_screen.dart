@@ -361,7 +361,7 @@ class DebugDataScreen extends ConsumerWidget {
                     padding: const EdgeInsets.all(16),
                     child: SelectableText(
                       'UI Build Error:\n$e\n\nStackTrace:\n$stackTrace',
-                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                      style: TextStyle(color: colors.error, fontSize: 14),
                     ),
                   );
                 }

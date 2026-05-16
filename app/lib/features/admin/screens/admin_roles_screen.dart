@@ -88,7 +88,7 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
                       (err, _) => Center(
                         child: Text(
                           'Error: $err',
-                          style: TextStyle(color: colors.error),
+                          style: typo.bodyMedium.copyWith(color: colors.error),
                         ),
                       ),
                   data: (roles) {
@@ -460,7 +460,7 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Error: $e'), backgroundColor: context.smivoColors.error),
         );
       }
     } finally {
