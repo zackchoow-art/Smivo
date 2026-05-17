@@ -145,7 +145,7 @@ class CreateListingAction extends _$CreateListingAction {
       if (schoolId.isEmpty) {
         throw ArgumentError('School ID is required');
       }
-      if (transactionType == 'sale' && (price == null || price <= 0)) {
+      if (transactionType == 'sale' && (price == null || price < 0)) {
         throw ArgumentError('Sale price is required');
       }
       if (transactionType == 'rental') {

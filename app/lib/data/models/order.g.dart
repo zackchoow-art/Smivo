@@ -73,6 +73,7 @@ _Order _$OrderFromJson(Map<String, dynamic> json) => _Order(
           ),
   cancelledBy: json['cancelled_by'] as String?,
   listingCycle: (json['listing_cycle'] as num?)?.toInt() ?? 1,
+  listingSnapshot: json['listing_snapshot'] as Map<String, dynamic>?,
 );
 
 Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
@@ -109,4 +110,5 @@ Map<String, dynamic> _$OrderToJson(_Order instance) => <String, dynamic>{
   'pickup_location': instance.pickupLocation,
   'cancelled_by': instance.cancelledBy,
   'listing_cycle': instance.listingCycle,
+  'listing_snapshot': instance.listingSnapshot,
 };

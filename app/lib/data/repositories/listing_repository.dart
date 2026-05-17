@@ -462,18 +462,58 @@ class ListingRepository {
     }
   }
 
-  /// Invalidates all pending orders for a listing after the seller edits it.
+  /// Invalidates all pending orders for a listing after the seller edits it,
+  /// and simultaneously captures a snapshot of the listing's current state.
   ///
-  /// NOTE: 'invalidated' is a soft state — orders remain visible to buyers
-  /// so they can re-submit without losing their order history. This is
-  /// different from 'cancelled', which implies buyer/seller action.
-  Future<void> invalidatePendingOrders(String listingId) async {
+  /// NOTE: The snapshot is stored in listing_snapshot so the buyer can see
+  /// a before/after diff on the listing detail screen. 'invalidated' is a
+  /// soft state — the order reappears in Buyer Center under 'Requested'.
+  Future<void> invalidatePendingOrders(
+    String listingId, {
+    required String title,
+    required double price,
+    required String? description,
+    required String condition,
+    required String transactionType,
+  }) async {
     try {
+      // NOTE: snapshot captures the listing state BEFORE the seller's edits
+      // are visible — this method is called right before or just after update.
+      // The caller (transaction_management_screen) first fetches the OLD listing,
+      // passes those values here, then applies the edit. This guarantees the
+      // snapshot reflects what the buyer originally agreed to.
+      final snapshot = {
+        'title': title,
+        'price': price,
+        'description': description,
+        'condition': condition,
+        'transaction_type': transactionType,
+        'captured_at': DateTime.now().toUtc().toIso8601String(),
+      };
+
       await _client
           .from(AppConstants.tableOrders)
-          .update({'status': 'invalidated'})
+          .update({'status': 'invalidated', 'listing_snapshot': snapshot})
           .eq('listing_id', listingId)
           .eq('status', 'pending');
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Accepts listing changes on behalf of the buyer: clears the snapshot,
+  /// reverts the order to 'pending', and notifies the seller.
+  ///
+  /// Calls the accept_listing_changes SECURITY DEFINER RPC so the buyer
+  /// can perform this action without needing direct write access to orders.
+  Future<void> acceptListingChanges(String orderId) async {
+    try {
+      final result = await _client
+          .rpc('accept_listing_changes', params: {'p_order_id': orderId})
+          .single();
+      if (result['success'] != true) {
+        throw DatabaseException(result['error'] as String? ?? 'RPC failed', null);
+      }
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
@@ -517,6 +557,8 @@ class ListingRepository {
 
       // Insert one notification row per recipient.
       // The push-notification Edge Function fires for each INSERT via DB trigger.
+      // NOTE: action_type must be 'route' so the Edge Function's push-dispatch
+      // logic recognises this as a deep-link notification (not a plain alert).
       final notifications = recipientIds.map((userId) {
         return {
           'user_id': userId,
@@ -524,6 +566,7 @@ class ListingRepository {
           'title': 'Listing Updated',
           'body':
               '"$listingTitle" has been updated by the seller. Tap to view the changes.',
+          'action_type': 'route',
           'action_url': '/listing/$listingId',
           'is_read': false,
         };

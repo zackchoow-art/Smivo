@@ -142,9 +142,17 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
                                 price.contains(query);
                           }).toList();
 
-                  // REQUESTED: pending orders
+                  // REQUESTED: pending orders + invalidated orders (seller edited listing).
+                  // NOTE: invalidated orders stay visible here so buyers know to review
+                  // the changes and re-submit — they must not silently disappear.
                   final requested =
-                      filtered.where((o) => o.status == 'pending').toList();
+                      filtered
+                          .where(
+                            (o) =>
+                                o.status == 'pending' ||
+                                o.status == 'invalidated',
+                          )
+                          .toList();
 
                   // AWAITING DELIVERY: confirmed but delivery not yet done by both
                   final awaitingDelivery =
@@ -604,6 +612,14 @@ class _StatusChip extends StatelessWidget {
         colors.statusPending,
         colors.surfaceContainerLowest,
         'Pending',
+      ),
+      // NOTE: 'invalidated' means the seller edited the listing after the buyer
+      // submitted an offer. Show 'Updated' in amber/warning so the buyer notices
+      // they need to review and re-submit.
+      'invalidated' => (
+        colors.warning,
+        colors.surfaceContainerLowest,
+        'Updated',
       ),
       'confirmed' => _confirmedChip(colors, rentalStatus),
       'completed' => (colors.success, colors.surfaceContainerLowest, 'Done'),

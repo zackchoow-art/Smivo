@@ -1003,42 +1003,155 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                     const SizedBox(height: 24),
                                   ],
                                 ],
-                                // NOTE: Show a banner when the buyer's previous offer
-                                // was invalidated so they know to re-submit.
+                                // NOTE: Show a rich diff card when the buyer's offer was
+                                // invalidated (seller edited the listing). Display each
+                                // field that changed with old value → new value, mirroring
+                                // the carpool detail page's lastAcknowledgedSnapshot pattern.
+                                // Only buyers with an invalidated order see this diff;
+                                // unrelated users only see the current listing.
                                 if (!isOwnListing)
                                   existingOrder.maybeWhen(
                                     data: (order) {
                                       if (order?.status != 'invalidated') {
                                         return const SizedBox.shrink();
                                       }
+                                      final snap = order!.listingSnapshot;
+
+                                      // Build list of (label, oldVal, newVal) for changed fields
+                                      final diffs = <(String, String, String)>[];
+                                      if (snap != null) {
+                                        void addIfChanged(
+                                          String label,
+                                          String? oldRaw,
+                                          String newVal,
+                                        ) {
+                                          if (oldRaw != null && oldRaw != newVal) {
+                                            diffs.add((label, oldRaw, newVal));
+                                          }
+                                        }
+
+                                        addIfChanged(
+                                          'Title',
+                                          snap['title']?.toString(),
+                                          listing.title,
+                                        );
+                                        addIfChanged(
+                                          'Price',
+                                          snap['price'] != null
+                                              ? '\$${(snap['price'] as num).toStringAsFixed(0)}'
+                                              : null,
+                                          '\$${listing.price.toStringAsFixed(0)}',
+                                        );
+                                        addIfChanged(
+                                          'Condition',
+                                          snap['condition']?.toString(),
+                                          listing.condition,
+                                        );
+                                        addIfChanged(
+                                          'Type',
+                                          snap['transaction_type']?.toString(),
+                                          listing.transactionType,
+                                        );
+                                        // Truncate description for readability
+                                        final oldDesc = snap['description']?.toString();
+                                        final newDesc = listing.description ?? '';
+                                        if (oldDesc != null && oldDesc != newDesc) {
+                                          diffs.add((
+                                            'Description',
+                                            oldDesc.length > 80
+                                                ? '${oldDesc.substring(0, 80)}…'
+                                                : oldDesc,
+                                            newDesc.length > 80
+                                                ? '${newDesc.substring(0, 80)}…'
+                                                : newDesc,
+                                          ));
+                                        }
+                                      }
+
                                       return Container(
                                         margin: const EdgeInsets.only(bottom: 12),
                                         padding: const EdgeInsets.all(14),
                                         decoration: BoxDecoration(
-                                          color: colors.warning.withValues(alpha: 0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(radius.card),
-                                          border: Border.all(
-                                            color: colors.warning,
-                                          ),
+                                          color: colors.warning.withValues(alpha: 0.08),
+                                          borderRadius: BorderRadius.circular(radius.card),
+                                          border: Border.all(color: colors.warning),
                                         ),
-                                        child: Row(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Icon(
-                                              Icons.update,
-                                              color: colors.warning,
-                                              size: 20,
+                                            Row(
+                                              children: [
+                                                Icon(Icons.update, color: colors.warning, size: 18),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Listing Updated by Seller',
+                                                    style: typo.labelLarge.copyWith(
+                                                      color: colors.warning,
+                                                      fontWeight: FontWeight.w700,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: Text(
-                                                'The seller updated this listing. '
+                                            if (diffs.isNotEmpty) ...[
+                                              const SizedBox(height: 10),
+                                              // Show each changed field as old (strikethrough) → new
+                                              ...diffs.map(
+                                                (d) => Padding(
+                                                  padding: const EdgeInsets.only(bottom: 6),
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        d.$1,
+                                                        style: typo.labelSmall.copyWith(
+                                                          color: colors.outlineVariant,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 2),
+                                                      Row(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              d.$2,
+                                                              style: typo.bodySmall.copyWith(
+                                                                color: colors.error,
+                                                                decoration: TextDecoration.lineThrough,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          const Padding(
+                                                            padding: EdgeInsets.symmetric(horizontal: 6),
+                                                            child: Icon(Icons.arrow_forward, size: 12),
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              d.$3,
+                                                              style: typo.bodySmall.copyWith(
+                                                                color: colors.success,
+                                                                fontWeight: FontWeight.w600,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ] else ...[
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                'The seller has updated this listing. '
                                                 'Please review and re-submit your offer.',
                                                 style: typo.bodySmall.copyWith(
                                                   color: colors.onSurface,
                                                 ),
                                               ),
-                                            ),
+                                            ],
                                           ],
                                         ),
                                       );
@@ -1055,6 +1168,106 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                       // 'no blocking order' so the buyer can re-submit.
                                       final isInvalidated =
                                           order?.status == 'invalidated';
+
+                                      // NOTE: Show an 'Accept Changes & Resubmit' button
+                                      // instead of the normal buy button when the order is
+                                      // invalidated. This calls accept_listing_changes() RPC
+                                      // which clears the snapshot and reverts status to pending,
+                                      // re-entering the seller's queue.
+                                      if (isInvalidated && order != null) {
+                                        final isAccepting = ref
+                                            .watch(orderActionsProvider)
+                                            .isLoading;
+                                        return SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton.icon(
+                                            icon: const Icon(
+                                              Icons.check_circle_outline,
+                                              size: 18,
+                                            ),
+                                            label: Text(
+                                              isAccepting
+                                                  ? 'Resubmitting…'
+                                                  : 'Accept Changes & Resubmit',
+                                            ),
+                                            onPressed: isAccepting
+                                                ? null
+                                                : () async {
+                                                    try {
+                                                      await ref
+                                                          .read(
+                                                            listingRepositoryProvider,
+                                                          )
+                                                          .acceptListingChanges(
+                                                            order.id,
+                                                          );
+                                                      // Invalidate providers so the UI
+                                                      // immediately reflects 'pending' status
+                                                      ref.invalidate(
+                                                        existingBuyerOrderProvider(
+                                                          listing.id,
+                                                        ),
+                                                      );
+                                                      ref.invalidate(
+                                                        listingDetailProvider(
+                                                          widget.id,
+                                                        ),
+                                                      );
+                                                      if (context.mounted) {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder:
+                                                              (ctx) =>
+                                                                  ActionSuccessDialog(
+                                                                    title:
+                                                                        'Offer Resubmitted',
+                                                                    message:
+                                                                        'Your offer has been re-submitted. '
+                                                                        'Awaiting seller approval.',
+                                                                    buttonText:
+                                                                        'OK',
+                                                                    onPressed: () =>
+                                                                        Navigator.of(
+                                                                          ctx,
+                                                                        ).pop(),
+                                                                  ),
+                                                        );
+                                                      }
+                                                    } catch (e) {
+                                                      if (!context.mounted) {
+                                                        return;
+                                                      }
+                                                      showDialog(
+                                                        context: context,
+                                                        builder:
+                                                            (ctx) =>
+                                                                ActionErrorDialog(
+                                                                  title:
+                                                                      'Resubmit Failed',
+                                                                  message:
+                                                                      e.toString(),
+                                                                ),
+                                                      );
+                                                    }
+                                                  },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: colors.warning,
+                                              foregroundColor: Colors.white,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 16,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      radius.button,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }
+
                                       if (order != null && !isInvalidated) {
                                         final isSaleOrder =
                                             order.orderType == 'sale';

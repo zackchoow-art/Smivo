@@ -253,8 +253,18 @@ class _TransactionManagementScreenState
         newPhotos: _newPhotos,
       );
 
-      // 2. Invalidate pending orders (soft-invalidate, buyers can re-submit)
-      await repo.invalidatePendingOrders(widget.listingId);
+      // 2. Invalidate pending orders (soft-invalidate, buyers can re-submit).
+      // NOTE: Pass the listing's CURRENT (pre-edit) field values as the
+      // snapshot so buyers see what they originally agreed to vs. what changed.
+      // `listing` still holds the old data here; `updated` has the new values.
+      await repo.invalidatePendingOrders(
+        widget.listingId,
+        title: listing.title,
+        price: listing.price,
+        description: listing.description,
+        condition: listing.condition,
+        transactionType: listing.transactionType,
+      );
 
       // 3. Notify affected buyers and savers
       await repo.notifyListingUpdated(

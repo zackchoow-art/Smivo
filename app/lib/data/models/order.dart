@@ -60,6 +60,12 @@ abstract class Order with _$Order {
     // "Cancelled by [Name]" instead of the generic "Order was cancelled".
     @JsonKey(name: 'cancelled_by') String? cancelledBy,
     @JsonKey(name: 'listing_cycle') @Default(1) int listingCycle,
+
+    // NOTE: Populated only when status == 'invalidated'. Stores a snapshot
+    // of key listing fields (title, price, description, condition) at the
+    // moment the seller edited the listing. Cleared when the buyer calls
+    // accept_listing_changes() and the order returns to 'pending'.
+    @JsonKey(name: 'listing_snapshot') Map<String, dynamic>? listingSnapshot,
   }) = _Order;
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
