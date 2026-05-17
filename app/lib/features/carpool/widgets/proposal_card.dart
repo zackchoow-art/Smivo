@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/data/models/carpool_member.dart';
 import 'package:smivo/data/models/carpool_proposal.dart';
 import 'package:smivo/features/carpool/providers/carpool_proposals_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 
 /// Card displaying a single proposal with vote progress and action buttons.
 ///
@@ -179,14 +181,22 @@ class ProposalCard extends ConsumerWidget {
             tripId: tripId,
           );
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(vote == 'approve' ? 'Voted to approve' : 'Voted to reject')),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionSuccessDialog(
+            title: 'Vote Cast',
+            message: vote == 'approve' ? 'You voted to approve this proposal.' : 'You voted to reject this proposal.',
+          ),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vote failed, you may have already voted')),
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionErrorDialog(
+            title: 'Vote Failed',
+            message: 'Could not cast your vote. You may have already voted on this proposal.',
+          ),
         );
       }
     }

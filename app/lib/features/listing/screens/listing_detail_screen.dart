@@ -21,9 +21,11 @@ import 'package:smivo/data/repositories/order_repository.dart';
 import 'package:smivo/data/repositories/school_repository.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/features/shared/providers/school_data_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 import 'package:smivo/core/providers/moderation_provider.dart';
 import 'package:smivo/data/repositories/moderation_repository.dart';
@@ -133,47 +135,36 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     });
   }
 
-  void _showDelistDialog(BuildContext context, WidgetRef ref, Listing listing) {
-    showDialog(
+  Future<void> _showDelistDialog(BuildContext context, WidgetRef ref, Listing listing) async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) {
-            final colors = context.smivoColors;
-            return AlertDialog(
-            title: const Text('Delist Item'),
-            content: Text(
-              'Are you sure you want to delist "${listing.title}"? '
-              'This will cancel all pending offers and remove it from the marketplace.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Keep Listed'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(ctx);
-                  // 1. Update listing status to cancelled
-                  final listingRepo = ref.read(listingRepositoryProvider);
-                  await listingRepo.delistListing(listing.id);
-                  // 2. Cancel all pending orders for this listing
-                  final orderRepo = ref.read(orderRepositoryProvider);
-                  await orderRepo.cancelAllPendingOrders(listing.id);
-                  // 3. Navigate back
-                  if (context.mounted) {
-                    // NOTE: Navigate to home (not sellerCenter) so the back
-                    // button always has a valid destination. Using goNamed to
-                    // sellerCenter cleared the nav stack, trapping the user.
-                    context.goNamed(AppRoutes.home);
-                  }
-                },
-                style: TextButton.styleFrom(foregroundColor: colors.error),
-                child: const Text('Delist'),
-              ),
-            ],
-          );
-          },
+          (ctx) => ThemedConfirmDialog(
+            title: 'Delist Item',
+            message:
+                'Are you sure you want to delist "${listing.title}"? '
+                'This will cancel all pending offers and remove it from the marketplace.',
+            confirmText: 'Delist',
+            cancelText: 'Keep Listed',
+            isDestructive: true,
+          ),
     );
+
+    if (confirmed == true) {
+      // 1. Update listing status to cancelled
+      final listingRepo = ref.read(listingRepositoryProvider);
+      await listingRepo.delistListing(listing.id);
+      // 2. Cancel all pending orders for this listing
+      final orderRepo = ref.read(orderRepositoryProvider);
+      await orderRepo.cancelAllPendingOrders(listing.id);
+      // 3. Navigate back
+      if (context.mounted) {
+        // NOTE: Navigate to home (not sellerCenter) so the back
+        // button always has a valid destination. Using goNamed to
+        // sellerCenter cleared the nav stack, trapping the user.
+        context.goNamed(AppRoutes.home);
+      }
+    }
   }
 
   @override
@@ -509,11 +500,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                               left: 24,
                                             ),
                                             child: Text(
-                                              listing.customPickupNote ??
-                                                  listing
-                                                      .pickupLocation
-                                                      ?.name ??
-                                                  'Not specified',
+                                              currentUserId == null
+                                                  ? 'Please login to view'
+                                                  : (listing.customPickupNote ??
+                                                      listing.pickupLocation?.name ??
+                                                      'Not specified'),
                                               style: typo.bodyMedium.copyWith(
                                                 color: colors.onSurface,
                                               ),
@@ -609,7 +600,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                           ),
                                           // ── Buyer address-change section ──
                                           if (listing.allowPickupChange &&
-                                              !isOwnListing) ...[
+                                              !isOwnListing &&
+                                              currentUserId != null) ...[
                                             const SizedBox(height: 12),
                                             GestureDetector(
                                               onTap:
@@ -736,76 +728,90 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                 if (seller != null && !isOwnListing) ...[
                                   Text('Seller', style: typo.labelLarge),
                                   const SizedBox(height: 8),
-                                  SellerProfileCard(
-                                    user: seller,
-                                    onMessageTap: () async {
-                                      final user =
-                                          ref.read(authStateProvider).value;
-                                      if (user == null) {
-                                        context.pushNamed(AppRoutes.login);
-                                        return;
-                                      }
-                                      if (user.id == listing.sellerId) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'This is your own listing',
+                                  if (currentUserId == null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4),
+                                      child: Text(
+                                        'Please login to view',
+                                        style: typo.bodyMedium.copyWith(
+                                          color: colors.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    SellerProfileCard(
+                                      user: seller,
+                                      onMessageTap: () async {
+                                        final user =
+                                            ref.read(authStateProvider).value;
+                                        if (user == null) {
+                                          context.pushNamed(AppRoutes.login);
+                                          return;
+                                        }
+                                        if (user.id == listing.sellerId) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'This is your own listing',
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                        return;
-                                      }
-                                      try {
-                                        final chatRoom = await ref
-                                            .read(chatRepositoryProvider)
-                                            .getOrCreateChatRoom(
-                                              listingId: listing.id,
-                                              buyerId: user.id,
-                                              sellerId: listing.sellerId,
-                                            );
-                                        if (!context.mounted) return;
+                                          );
+                                          return;
+                                        }
+                                        try {
+                                          final chatRoom = await ref
+                                              .read(chatRepositoryProvider)
+                                              .getOrCreateChatRoom(
+                                                listingId: listing.id,
+                                                buyerId: user.id,
+                                                sellerId: listing.sellerId,
+                                              );
+                                          if (!context.mounted) return;
 
-                                        // Use existing order info if available
-                                        final order = existingOrder.value;
-                                        final price =
-                                            order?.totalPrice ?? listing.price;
-                                        final priceLabel =
-                                            order != null &&
-                                                    order.orderType == 'rental'
-                                                ? _formatRentalSummary(order)
-                                                : null;
+                                          // Use existing order info if available
+                                          final order = existingOrder.value;
+                                          final price =
+                                              order?.totalPrice ?? listing.price;
+                                          final priceLabel =
+                                              order != null &&
+                                                      order.orderType == 'rental'
+                                                  ? _formatRentalSummary(order)
+                                                  : null;
 
-                                        showChatPopup(
-                                          context,
-                                          chatRoomId: chatRoom.id,
-                                          otherUserName:
-                                              listing.seller?.displayName ??
-                                              'Seller',
-                                          otherUserAvatar:
-                                              listing.seller?.avatarUrl,
-                                          otherUserEmail: listing.seller?.email,
-                                          otherUserProfile: listing.seller,
-                                          listingTitle: listing.title,
-                                          listingPrice: price,
-                                          priceLabel: priceLabel,
-                                          listingImageUrl:
-                                              listing
-                                                  .images
-                                                  .firstOrNull
-                                                  ?.imageUrl,
-                                        );
-                                      } catch (e) {
-                                        if (!context.mounted) return;
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(content: Text('Error: $e')),
-                                        );
-                                      }
-                                    },
-                                  ),
+                                          showChatPopup(
+                                            context,
+                                            chatRoomId: chatRoom.id,
+                                            otherUserName:
+                                                listing.seller?.displayName ??
+                                                'Seller',
+                                            otherUserAvatar:
+                                                listing.seller?.avatarUrl,
+                                            otherUserEmail: listing.seller?.email,
+                                            otherUserProfile: listing.seller,
+                                            listingTitle: listing.title,
+                                            listingPrice: price,
+                                            priceLabel: priceLabel,
+                                            listingImageUrl:
+                                                listing
+                                                    .images
+                                                    .firstOrNull
+                                                    ?.imageUrl,
+                                          );
+                                        } catch (e) {
+                                          if (!context.mounted) return;
+                                          showDialog(
+                                            context: context,
+                                            builder:
+                                                (ctx) => ActionErrorDialog(
+                                                  title: 'Chat Error',
+                                                  message: e.toString(),
+                                                ),
+                                          );
+                                        }
+                                      },
+                                    ),
                                 ],
                                 const SizedBox(height: 24),
                                 // Stats Section — only visible on own listing
@@ -904,42 +910,91 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                             if (hasOrder) {
                                               return const SizedBox.shrink();
                                             }
-                                            return SizedBox(
-                                              width: double.infinity,
-                                              child: OutlinedButton.icon(
-                                                onPressed:
-                                                    () => _showDelistDialog(
-                                                      context,
-                                                      ref,
-                                                      listing,
-                                                    ),
-                                                icon: Icon(
-                                                  Icons.remove_circle_outline,
-                                                  color: colors.error,
-                                                ),
-                                                label: Text(
-                                                  'Delist This Item',
-                                                  style: typo.labelLarge.copyWith(
-                                                    color: colors.error,
-                                                  ),
-                                                ),
-                                                style: OutlinedButton.styleFrom(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 12,
-                                                      ),
-                                                  side: BorderSide(
-                                                    color: colors.error,
-                                                    width: 1.5,
-                                                  ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          radius.button,
+                                            return Row(
+                                              children: [
+                                                // Delist button
+                                                Expanded(
+                                                  child: OutlinedButton.icon(
+                                                    onPressed:
+                                                        () => _showDelistDialog(
+                                                          context,
+                                                          ref,
+                                                          listing,
                                                         ),
+                                                    icon: Icon(
+                                                      Icons.remove_circle_outline,
+                                                      color: colors.error,
+                                                      size: 18,
+                                                    ),
+                                                    label: Text(
+                                                      'Delist',
+                                                      style: typo.labelLarge.copyWith(
+                                                        color: colors.error,
+                                                      ),
+                                                    ),
+                                                    style: OutlinedButton.styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            vertical: 12,
+                                                          ),
+                                                      side: BorderSide(
+                                                        color: colors.error,
+                                                        width: 1.5,
+                                                      ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              radius.button,
+                                                            ),
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
+                                                const SizedBox(width: 12),
+                                                // NOTE: Edit Listing button navigates to
+                                                // TransactionManagementScreen with the
+                                                // edit section auto-expanded (section=edit).
+                                                Expanded(
+                                                  child: OutlinedButton.icon(
+                                                    onPressed: () {
+                                                      context.pushNamed(
+                                                        AppRoutes.transactionManagement,
+                                                        pathParameters: {'id': listing.id},
+                                                        queryParameters: {
+                                                          'section': 'edit',
+                                                        },
+                                                      );
+                                                    },
+                                                    icon: Icon(
+                                                      Icons.edit_outlined,
+                                                      color: colors.primary,
+                                                      size: 18,
+                                                    ),
+                                                    label: Text(
+                                                      'Edit',
+                                                      style: typo.labelLarge.copyWith(
+                                                        color: colors.primary,
+                                                      ),
+                                                    ),
+                                                    style: OutlinedButton.styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            vertical: 12,
+                                                          ),
+                                                      side: BorderSide(
+                                                        color: colors.primary,
+                                                        width: 1.5,
+                                                      ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              radius.button,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             );
                                           },
                                         );
@@ -948,13 +1003,59 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                     const SizedBox(height: 24),
                                   ],
                                 ],
+                                // NOTE: Show a banner when the buyer's previous offer
+                                // was invalidated so they know to re-submit.
+                                if (!isOwnListing)
+                                  existingOrder.maybeWhen(
+                                    data: (order) {
+                                      if (order?.status != 'invalidated') {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return Container(
+                                        margin: const EdgeInsets.only(bottom: 12),
+                                        padding: const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          color: colors.warning.withValues(alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(radius.card),
+                                          border: Border.all(
+                                            color: colors.warning,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.update,
+                                              color: colors.warning,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                'The seller updated this listing. '
+                                                'Please review and re-submit your offer.',
+                                                style: typo.bodySmall.copyWith(
+                                                  color: colors.onSurface,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    orElse: () => const SizedBox.shrink(),
+                                  ),
                                 // Primary Action Button — hidden on own listing
                                 if (!isOwnListing)
                                   existingOrder.when(
                                     loading: () => const SizedBox.shrink(),
                                     error: (_, __) => const SizedBox.shrink(),
                                     data: (order) {
-                                      if (order != null) {
+                                      // NOTE: If the order is invalidated, treat it as
+                                      // 'no blocking order' so the buyer can re-submit.
+                                      final isInvalidated =
+                                          order?.status == 'invalidated';
+                                      if (order != null && !isInvalidated) {
                                         final isSaleOrder =
                                             order.orderType == 'sale';
                                         final submittedDate = DateFormat(
@@ -985,6 +1086,12 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                           title = 'Offer Missed';
                                           icon = Icons.info_outline;
                                           iconColor = colors.outlineVariant;
+                                        } else if (order.status == 'invalidated') {
+                                          // NOTE: invalidated = seller updated the listing;
+                                          // buyer must re-submit. Shown in pending section.
+                                          title = 'Listing Updated';
+                                          icon = Icons.update;
+                                          iconColor = colors.warning;
                                         } else {
                                           title =
                                               'Order ${order.status.toUpperCase()}';
@@ -1086,50 +1193,21 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                         builder:
                                                             (
                                                               ctx,
-                                                            ) => AlertDialog(
-                                                              title: Text(
-                                                                order.status ==
-                                                                        'pending'
-                                                                    ? 'Cancel Application'
-                                                                    : 'Cancel Order',
-                                                              ),
-                                                              content: Text(
-                                                                order.status ==
-                                                                        'pending'
-                                                                    ? 'Are you sure you want to cancel your application?'
-                                                                    : 'Are you sure you want to cancel this order?',
-                                                              ),
-                                                              actions: [
-                                                                TextButton(
-                                                                  onPressed:
-                                                                      () => Navigator.pop(
-                                                                        ctx,
-                                                                        false,
-                                                                      ),
-                                                                  child:
-                                                                      const Text(
-                                                                        'Keep',
-                                                                      ),
-                                                                ),
-                                                                TextButton(
-                                                                  onPressed:
-                                                                      () =>
-                                                                          Navigator.pop(
-                                                                            ctx,
-                                                                            true,
-                                                                          ),
-                                                                  style: TextButton.styleFrom(
-                                                                    foregroundColor:
-                                                                        colors.error,
-                                                                  ),
-                                                                  child: Text(
-                                                                    order.status ==
-                                                                            'pending'
-                                                                        ? 'Cancel Application'
-                                                                        : 'Cancel Order',
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                            ) => ThemedConfirmDialog(
+                                                              title:
+                                                                  order.status == 'pending'
+                                                                      ? 'Cancel Application'
+                                                                      : 'Cancel Order',
+                                                              message:
+                                                                  order.status == 'pending'
+                                                                      ? 'Are you sure you want to cancel your application?'
+                                                                      : 'Are you sure you want to cancel this order?',
+                                                              confirmText:
+                                                                  order.status == 'pending'
+                                                                      ? 'Cancel Application'
+                                                                      : 'Cancel Order',
+                                                              cancelText: 'Keep',
+                                                              isDestructive: true,
                                                             ),
                                                       );
                                                       if (confirmed == true &&
@@ -1147,17 +1225,15 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                             context.pop();
                                                           }
                                                         } catch (e) {
-                                                          if (context.mounted) {
-                                                            ScaffoldMessenger.of(
-                                                              context,
-                                                            ).showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  'Failed to cancel order: $e',
+                                                          if (!context.mounted) return;
+                                                          showDialog(
+                                                            context: context,
+                                                            builder:
+                                                                (ctx) => ActionErrorDialog(
+                                                                  title: 'Cancellation Failed',
+                                                                  message: e.toString(),
                                                                 ),
-                                                              ),
-                                                            );
-                                                          }
+                                                          );
                                                         }
                                                       }
                                                     },

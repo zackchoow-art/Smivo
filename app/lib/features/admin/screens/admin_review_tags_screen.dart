@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/features/admin/providers/admin_review_tags_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 class AdminReviewTagsScreen extends ConsumerStatefulWidget {
   const AdminReviewTagsScreen({super.key});
@@ -33,39 +36,43 @@ class _AdminReviewTagsScreenState extends ConsumerState<AdminReviewTagsScreen> {
           .createTag(name, _selectedType);
       _nameCtrl.clear();
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Tag added successfully')));
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionSuccessDialog(
+                title: 'Tag Added',
+                message: 'New tag "$name" has been created.',
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error adding tag: $e')));
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Failed to Add Tag',
+                message: e.toString(),
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+        );
       }
     }
   }
 
   void _deleteTag(String id) async {
-    final colors = context.smivoColors;
 
     final confirm = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) => AlertDialog(
-            title: const Text('Delete Tag'),
-            content: const Text('Are you sure you want to delete this tag?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                style: TextButton.styleFrom(foregroundColor: colors.error),
-                child: const Text('Delete'),
-              ),
-            ],
+          (ctx) => ThemedConfirmDialog(
+            title: 'Delete Tag',
+            message: 'Are you sure you want to delete this tag?',
+            confirmText: 'Delete',
+            isDestructive: true,
           ),
     );
 
@@ -74,15 +81,29 @@ class _AdminReviewTagsScreenState extends ConsumerState<AdminReviewTagsScreen> {
     try {
       await ref.read(adminReviewTagsProvider.notifier).deleteTag(id);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tag deleted successfully')),
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionSuccessDialog(
+                title: 'Tag Deleted',
+                message: 'The tag has been removed.',
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error deleting tag: $e')));
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Delete Failed',
+                message: e.toString(),
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+        );
       }
     }
   }

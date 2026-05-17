@@ -8,6 +8,8 @@ import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
 
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
 
@@ -51,9 +53,14 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   Future<void> _handleComplete() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please enter your name')));
+      showDialog(
+        context: context,
+        builder:
+            (ctx) => const ActionErrorDialog(
+              title: 'Missing Info',
+              message: 'Please enter your name to continue.',
+            ),
+      );
       return;
     }
     await ref

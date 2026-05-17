@@ -67,6 +67,12 @@ class ResponsiveScaffold extends ConsumerWidget {
         ref.read(chatScrollTriggerProvider.notifier).trigger();
         return;
       }
+      // If the user taps Carpool while already on Carpool, signal
+      // CarpoolListScreen to scroll to top — do NOT re-navigate.
+      if (index == 3 && navigationShell.currentIndex == 3) {
+        ref.read(carpoolScrollTriggerProvider.notifier).trigger();
+        return;
+      }
       navigationShell.goBranch(
         index,
         initialLocation: index == navigationShell.currentIndex,

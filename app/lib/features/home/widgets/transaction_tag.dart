@@ -13,17 +13,17 @@ class TransactionTag extends StatelessWidget {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    // Check if current theme is IKEA based on primary color
-    final isIkea = colors.primary == const Color(0xFF004181);
+    // Use useDividers as a proxy for the Flat theme variant (Teal uses dividers, Flat doesn't)
+    final isFlat = !colors.useDividers;
 
-    // IKEA: Sale = Blue, Rent = Bright Yellow
+    // Flat (IKEA/Flat): Sale = Red (error), Rent = Pink (errorContainer)
     // Teal: Sale = Brighter Blue, Rent = Bright Teal/Cyan
-    final saleColor = isIkea ? colors.primary : const Color(0xFF4C73FF);
+    final saleColor = isFlat ? colors.error : const Color(0xFF4C73FF);
     final rentColor =
-        isIkea ? const Color(0xFFFDD816) : const Color(0xFF00C4B4);
+        isFlat ? colors.errorContainer : const Color(0xFF00C4B4);
 
     final backgroundColor = isSale ? saleColor : rentColor;
-    final textColor = Colors.white;
+    final textColor = isSale ? Colors.white : (isFlat ? colors.onSurface : Colors.white);
     final label = isSale ? 'Sale' : 'Rent';
 
     return Container(

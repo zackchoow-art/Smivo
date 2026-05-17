@@ -133,6 +133,7 @@ const _publicRoutePaths = {
   AppRoutes.forgotPasswordPath,
   AppRoutes.registerPath,
   AppRoutes.emailVerificationPath,
+  AppRoutes.carpoolListPath,
 };
 
 bool _isPublicRoute(String path) {

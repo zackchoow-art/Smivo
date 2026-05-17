@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/core/providers/theme_provider.dart';
@@ -8,7 +9,6 @@ import 'package:smivo/core/providers/preferences_provider.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:smivo/features/profile/providers/profile_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/chat/providers/chat_provider.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
@@ -23,11 +23,92 @@ import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 
-class SystemSettingsScreen extends ConsumerWidget {
+class SystemSettingsScreen extends ConsumerStatefulWidget {
   const SystemSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SystemSettingsScreen> createState() =>
+      _SystemSettingsScreenState();
+}
+
+class _SystemSettingsScreenState extends ConsumerState<SystemSettingsScreen> {
+  // ── Clear Cache ───────────────────────────────────────────────
+
+  /// Clears all local caches: in-memory image cache, CachedNetworkImage
+  /// disk store, and invalidates in-memory Riverpod provider state.
+  ///
+  /// NOTE: This method lives on the State so `mounted` is always valid,
+  /// even after async gaps caused by provider invalidation triggering
+  /// widget tree rebuilds.
+  Future<void> _clearCache() async {
+    // NOTE: showDialog() defaults to useRootNavigator: true, so the dialog
+    // is pushed onto the ROOT navigator. We must also get the root navigator
+    // here, otherwise nav.pop() would pop from the nearest ancestor navigator
+    // (the StatefulShellRoute branch navigator) and accidentally pop /home
+    // instead of the dialog.
+    final nav = Navigator.of(context, rootNavigator: true);
+
+    // Show non-dismissible loading indicator.
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // 1. Clear Flutter in-memory image cache (RAM).
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+
+      // 2. Clear CachedNetworkImage disk store.
+      // PaintingBinding only covers RAM; disk is managed by
+      // flutter_cache_manager independently.
+      await DefaultCacheManager().emptyCache();
+
+      // 3. Invalidate Riverpod provider in-memory state.
+      // NOTE: profileProvider is intentionally excluded — it is watched
+      // by AppRouterNotifier, so invalidating it triggers GoRouter's
+      // refreshListenable and can redirect the user mid-operation.
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(chatRoomListProvider);
+      ref.invalidate(notificationListProvider);
+      ref.invalidate(mySavedListingsProvider);
+      ref.invalidate(myListingsProvider);
+      ref.invalidate(homeListingsProvider);
+
+      // Brief pause to let provider state settle.
+      await Future.delayed(const Duration(milliseconds: 400));
+
+      // Close loading dialog via stored nav (context may be stale).
+      nav.pop();
+
+      // Show success — State.mounted is reliable even post-rebuild.
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Cache Cleared',
+            message: 'Local cache cleared successfully.',
+          ),
+        );
+      }
+    } catch (e) {
+      nav.pop();
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Failed to Clear Cache',
+            message: e.toString(),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final currentTheme = ref.watch(themeProvider);
     final currentScheme = ref.watch(colorSchemeProvider);
     final colors = context.smivoColors;
@@ -251,58 +332,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       GestureDetector(
-                        onTap: () async {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder:
-                                (context) => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                          );
-                          try {
-                            // Clear image cache
-                            PaintingBinding.instance.imageCache.clear();
-                            PaintingBinding.instance.imageCache
-                                .clearLiveImages();
-
-                            // Invalidate providers to clear old data
-                            ref.invalidate(profileProvider);
-                            ref.invalidate(allOrdersProvider);
-                            ref.invalidate(chatRoomListProvider);
-                            ref.invalidate(notificationListProvider);
-                            ref.invalidate(mySavedListingsProvider);
-                            ref.invalidate(myListingsProvider);
-                            ref.invalidate(homeListingsProvider);
-
-                            // Let the system settle
-                            await Future.delayed(
-                              const Duration(milliseconds: 800),
-                            );
-
-                            if (context.mounted) {
-                              Navigator.pop(context); // Close loading
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => const ActionSuccessDialog(
-                                  title: 'Cache Cleared',
-                                  message: 'Local cache cleared successfully.',
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => ActionErrorDialog(
-                                  title: 'Failed to Clear Cache',
-                                  message: e.toString(),
-                                ),
-                              );
-                            }
-                          }
-                        },
+                        onTap: _clearCache,
                         child: SettingCardContainer(
                           child: Row(
                             children: [
@@ -447,7 +477,7 @@ class SystemSettingsScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Show floating shortcut button for Home, Chat, Post, Orders',
+                                    'Show floating shortcut button for Home, Chat, Carpool, Orders',
                                     style: typo.bodySmall.copyWith(
                                       color: colors.onSurfaceVariant,
                                     ),

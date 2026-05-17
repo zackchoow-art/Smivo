@@ -5,6 +5,7 @@ import 'package:smivo/data/models/school.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 class AdminSchoolsScreen extends ConsumerWidget {
   const AdminSchoolsScreen({super.key});
@@ -178,33 +179,23 @@ class AdminSchoolsScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, School school) {
-    showDialog(
+  void _confirmDelete(BuildContext context, WidgetRef ref, School school) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: const Text('Delete School'),
-            content: Text('Are you sure you want to delete "${school.name}"?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  ref
-                      .read(adminSchoolControllerProvider.notifier)
-                      .deleteSchool(school.id);
-                  Navigator.of(context).pop();
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: context.smivoColors.error,
-                ),
-                child: const Text('Delete'),
-              ),
-            ],
+          (ctx) => ThemedConfirmDialog(
+            title: 'Delete School',
+            message: 'Are you sure you want to delete "${school.name}"?',
+            confirmText: 'Delete',
+            isDestructive: true,
           ),
     );
+
+    if (confirm == true) {
+      ref
+          .read(adminSchoolControllerProvider.notifier)
+          .deleteSchool(school.id);
+    }
   }
 }
 
@@ -318,8 +309,20 @@ class _SchoolDialogState extends ConsumerState<_SchoolDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.school != null;
 
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
-      title: Text(isEditing ? 'Edit School' : 'New School'),
+      backgroundColor: colors.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
+      title: Text(
+        isEditing ? 'Edit School' : 'New School',
+        style: typo.titleMedium.copyWith(fontWeight: FontWeight.w800),
+      ),
       content: SizedBox(
         width: 500,
         child: Form(

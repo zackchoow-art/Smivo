@@ -108,7 +108,9 @@ class CarpoolTripCard extends StatelessWidget {
                       Icon(Icons.access_time, size: 14, color: theme.colorScheme.onSurfaceVariant),
                       const SizedBox(width: 6),
                       Text(
-                        DateFormat('MM-dd HH:mm').format(trip.departureTime.toLocal()),
+                        currentUserId == null
+                            ? 'Please login to view'
+                            : DateFormat('MM-dd HH:mm').format(trip.departureTime.toLocal()),
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onSurfaceVariant,

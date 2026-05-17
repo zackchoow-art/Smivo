@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
@@ -14,31 +16,34 @@ class EmailVerificationScreen extends ConsumerWidget {
 
   /// Triggers a resend of the verification email via Supabase.
   Future<void> _resendEmail(WidgetRef ref, BuildContext context) async {
-    final colors = context.smivoColors;
     try {
       await ref.read(authProvider.notifier).resendVerification(email);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Verification email resent! Please check your inbox.',
-            ),
-            backgroundColor: colors.primary,
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Email Sent',
+            message: 'Verification email resent! Please check your inbox.',
           ),
         );
       }
     } on AppException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message), backgroundColor: colors.error),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Error',
+            message: e.message,
+          ),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Something went wrong. Please try again'),
-            backgroundColor: colors.error,
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionErrorDialog(
+            title: 'Error',
+            message: 'Something went wrong. Please try again.',
           ),
         );
       }

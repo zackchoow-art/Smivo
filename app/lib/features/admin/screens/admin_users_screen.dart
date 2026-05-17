@@ -222,10 +222,17 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
             : '-';
     final userId = user['id'] ?? '';
 
+    final radius = context.smivoRadius;
+
     showDialog(
       context: context,
       builder:
           (ctx) => AlertDialog(
+            backgroundColor: colors.surfaceContainerLowest,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius.md),
+            ),
             title: Row(
               children: [
                 CircleAvatar(

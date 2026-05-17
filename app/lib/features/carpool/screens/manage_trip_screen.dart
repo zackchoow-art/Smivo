@@ -14,6 +14,7 @@ import 'package:smivo/core/maps/map_location_picker.dart';
 import 'package:smivo/shared/widgets/collapsible_section.dart';
 import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 import 'package:smivo/features/carpool/services/calendar_sync_service.dart';
 
 class ManageTripScreen extends ConsumerStatefulWidget {
@@ -675,25 +676,12 @@ class _ManageTripScreenState extends ConsumerState<ManageTripScreen> {
   Future<void> _handleConfirmTrip(BuildContext context, CarpoolTrip trip) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Trip?'),
-        content: const Text(
-          'Confirming this trip will lock all details and send a notification to all members. '
-          'Once confirmed, the trip can no longer be cancelled. Are you sure?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Wait'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-            ),
-            child: const Text('Yes, Confirm'),
-          ),
-        ],
+      builder: (context) => const ThemedConfirmDialog(
+        title: 'Confirm Trip?',
+        message: 'Confirming this trip will lock all details and send a notification to all members. '
+            'Once confirmed, the trip can no longer be cancelled. Are you sure?',
+        confirmText: 'Yes, Confirm',
+        cancelText: 'Wait',
       ),
     );
 
@@ -914,8 +902,13 @@ class _MemberTile extends ConsumerWidget {
             tooltip: 'Private Chat',
             color: theme.colorScheme.secondary,
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Private chat coming soon')),
+              if (!context.mounted) return;
+              showDialog(
+                context: context,
+                builder: (ctx) => const ActionErrorDialog(
+                  title: 'Coming Soon',
+                  message: 'Private 1-on-1 chat with members is coming soon.',
+                ),
               );
             },
           ),
@@ -924,8 +917,13 @@ class _MemberTile extends ConsumerWidget {
             tooltip: 'Kick Out',
             color: theme.colorScheme.error,
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Kick voting coming soon')),
+              if (!context.mounted) return;
+              showDialog(
+                context: context,
+                builder: (ctx) => const ActionErrorDialog(
+                  title: 'Coming Soon',
+                  message: 'Kick voting for members is coming soon.',
+                ),
               );
             },
           ),
@@ -977,25 +975,12 @@ class _MemberTile extends ConsumerWidget {
   Future<void> _handleReject(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reject Request'),
-        content: Text(
-          'Are you sure you want to reject '
-          '${member.user?.displayName ?? "this member"}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Reject'),
-          ),
-        ],
+      builder: (context) => ThemedConfirmDialog(
+        title: 'Reject Request',
+        message: 'Are you sure you want to reject '
+            '${member.user?.displayName ?? "this member"}?',
+        confirmText: 'Reject',
+        isDestructive: true,
       ),
     );
 

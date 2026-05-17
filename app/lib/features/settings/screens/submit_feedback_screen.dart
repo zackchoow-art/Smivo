@@ -55,8 +55,13 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
     final description = _descriptionController.text;
 
     if (title.trim().isEmpty || description.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter title and description')),
+      showDialog(
+        context: context,
+        builder:
+            (ctx) => const ActionErrorDialog(
+              title: 'Incomplete Form',
+              message: 'Please enter title and description',
+            ),
       );
       return;
     }

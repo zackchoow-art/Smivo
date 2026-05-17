@@ -7,6 +7,8 @@ import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_roles_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 /// Admin screen for managing user roles and permissions.
 class AdminRolesScreen extends ConsumerStatefulWidget {
@@ -167,36 +169,38 @@ class _AdminRolesScreenState extends ConsumerState<AdminRolesScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, AdminRole role) {
-    final colors = context.smivoColors;
-    showDialog(
+  void _confirmDelete(BuildContext context, AdminRole role) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) => AlertDialog(
-            title: const Text('Remove Role'),
-            content: Text(
-              'Remove ${role.role} role for ${role.userName ?? role.userEmail}?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  await ref
-                      .read(adminRoleRepositoryProvider)
-                      .deleteRole(role.id);
-                  ref.invalidate(adminRolesProvider);
-                  ref.invalidate(adminContextProvider);
-                  if (ctx.mounted) Navigator.of(ctx).pop();
-                },
-                style: FilledButton.styleFrom(backgroundColor: colors.error),
-                child: const Text('Remove'),
-              ),
-            ],
+          (ctx) => ThemedConfirmDialog(
+            title: 'Remove Role',
+            message:
+                'Remove ${role.role} role for ${role.userName ?? role.userEmail}?',
+            confirmText: 'Remove',
+            isDestructive: true,
           ),
     );
+    if (confirm != true) return;
+
+    try {
+      await ref.read(adminRoleRepositoryProvider).deleteRole(role.id);
+      ref.invalidate(adminRolesProvider);
+      ref.invalidate(adminContextProvider);
+    } catch (e) {
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Remove Failed',
+                message: e.toString(),
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+        );
+      }
+    }
   }
 }
 
@@ -332,8 +336,20 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
   Widget build(BuildContext context) {
     final schoolsState = ref.watch(adminSchoolControllerProvider);
 
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
-      title: const Text('Assign Role'),
+      backgroundColor: colors.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
+      title: Text(
+        'Assign Role',
+        style: typo.titleMedium.copyWith(fontWeight: FontWeight.w800),
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -459,8 +475,15 @@ class _AssignRoleDialogState extends ConsumerState<_AssignRoleDialog> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: context.smivoColors.error),
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Assign Failed',
+                message: e.toString(),
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
         );
       }
     } finally {
@@ -493,9 +516,19 @@ class _EditRoleDialogState extends ConsumerState<_EditRoleDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
+      backgroundColor: colors.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
       title: Text(
         'Edit Role: ${widget.role.userName ?? widget.role.userEmail}',
+        style: typo.titleMedium.copyWith(fontWeight: FontWeight.w800),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,

@@ -14,7 +14,8 @@ import 'package:smivo/features/carpool/screens/manage_trip_screen.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 import 'package:smivo/core/exceptions/app_exception.dart';
 import 'package:smivo/shared/widgets/action_error_dialog.dart';
-// NOTE: ActionSuccessDialog removed — review completion uses a SnackBar instead.
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 import 'package:smivo/features/carpool/widgets/legal_disclaimer_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/features/carpool/services/calendar_sync_service.dart';
@@ -22,6 +23,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:smivo/data/repositories/carpool_repository.dart';
 import 'package:smivo/features/carpool/widgets/review_batch_sheet.dart';
 import 'package:smivo/data/models/carpool_member.dart';
+import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/core/router/app_routes.dart';
 
 class CarpoolDetailScreen extends ConsumerWidget {
   const CarpoolDetailScreen({super.key, required this.tripId});
@@ -31,6 +34,43 @@ class CarpoolDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final currentUserId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+
+    if (currentUserId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Trip Details')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text(
+                'Please login to view trip details',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: MediaQuery.of(context).size.width / 2,
+                child: ElevatedButton(
+                  onPressed: () => context.pushNamed(AppRoutes.login),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Login'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final detailAsync = ref.watch(carpoolDetailProvider(tripId));
 
     // Auto-update calendar if previously synced
@@ -507,32 +547,15 @@ class CarpoolDetailScreen extends ConsumerWidget {
 
                                 if (result == true) {
                                   if (!context.mounted) return;
-                                  // NOTE: Capture messenger before pop so the
-                                  // SnackBar displays on the previous screen.
-                                  final messenger =
-                                      ScaffoldMessenger.of(context);
                                   context.pop();
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      content: const Row(
-                                        children: [
-                                          Icon(
-                                            Icons.check_circle_rounded,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 10),
-                                          Text(
-                                            'Thank you for rating your trip!',
-                                          ),
-                                        ],
-                                      ),
-                                      backgroundColor: theme.colorScheme.primary,
-                                      behavior: SnackBarBehavior.floating,
-                                      duration: const Duration(seconds: 3),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                      ),
+                                  if (!context.mounted) return;
+                                  // NOTE: Show success after pop so dialog
+                                  // appears on the previous screen's context.
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => const ActionSuccessDialog(
+                                      title: 'Thank You!',
+                                      message: 'Your trip ratings have been submitted.',
                                     ),
                                   );
                                 }
@@ -573,7 +596,13 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                   ref.invalidate(carpoolDetailProvider(tripId));
                                 } catch (e) {
                                   if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => ActionErrorDialog(
+                                      title: 'Error',
+                                      message: e.toString(),
+                                    ),
+                                  );
                                 }
                               },
                               child: const Text('Confirm Arrival'),
@@ -615,32 +644,13 @@ class CarpoolDetailScreen extends ConsumerWidget {
 
                                 if (result == true) {
                                   if (!context.mounted) return;
-                                  // NOTE: Capture messenger before pop so the
-                                  // SnackBar displays on the previous screen.
-                                  final messenger =
-                                      ScaffoldMessenger.of(context);
                                   context.pop();
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      content: const Row(
-                                        children: [
-                                          Icon(
-                                            Icons.check_circle_rounded,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 10),
-                                          Text(
-                                            'Thank you for rating your trip!',
-                                          ),
-                                        ],
-                                      ),
-                                      backgroundColor: theme.colorScheme.primary,
-                                      behavior: SnackBarBehavior.floating,
-                                      duration: const Duration(seconds: 3),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                      ),
+                                  if (!context.mounted) return;
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => const ActionSuccessDialog(
+                                      title: 'Thank You!',
+                                      message: 'Your trip ratings have been submitted.',
                                     ),
                                   );
                                 }
@@ -731,17 +741,12 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                     onPressed: () async {
                                       final confirmed = await showDialog<bool>(
                                         context: context,
-                                        builder: (ctx) => AlertDialog(
-                                          title: const Text('Cancel Request?'),
-                                          content: const Text('Are you sure you want to cancel your request? You will not be able to rejoin unless the organizer updates the trip details.'),
-                                          actions: [
-                                            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Wait')),
-                                            TextButton(
-                                              onPressed: () => Navigator.of(ctx).pop(true),
-                                              style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
-                                              child: const Text('Yes, Cancel'),
-                                            ),
-                                          ],
+                                        builder: (ctx) => const ThemedConfirmDialog(
+                                          title: 'Cancel Request?',
+                                          message: 'Are you sure you want to cancel your request? You will not be able to rejoin unless the organizer updates the trip details.',
+                                          confirmText: 'Yes, Cancel',
+                                          cancelText: 'Wait',
+                                          isDestructive: true,
                                         ),
                                       );
                                       if (confirmed != true) return;
@@ -797,17 +802,12 @@ class CarpoolDetailScreen extends ConsumerWidget {
                                 onPressed: () async {
                                   final confirmed = await showDialog<bool>(
                                     context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      title: const Text('Leave Trip?'),
-                                      content: const Text('Are you sure you want to leave this trip? You will not be able to rejoin unless the organizer updates the trip details.'),
-                                      actions: [
-                                        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Wait')),
-                                        TextButton(
-                                          onPressed: () => Navigator.of(ctx).pop(true),
-                                          style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
-                                          child: const Text('Yes, Leave'),
-                                        ),
-                                      ],
+                                    builder: (ctx) => const ThemedConfirmDialog(
+                                      title: 'Leave Trip?',
+                                      message: 'Are you sure you want to leave this trip? You will not be able to rejoin unless the organizer updates the trip details.',
+                                      confirmText: 'Yes, Leave',
+                                      cancelText: 'Wait',
+                                      isDestructive: true,
                                     ),
                                   );
                                   if (confirmed != true) return;

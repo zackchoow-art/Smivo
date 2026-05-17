@@ -13,10 +13,12 @@ class CarpoolList extends _$CarpoolList {
   @override
   FutureOr<List<CarpoolTrip>> build() async {
     final profile = ref.watch(profileProvider).value;
-    if (profile == null) return [];
+    final repo = ref.read(carpoolRepositoryProvider);
 
     // Subscribe to Realtime changes on carpool_trips so the list
     // auto-refreshes when trips are created, updated, or cancelled.
+    // NOTE: We subscribe regardless of login state so guests also
+    // get live updates when new trips are posted.
     final client = ref.read(supabaseClientProvider);
     final channel = client.channel('carpool_trips_realtime');
     channel
@@ -25,26 +27,33 @@ class CarpoolList extends _$CarpoolList {
           schema: 'public',
           table: AppConstants.tableCarpoolTrips,
           callback: (_) {
-            // Invalidate self to trigger a re-fetch
             ref.invalidateSelf();
           },
         )
         .subscribe();
 
-    // Cleanup: remove channel when provider is disposed
     ref.onDispose(() {
       client.removeChannel(channel);
     });
 
-    return ref.read(carpoolRepositoryProvider).fetchActiveTrips(profile.schoolId);
+    // Guests (profile == null) see all active trips platform-wide.
+    // Logged-in users see only their own school's trips, mirroring
+    // the home feed behaviour.
+    if (profile == null) {
+      return repo.fetchAllActiveTrips();
+    }
+    return repo.fetchActiveTrips(profile.schoolId);
   }
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final profile = ref.read(profileProvider).value;
-      if (profile == null) return [];
-      return ref.read(carpoolRepositoryProvider).fetchActiveTrips(profile.schoolId);
+      final repo = ref.read(carpoolRepositoryProvider);
+      if (profile == null) {
+        return repo.fetchAllActiveTrips();
+      }
+      return repo.fetchActiveTrips(profile.schoolId);
     });
   }
 }

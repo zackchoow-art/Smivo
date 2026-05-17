@@ -7,6 +7,7 @@ import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_conditions_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 /// Admin screen for managing school-specific item conditions.
 class AdminConditionsScreen extends ConsumerStatefulWidget {
@@ -238,35 +239,22 @@ class _AdminConditionsScreenState extends ConsumerState<AdminConditionsScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, SchoolCondition cond) {
-    final colors = context.smivoColors;
-    showDialog(
+  void _confirmDelete(BuildContext context, SchoolCondition cond) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) => AlertDialog(
-            title: const Text('Delete Condition'),
-            content: Text('Delete "${cond.name}"?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  await ref
-                      .read(schoolDataRepositoryProvider)
-                      .deleteCondition(cond.id);
-                  ref.invalidate(
-                    adminSchoolConditionsProvider(_selectedSchoolId!),
-                  );
-                  if (ctx.mounted) Navigator.of(ctx).pop();
-                },
-                style: FilledButton.styleFrom(backgroundColor: colors.error),
-                child: const Text('Delete'),
-              ),
-            ],
+          (ctx) => ThemedConfirmDialog(
+            title: 'Delete Condition',
+            message: 'Delete "${cond.name}"?',
+            confirmText: 'Delete',
+            isDestructive: true,
           ),
     );
+
+    if (confirm == true) {
+      await ref.read(schoolDataRepositoryProvider).deleteCondition(cond.id);
+      ref.invalidate(adminSchoolConditionsProvider(_selectedSchoolId!));
+    }
   }
 }
 
@@ -340,8 +328,20 @@ class _ConditionDialogState extends ConsumerState<_ConditionDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.condition != null;
 
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
-      title: Text(isEditing ? 'Edit Condition' : 'New Condition'),
+      backgroundColor: colors.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
+      title: Text(
+        isEditing ? 'Edit Condition' : 'New Condition',
+        style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800),
+      ),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(

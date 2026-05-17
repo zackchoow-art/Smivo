@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:smivo/data/models/carpool_trip.dart';
 import 'package:smivo/features/carpool/providers/carpool_lifecycle_provider.dart';
 import 'package:smivo/core/maps/map_service.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 
 /// A vertical timeline showing the full lifecycle of a carpool trip.
 ///
@@ -351,14 +353,22 @@ class _CostSettlementCardState extends ConsumerState<CostSettlementCard> {
           .read(tripLifecycleProvider(widget.trip.id).notifier)
           .settleTripCost(widget.trip.id, cost);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cost settled successfully')),
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Settled',
+            message: 'Trip cost has been settled successfully.',
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Settlement failed: $e')),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Settlement Failed',
+            message: e.toString(),
+          ),
         );
       }
     } finally {

@@ -80,6 +80,10 @@ export function useAdminRole() {
       canPurgePlatformData:     _isSysadmin,
       canPurgeSchoolData:       _isSysadmin || isSchoolAdmin,
 
+      // ── Carpool management ────────────────────────────────────
+      canViewCarpool:           isModeratorOrAbove,
+      canEditCarpoolStatus:     _isSysadmin || isPlatformAdmin || isSchoolAdmin,
+
       // ── Action permissions ────────────────────────────────────
       canHardBan,
       canSoftRestrict,

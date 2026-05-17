@@ -427,15 +427,20 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              Text(
-                                widget.priceLabel ??
-                                    '\$${widget.listingPrice.toStringAsFixed(0)}',
-                                style: typo.labelLarge.copyWith(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
+                              // NOTE: Hide price when it is 0 (free/give-away).
+                              // If priceLabel is explicitly provided (e.g. rental
+                              // rate strings), always show it regardless.
+                              if (widget.priceLabel != null ||
+                                  widget.listingPrice > 0)
+                                Text(
+                                  widget.priceLabel ??
+                                      '\$${widget.listingPrice.toStringAsFixed(0)}',
+                                  style: typo.labelLarge.copyWith(
+                                    color: colors.primary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),

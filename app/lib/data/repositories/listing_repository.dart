@@ -363,6 +363,7 @@ class ListingRepository {
             ..remove('seller')
             ..remove('moderation_status')
             ..remove('moderation_note')
+            ..remove('pickup_location')
             ..['category'] = listing.category.toLowerCase();
 
       final data =
@@ -381,6 +382,157 @@ class ListingRepository {
         );
       }
       throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Updates a listing's fields AND replaces all its images atomically.
+  ///
+  /// Upload sequence:
+  ///   1. Upload each new [newPhotos] to Storage
+  ///   2. Update the listing row
+  ///   3. Delete all existing listing_images rows for this listing
+  ///   4. Insert new listing_images rows (new URLs)
+  ///
+  /// [existingImageUrls] — URLs from the original listing that the seller
+  /// chose to keep. These are re-inserted without re-uploading.
+  /// [newPhotos] — newly picked XFiles that need to be uploaded.
+  Future<Listing> updateListingWithImages({
+    required Listing listing,
+    required String userId,
+    required List<String> existingImageUrls,
+    required List<XFile> newPhotos,
+  }) async {
+    try {
+      // ── Step 1: Upload new photos ────────────────────────────────
+      final newUrls = <String>[];
+      for (final photo in newPhotos) {
+        final ext = p.extension(photo.name);
+        final fileName = '${_uuid.v4()}$ext';
+        final publicUrl = await _storageRepository.uploadListingImage(
+          userId: userId,
+          listingId: listing.id,
+          fileName: fileName,
+          fileBytes: await photo.readAsBytes(),
+        );
+        newUrls.add(publicUrl);
+      }
+
+      // ── Step 2: Update listing row ───────────────────────────────
+      final listingJson =
+          listing.toJson()
+            ..remove('images')
+            ..remove('seller')
+            ..remove('moderation_status')
+            ..remove('moderation_note')
+            ..remove('pickup_location')
+            ..['category'] = listing.category.toLowerCase();
+
+      await _client
+          .from(AppConstants.tableListings)
+          .update(listingJson)
+          .eq('id', listing.id);
+
+      // ── Step 3: Replace listing_images rows ──────────────────────
+      // Delete all current images for this listing first.
+      await _client
+          .from(AppConstants.tableListingImages)
+          .delete()
+          .eq('listing_id', listing.id);
+
+      // Rebuild the combined list: kept existing URLs + newly uploaded URLs.
+      final allUrls = [...existingImageUrls, ...newUrls];
+      if (allUrls.isNotEmpty) {
+        final imagesPayload = allUrls.asMap().entries.map((entry) {
+          return {
+            'listing_id': listing.id,
+            'image_url': entry.value,
+            'sort_order': entry.key,
+          };
+        }).toList();
+        await _client
+            .from(AppConstants.tableListingImages)
+            .insert(imagesPayload);
+      }
+
+      return fetchListing(listing.id);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    } on StorageException catch (e) {
+      throw AppStorageException(e.message, e);
+    }
+  }
+
+  /// Invalidates all pending orders for a listing after the seller edits it.
+  ///
+  /// NOTE: 'invalidated' is a soft state — orders remain visible to buyers
+  /// so they can re-submit without losing their order history. This is
+  /// different from 'cancelled', which implies buyer/seller action.
+  Future<void> invalidatePendingOrders(String listingId) async {
+    try {
+      await _client
+          .from(AppConstants.tableOrders)
+          .update({'status': 'invalidated'})
+          .eq('listing_id', listingId)
+          .eq('status', 'pending');
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Notifies all buyers with pending/invalidated orders and users who saved
+  /// the listing that the listing has been updated by the seller.
+  ///
+  /// Inserts rows into the `notifications` table; the DB trigger
+  /// automatically fires the push-notification Edge Function per row.
+  Future<void> notifyListingUpdated({
+    required String listingId,
+    required String listingTitle,
+  }) async {
+    try {
+      // Collect buyer IDs from pending/invalidated orders
+      final orders = await _client
+          .from(AppConstants.tableOrders)
+          .select('buyer_id')
+          .eq('listing_id', listingId)
+          .inFilter('status', ['pending', 'invalidated']);
+
+      // Collect user IDs from saved_listings
+      final saves = await _client
+          .from(AppConstants.tableSavedListings)
+          .select('user_id')
+          .eq('listing_id', listingId);
+
+      // Deduplicate all recipient IDs
+      final recipientIds = <String>{};
+      for (final o in orders) {
+        final id = o['buyer_id'] as String?;
+        if (id != null) recipientIds.add(id);
+      }
+      for (final s in saves) {
+        final id = s['user_id'] as String?;
+        if (id != null) recipientIds.add(id);
+      }
+
+      if (recipientIds.isEmpty) return;
+
+      // Insert one notification row per recipient.
+      // The push-notification Edge Function fires for each INSERT via DB trigger.
+      final notifications = recipientIds.map((userId) {
+        return {
+          'user_id': userId,
+          'type': 'listing_updated',
+          'title': 'Listing Updated',
+          'body':
+              '"$listingTitle" has been updated by the seller. Tap to view the changes.',
+          'action_url': '/listing/$listingId',
+          'is_read': false,
+        };
+      }).toList();
+
+      await _client.from('notifications').insert(notifications);
+    } on PostgrestException catch (e) {
+      // NOTE: Non-critical — notification failure should not block the edit.
+      debugPrint('notifyListingUpdated error: ${e.message}');
     }
   }
 

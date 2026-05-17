@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:smivo/core/providers/nav_scroll_provider.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
@@ -22,9 +23,21 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
   String _searchQuery = '';
   DateTimeRange? _dateRange;
 
+  // NOTE: Explicit ScrollController for NestedScrollView's outer scroll.
+  // When the user re-taps the Carpool nav item while already on this screen,
+  // carpoolScrollTriggerProvider fires and we animate to offset 0 (top).
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -82,12 +95,25 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
     final colors = context.smivoColors;
     final tripListAsync = ref.watch(carpoolListProvider);
 
+    // NOTE: Listen outside of build to avoid "setState during build" issues.
+    // Fires whenever the user re-taps the Carpool bottom nav item.
+    ref.listen<int>(carpoolScrollTriggerProvider, (_, __) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         backgroundColor: colors.surfaceContainerLowest,
         body: SafeArea(
           child: NestedScrollView(
+            controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 SliverToBoxAdapter(
@@ -154,6 +180,7 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
   }
 
   Widget _buildExploreTab(BuildContext context, ThemeData theme, AsyncValue<List<CarpoolTrip>> tripListAsync) {
+    final currentUserId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
     return RefreshIndicator(
       onRefresh: () => ref.read(carpoolListProvider.notifier).refresh(),
       child: tripListAsync.when(
@@ -207,7 +234,12 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
                           padding: const EdgeInsets.only(bottom: 12),
                           child: CarpoolTripCard(
                             trip: trip,
+                            currentUserId: currentUserId,
                             onTap: () {
+                              if (currentUserId == null) {
+                                context.pushNamed(AppRoutes.login);
+                                return;
+                              }
                               context.pushNamed(
                                 AppRoutes.carpoolDetail,
                                 pathParameters: {'id': trip.id},
@@ -242,15 +274,48 @@ class _CarpoolListScreenState extends ConsumerState<CarpoolListScreen> {
   }
 
   Widget _buildMyTripsTab(BuildContext context, ThemeData theme) {
+    final currentUserId = ref.watch(supabaseClientProvider).auth.currentUser?.id;
+
+    if (currentUserId == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(
+              'Please login to view your trips',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: MediaQuery.of(context).size.width / 2,
+              child: ElevatedButton(
+                onPressed: () => context.pushNamed(AppRoutes.login),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Login'),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final myTripsAsync = ref.watch(myCarpoolProvider);
-    final currentUserId = ref.read(supabaseClientProvider).auth.currentUser?.id;
 
     return myTripsAsync.when(
       data: (trips) {
         final filteredTrips = trips.where(_matchesFilter).toList();
         
         bool isMemberCancelled(CarpoolTrip t) {
-          if (currentUserId == null || t.creatorId == currentUserId) return false;
+          if (t.creatorId == currentUserId) return false;
           try {
             final m = t.members.firstWhere((m) => m.userId == currentUserId);
             return m.status == 'cancelled' || m.status == 'rejected' || m.status == 'left';

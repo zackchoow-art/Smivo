@@ -8,6 +8,8 @@ import 'package:smivo/features/carpool/providers/carpool_detail_provider.dart';
 import 'package:smivo/features/carpool/providers/carpool_proposals_provider.dart';
 import 'package:smivo/features/carpool/widgets/proposal_card.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 
 /// Full-screen page listing all proposals for a trip with a FAB to create new ones.
 class TripProposalsScreen extends ConsumerWidget {
@@ -208,14 +210,22 @@ class _CreateProposalSheetState extends ConsumerState<_CreateProposalSheet> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Proposal submitted')),
+        showDialog(
+          context: context,
+          builder: (ctx) => const ActionSuccessDialog(
+            title: 'Submitted',
+            message: 'Your proposal has been submitted.',
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission failed: $e')),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Submission Failed',
+            message: e.toString(),
+          ),
         );
       }
     } finally {

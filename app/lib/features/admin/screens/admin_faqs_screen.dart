@@ -6,6 +6,7 @@ import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_faq_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 /// Admin screen for managing FAQs with optional school scoping.
 ///
@@ -320,32 +321,21 @@ class _AdminFaqsScreenState extends ConsumerState<AdminFaqsScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, Faq faq) {
-    final colors = context.smivoColors;
-    showDialog(
+  void _confirmDelete(BuildContext context, Faq faq) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) => AlertDialog(
-            title: const Text('Delete FAQ'),
-            content: Text('Delete "${faq.question}"?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  ref
-                      .read(adminFaqControllerProvider.notifier)
-                      .deleteFaq(faq.id);
-                  Navigator.of(ctx).pop();
-                },
-                style: FilledButton.styleFrom(backgroundColor: colors.error),
-                child: const Text('Delete'),
-              ),
-            ],
+          (ctx) => ThemedConfirmDialog(
+            title: 'Delete FAQ',
+            message: 'Delete "${faq.question}"?',
+            confirmText: 'Delete',
+            isDestructive: true,
           ),
     );
+
+    if (confirm == true) {
+      ref.read(adminFaqControllerProvider.notifier).deleteFaq(faq.id);
+    }
   }
 }
 
@@ -416,8 +406,20 @@ class _FaqDialogState extends ConsumerState<_FaqDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.faq != null;
 
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
-      title: Text(isEditing ? 'Edit FAQ' : 'New FAQ'),
+      backgroundColor: colors.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
+      title: Text(
+        isEditing ? 'Edit FAQ' : 'New FAQ',
+        style: typo.titleMedium.copyWith(fontWeight: FontWeight.w800),
+      ),
       content: SizedBox(
         width: 480,
         child: Form(

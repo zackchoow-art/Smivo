@@ -34,6 +34,9 @@ import { PushOverviewPage } from '@/pages/push/PushOverviewPage';
 import { PushCreatePage } from '@/pages/push/PushCreatePage';
 import { PushHistoryPage } from '@/pages/push/PushHistoryPage';
 import { TestDataCleanupPage } from '@/pages/settings/TestDataCleanupPage';
+import { CarpoolListPage } from '@/pages/carpool/CarpoolListPage';
+import { CarpoolDetailPage } from '@/pages/carpool/CarpoolDetailPage';
+import { CarpoolAnalyticsPage } from '@/pages/carpool/CarpoolAnalyticsPage';
 
 
 export const router = createBrowserRouter([
@@ -81,6 +84,11 @@ export const router = createBrowserRouter([
       { path: 'push', element: <PushOverviewPage /> },
       { path: 'push/new', element: <PushCreatePage /> },
       { path: 'push/history', element: <PushHistoryPage /> },
+
+      // Carpool Management
+      { path: 'carpool', element: <CarpoolListPage /> },
+      { path: 'carpool/analytics', element: <CarpoolAnalyticsPage /> },
+      { path: 'carpool/:id', element: <CarpoolDetailPage /> },
 
       // 12-15 System Configuration (accessed via TopBar → Settings)
       { path: 'settings', element: <SettingsPage /> },

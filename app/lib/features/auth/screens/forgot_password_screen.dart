@@ -12,6 +12,8 @@ import 'package:smivo/data/models/school.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -88,15 +90,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     }
 
     if (mounted && !ref.read(authProvider).hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Password reset email sent. Please check your inbox.',
-          ),
-          backgroundColor: Theme.of(context).colorScheme.primary,
+      showDialog(
+        context: context,
+        builder: (ctx) => const ActionSuccessDialog(
+          title: 'Email Sent',
+          message: 'Password reset email sent. Please check your inbox.',
         ),
-      );
-      context.pop();
+      ).then((_) {
+        if (mounted) context.pop();
+      });
     }
   }
 
@@ -117,9 +119,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             error is AppException
                 ? error.message
                 : 'Something went wrong. Please try again';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message), backgroundColor: colors.error),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Error',
+            message: message,
+          ),
         );
       }
     });

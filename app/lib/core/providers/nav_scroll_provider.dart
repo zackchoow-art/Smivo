@@ -29,3 +29,13 @@ class ChatScrollTrigger extends _$ChatScrollTrigger {
   // Increment so ref.listen callbacks always fire even on rapid taps.
   void trigger() => state = state + 1;
 }
+
+/// Triggers scroll-to-top on the Carpool list when [trigger] is called.
+@Riverpod(keepAlive: true)
+class CarpoolScrollTrigger extends _$CarpoolScrollTrigger {
+  @override
+  int build() => 0;
+
+  // Increment so ref.listen callbacks always fire even on rapid taps.
+  void trigger() => state = state + 1;
+}

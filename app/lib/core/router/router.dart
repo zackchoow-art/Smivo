@@ -250,6 +250,9 @@ GoRouter router(Ref ref) {
               listingId: state.pathParameters['id']!,
               initialTab:
                   int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0,
+              // NOTE: 'edit' expands the Edit Listing section automatically,
+              // e.g. when navigating from the listing detail "Edit" button.
+              initialSection: state.uri.queryParameters['section'] ?? '',
             ),
       ),
 

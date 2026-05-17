@@ -173,7 +173,7 @@ class TrustAndSafetyScreen extends ConsumerWidget {
                                                         context: context,
                                                         builder: (ctx) =>
                                                             ActionSuccessDialog(
-                                                          title: 'Unblocked',
+                                                          title: 'User Unblocked',
                                                           message:
                                                               '${user.displayName ?? 'User'} has been unblocked.',
                                                         ),

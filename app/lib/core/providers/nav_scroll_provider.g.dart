@@ -123,3 +123,62 @@ abstract class _$ChatScrollTrigger extends $Notifier<int> {
     element.handleCreate(ref, build);
   }
 }
+
+/// Triggers scroll-to-top on the Carpool list when [trigger] is called.
+
+@ProviderFor(CarpoolScrollTrigger)
+final carpoolScrollTriggerProvider = CarpoolScrollTriggerProvider._();
+
+/// Triggers scroll-to-top on the Carpool list when [trigger] is called.
+final class CarpoolScrollTriggerProvider
+    extends $NotifierProvider<CarpoolScrollTrigger, int> {
+  /// Triggers scroll-to-top on the Carpool list when [trigger] is called.
+  CarpoolScrollTriggerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'carpoolScrollTriggerProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$carpoolScrollTriggerHash();
+
+  @$internal
+  @override
+  CarpoolScrollTrigger create() => CarpoolScrollTrigger();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$carpoolScrollTriggerHash() =>
+    r'36f26c01e705110626de9dd6f769f9f36b03e961';
+
+/// Triggers scroll-to-top on the Carpool list when [trigger] is called.
+
+abstract class _$CarpoolScrollTrigger extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

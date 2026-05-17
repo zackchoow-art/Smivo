@@ -147,8 +147,7 @@ abstract class _$LastPickupLocationId extends $Notifier<String?> {
 
 /// Persists whether the floating quick-nav speed-dial is shown.
 ///
-/// Defaults to [true] (visible) if no preference has been saved.
-/// Users can toggle this from System Settings.
+/// Defaults to [false] (hidden) until the user enables it in System Settings.
 ///
 /// NOTE: keepAlive: true so the toggle survives tab switches.
 
@@ -157,16 +156,14 @@ final showFloatingNavProvider = ShowFloatingNavProvider._();
 
 /// Persists whether the floating quick-nav speed-dial is shown.
 ///
-/// Defaults to [true] (visible) if no preference has been saved.
-/// Users can toggle this from System Settings.
+/// Defaults to [false] (hidden) until the user enables it in System Settings.
 ///
 /// NOTE: keepAlive: true so the toggle survives tab switches.
 final class ShowFloatingNavProvider
     extends $NotifierProvider<ShowFloatingNav, bool> {
   /// Persists whether the floating quick-nav speed-dial is shown.
   ///
-  /// Defaults to [true] (visible) if no preference has been saved.
-  /// Users can toggle this from System Settings.
+  /// Defaults to [false] (hidden) until the user enables it in System Settings.
   ///
   /// NOTE: keepAlive: true so the toggle survives tab switches.
   ShowFloatingNavProvider._()
@@ -196,12 +193,11 @@ final class ShowFloatingNavProvider
   }
 }
 
-String _$showFloatingNavHash() => r'48e4aad5e7fea7a3cc96aeef9cce5f71132d900e';
+String _$showFloatingNavHash() => r'0205528404454a2d4198fb7ce653c2138bc37ac2';
 
 /// Persists whether the floating quick-nav speed-dial is shown.
 ///
-/// Defaults to [true] (visible) if no preference has been saved.
-/// Users can toggle this from System Settings.
+/// Defaults to [false] (hidden) until the user enables it in System Settings.
 ///
 /// NOTE: keepAlive: true so the toggle survives tab switches.
 

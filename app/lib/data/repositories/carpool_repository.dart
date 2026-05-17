@@ -37,6 +37,24 @@ class CarpoolRepository {
     }
   }
 
+  /// Fetches ALL active trips across all schools for guest browsing.
+  ///
+  /// NOTE: No school_id filter is applied here — guests can see all
+  /// active trips platform-wide. The RLS policy permits public read
+  /// on status = 'active' rows.
+  Future<List<CarpoolTrip>> fetchAllActiveTrips() async {
+    try {
+      final data = await _client
+          .from(AppConstants.tableCarpoolTrips)
+          .select('*, creator:user_profiles!creator_id(*)')
+          .eq('status', 'active')
+          .order('departure_time', ascending: true);
+      return data.map((json) => CarpoolTrip.fromJson(json)).toList();
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
   /// Fetches a single trip by [tripId] with creator and members joined.
   ///
   /// Members include their user profiles for the detail page roster.

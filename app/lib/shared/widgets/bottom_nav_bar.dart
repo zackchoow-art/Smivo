@@ -54,7 +54,6 @@ class BottomNavBar extends ConsumerWidget {
                 onTap: () => onTap(1),
                 unreadCount: totalUnread,
               ),
-              // Floating Action Button style Post button
               GestureDetector(
                 onTap: () => onTap(2),
                 child: Container(
@@ -62,17 +61,14 @@ class BottomNavBar extends ConsumerWidget {
                   height: 52,
                   margin: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
-                    color: colors.primary,
+                    color: Colors.transparent,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: colors.primary.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    border: Border.all(
+                      color: colors.primary,
+                      width: 1,
+                    ),
                   ),
-                  child: Icon(Icons.add, color: colors.onPrimary, size: 28),
+                  child: Icon(Icons.add, color: colors.primary, size: 28),
                 ),
               ),
               _NavBarItem(

@@ -50,6 +50,10 @@ export const TABLES = {
   // Presence
   USER_HEARTBEATS: 'user_heartbeats',
   HOURLY_ACTIVE_USERS: 'hourly_active_users',
+
+  // Carpool
+  CARPOOL_TRIPS: 'carpool_trips',
+  CARPOOL_MEMBERS: 'carpool_members',
 } as const;
 
 // ── Admin Roles (5-level hierarchy, migration 00067) ──
@@ -195,6 +199,17 @@ export const SENSITIVE_SEVERITY = {
   BLOCK: 'block',
   REVIEW: 'review',
   MASK: 'mask',
+} as const;
+
+// ── Carpool Trip Statuses ──
+export const CARPOOL_STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  CONFIRMED: 'confirmed',
+  DEPARTED: 'departed',
+  ARRIVED: 'arrived',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
 } as const;
 
 // ── Pagination ──

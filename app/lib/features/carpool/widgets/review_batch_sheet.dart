@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/data/models/carpool_member.dart';
 import 'package:smivo/features/carpool/providers/carpool_lifecycle_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 /// A bottom sheet for submitting peer reviews after a carpool trip.
@@ -117,8 +118,12 @@ class _ReviewBatchSheetState extends ConsumerState<ReviewBatchSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission failed: $e')),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Submission Failed',
+            message: e.toString(),
+          ),
         );
       }
     } finally {

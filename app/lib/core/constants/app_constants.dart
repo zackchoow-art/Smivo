@@ -54,6 +54,9 @@ class AppConstants {
   static const String orderConfirmed = 'confirmed';
   static const String orderCompleted = 'completed';
   static const String orderCancelled = 'cancelled';
+  // NOTE: 'invalidated' means the seller edited the listing after the order
+  // was placed. The buyer can re-submit a new offer directly from this state.
+  static const String orderInvalidated = 'invalidated';
 
   // ── Validation ─────────────────────────────────────────────
   static const String eduEmailSuffix = '.edu';

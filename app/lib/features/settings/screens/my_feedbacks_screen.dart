@@ -87,7 +87,7 @@ class MyFeedbacksScreen extends ConsumerWidget {
             showDialog(
               context: context,
               builder: (ctx) => ActionErrorDialog(
-                title: 'Cannot Submit Feedback',
+                title: 'Feedback Suspended',
                 message: msg,
               ),
             );

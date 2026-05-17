@@ -820,8 +820,13 @@ class _CreateListingFormScreenState
       errors.add('At least one photo is required');
     }
     if (isSale) {
-      final price = double.tryParse(_priceController.text.trim());
-      if (price == null || price <= 0) errors.add('Valid sale price required');
+      // NOTE: price = 0 is allowed (free / give-away listings).
+      // Only reject when the field is blank or contains non-numeric text.
+      final priceText = _priceController.text.trim();
+      final price = double.tryParse(priceText);
+      if (priceText.isEmpty || price == null) {
+        errors.add('Please enter a sale price (\$0 is allowed for free items)');
+      }
     }
     if (!isSale) {
       final daily =

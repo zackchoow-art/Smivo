@@ -18,6 +18,7 @@ import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/shared/providers/system_urls_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 
 import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
@@ -185,7 +186,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    // Listen for auth errors and show SnackBar
+    // Listen for auth errors and show ActionErrorDialog
     ref.listen(authProvider, (previous, next) {
       if (next.hasError && !next.isLoading) {
         final error = next.error;
@@ -193,9 +194,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             error is AppException
                 ? error.message
                 : 'Something went wrong. Please try again';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message), backgroundColor: colors.error),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Login Failed',
+            message: message,
+          ),
         );
       }
     });

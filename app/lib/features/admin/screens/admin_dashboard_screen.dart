@@ -10,6 +10,7 @@ import 'package:smivo/features/admin/providers/admin_dashboard_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 
 /// Admin dashboard with platform metrics and recent activity.
 class AdminDashboardScreen extends ConsumerWidget {
@@ -407,6 +408,7 @@ class AdminDashboardScreen extends ConsumerWidget {
   void _showClearDataDialog(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
     final confirmCtrl = TextEditingController();
 
     showDialog(
@@ -416,6 +418,11 @@ class AdminDashboardScreen extends ConsumerWidget {
           (ctx) => StatefulBuilder(
             builder: (ctx, setDialogState) {
               return AlertDialog(
+                backgroundColor: colors.surfaceContainerLowest,
+                surfaceTintColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(radius.md),
+                ),
                 title: Row(
                   children: [
                     Icon(
@@ -424,7 +431,13 @@ class AdminDashboardScreen extends ConsumerWidget {
                       size: 24,
                     ),
                     const SizedBox(width: 12),
-                    const Text('Clear Test Data'),
+                    Text(
+                      'Clear Test Data',
+                      style: typo.headlineSmall.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: colors.error,
+                      ),
+                    ),
                   ],
                 ),
                 content: SizedBox(
@@ -439,7 +452,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       ...[
                         '• All orders & order evidence',
                         '• All rental extensions',
@@ -450,47 +463,80 @@ class AdminDashboardScreen extends ConsumerWidget {
                         '• All listings',
                       ].map(
                         (t) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Text(
-                            t,
-                            style: typo.bodySmall.copyWith(
-                              color: colors.onSurfaceVariant,
-                            ),
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.circle,
+                                size: 4,
+                                color: colors.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                t.replaceFirst('• ', ''),
+                                style: typo.bodyMedium.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: const Color(
                             0xFF059669,
                           ).withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(radius.xs),
                         ),
-                        child: Text(
-                          '✓ Schools, categories, conditions, pickup locations, FAQs, dictionary, admin roles, and user accounts will NOT be deleted.',
-                          style: typo.bodySmall.copyWith(
-                            color: const Color(0xFF059669),
-                            fontWeight: FontWeight.w500,
-                          ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.check_circle,
+                              size: 16,
+                              color: Color(0xFF059669),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Schools, categories, conditions, pickup locations, FAQs, dictionary, admin roles, and user accounts will NOT be deleted.',
+                                style: typo.bodySmall.copyWith(
+                                  color: const Color(0xFF059669),
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       Text(
                         'Type DELETE to confirm:',
                         style: typo.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: confirmCtrl,
                         onChanged: (_) => setDialogState(() {}),
+                        style: typo.bodyMedium,
                         decoration: InputDecoration(
                           hintText: 'DELETE',
+                          hintStyle: typo.bodyMedium.copyWith(
+                            color: colors.onSurfaceVariant.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: colors.surfaceContainerLow,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(radius.sm),
+                            borderSide: BorderSide.none,
                           ),
                         ),
                       ),
@@ -503,7 +549,13 @@ class AdminDashboardScreen extends ConsumerWidget {
                       confirmCtrl.dispose();
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text('Cancel'),
+                    child: Text(
+                      'Cancel',
+                      style: typo.labelLarge.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   FilledButton(
                     onPressed:
@@ -517,6 +569,10 @@ class AdminDashboardScreen extends ConsumerWidget {
                     style: FilledButton.styleFrom(
                       backgroundColor: colors.error,
                       foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(radius.sm),
+                      ),
                       disabledBackgroundColor: colors.error.withValues(
                         alpha: 0.3,
                       ),
@@ -536,12 +592,22 @@ class AdminDashboardScreen extends ConsumerWidget {
       context: context,
       barrierDismissible: false,
       builder:
-          (_) => const AlertDialog(
+          (_) => AlertDialog(
+            backgroundColor: context.smivoColors.surfaceContainerLowest,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(context.smivoRadius.md),
+            ),
             content: Row(
               children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 24),
-                Text('Clearing data…'),
+                const CircularProgressIndicator(),
+                const SizedBox(width: 24),
+                Text(
+                  'Clearing data…',
+                  style: context.smivoTypo.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -578,11 +644,15 @@ class AdminDashboardScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) Navigator.of(context).pop();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error clearing data: $e'),
-            backgroundColor: context.smivoColors.error,
-          ),
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Clear Data Failed',
+                message: e.toString(),
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
         );
       }
     }
@@ -592,6 +662,7 @@ class AdminDashboardScreen extends ConsumerWidget {
   void _showBroadcastDialog(BuildContext context, WidgetRef ref) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
     final titleCtrl = TextEditingController();
     final bodyCtrl = TextEditingController();
 
@@ -600,11 +671,22 @@ class AdminDashboardScreen extends ConsumerWidget {
       barrierDismissible: false,
       builder:
           (ctx) => AlertDialog(
+            backgroundColor: colors.surfaceContainerLowest,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius.md),
+            ),
             title: Row(
               children: [
                 Icon(Icons.campaign, color: colors.primary, size: 24),
                 const SizedBox(width: 12),
-                const Text('System Broadcast'),
+                Text(
+                  'System Broadcast',
+                  style: typo.headlineSmall.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: colors.primary,
+                  ),
+                ),
               ],
             ),
             content: SizedBox(
@@ -615,26 +697,38 @@ class AdminDashboardScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Send a push notification to all users.',
-                    style: typo.bodyMedium,
+                    style: typo.bodyMedium.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   TextField(
                     controller: titleCtrl,
+                    style: typo.bodyMedium,
                     decoration: InputDecoration(
                       labelText: 'Notification Title',
+                      labelStyle: typo.bodySmall,
+                      filled: true,
+                      fillColor: colors.surfaceContainerLow,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(radius.sm),
+                        borderSide: BorderSide.none,
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: bodyCtrl,
+                    style: typo.bodyMedium,
                     maxLines: 3,
                     decoration: InputDecoration(
                       labelText: 'Message Body',
+                      labelStyle: typo.bodySmall,
+                      filled: true,
+                      fillColor: colors.surfaceContainerLow,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(radius.sm),
+                        borderSide: BorderSide.none,
                       ),
                     ),
                   ),
@@ -648,7 +742,13 @@ class AdminDashboardScreen extends ConsumerWidget {
                   bodyCtrl.dispose();
                   Navigator.of(ctx).pop();
                 },
-                child: const Text('Cancel'),
+                child: Text(
+                  'Cancel',
+                  style: typo.labelLarge.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
               FilledButton(
                 onPressed: () {
@@ -661,6 +761,12 @@ class AdminDashboardScreen extends ConsumerWidget {
                     _executeBroadcast(context, ref, title, body);
                   }
                 },
+                style: FilledButton.styleFrom(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(radius.sm),
+                  ),
+                ),
                 child: const Text('Send Broadcast'),
               ),
             ],
@@ -679,12 +785,22 @@ class AdminDashboardScreen extends ConsumerWidget {
       context: context,
       barrierDismissible: false,
       builder:
-          (_) => const AlertDialog(
+          (_) => AlertDialog(
+            backgroundColor: context.smivoColors.surfaceContainerLowest,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(context.smivoRadius.md),
+            ),
             content: Row(
               children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 24),
-                Text('Sending broadcast…'),
+                const CircularProgressIndicator(),
+                const SizedBox(width: 24),
+                Text(
+                  'Sending broadcast…',
+                  style: context.smivoTypo.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -697,21 +813,29 @@ class AdminDashboardScreen extends ConsumerWidget {
       if (context.mounted) Navigator.of(context).pop(); // dismiss loading
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Broadcast sent successfully.'),
-            backgroundColor: Color(0xFF059669),
-          ),
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionSuccessDialog(
+                title: 'Broadcast Sent',
+                message: 'Push notification has been broadcast to all users.',
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
         );
       }
     } catch (e) {
       if (context.mounted) Navigator.of(context).pop(); // dismiss loading
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error sending broadcast: $e'),
-            backgroundColor: context.smivoColors.error,
-          ),
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Broadcast Failed',
+                message: e.toString(),
+                buttonText: 'OK',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
         );
       }
     }

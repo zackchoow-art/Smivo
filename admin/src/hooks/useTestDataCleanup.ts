@@ -123,6 +123,7 @@ async function purgeAllStorageBuckets(): Promise<number> {
 /** Delete all user-generated content for a specific school. */
 export function usePurgeSchoolData() {
   return useMutation({
+    mutationKey: ['purge-school-data'],
     mutationFn: async (schoolId: string): Promise<PurgeResult> => {
       await ensureValidSession();
 
@@ -132,15 +133,15 @@ export function usePurgeSchoolData() {
         p_school_id: schoolId,
       });
       if (error) {
-        console.error('[Cleanup] School purge error:', JSON.stringify(error));
-        throw error;
+        console.error('[Cleanup] School purge RPC error:', JSON.stringify(error, null, 2));
+        throw new Error(error.message ?? JSON.stringify(error));
       }
+      // NOTE: RAISE NOTICE messages from PostgreSQL are visible in
+      // Supabase Dashboard → Database → Logs → Postgres tab.
+      // The object below is the jsonb returned by the function body.
+      console.log('[Cleanup] School purge RPC returned:', JSON.stringify(data, null, 2));
 
       // Step 2: Purge Storage files
-      // NOTE: For school-scoped cleanup we still empty all buckets because
-      // listing-images paths are keyed by user_id, not school_id, making
-      // it impractical to filter by school. Since this is a pre-launch tool,
-      // clearing all storage is acceptable.
       console.log('[Cleanup] Purging storage buckets...');
       const storageDeleted = await purgeAllStorageBuckets();
       console.log(`[Cleanup] Total storage files deleted: ${storageDeleted}`);
@@ -149,5 +150,12 @@ export function usePurgeSchoolData() {
       result.storage_files_deleted = storageDeleted;
       return result;
     },
+    onError: (err: unknown) => {
+      // NOTE: This callback fires after mutationFn throws. Log here so that
+      // even if the component is unmounted, the error is still visible in
+      // the browser console.
+      console.error('[Cleanup] Mutation onError:', err instanceof Error ? err.message : err);
+    },
   });
 }
+

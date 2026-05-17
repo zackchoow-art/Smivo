@@ -7,6 +7,7 @@ import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_categories_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 /// Admin screen for managing school-specific product categories.
 class AdminCategoriesScreen extends ConsumerStatefulWidget {
@@ -232,35 +233,22 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, SchoolCategory cat) {
-    final colors = context.smivoColors;
-    showDialog(
+  void _confirmDelete(BuildContext context, SchoolCategory cat) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) => AlertDialog(
-            title: const Text('Delete Category'),
-            content: Text('Delete "${cat.name}"?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  await ref
-                      .read(schoolDataRepositoryProvider)
-                      .deleteCategory(cat.id);
-                  ref.invalidate(
-                    adminSchoolCategoriesProvider(_selectedSchoolId!),
-                  );
-                  if (ctx.mounted) Navigator.of(ctx).pop();
-                },
-                style: FilledButton.styleFrom(backgroundColor: colors.error),
-                child: const Text('Delete'),
-              ),
-            ],
+          (ctx) => ThemedConfirmDialog(
+            title: 'Delete Category',
+            message: 'Delete "${cat.name}"?',
+            confirmText: 'Delete',
+            isDestructive: true,
           ),
     );
+
+    if (confirm == true) {
+      await ref.read(schoolDataRepositoryProvider).deleteCategory(cat.id);
+      ref.invalidate(adminSchoolCategoriesProvider(_selectedSchoolId!));
+    }
   }
 
   void _seedDefaults(BuildContext context) async {
@@ -339,8 +327,20 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.category != null;
 
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
-      title: Text(isEditing ? 'Edit Category' : 'New Category'),
+      backgroundColor: colors.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
+      title: Text(
+        isEditing ? 'Edit Category' : 'New Category',
+        style: typo.titleMedium.copyWith(fontWeight: FontWeight.w800),
+      ),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(

@@ -16,7 +16,12 @@ import { useAdminRole } from '@/hooks/useAdminRole';
 import { useColleges } from '@/hooks/useColleges';
 import { useSchoolScopeStore } from '@/stores/school-scope-store';
 
-const SCHOOL_CONFIRM_PHRASE = 'DELETE SCHOOL DATA';
+// NOTE: Dynamic confirm phrase includes the school name so the admin must
+// deliberately type the exact school name before the action is enabled.
+// This prevents accidental deletion of the wrong school's data.
+function schoolConfirmPhrase(schoolName: string | undefined): string {
+  return schoolName ? `DELETE ${schoolName.toUpperCase()}` : 'DELETE SCHOOL DATA';
+}
 
 // ── PurgeCard ─────────────────────────────────────────────────────────────────
 
@@ -28,15 +33,19 @@ interface PurgeCardProps {
   confirmPhrase: string;
   items: string[];
   onConfirm: () => void;
+  onReset: () => void;
   isPending: boolean;
   isSuccess: boolean;
+  isError: boolean;
+  errorMessage: string;
   isAllowed: boolean;
   denyReason?: string;
 }
 
 function PurgeCard({
   title, subtitle, icon, accentColor, confirmPhrase,
-  items, onConfirm, isPending, isSuccess, isAllowed, denyReason,
+  items, onConfirm, onReset, isPending, isSuccess, isError, errorMessage,
+  isAllowed, denyReason,
 }: PurgeCardProps) {
   const [input, setInput] = useState('');
   const ready = input === confirmPhrase;
@@ -59,16 +68,36 @@ function PurgeCard({
     return (
       <div className="purge-card purge-card--success">
         <CheckCircle size={28} color="var(--color-success)" />
-        <div>
+        <div style={{ flex: 1 }}>
           <h3 className="purge-card-title">Purge Completed</h3>
           <p className="purge-success-msg">All test data has been deleted successfully.</p>
         </div>
+        {/* NOTE: Allow re-running after a successful purge, e.g. if the admin
+            wants to verify the cleanup or missed some data. */}
+        <button
+          onClick={onReset}
+          style={{
+            fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '1px solid #ccc',
+            background: 'white', cursor: 'pointer', flexShrink: 0,
+          }}
+        >
+          Run Again
+        </button>
       </div>
     );
   }
 
   return (
     <div className="purge-card" style={{ borderColor: accentColor + '40' }}>
+      {/* Error banner — shown when the RPC throws */}
+      {isError && (
+        <div style={{
+          background: '#fff5f5', border: '1px solid #ffc9c9', borderRadius: 6,
+          padding: '10px 12px', fontSize: 12, color: '#c92a2a',
+        }}>
+          <strong>Purge failed:</strong> {errorMessage || 'Unknown error — check browser console.'}
+        </div>
+      )}
       {/* Header */}
       <div className="purge-card-header">
         <div className="purge-card-icon-wrap" style={{ background: accentColor + '18' }}>
@@ -133,6 +162,7 @@ export function TestDataCleanupPage() {
   const schoolPurge   = usePurgeSchoolData();
 
   const currentSchool = colleges?.find((c) => c.id === currentCollegeId);
+  const confirmPhrase = schoolConfirmPhrase(currentSchool?.name);
 
   const SCHOOL_ITEMS = [
     `All listings from ${currentSchool?.name ?? 'the selected school'}`,
@@ -179,11 +209,28 @@ export function TestDataCleanupPage() {
           }
           icon={<School size={22} color="#e67700" />}
           accentColor="#e67700"
-          confirmPhrase={SCHOOL_CONFIRM_PHRASE}
+          confirmPhrase={confirmPhrase}
           items={SCHOOL_ITEMS}
-          onConfirm={() => { if (currentCollegeId) schoolPurge.mutate(currentCollegeId); }}
+          onConfirm={() => {
+            // NOTE: Log every field so we can see exactly what state we are in
+            // when the button is clicked.
+            console.log('[Cleanup] onConfirm triggered', {
+              currentCollegeId,
+              isSysadmin,
+              isAllowed: isSysadmin && !!currentCollegeId,
+              mutationStatus: schoolPurge.status,
+            });
+            if (!currentCollegeId) {
+              console.error('[Cleanup] Aborted: currentCollegeId is null/undefined');
+              return;
+            }
+            schoolPurge.mutate(currentCollegeId);
+          }}
+          onReset={() => schoolPurge.reset()}
           isPending={schoolPurge.isPending}
           isSuccess={schoolPurge.isSuccess}
+          isError={schoolPurge.isError}
+          errorMessage={schoolPurge.error instanceof Error ? schoolPurge.error.message : String(schoolPurge.error ?? '')}
           isAllowed={isSysadmin && !!currentCollegeId}
           denyReason={
             !currentCollegeId

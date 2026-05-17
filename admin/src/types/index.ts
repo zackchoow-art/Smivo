@@ -16,8 +16,15 @@ export type { SystemSetting } from './setting';
 export type { AuditLog, AuditLogWithAdmin } from './audit-log';
 export type { SensitiveWord, SensitiveWordLang, SensitiveWordSeverity, SensitiveWordSource } from './sensitive-word';
 export type { Order, OrderStatus, RentalStatus } from './order';
+export type {
+  CarpoolTrip, CarpoolMember, CarpoolTripWithMembers,
+  CarpoolTripStatus, CarpoolRole, CarpoolMemberStatus, CarpoolMemberRole,
+  LuggageLimit, ApprovalMode,
+  LocationCount, TimeSlotCount, CarpoolAnalyticsSummary,
+} from './carpool';
 
 // Re-export constants
 export { VIOLATION_RULES } from './moderation';
 export { BADGE_DEFINITIONS } from './feedback';
 export { FLAG_KEYS } from './setting';
+export { CARPOOL_STATUS_META, CARPOOL_MEMBER_STATUS_META, LUGGAGE_LABELS } from './carpool';

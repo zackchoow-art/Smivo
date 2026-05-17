@@ -18,7 +18,9 @@ import 'package:smivo/shared/widgets/fullscreen_image_viewer.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
 
 import 'package:smivo/shared/widgets/report_dialog.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/shared/widgets/user_rating_badge.dart';
@@ -444,52 +446,43 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 onPressed: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
-                    builder:
-                        (ctx) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              context.smivoRadius.xl,
-                            ),
-                          ),
-                          title: const Text('Block User'),
-                          content: const Text(
-                            'Are you sure you want to block this user? You will no longer see their listings.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: Text(
-                                'Block',
-                                style: TextStyle(color: ctx.smivoColors.error),
-                              ),
-                            ),
-                          ],
-                        ),
+                    builder: (ctx) => const ThemedConfirmDialog(
+                      title: 'Block User',
+                      message: 'Are you sure you want to block this user? You will no longer see their listings.',
+                      confirmText: 'Block',
+                      isDestructive: true,
+                    ),
                   );
                   if (confirm == true) {
                     if (!context.mounted) return;
                     final goRouter = GoRouter.of(context);
-                    final scaffoldMessenger = ScaffoldMessenger.of(context);
                     try {
                       await ref
                           .read(moderationActionsProvider.notifier)
                           .blockUser(otherUser.id);
-                      scaffoldMessenger.showSnackBar(
-                        const SnackBar(content: Text('User blocked.')),
-                      );
-                      if (goRouter.canPop()) {
-                        goRouter.pop();
-                      } else {
-                        goRouter.goNamed(AppRoutes.home);
-                      }
+                      if (!context.mounted) return;
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => const ActionSuccessDialog(
+                          title: 'User Blocked',
+                          message: 'This user has been blocked.',
+                        ),
+                      ).then((_) {
+                        if (goRouter.canPop()) {
+                          goRouter.pop();
+                        } else {
+                          goRouter.goNamed(AppRoutes.home);
+                        }
+                      });
                     } catch (e) {
                       debugPrint('Error blocking user: $e');
-                      scaffoldMessenger.showSnackBar(
-                        SnackBar(content: Text('Error blocking user: $e')),
+                      if (!context.mounted) return;
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => ActionErrorDialog(
+                          title: 'Block Failed',
+                          message: e.toString(),
+                        ),
                       );
                     }
                   }
@@ -678,14 +671,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Text(
-                '\$${listing.price.toStringAsFixed(0)}',
-                style: typo.labelLarge.copyWith(
-                  color: colors.primary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
+              // NOTE: Hide price when it is 0 (free/give-away items).
+              if (listing.price > 0)
+                Text(
+                  '\$${listing.price.toStringAsFixed(0)}',
+                  style: typo.labelLarge.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
                 ),
-              ),
             ],
           ),
         ),

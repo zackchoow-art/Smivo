@@ -5,8 +5,6 @@ import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/core/router/app_routes.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 import 'package:smivo/features/profile/providers/profile_provider.dart';
-import 'package:smivo/core/providers/theme_provider.dart';
-import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 class HomeHeader extends ConsumerWidget {
@@ -43,10 +41,6 @@ class HomeHeader extends ConsumerWidget {
                       schoolName,
                       style: typo.headlineLarge.copyWith(
                         color: colors.secondaryGradientStart,
-                        fontWeight:
-                            ref.watch(themeProvider) == SmivoThemeVariant.flat
-                                ? FontWeight.w700
-                                : null,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

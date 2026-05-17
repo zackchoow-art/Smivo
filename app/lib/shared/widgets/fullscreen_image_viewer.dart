@@ -104,7 +104,7 @@ class _FullscreenImageViewerState extends ConsumerState<FullscreenImageViewer> {
           context: context,
           builder:
               (ctx) => const ActionSuccessDialog(
-                title: 'Saved',
+                title: 'Image Saved',
                 message: 'Image saved to gallery successfully!',
                 buttonText: 'OK',
               ),

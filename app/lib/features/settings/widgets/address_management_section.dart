@@ -345,19 +345,46 @@ class _AddressEditDialogState extends ConsumerState<_AddressEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
-      title: Text(_isAdd ? 'Add Address' : 'Edit Address'),
+      backgroundColor: colors.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.dialog),
+      ),
+      title: Text(
+        _isAdd ? 'Add Address' : 'Edit Address',
+        style: typo.headlineSmall.copyWith(
+          color: colors.onSurface,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _ctrl,
             autofocus: true,
+            style: typo.bodyLarge.copyWith(color: colors.onSurface),
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _submit(),
             decoration: InputDecoration(
               hintText: 'e.g. Library main entrance',
+              hintStyle: typo.bodyMedium.copyWith(color: colors.outlineVariant),
               errorText: _error,
+              filled: true,
+              fillColor: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(radius.card),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
           ),
         ],
@@ -365,18 +392,35 @@ class _AddressEditDialogState extends ConsumerState<_AddressEditDialog> {
       actions: [
         TextButton(
           onPressed: _loading ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(
+            'Cancel',
+            style: typo.labelLarge.copyWith(color: colors.onSurfaceVariant),
+          ),
         ),
-        FilledButton(
-          onPressed: _loading ? null : _submit,
-          child:
-              _loading
-                  ? const SizedBox(
-                    height: 16,
-                    width: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                  : Text(_isAdd ? 'Add' : 'Save'),
+        const SizedBox(width: 8),
+        SizedBox(
+          height: 44,
+          child: FilledButton(
+            onPressed: _loading ? null : _submit,
+            style: FilledButton.styleFrom(
+              backgroundColor: colors.primary,
+              foregroundColor: colors.onPrimary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(radius.full),
+              ),
+            ),
+            child:
+                _loading
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                    : Text(_isAdd ? 'Add' : 'Save'),
+          ),
         ),
       ],
     );

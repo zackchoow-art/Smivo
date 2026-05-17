@@ -466,12 +466,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   // NOTE: message param used to display context-specific success text
-  void _showSuccess(String message) {
+  void _showSuccess(String message, {String title = 'Success'}) {
     if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) => ActionSuccessDialog(
-        title: 'Success',
+        title: title,
         message: message,
       ),
     );
@@ -499,7 +499,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     setState(() => _isSaving = true);
     try {
       await ref.read(profileProvider.notifier).updateDisplayName(newName);
-      _showSuccess('Profile updated');
+      _showSuccess(
+        'Your profile has been saved successfully.',
+        title: 'Profile Updated',
+      );
     } catch (e) {
       _showError('Failed to save: $e');
     } finally {

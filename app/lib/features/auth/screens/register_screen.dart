@@ -18,6 +18,7 @@ import 'package:smivo/features/shared/providers/system_urls_provider.dart';
 import 'package:smivo/features/shared/providers/school_provider.dart';
 import 'package:smivo/shared/widgets/app_text_field.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 import 'package:smivo/shared/widgets/smivo_brand_text.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -54,19 +55,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_agreedToEula) {
       showDialog(
         context: context,
-        builder:
-            (context) => AlertDialog(
-              title: const Text('Action Required'),
-              content: const Text(
-                'You must read and agree to the zero tolerance policy for objectionable content and abusive users before creating an account.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
+        builder: (ctx) => const ActionErrorDialog(
+          title: 'Action Required',
+          message: 'You must read and agree to the zero tolerance policy for objectionable content and abusive users before creating an account.',
+        ),
       );
       return;
     }
@@ -207,7 +199,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
 
-    // Listen for auth errors and show SnackBar, or navigate on success
+    // Listen for auth errors and show ActionErrorDialog, or navigate on success
     ref.listen(authProvider, (previous, next) {
       if (next.hasError && !next.isLoading) {
         final error = next.error;
@@ -215,9 +207,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             error is AppException
                 ? error.message
                 : 'Something went wrong. Please try again';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message), backgroundColor: colors.error),
+        showDialog(
+          context: context,
+          builder: (ctx) => ActionErrorDialog(
+            title: 'Registration Failed',
+            message: message,
+          ),
         );
       } else if (!next.isLoading &&
           !next.hasError &&
@@ -253,7 +248,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   maxWidth: 420,
                   child: Column(
                     children: [
-                      // ── Back Button & Branding ───────────────────────────
+                      // ── Back Button ───────────────────────────
                       Row(
                         children: [
                           IconButton(
@@ -261,18 +256,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             icon: const Icon(Icons.arrow_back_ios_new_rounded),
                             color: colors.onSurface,
                           ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTapDown: (_) => _startDebugTimer(),
-                            onTapUp: (_) => _cancelDebugTimer(),
-                            onTapCancel: _cancelDebugTimer,
-                            child: const SmivoBrandText(size: SmivoBrandSize.small),
-                          ),
-                          const Spacer(),
-                          const SizedBox(width: 48), // Balance for back button
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      
+                      // ── Mobile Header Fragment (Simplified Branding) ──────
+                      const SizedBox(height: 8),
+                      Center(
+                        child: GestureDetector(
+                          onTapDown: (_) => _startDebugTimer(),
+                          onTapUp: (_) => _cancelDebugTimer(),
+                          onTapCancel: _cancelDebugTimer,
+                          child: const SmivoBrandText(size: SmivoBrandSize.large),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
 
                       // ── Main Card ────────────────────────────────────────
                       Container(
@@ -301,7 +298,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 Text(
                                   'Join the Quad.',
                                   textAlign: TextAlign.center,
-                                  style: typo.headlineLarge,
+                                  style: typo.headlineLarge.copyWith(
+                                    fontSize: 26,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(

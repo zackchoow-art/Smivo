@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:smivo/core/providers/supabase_provider.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
 
 // --- Debug Data Provider ---
 
@@ -86,15 +88,25 @@ class DebugDataScreen extends ConsumerWidget {
       ref.invalidate(debugDataProvider);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Updated $key to $newVal')));
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionSuccessDialog(
+                title: 'Config Updated',
+                message: 'Updated $key to $newVal',
+              ),
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to update: $e')));
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Update Failed',
+                message: 'Failed to update: $e',
+              ),
+        );
       }
     }
   }
@@ -126,15 +138,25 @@ class DebugDataScreen extends ConsumerWidget {
       ref.invalidate(debugDataProvider);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Updated flag $key to $newVal')));
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionSuccessDialog(
+                title: 'Flag Updated',
+                message: 'Updated flag $key to $newVal',
+              ),
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to update setting: $e')));
+        showDialog(
+          context: context,
+          builder:
+              (ctx) => ActionErrorDialog(
+                title: 'Update Failed',
+                message: 'Failed to update setting: $e',
+              ),
+        );
       }
     }
   }

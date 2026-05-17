@@ -25,6 +25,7 @@ import {
   Cpu,
   Trash2,
   Blocks,
+  Car,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -72,6 +73,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       items: [
         { path: '/moderation/all-listings', label: 'All Listings', icon: <ClipboardList size={18} />, visible: perms.canViewModeration },
         { path: '/moderation/ai-reviewed', label: 'AI Reviewed', icon: <Bot size={18} />, visible: perms.canViewModeration },
+      ],
+    },
+    {
+      title: 'Carpool',
+      items: [
+        { path: '/carpool', label: 'All Trips', icon: <Car size={18} />, visible: perms.canViewCarpool },
       ],
     },
     {

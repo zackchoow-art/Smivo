@@ -6,6 +6,7 @@ import 'package:smivo/data/repositories/school_data_repository.dart';
 import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_dictionary_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 /// Admin screen for managing system data dictionaries.
 class AdminDictionaryScreen extends ConsumerStatefulWidget {
@@ -315,34 +316,23 @@ class _AdminDictionaryScreenState extends ConsumerState<AdminDictionaryScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, SystemDictionary dict) {
-    final colors = context.smivoColors;
-    showDialog(
+  void _confirmDelete(BuildContext context, SystemDictionary dict) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) => AlertDialog(
-            title: const Text('Delete Entry'),
-            content: Text('Delete "${dict.dictKey}"?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  await ref
-                      .read(schoolDataRepositoryProvider)
-                      .deleteDictionary(dict.id);
-                  ref.invalidate(adminDictionariesProvider);
-                  ref.invalidate(adminDictTypesProvider);
-                  if (ctx.mounted) Navigator.of(ctx).pop();
-                },
-                style: FilledButton.styleFrom(backgroundColor: colors.error),
-                child: const Text('Delete'),
-              ),
-            ],
+          (ctx) => ThemedConfirmDialog(
+            title: 'Delete Entry',
+            message: 'Delete "${dict.dictKey}"?',
+            confirmText: 'Delete',
+            isDestructive: true,
           ),
     );
+
+    if (confirm == true) {
+      await ref.read(schoolDataRepositoryProvider).deleteDictionary(dict.id);
+      ref.invalidate(adminDictionariesProvider);
+      ref.invalidate(adminDictTypesProvider);
+    }
   }
 }
 
@@ -429,8 +419,20 @@ class _DictionaryDialogState extends ConsumerState<_DictionaryDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.dict != null;
 
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
-      title: Text(isEditing ? 'Edit Entry' : 'New Entry'),
+      backgroundColor: colors.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
+      title: Text(
+        isEditing ? 'Edit Entry' : 'New Entry',
+        style: typo.titleMedium.copyWith(fontWeight: FontWeight.w800),
+      ),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(

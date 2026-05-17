@@ -1,13 +1,20 @@
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:smivo/core/constants/app_constants.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/utils/image_upload_service.dart';
 import 'package:smivo/core/utils/price_format.dart';
+import 'package:smivo/data/models/listing.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/repositories/chat_repository.dart';
+import 'package:smivo/data/repositories/listing_repository.dart';
 import 'package:smivo/features/auth/providers/auth_provider.dart';
 import 'package:smivo/features/orders/providers/orders_provider.dart';
 import 'package:smivo/features/seller/providers/transaction_stats_provider.dart';
@@ -15,185 +22,1052 @@ import 'package:smivo/features/seller/providers/listing_views_provider.dart';
 import 'package:smivo/features/chat/widgets/chat_popup.dart';
 import 'package:smivo/features/listing/providers/listing_detail_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
+import 'package:smivo/shared/widgets/action_error_dialog.dart';
+import 'package:smivo/shared/widgets/action_success_dialog.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/pickup_address_selector.dart';
 import 'package:smivo/shared/widgets/smivo_user_avatar.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
-class TransactionManagementScreen extends ConsumerWidget {
+class TransactionManagementScreen extends ConsumerStatefulWidget {
   const TransactionManagementScreen({
     super.key,
     required this.listingId,
     this.initialTab = 0,
+    // NOTE: 'edit' auto-expands the Edit Listing section on screen open.
+    this.initialSection = '',
   });
   final String listingId;
   final int initialTab;
+  final String initialSection;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TransactionManagementScreen> createState() =>
+      _TransactionManagementScreenState();
+}
+
+class _TransactionManagementScreenState
+    extends ConsumerState<TransactionManagementScreen> {
+  // ── Edit section state ────────────────────────────────────────
+  bool _editExpanded = false;
+  bool _statsExpanded = false;
+  int _selectedStatsTab = 0; // 0=Views 1=Saves 2=Offers
+  bool _isSaving = false;
+
+  // Form controllers — initialised in _initEditForm()
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _depositController = TextEditingController();
+  final _dailyController = TextEditingController();
+  final _weeklyController = TextEditingController();
+  final _monthlyController = TextEditingController();
+
+  bool _dailyEnabled = true;
+  bool _weeklyEnabled = false;
+  bool _monthlyEnabled = false;
+  String _selectedCondition = 'good';
+  String _selectedCategory = 'other';
+  String _transactionType = 'sale';
+  DateTime? _availableDate;
+
+  // NOTE: Images are split into two lists:
+  //   _existingImageUrls — URLs the seller keeps (already uploaded)
+  //   _newPhotos         — newly picked XFiles to upload on save
+  List<String> _existingImageUrls = [];
+  List<XFile> _newPhotos = [];
+
+  // Pickup address state
+  String? _selectedPickupId;
+  String _customLocationNote = '';
+  bool _allowPickupChange = true;
+  final GlobalKey<PickupAddressSelectorState> _addressSelectorKey =
+      GlobalKey<PickupAddressSelectorState>();
+
+  // NOTE: Track whether the form has been initialised from the listing data.
+  // Prevents resetting user edits on every rebuild.
+  bool _formInitialised = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // NOTE: Auto-expand the edit section when navigated with section=edit.
+    _editExpanded = widget.initialSection == 'edit';
+    // NOTE: If a specific tab was requested (e.g. from Listing Detail "Offers"
+    // shortcut), auto-expand stats and pre-select the correct tab.
+    if (widget.initialTab > 0) {
+      _statsExpanded = true;
+      _selectedStatsTab = widget.initialTab.clamp(0, 2);
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _depositController.dispose();
+    _dailyController.dispose();
+    _weeklyController.dispose();
+    _monthlyController.dispose();
+    super.dispose();
+  }
+
+  /// Populate form fields from the loaded listing (called once on first data).
+  void _initEditForm(Listing listing) {
+    if (_formInitialised) return;
+    _formInitialised = true;
+
+    _titleController.text = listing.title;
+    _descriptionController.text = listing.description ?? '';
+    _selectedCondition = listing.condition;
+    _selectedCategory = listing.category;
+    _transactionType = listing.transactionType;
+    _availableDate = listing.availableDate;
+    _selectedPickupId = listing.pickupLocationId;
+    _customLocationNote = listing.customPickupNote ?? '';
+    _allowPickupChange = listing.allowPickupChange;
+    _existingImageUrls =
+        listing.images.map((img) => img.imageUrl).toList();
+
+    if (listing.transactionType == 'sale') {
+      // NOTE: Always pre-fill the field, even when price is 0 (free items).
+      // An empty field is treated as 'user forgot to enter' and will fail validation.
+      _priceController.text = listing.price.toStringAsFixed(0);
+    } else {
+      if (listing.rentalDailyPrice != null) {
+        _dailyEnabled = true;
+        _dailyController.text =
+            listing.rentalDailyPrice!.toStringAsFixed(0);
+      }
+      if (listing.rentalWeeklyPrice != null) {
+        _weeklyEnabled = true;
+        _weeklyController.text =
+            listing.rentalWeeklyPrice!.toStringAsFixed(0);
+      }
+      if (listing.rentalMonthlyPrice != null) {
+        _monthlyEnabled = true;
+        _monthlyController.text =
+            listing.rentalMonthlyPrice!.toStringAsFixed(0);
+      }
+      _depositController.text =
+          listing.depositAmount > 0
+              ? listing.depositAmount.toStringAsFixed(0)
+              : '';
+    }
+  }
+
+  Future<void> _pickNewPhoto() async {
+    if (_existingImageUrls.length + _newPhotos.length >= 5) return;
+    final source = await ImageUploadService.showSourcePicker(context);
+    if (source == null) return;
+    if (!mounted) return;
+    final service = ImageUploadService();
+    XFile? xFile;
+    if (source == ImageSource.camera) {
+      xFile = await service.takePhotoAndCrop(context);
+    } else {
+      xFile = await service.pickAndCropImage(context);
+    }
+    if (xFile != null) setState(() => _newPhotos = [..._newPhotos, xFile!]);
+  }
+
+  Future<void> _saveChanges(Listing listing) async {
+    final userId = ref.read(authStateProvider).value?.id;
+    if (userId == null) return;
+
+    // Basic validation
+    final title = _titleController.text.trim();
+    if (title.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Title is required.')),
+        );
+      }
+      return;
+    }
+
+    final allImages = _existingImageUrls.length + _newPhotos.length;
+    if (allImages == 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('At least one photo is required.')),
+        );
+      }
+      return;
+    }
+
+    // NOTE: price = 0 is valid (free/give-away). Only reject blank or non-numeric.
+    if (_transactionType == 'sale') {
+      final priceText = _priceController.text.trim();
+      if (priceText.isEmpty || double.tryParse(priceText) == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please enter a sale price (\$0 is allowed).'),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final repo = ref.read(listingRepositoryProvider);
+
+      // Build updated listing from form values.
+      final updated = listing.copyWith(
+        title: title,
+        description: _descriptionController.text.trim(),
+        category: _selectedCategory,
+        condition: _selectedCondition,
+        transactionType: _transactionType,
+        price: _transactionType == 'sale'
+            ? (double.tryParse(_priceController.text) ?? listing.price)
+            : 0.0,
+        rentalDailyPrice: _dailyEnabled && _dailyController.text.isNotEmpty
+            ? double.tryParse(_dailyController.text)
+            : null,
+        rentalWeeklyPrice:
+            _weeklyEnabled && _weeklyController.text.isNotEmpty
+                ? double.tryParse(_weeklyController.text)
+                : null,
+        rentalMonthlyPrice:
+            _monthlyEnabled && _monthlyController.text.isNotEmpty
+                ? double.tryParse(_monthlyController.text)
+                : null,
+        depositAmount: double.tryParse(_depositController.text) ?? 0.0,
+        pickupLocationId: _selectedPickupId,
+        customPickupNote:
+            _customLocationNote.isNotEmpty ? _customLocationNote : null,
+        allowPickupChange: _allowPickupChange,
+        availableDate: _availableDate,
+      );
+
+      // 1. Update listing fields + replace images
+      await repo.updateListingWithImages(
+        listing: updated,
+        userId: userId,
+        existingImageUrls: _existingImageUrls,
+        newPhotos: _newPhotos,
+      );
+
+      // 2. Invalidate pending orders (soft-invalidate, buyers can re-submit)
+      await repo.invalidatePendingOrders(widget.listingId);
+
+      // 3. Notify affected buyers and savers
+      await repo.notifyListingUpdated(
+        listingId: widget.listingId,
+        listingTitle: title,
+      );
+
+      // Refresh providers
+      ref.invalidate(listingDetailProvider(widget.listingId));
+      ref.invalidate(listingOrdersProvider(widget.listingId));
+      _newPhotos = [];
+      _formInitialised = false; // allow re-init from refreshed listing
+
+      if (!mounted) return;
+      setState(() => _editExpanded = false);
+      showDialog(
+        context: context,
+        builder: (_) => const ActionSuccessDialog(
+          title: 'Listing Updated',
+          message:
+              'Your listing has been updated. Affected buyers have been notified.',
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => ActionErrorDialog(
+          title: 'Update Failed',
+          message: e.toString(),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
-    final radius = context.smivoRadius;
-    // NOTE: On desktop, constrain the tab content to 960px for readability.
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = Breakpoints.isDesktop(screenWidth);
 
-    final listingAsync = ref.watch(listingDetailProvider(listingId));
+    final listingAsync = ref.watch(listingDetailProvider(widget.listingId));
 
-    return DefaultTabController(
-      length: 3,
-      initialIndex: initialTab,
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: colors.surfaceContainerLowest,
+      appBar: AppBar(
         backgroundColor: colors.surfaceContainerLowest,
-        appBar: AppBar(
-          backgroundColor: colors.surfaceContainerLowest,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new,
-              size: 20,
-              color: colors.onSurface,
-            ),
-            onPressed: () => context.pop(),
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 20,
+            color: colors.onSurface,
           ),
-          title: Text(
-            'Manage Transactions',
-            style: typo.headlineSmall.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          bottom: const TabBar(
-            tabs: [Tab(text: 'Views'), Tab(text: 'Saves'), Tab(text: 'Offers')],
-          ),
+          onPressed: () => context.pop(),
         ),
-        body: Column(
-          children: [
-            // Listing preview — moved out of AppBar to fix overlap
-            listingAsync.when(
-              loading: () => const SizedBox(height: 64),
-              error: (_, __) => const SizedBox(height: 64),
-              data: (listing) {
-                final imageUrl = listing.images.firstOrNull?.imageUrl;
-                final isRental = listing.transactionType == 'rental';
-                return Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(radius.card),
-                  ),
-                  child: Row(
-                    children: [
-                      if (imageUrl != null)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(radius.sm),
-                          child: Image.network(
-                            imageUrl,
-                            width: 48,
-                            height: 48,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      else
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: colors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(radius.sm),
-                          ),
-                          child: Icon(
-                            Icons.image_not_supported,
-                            size: 20,
-                            color: colors.outlineVariant,
-                          ),
-                        ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              listing.title,
-                              style: typo.titleMedium,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (!isRental)
-                              Text(
-                                '\$${listing.price.toStringAsFixed(0)}',
-                                style: typo.bodyMedium.copyWith(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              )
-                            else
-                              // NOTE: Show all available rental rates for rental listings
-                              Wrap(
-                                spacing: 8,
-                                children: [
-                                  if (listing.rentalDailyPrice != null)
-                                    Text(
-                                      '\$${listing.rentalDailyPrice!.toStringAsFixed(0)}/day',
-                                      style: typo.bodySmall.copyWith(
-                                        color: colors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  if (listing.rentalWeeklyPrice != null)
-                                    Text(
-                                      '\$${listing.rentalWeeklyPrice!.toStringAsFixed(0)}/wk',
-                                      style: typo.bodySmall.copyWith(
-                                        color: colors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  if (listing.rentalMonthlyPrice != null)
-                                    Text(
-                                      '\$${listing.rentalMonthlyPrice!.toStringAsFixed(0)}/mo',
-                                      style: typo.bodySmall.copyWith(
-                                        color: colors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            // NOTE: ContentWidthConstraint centers tab content on desktop.
-            Expanded(
-              child:
-                  isDesktop
-                      ? ContentWidthConstraint(
-                        maxWidth: 960,
-                        child: TabBarView(
-                          children: [
-                            _ViewsTab(listingId: listingId),
-                            _SavesTab(listingId: listingId),
-                            _OffersTab(listingId: listingId),
-                          ],
-                        ),
-                      )
-                      : TabBarView(
-                        children: [
-                          _ViewsTab(listingId: listingId),
-                          _SavesTab(listingId: listingId),
-                          _OffersTab(listingId: listingId),
-                        ],
-                      ),
-            ),
-          ],
+        title: Text(
+          'Manage Transactions',
+          style: typo.headlineSmall.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
+      // NOTE: SingleChildScrollView lets all sections (preview, edit,
+      // stats) scroll together. Tab lists use shrinkWrap so they render
+      // inline without a second scroll context.
+      body: SingleChildScrollView(
+        child: isDesktop
+            ? ContentWidthConstraint(
+                maxWidth: 960,
+                child: _buildPageContent(context, ref, listingAsync),
+              )
+            : _buildPageContent(context, ref, listingAsync),
+      ),
+    );
+  }
+
+  /// Full page content: preview card + Edit Listing + Listing Stats.
+  Widget _buildPageContent(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<Listing> listingAsync,
+  ) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // ── Listing preview card ────────────────
+        listingAsync.when(
+          loading: () => const SizedBox(height: 64),
+          error: (_, __) => const SizedBox(height: 64),
+          data: (listing) {
+            _initEditForm(listing);
+            final imageUrl = listing.images.firstOrNull?.imageUrl;
+            final isRental = listing.transactionType == 'rental';
+            return Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(radius.card),
+              ),
+              child: Row(
+                children: [
+                  if (imageUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(radius.sm),
+                      child: Image.network(
+                        imageUrl,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: colors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(radius.sm),
+                      ),
+                      child: Icon(
+                        Icons.image_not_supported,
+                        size: 20,
+                        color: colors.outlineVariant,
+                      ),
+                    ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          listing.title,
+                          style: typo.titleMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (!isRental)
+                          Text(
+                            '\$${listing.price.toStringAsFixed(0)}',
+                            style: typo.bodyMedium.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
+                        else
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              if (listing.rentalDailyPrice != null)
+                                Text(
+                                  '\$${listing.rentalDailyPrice!.toStringAsFixed(0)}/day',
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              if (listing.rentalWeeklyPrice != null)
+                                Text(
+                                  '\$${listing.rentalWeeklyPrice!.toStringAsFixed(0)}/wk',
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              if (listing.rentalMonthlyPrice != null)
+                                Text(
+                                  '\$${listing.rentalMonthlyPrice!.toStringAsFixed(0)}/mo',
+                                  style: typo.bodySmall.copyWith(
+                                    color: colors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        // ── Edit Listing collapsible ─────────────────
+        listingAsync.maybeWhen(
+          data: (listing) {
+            final hasAccepted = ref.watch(
+              listingHasConfirmedOrderProvider(listing.id),
+            );
+            final isLocked = hasAccepted.when(
+              data: (v) => v,
+              loading: () => false,
+              error: (_, __) => false,
+            );
+            return _buildEditListingSection(
+              context,
+              listing,
+              isLocked: isLocked,
+            );
+          },
+          orElse: () => const SizedBox.shrink(),
+        ),
+        // ── Listing Stats collapsible ────────────────
+        _buildStatsSection(context),
+        // Bottom padding so last card is not clipped
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  /// Collapsible Listing Stats section.
+  /// Contains a TabBar (Views / Saves / Offers) that renders tab content
+  /// inline (shrinkWrap) so it fits inside the parent SingleChildScrollView.
+  Widget _buildStatsSection(BuildContext context) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
+    // NOTE: Tab labels map to 0=Views, 1=Saves, 2=Offers.
+    const tabs = ['Views', 'Saves', 'Offers'];
+
+    // Build the active tab content widget inline.
+    Widget tabContent;
+    switch (_selectedStatsTab) {
+      case 0:
+        tabContent = _ViewsTab(listingId: widget.listingId);
+        break;
+      case 1:
+        tabContent = _SavesTab(listingId: widget.listingId);
+        break;
+      case 2:
+      default:
+        tabContent = _OffersTab(listingId: widget.listingId);
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(radius.card),
+        border: Border.all(
+          color: _statsExpanded
+              ? colors.primary.withValues(alpha: 0.4)
+              : colors.outlineVariant.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        children: [
+          // ── Collapsible header ──────────────────────────────
+          InkWell(
+            borderRadius: BorderRadius.circular(radius.card),
+            onTap: () => setState(() => _statsExpanded = !_statsExpanded),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.bar_chart_rounded,
+                    size: 18,
+                    color: _statsExpanded
+                        ? colors.primary
+                        : colors.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Listing Stats',
+                      style: typo.titleMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: _statsExpanded
+                            ? colors.primary
+                            : colors.onSurface,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    _statsExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // ── Collapsible tab content ───────────────────────
+          AnimatedCrossFade(
+            firstChild: const SizedBox(width: double.infinity, height: 0),
+            secondChild: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Tab selector row
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                  child: Row(
+                    children: List.generate(tabs.length, (i) {
+                      final selected = _selectedStatsTab == i;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedStatsTab = i),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 8,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? colors.primary.withValues(alpha: 0.12)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(radius.sm),
+                              border: selected
+                                  ? Border.all(
+                                      color: colors.primary,
+                                      width: 1,
+                                    )
+                                  : null,
+                            ),
+                            child: Text(
+                              tabs[i],
+                              textAlign: TextAlign.center,
+                              style: typo.labelLarge.copyWith(
+                                color: selected
+                                    ? colors.primary
+                                    : colors.onSurfaceVariant,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                const Divider(height: 1),
+                // Active tab content (shrinkWrap renders inline)
+                tabContent,
+              ],
+            ),
+            crossFadeState: _statsExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Collapsible Edit Listing section above the TabBarView.
+  /// When [isLocked] is true (seller has accepted an offer), the section
+  /// is displayed as disabled (greyed out) and cannot be edited.
+  Widget _buildEditListingSection(
+    BuildContext context,
+    Listing listing, {
+    bool isLocked = false,
+  }) {
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+    final totalImages = _existingImageUrls.length + _newPhotos.length;
+
+    // NOTE: Use IgnorePointer + Opacity to visually and functionally
+    // disable the entire section once an offer is accepted.
+    final card = Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(radius.card),
+        border: Border.all(
+          color: _editExpanded
+              ? colors.primary.withValues(alpha: 0.4)
+              : colors.outlineVariant.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        children: [
+          // ── Collapsible header ────────────────────────────────
+          // NOTE: When isLocked, tap is disabled and label changes to show why.
+          InkWell(
+            borderRadius: BorderRadius.circular(radius.card),
+            onTap: isLocked ? null : () => setState(() => _editExpanded = !_editExpanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Icon(
+                    isLocked ? Icons.lock_outline : Icons.edit_outlined,
+                    size: 18,
+                    color: isLocked
+                        ? colors.outlineVariant
+                        : (_editExpanded
+                            ? colors.primary
+                            : colors.onSurfaceVariant),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Edit Listing',
+                          style: typo.titleMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: isLocked
+                                ? colors.outlineVariant
+                                : (_editExpanded
+                                    ? colors.primary
+                                    : colors.onSurface),
+                          ),
+                        ),
+                        // NOTE: Shown only after seller accepts an offer
+                        if (isLocked)
+                          Text(
+                            'Locked after offer accepted',
+                            style: typo.bodySmall.copyWith(
+                              color: colors.outlineVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (!isLocked)
+                    Icon(
+                      _editExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: colors.onSurfaceVariant,
+                    )
+                  else
+                    Icon(
+                      Icons.lock,
+                      size: 16,
+                      color: colors.outlineVariant,
+                    ),
+                ],
+              ),
+            ),
+          ),
+          // ── Collapsible form body ─────────────────────────────
+          AnimatedCrossFade(
+            firstChild: const SizedBox(width: double.infinity, height: 0),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(height: 1),
+                  const SizedBox(height: 16),
+
+                  // ── Photo picker ──────────────────────────────
+                  Text('Photos', style: typo.labelSmall.copyWith(color: colors.onSurfaceVariant)),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 100,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        // Existing uploaded images
+                        ..._existingImageUrls.asMap().entries.map((entry) {
+                          return _buildImageThumb(
+                            context,
+                            NetworkImage(entry.value),
+                            entry.key == 0,
+                            onRemove: () => setState(() {
+                              final list = List<String>.from(_existingImageUrls);
+                              list.removeAt(entry.key);
+                              _existingImageUrls = list;
+                            }),
+                          );
+                        }),
+                        // Newly picked photos
+                        ..._newPhotos.asMap().entries.map((entry) {
+                          final imgProvider = kIsWeb
+                              ? NetworkImage(entry.value.path) as ImageProvider
+                              : FileImage(io.File(entry.value.path));
+                          return _buildImageThumb(
+                            context,
+                            imgProvider,
+                            _existingImageUrls.isEmpty && entry.key == 0,
+                            onRemove: () => setState(() {
+                              final list = List<XFile>.from(_newPhotos);
+                              list.removeAt(entry.key);
+                              _newPhotos = list;
+                            }),
+                          );
+                        }),
+                        // Add photo button
+                        if (totalImages < 5)
+                          GestureDetector(
+                            onTap: _pickNewPhoto,
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(radius.md),
+                                border: Border.all(
+                                  color: colors.primary.withValues(alpha: 0.4),
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_a_photo_outlined,
+                                      color: colors.primary),
+                                  const SizedBox(height: 4),
+                                  Text('Add',
+                                      style: typo.labelSmall
+                                          .copyWith(color: colors.primary)),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── Title ─────────────────────────────────────
+                  TextField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Title',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(radius.input),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // ── Description ───────────────────────────────
+                  TextField(
+                    controller: _descriptionController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(radius.input),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // ── Category ──────────────────────────────────
+                  DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    decoration: InputDecoration(
+                      labelText: 'Category',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(radius.input),
+                      ),
+                    ),
+                    items: AppConstants.categories.map((c) {
+                      return DropdownMenuItem(
+                        value: c,
+                        child: Text(
+                          c[0].toUpperCase() + c.substring(1).replaceAll('_', ' '),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (v) => setState(() => _selectedCategory = v!),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // ── Condition ─────────────────────────────────
+                  DropdownButtonFormField<String>(
+                    value: _selectedCondition,
+                    decoration: InputDecoration(
+                      labelText: 'Condition',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(radius.input),
+                      ),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'new', child: Text('New')),
+                      DropdownMenuItem(value: 'like_new', child: Text('Like New')),
+                      DropdownMenuItem(value: 'good', child: Text('Good')),
+                      DropdownMenuItem(value: 'fair', child: Text('Fair')),
+                      DropdownMenuItem(value: 'poor', child: Text('Poor')),
+                    ],
+                    onChanged: (v) => setState(() => _selectedCondition = v!),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // ── Price / Rental rates ───────────────────────
+                  if (_transactionType == 'sale') ...[  
+                    TextField(
+                      controller: _priceController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Sale Price (\$)',
+                        prefixText: '\$',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(radius.input),
+                        ),
+                      ),
+                    ),
+                  ] else ...[  
+                    // Rental rates with toggle checkboxes
+                    _buildRentalRateRow(
+                      context,
+                      label: 'Daily Rate',
+                      enabled: _dailyEnabled,
+                      controller: _dailyController,
+                      onToggle: (v) => setState(() => _dailyEnabled = v),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildRentalRateRow(
+                      context,
+                      label: 'Weekly Rate',
+                      enabled: _weeklyEnabled,
+                      controller: _weeklyController,
+                      onToggle: (v) => setState(() => _weeklyEnabled = v),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildRentalRateRow(
+                      context,
+                      label: 'Monthly Rate',
+                      enabled: _monthlyEnabled,
+                      controller: _monthlyController,
+                      onToggle: (v) => setState(() => _monthlyEnabled = v),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _depositController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Deposit (\$)',
+                        prefixText: '\$',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(radius.input),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+
+                  // ── Pickup address selector ────────────────────
+                  PickupAddressSelector(
+                    key: _addressSelectorKey,
+                    initialPickupId: _selectedPickupId,
+                    initialAddress: _customLocationNote.isNotEmpty
+                        ? _customLocationNote
+                        : null,
+                    onPickupIdChanged: (id) => _selectedPickupId = id,
+                    onAddressChanged: (addr) => _customLocationNote = addr,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Save button ───────────────────────────────
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : () => _saveChanges(listing),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary,
+                        foregroundColor: colors.onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(radius.button),
+                        ),
+                      ),
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'Save Changes',
+                              style: typo.labelLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colors.onPrimary,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            crossFadeState: _editExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
+          ),
+        ],
+      ),
+    );
+    // NOTE: Wrap in Opacity + IgnorePointer when locked so that
+    // ALL interactive elements (buttons, fields, dropdown) are disabled.
+    if (isLocked) {
+      return IgnorePointer(
+        child: Opacity(opacity: 0.45, child: card),
+      );
+    }
+    return card;
+  }
+
+  /// Single rental rate row with an enable/disable checkbox.
+  Widget _buildRentalRateRow(
+    BuildContext context, {
+    required String label,
+    required bool enabled,
+    required TextEditingController controller,
+    required ValueChanged<bool> onToggle,
+  }) {
+    final colors = context.smivoColors;
+    final radius = context.smivoRadius;
+    return Row(
+      children: [
+        Checkbox(
+          value: enabled,
+          onChanged: (v) => onToggle(v ?? false),
+          activeColor: colors.primary,
+        ),
+        Expanded(
+          child: TextField(
+            controller: controller,
+            enabled: enabled,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: label,
+              prefixText: '\$',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(radius.input),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Thumbnail card used in the photo strip inside the edit form.
+  Widget _buildImageThumb(
+    BuildContext context,
+    ImageProvider image,
+    bool isCover, {
+    required VoidCallback onRemove,
+  }) {
+    final colors = context.smivoColors;
+    final radius = context.smivoRadius;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          margin: const EdgeInsets.only(right: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius.md),
+            image: DecorationImage(image: image, fit: BoxFit.cover),
+          ),
+        ),
+        if (isCover)
+          Positioned(
+            bottom: 6,
+            left: 4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'COVER',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        Positioned(
+          top: -6,
+          right: 2,
+          child: GestureDetector(
+            onTap: onRemove,
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: colors.error,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 14),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -253,8 +1127,11 @@ class _ViewsTab extends ConsumerWidget {
               ),
             );
           }
+          // NOTE: shrinkWrap so the list renders inline inside the
+          // parent SingleChildScrollView without its own scroll context.
           return ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             itemCount: views.length,
             itemBuilder: (context, index) {
@@ -462,7 +1339,8 @@ class _SavesTab extends ConsumerWidget {
             );
           }
           return ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             itemCount: saves.length,
             itemBuilder: (context, index) {
@@ -658,7 +1536,8 @@ class _OffersTab extends ConsumerWidget {
             );
           }
           return ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             itemCount: orders.length,
             itemBuilder: (context, index) {
@@ -891,28 +1770,12 @@ class _OffersTab extends ConsumerWidget {
                                   final confirmed = await showDialog<bool>(
                                     context: context,
                                     builder:
-                                        (ctx) => AlertDialog(
-                                          title: const Text('Accept Offer'),
-                                          content: Text(
-                                            'Accept this offer from $buyerName? Other pending offers will be cancelled.',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed:
-                                                  () =>
-                                                      Navigator.pop(ctx, false),
-                                              child: const Text('Cancel'),
-                                            ),
-                                            TextButton(
-                                              onPressed:
-                                                  () =>
-                                                      Navigator.pop(ctx, true),
-                                              style: TextButton.styleFrom(
-                                                foregroundColor: colors.primary,
-                                              ),
-                                              child: const Text('Accept'),
-                                            ),
-                                          ],
+                                        (ctx) => ThemedConfirmDialog(
+                                          title: 'Accept Offer',
+                                          message:
+                                              'Accept this offer from $buyerName? Other pending offers will be cancelled.',
+                                          confirmText: 'Accept',
+                                          cancelText: 'Cancel',
                                         ),
                                   );
 
@@ -926,27 +1789,30 @@ class _OffersTab extends ConsumerWidget {
                                         listingOrdersProvider(listingId),
                                       );
                                       if (!context.mounted) return;
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Offer accepted successfully',
-                                          ),
-                                        ),
-                                      );
-                                      context.pushNamed(
-                                        AppRoutes.orderDetail,
-                                        pathParameters: {'id': order.id},
-                                      );
+                                      showDialog(
+                                        context: context,
+                                        builder:
+                                            (ctx) => const ActionSuccessDialog(
+                                              title: 'Offer Accepted',
+                                              message: 'Offer accepted successfully.',
+                                            ),
+                                      ).then((_) {
+                                        if (context.mounted) {
+                                          context.pushNamed(
+                                            AppRoutes.orderDetail,
+                                            pathParameters: {'id': order.id},
+                                          );
+                                        }
+                                      });
                                     } catch (e) {
                                       if (!context.mounted) return;
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Failed to accept: $e'),
-                                        ),
+                                      showDialog(
+                                        context: context,
+                                        builder:
+                                            (ctx) => ActionErrorDialog(
+                                              title: 'Failed to Accept',
+                                              message: e.toString(),
+                                            ),
                                       );
                                     }
                                   }

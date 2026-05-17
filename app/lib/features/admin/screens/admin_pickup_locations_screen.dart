@@ -7,6 +7,7 @@ import 'package:smivo/features/admin/providers/admin_auth_provider.dart';
 import 'package:smivo/features/admin/providers/admin_pickup_locations_provider.dart';
 import 'package:smivo/features/admin/providers/admin_school_provider.dart';
 import 'package:smivo/shared/widgets/content_width_constraint.dart';
+import 'package:smivo/shared/widgets/themed_confirm_dialog.dart';
 
 /// Admin screen for managing school-specific pickup locations.
 class AdminPickupLocationsScreen extends ConsumerStatefulWidget {
@@ -241,35 +242,24 @@ class _AdminPickupLocationsScreenState
     );
   }
 
-  void _confirmDelete(BuildContext context, PickupLocation loc) {
-    final colors = context.smivoColors;
-    showDialog(
+  void _confirmDelete(BuildContext context, PickupLocation loc) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) => AlertDialog(
-            title: const Text('Delete Pickup Location'),
-            content: Text('Delete "${loc.name}"?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  await ref
-                      .read(schoolDataRepositoryProvider)
-                      .deletePickupLocation(loc.id);
-                  ref.invalidate(
-                    adminSchoolPickupLocationsProvider(_selectedSchoolId!),
-                  );
-                  if (ctx.mounted) Navigator.of(ctx).pop();
-                },
-                style: FilledButton.styleFrom(backgroundColor: colors.error),
-                child: const Text('Delete'),
-              ),
-            ],
+          (ctx) => ThemedConfirmDialog(
+            title: 'Delete Pickup Location',
+            message: 'Delete "${loc.name}"?',
+            confirmText: 'Delete',
+            isDestructive: true,
           ),
     );
+
+    if (confirm == true) {
+      await ref
+          .read(schoolDataRepositoryProvider)
+          .deletePickupLocation(loc.id);
+      ref.invalidate(adminSchoolPickupLocationsProvider(_selectedSchoolId!));
+    }
   }
 }
 
@@ -334,8 +324,20 @@ class _PickupLocationDialogState extends ConsumerState<_PickupLocationDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.location != null;
 
+    final colors = context.smivoColors;
+    final typo = context.smivoTypo;
+    final radius = context.smivoRadius;
+
     return AlertDialog(
-      title: Text(isEditing ? 'Edit Location' : 'New Location'),
+      backgroundColor: colors.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius.md),
+      ),
+      title: Text(
+        isEditing ? 'Edit Location' : 'New Location',
+        style: typo.headlineSmall.copyWith(fontWeight: FontWeight.w800),
+      ),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(

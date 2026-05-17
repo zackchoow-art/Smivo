@@ -216,9 +216,13 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
   /// a nav shortcut is inappropriate (auth / admin flows).
   static bool _isShellOrExcludedRoute(String path) {
     const excluded = {
+      // Shell tab roots — all have a bottom navigation bar.
       '/home',
       '/chats',
+      '/listing/create',
+      '/carpool',
       '/orders',
+      // Auth / onboarding flows.
       '/login',
       '/register',
       '/verify-email',
@@ -226,7 +230,7 @@ class _SmivoAppState extends ConsumerState<SmivoApp> {
       '/profile-setup',
     };
     if (excluded.contains(path)) return true;
-    // Admin routes all start with /admin
+    // Admin routes all start with /admin.
     if (path.startsWith('/admin')) return true;
     return false;
   }
