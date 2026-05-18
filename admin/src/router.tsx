@@ -34,6 +34,7 @@ import { PushOverviewPage } from '@/pages/push/PushOverviewPage';
 import { PushCreatePage } from '@/pages/push/PushCreatePage';
 import { PushHistoryPage } from '@/pages/push/PushHistoryPage';
 import { TestDataCleanupPage } from '@/pages/settings/TestDataCleanupPage';
+import { ApkUploadPage } from '@/pages/settings/ApkUploadPage';
 import { CarpoolListPage } from '@/pages/carpool/CarpoolListPage';
 import { CarpoolDetailPage } from '@/pages/carpool/CarpoolDetailPage';
 import { CarpoolAnalyticsPage } from '@/pages/carpool/CarpoolAnalyticsPage';
@@ -100,6 +101,7 @@ export const router = createBrowserRouter([
       { path: 'settings/colleges', element: <CollegesPage /> },
       { path: 'settings/profile', element: <ProfilePage /> },
       { path: 'settings/cleanup', element: <TestDataCleanupPage /> },
+      { path: 'settings/apk-upload', element: <ApkUploadPage /> },
 
       // Legacy routes — redirect to new paths
       { path: 'settings/dictionary', element: <Navigate to="/settings/school-settings" replace /> },

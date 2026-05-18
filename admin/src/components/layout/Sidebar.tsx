@@ -26,6 +26,7 @@ import {
   Trash2,
   Blocks,
   Car,
+  Smartphone,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -103,6 +104,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         { path: '/settings/admins', label: 'Admin Management', icon: <UserCog size={18} />, visible: perms.canViewAdminManagement },
         { path: '/settings/colleges', label: 'Schools', icon: <GraduationCap size={18} />, visible: perms.canViewCollegeManagement },
         { path: '/settings/cleanup', label: 'Test Data Cleanup', icon: <Trash2 size={18} />, visible: perms.canViewCleanup },
+        { path: '/settings/apk-upload', label: 'APK Upload', icon: <Smartphone size={18} />, visible: perms.canViewSystemConfigs },
       ],
     },
     {

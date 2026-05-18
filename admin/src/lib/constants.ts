@@ -54,6 +54,9 @@ export const TABLES = {
   // Carpool
   CARPOOL_TRIPS: 'carpool_trips',
   CARPOOL_MEMBERS: 'carpool_members',
+
+  // App Distribution
+  APP_RELEASES: 'app_releases',
 } as const;
 
 // ── Admin Roles (5-level hierarchy, migration 00067) ──
