@@ -155,6 +155,9 @@ class OrderActions extends _$OrderActions {
     double depositAmount = 0.0,
     DateTime? rentalStartDate,
     DateTime? rentalEndDate,
+    // NOTE: Persisted so accept_listing_changes() can recalculate total_price
+    // when the seller edits rental rates and the buyer re-accepts.
+    String? rentalRateType, // 'day' | 'week' | 'month'
     String school = 'Data Not Found',
     String? pickupLocationId,
     String? pickupLocationName,
@@ -186,6 +189,7 @@ class OrderActions extends _$OrderActions {
         school: school,
         totalPrice: totalPrice,
         depositAmount: depositAmount,
+        rentalRateType: rentalRateType,
         rentalStartDate:
             rentalStartDate != null
                 ? DateTime.utc(

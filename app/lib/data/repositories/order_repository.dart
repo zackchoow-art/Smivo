@@ -262,7 +262,7 @@ class OrderRepository {
               .select()
               .eq('listing_id', listingId)
               .eq('buyer_id', buyerId)
-              .inFilter('status', ['pending', 'confirmed'])
+              .inFilter('status', ['pending', 'confirmed', 'invalidated'])
               .maybeSingle();
       if (data == null) return null;
       return Order.fromJson(data);

@@ -264,6 +264,15 @@ class _TransactionManagementScreenState
         description: listing.description,
         condition: listing.condition,
         transactionType: listing.transactionType,
+        // Rental pricing snapshot — preserves what the buyer originally agreed to
+        rentalDailyPrice: listing.rentalDailyPrice,
+        rentalWeeklyPrice: listing.rentalWeeklyPrice,
+        rentalMonthlyPrice: listing.rentalMonthlyPrice,
+        depositAmount: listing.depositAmount > 0 ? listing.depositAmount : null,
+        // Logistics fields — allow buyer to see if pickup details changed
+        availableDate: listing.availableDate,
+        pickupLocationName: listing.pickupLocation?.name,
+        allowPickupChange: listing.allowPickupChange,
       );
 
       // 3. Notify affected buyers and savers

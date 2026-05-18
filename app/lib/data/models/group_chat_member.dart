@@ -21,6 +21,12 @@ abstract class GroupChatMember with _$GroupChatMember {
     // Messages created after this timestamp are considered unread.
     @JsonKey(name: 'last_read_at') DateTime? lastReadAt,
 
+    // NOTE: Per-member UI preferences — each member sets these independently.
+    // Mirrors is_pinned / is_archived / is_unread_override on chat_rooms.
+    @JsonKey(name: 'is_pinned') @Default(false) bool isPinned,
+    @JsonKey(name: 'is_archived') @Default(false) bool isArchived,
+    @JsonKey(name: 'is_unread_override') @Default(false) bool isUnreadOverride,
+
     // Nested join — populated only when queried with user join
     UserProfile? user,
   }) = _GroupChatMember;

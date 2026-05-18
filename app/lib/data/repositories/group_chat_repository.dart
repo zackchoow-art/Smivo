@@ -262,6 +262,59 @@ class GroupChatRepository {
       throw DatabaseException(e.message, e);
     }
   }
+
+  // ── Per-member preferences ─────────────────────────────────────────────────
+
+  /// Toggles [is_pinned] for the current user's membership in [roomId].
+  Future<void> toggleGroupPin({
+    required String roomId,
+    required String userId,
+    required bool isPinned,
+  }) async {
+    try {
+      await _client
+          .from(AppConstants.tableGroupChatMembers)
+          .update({'is_pinned': isPinned})
+          .eq('room_id', roomId)
+          .eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Toggles [is_archived] for the current user's membership in [roomId].
+  Future<void> toggleGroupArchive({
+    required String roomId,
+    required String userId,
+    required bool isArchived,
+  }) async {
+    try {
+      await _client
+          .from(AppConstants.tableGroupChatMembers)
+          .update({'is_archived': isArchived})
+          .eq('room_id', roomId)
+          .eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
+
+  /// Toggles [is_unread_override] for the current user's membership in [roomId].
+  Future<void> toggleGroupUnreadOverride({
+    required String roomId,
+    required String userId,
+    required bool isUnreadOverride,
+  }) async {
+    try {
+      await _client
+          .from(AppConstants.tableGroupChatMembers)
+          .update({'is_unread_override': isUnreadOverride})
+          .eq('room_id', roomId)
+          .eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      throw DatabaseException(e.message, e);
+    }
+  }
 }
 
 @riverpod

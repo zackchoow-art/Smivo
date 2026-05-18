@@ -804,22 +804,178 @@ class _MemberTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final user = member.user;
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: _buildAvatar(theme),
-      title: Text(
-        user?.displayName ?? 'Unknown User',
-        style: theme.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w500,
+    bool isPendingChanges = false;
+    if (status == 'approved' && member.lastAcknowledgedSnapshot != null) {
+      final snap = member.lastAcknowledgedSnapshot!;
+      if (snap['estimated_total_price'] != trip.estimatedTotalPrice ||
+          snap['departure_time'] != trip.departureTime.toIso8601String() ||
+          snap['departure_address'] != trip.departureAddress) {
+        isPendingChanges = true;
+      }
+    }
+
+    final (label, chipColor) = switch (status) {
+      'approved' => isPendingChanges
+          ? ('Pending Changes', theme.colorScheme.tertiary)
+          : ('Accepted', theme.colorScheme.primary),
+      'rejected' => ('Rejected', theme.colorScheme.error),
+      'left' => ('Left', theme.colorScheme.outline),
+      'pending' => ('Pending', theme.colorScheme.tertiary),
+      _ => (status, theme.colorScheme.outline),
+    };
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Avatar ──────────────────────────────────────────
+          _buildAvatar(theme),
+          const SizedBox(width: 12),
+          // ── Name / Email / Actions ───────────────────────────
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Row 1: name + action icons (right-aligned)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        user?.displayName ?? 'Unknown User',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Action icons for pending / approved
+                    if (status == 'pending') ...[
+                      const SizedBox(width: 4),
+                      _iconBtn(
+                        icon: Icons.close,
+                        color: theme.colorScheme.error,
+                        tooltip: 'Reject',
+                        onPressed: () => _handleReject(context, ref),
+                        theme: theme,
+                      ),
+                      _iconBtn(
+                        icon: Icons.check,
+                        color: theme.colorScheme.primary,
+                        tooltip: 'Approve',
+                        bgColor: theme.colorScheme.primaryContainer,
+                        onPressed: () => _handleApprove(context, ref),
+                        theme: theme,
+                      ),
+                    ] else if (status == 'approved') ...[
+                      const SizedBox(width: 4),
+                      _iconBtn(
+                        icon: Icons.forum,
+                        color: theme.colorScheme.primary,
+                        tooltip: 'Group Chat',
+                        onPressed: () => context.pushNamed(
+                          AppRoutes.groupChatRoom,
+                          pathParameters: {'id': trip.id},
+                        ),
+                        theme: theme,
+                      ),
+                      _iconBtn(
+                        icon: Icons.chat_bubble_outline,
+                        color: theme.colorScheme.secondary,
+                        tooltip: 'Private Chat',
+                        onPressed: () => showDialog(
+                          context: context,
+                          builder: (ctx) => const ActionErrorDialog(
+                            title: 'Coming Soon',
+                            message:
+                                'Private 1-on-1 chat with members is coming soon.',
+                          ),
+                        ),
+                        theme: theme,
+                      ),
+                      _iconBtn(
+                        icon: Icons.person_remove,
+                        color: theme.colorScheme.error,
+                        tooltip: 'Kick Out',
+                        onPressed: () => showDialog(
+                          context: context,
+                          builder: (ctx) => const ActionErrorDialog(
+                            title: 'Coming Soon',
+                            message: 'Kick voting for members is coming soon.',
+                          ),
+                        ),
+                        theme: theme,
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                // Row 2: email (left) + status chip (right)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        user?.email ?? '',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.outline,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: chipColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: chipColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Compact square icon button — smaller tap target than default IconButton
+  /// to keep the action row tight within the card width.
+  Widget _iconBtn({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onPressed,
+    required ThemeData theme,
+    Color? bgColor,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: bgColor ?? Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: color),
         ),
       ),
-      subtitle: Text(
-        user?.email ?? '',
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.outline,
-        ),
-      ),
-      trailing: _buildTrailing(context, ref, theme),
     );
   }
 
@@ -836,114 +992,6 @@ class _MemberTile extends ConsumerWidget {
       radius: 20,
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
       child: const Icon(Icons.person, size: 20),
-    );
-  }
-
-  Widget? _buildTrailing(
-      BuildContext context, WidgetRef ref, ThemeData theme) {
-    if (status == 'pending') {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(Icons.close, color: theme.colorScheme.error),
-            tooltip: 'Reject',
-            onPressed: () => _handleReject(context, ref),
-          ),
-          const SizedBox(width: 4),
-          IconButton(
-            icon: Icon(Icons.check, color: theme.colorScheme.primary),
-            tooltip: 'Approve',
-            style: IconButton.styleFrom(
-              backgroundColor: theme.colorScheme.primaryContainer,
-            ),
-            onPressed: () => _handleApprove(context, ref),
-          ),
-        ],
-      );
-    }
-
-    bool isPendingChanges = false;
-    // Basic heuristic: if lastAcknowledgedSnapshot exists but is older than trip update?
-    // Or just check if snapshot doesn't match current trip fields
-    if (status == 'approved' && member.lastAcknowledgedSnapshot != null) {
-       final snap = member.lastAcknowledgedSnapshot!;
-       if (snap['estimated_total_price'] != trip.estimatedTotalPrice || 
-           snap['departure_time'] != trip.departureTime.toIso8601String() ||
-           snap['departure_address'] != trip.departureAddress) {
-           isPendingChanges = true;
-       }
-    }
-
-    final (label, chipColor) = switch (status) {
-      'approved' => isPendingChanges 
-          ? ('Pending Changes', theme.colorScheme.tertiary) 
-          : ('Accepted', theme.colorScheme.primary),
-      'rejected' => ('Rejected', theme.colorScheme.error),
-      'left' => ('Left', theme.colorScheme.outline),
-      _ => (status, theme.colorScheme.outline),
-    };
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (status == 'approved') ...[
-          IconButton(
-            icon: const Icon(Icons.forum, size: 20),
-            tooltip: 'Group Chat',
-            color: theme.colorScheme.primary,
-            onPressed: () => context.pushNamed(
-              AppRoutes.groupChatRoom,
-              pathParameters: {'id': trip.id},
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline, size: 20),
-            tooltip: 'Private Chat',
-            color: theme.colorScheme.secondary,
-            onPressed: () {
-              if (!context.mounted) return;
-              showDialog(
-                context: context,
-                builder: (ctx) => const ActionErrorDialog(
-                  title: 'Coming Soon',
-                  message: 'Private 1-on-1 chat with members is coming soon.',
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_remove, size: 20),
-            tooltip: 'Kick Out',
-            color: theme.colorScheme.error,
-            onPressed: () {
-              if (!context.mounted) return;
-              showDialog(
-                context: context,
-                builder: (ctx) => const ActionErrorDialog(
-                  title: 'Coming Soon',
-                  message: 'Kick voting for members is coming soon.',
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: chipColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: chipColor,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
     );
   }
 

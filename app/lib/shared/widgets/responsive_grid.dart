@@ -63,6 +63,12 @@ class ResponsiveGrid extends StatelessWidget {
 }
 
 /// Sliver version of [ResponsiveGrid] for use inside [CustomScrollView].
+///
+/// NOTE: Uses [SliverLayoutBuilder] to read the actual cross-axis extent
+/// allocated by the parent scroll view, rather than [MediaQuery.sizeOf].
+/// This is critical for layouts where a [NavigationRail] or sidebar
+/// occupies part of the screen — [MediaQuery] would return the full screen
+/// width and cause the wrong column count to be selected.
 class SliverResponsiveGrid extends StatelessWidget {
   const SliverResponsiveGrid({
     super.key,
@@ -85,7 +91,7 @@ class SliverResponsiveGrid extends StatelessWidget {
   final double mainAxisSpacing;
   final double childAspectRatio;
 
-  /// Resolves column count based on screen width.
+  /// Resolves column count based on the available content width.
   int _resolveColumns(double width) {
     if (Breakpoints.isDesktop(width)) return desktopColumns;
     if (Breakpoints.isTablet(width)) return tabletColumns;
@@ -94,17 +100,27 @@ class SliverResponsiveGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    final columns = _resolveColumns(width);
-
-    return SliverGrid(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        crossAxisSpacing: crossAxisSpacing,
-        mainAxisSpacing: mainAxisSpacing,
-        childAspectRatio: childAspectRatio,
-      ),
-      delegate: SliverChildBuilderDelegate(itemBuilder, childCount: itemCount),
+    // NOTE: SliverLayoutBuilder provides the actual crossAxisExtent from the
+    // parent SliverConstraints, which correctly reflects any space consumed
+    // by a NavigationRail, sidebar, or SliverPadding. This replaces the
+    // previous MediaQuery.sizeOf(context).width which always returned the
+    // full screen width and could produce the wrong column count.
+    return SliverLayoutBuilder(
+      builder: (context, constraints) {
+        final columns = _resolveColumns(constraints.crossAxisExtent);
+        return SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: crossAxisSpacing,
+            mainAxisSpacing: mainAxisSpacing,
+            childAspectRatio: childAspectRatio,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            itemBuilder,
+            childCount: itemCount,
+          ),
+        );
+      },
     );
   }
 }

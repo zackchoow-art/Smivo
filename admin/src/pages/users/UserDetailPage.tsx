@@ -9,6 +9,7 @@ import { RESTRICTION_SCOPE_META } from '@/lib/constants';
 import type { BanType, RestrictionScope } from '@/types/ban';
 import { Unlock, Shield, AlertTriangle, Trash2, Edit2, Check, X } from 'lucide-react';
 import { showToast } from '@/hooks/useToast';
+import { LiftReasonModal } from '@/components/moderation/LiftReasonModal';
 
 
 const ALL_SCOPES: RestrictionScope[] = ['chat_mute', 'listing_ban', 'feedback_ban', 'account_freeze'];
@@ -43,6 +44,9 @@ export function UserDetailPage() {
   const [addReason, setAddReason] = useState('');
   const [shortcutReason, setShortcutReason] = useState('');
   const [addReasonCode, setAddReasonCode] = useState('violation_policy');
+
+  // NOTE: Track which restriction is pending lift so the modal can collect a reason
+  const [liftingBan, setLiftingBan] = useState<{ banId: string; scopeLabel: string } | null>(null);
 
   // State for editing school
   const [isEditingSchool, setIsEditingSchool] = useState(false);
@@ -100,17 +104,20 @@ export function UserDetailPage() {
     }
   };
 
-  const handleLiftRestriction = async (banId: string, scopeLabel: string) => {
-    if (!userId) return;
-    const reason = prompt(`Reason for lifting "${scopeLabel}":`);
-    if (!reason) return;
+  const handleLiftRestriction = (banId: string, scopeLabel: string) => {
+    setLiftingBan({ banId, scopeLabel });
+  };
+
+  const handleConfirmLift = async (reason: string) => {
+    if (!userId || !liftingBan) return;
 
     try {
       await liftBanMutation.mutateAsync({
-        banId,
+        banId: liftingBan.banId,
         adminId: userId,
         liftReason: reason,
       });
+      setLiftingBan(null);
       refetchRestrictions();
     } catch (err) {
       console.error(err);
@@ -482,6 +489,15 @@ export function UserDetailPage() {
           </div>
         </div>
       </div>
+
+      {liftingBan && (
+        <LiftReasonModal
+          title={`Lift "${liftingBan.scopeLabel}"`}
+          onConfirm={handleConfirmLift}
+          onCancel={() => setLiftingBan(null)}
+          isPending={liftBanMutation.isPending}
+        />
+      )}
 
       <style>{`
         .ud-container { padding: var(--spacing-page); max-width: 1024px; margin: 0 auto; }

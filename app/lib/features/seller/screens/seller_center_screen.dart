@@ -10,10 +10,11 @@ import 'package:smivo/features/seller/providers/seller_center_provider.dart';
 import 'package:smivo/data/models/order.dart';
 import 'package:smivo/data/models/listing.dart';
 import 'package:intl/intl.dart';
+import 'package:smivo/core/providers/theme_provider.dart';
+import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 import 'package:smivo/features/shared/providers/status_resolver_provider.dart';
 
-import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/responsive_grid.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
@@ -59,6 +60,9 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
     final colors = context.smivoColors;
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
+    // NOTE: Check active theme variant from themeProvider directly to handle
+    // custom color schemes (e.g. Sage, Rose, Pastel) seamlessly.
+    final isFlat = ref.watch(themeProvider) == SmivoThemeVariant.flat;
 
     return Scaffold(
       backgroundColor: colors.surfaceContainerLowest,
@@ -222,11 +226,6 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                         // maxWidth: 960 for Teal list. Resolves via Builder.
                         Builder(
                           builder: (context) {
-                            final isFlat =
-                                colors.primary == const Color(0xFF004181);
-                            final sw = MediaQuery.of(context).size.width;
-                            final useConstraint = Breakpoints.isDesktop(sw);
-                            final maxW = isFlat ? 1280.0 : 960.0;
                             final sliver = SliverPadding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
@@ -302,19 +301,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                         }, childCount: activeListings.length),
                                       ),
                             );
-                            return useConstraint
-                                ? SliverToBoxAdapter(
-                                  child: ContentWidthConstraint(
-                                    maxWidth: maxW,
-                                    child: CustomScrollView(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      slivers: [sliver],
-                                    ),
-                                  ),
-                                )
-                                : sliver;
+                            return sliver;
                           },
                         ),
                     ],
@@ -394,11 +381,6 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       if (isExpanded)
                         Builder(
                           builder: (context) {
-                            final isFlat =
-                                colors.primary == const Color(0xFF004181);
-                            final sw = MediaQuery.of(context).size.width;
-                            final useConstraint = Breakpoints.isDesktop(sw);
-                            final maxW = isFlat ? 1280.0 : 960.0;
                             final sliver = SliverPadding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
@@ -455,19 +437,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                         }, childCount: flaggedListings.length),
                                       ),
                             );
-                            return useConstraint
-                                ? SliverToBoxAdapter(
-                                  child: ContentWidthConstraint(
-                                    maxWidth: maxW,
-                                    child: CustomScrollView(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      slivers: [sliver],
-                                    ),
-                                  ),
-                                )
-                                : sliver;
+                            return sliver;
                           },
                         ),
                     ],
@@ -564,11 +534,6 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       if (isExpanded)
                         Builder(
                           builder: (context) {
-                            final isFlat =
-                                colors.primary == const Color(0xFF004181);
-                            final sw = MediaQuery.of(context).size.width;
-                            final useConstraint = Breakpoints.isDesktop(sw);
-                            final maxW = isFlat ? 1280.0 : 960.0;
                             final sliver = SliverPadding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
@@ -622,19 +587,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                         }, childCount: awaitingDelivery.length),
                                       ),
                             );
-                            return useConstraint
-                                ? SliverToBoxAdapter(
-                                  child: ContentWidthConstraint(
-                                    maxWidth: maxW,
-                                    child: CustomScrollView(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      slivers: [sliver],
-                                    ),
-                                  ),
-                                )
-                                : sliver;
+                            return sliver;
                           },
                         ),
                     ],
@@ -729,11 +682,6 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                       if (isExpanded)
                         Builder(
                           builder: (context) {
-                            final isFlat =
-                                colors.primary == const Color(0xFF004181);
-                            final sw = MediaQuery.of(context).size.width;
-                            final useConstraint = Breakpoints.isDesktop(sw);
-                            final maxW = isFlat ? 1280.0 : 960.0;
                             final resolver =
                                 ref.watch(statusResolverProvider).value;
                             final sliver = SliverPadding(
@@ -812,19 +760,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                         ),
                                       ),
                             );
-                            return useConstraint
-                                ? SliverToBoxAdapter(
-                                  child: ContentWidthConstraint(
-                                    maxWidth: maxW,
-                                    child: CustomScrollView(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      slivers: [sliver],
-                                    ),
-                                  ),
-                                )
-                                : sliver;
+                            return sliver;
                           },
                         ),
                     ],
@@ -1046,11 +982,6 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                           if (isExpanded)
                             Builder(
                               builder: (context) {
-                                final isFlat =
-                                    colors.primary == const Color(0xFF004181);
-                                final sw = MediaQuery.of(context).size.width;
-                                final useConstraint = Breakpoints.isDesktop(sw);
-                                final maxW = isFlat ? 1280.0 : 960.0;
                                 final sliver = SliverPadding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 24,
@@ -1307,19 +1238,7 @@ class _SellerCenterScreenState extends ConsumerState<SellerCenterScreen> {
                                             }, childCount: filteredHistory.length),
                                           ),
                                 );
-                                return useConstraint
-                                    ? SliverToBoxAdapter(
-                                      child: ContentWidthConstraint(
-                                        maxWidth: maxW,
-                                        child: CustomScrollView(
-                                          shrinkWrap: true,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          slivers: [sliver],
-                                        ),
-                                      ),
-                                    )
-                                    : sliver;
+                                return sliver;
                               },
                             ),
                         ],

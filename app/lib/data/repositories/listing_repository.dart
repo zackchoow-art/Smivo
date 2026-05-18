@@ -468,6 +468,8 @@ class ListingRepository {
   /// NOTE: The snapshot is stored in listing_snapshot so the buyer can see
   /// a before/after diff on the listing detail screen. 'invalidated' is a
   /// soft state — the order reappears in Buyer Center under 'Requested'.
+  /// All fields that a buyer might care about are captured so the diff UI
+  /// can show exactly what changed (including logistics fields).
   Future<void> invalidatePendingOrders(
     String listingId, {
     required String title,
@@ -475,6 +477,15 @@ class ListingRepository {
     required String? description,
     required String condition,
     required String transactionType,
+    // Rental-specific pricing (null for sale listings)
+    double? rentalDailyPrice,
+    double? rentalWeeklyPrice,
+    double? rentalMonthlyPrice,
+    double? depositAmount,
+    // Logistics fields
+    DateTime? availableDate,
+    String? pickupLocationName,
+    bool allowPickupChange = false,
   }) async {
     try {
       // NOTE: snapshot captures the listing state BEFORE the seller's edits
@@ -482,12 +493,23 @@ class ListingRepository {
       // The caller (transaction_management_screen) first fetches the OLD listing,
       // passes those values here, then applies the edit. This guarantees the
       // snapshot reflects what the buyer originally agreed to.
-      final snapshot = {
+      final snapshot = <String, dynamic>{
         'title': title,
         'price': price,
         'description': description,
         'condition': condition,
         'transaction_type': transactionType,
+        // Rental pricing — stored even for sale listings (will be null) so
+        // the diff UI always has a consistent key structure to check.
+        if (rentalDailyPrice != null) 'rental_daily_price': rentalDailyPrice,
+        if (rentalWeeklyPrice != null) 'rental_weekly_price': rentalWeeklyPrice,
+        if (rentalMonthlyPrice != null) 'rental_monthly_price': rentalMonthlyPrice,
+        if (depositAmount != null) 'deposit_amount': depositAmount,
+        // Logistics fields — always stored so diffs are detectable.
+        'available_date': availableDate?.toUtc().toIso8601String(),
+        'pickup_location_name': pickupLocationName,
+        'allow_pickup_change': allowPickupChange,
+        // Timestamp of when the snapshot was taken (= when seller saved changes).
         'captured_at': DateTime.now().toUtc().toIso8601String(),
       };
 
@@ -522,60 +544,25 @@ class ListingRepository {
   /// Notifies all buyers with pending/invalidated orders and users who saved
   /// the listing that the listing has been updated by the seller.
   ///
-  /// Inserts rows into the `notifications` table; the DB trigger
-  /// automatically fires the push-notification Edge Function per row.
+  /// NOTE: Uses the notify_listing_updated SECURITY DEFINER RPC instead of
+  /// a direct client INSERT. The notifications table has no INSERT RLS policy
+  /// by design — all notification inserts must go through server-side functions
+  /// to prevent spoofed notifications from malicious clients.
   Future<void> notifyListingUpdated({
     required String listingId,
     required String listingTitle,
   }) async {
     try {
-      // Collect buyer IDs from pending/invalidated orders
-      final orders = await _client
-          .from(AppConstants.tableOrders)
-          .select('buyer_id')
-          .eq('listing_id', listingId)
-          .inFilter('status', ['pending', 'invalidated']);
-
-      // Collect user IDs from saved_listings
-      final saves = await _client
-          .from(AppConstants.tableSavedListings)
-          .select('user_id')
-          .eq('listing_id', listingId);
-
-      // Deduplicate all recipient IDs
-      final recipientIds = <String>{};
-      for (final o in orders) {
-        final id = o['buyer_id'] as String?;
-        if (id != null) recipientIds.add(id);
-      }
-      for (final s in saves) {
-        final id = s['user_id'] as String?;
-        if (id != null) recipientIds.add(id);
-      }
-
-      if (recipientIds.isEmpty) return;
-
-      // Insert one notification row per recipient.
-      // The push-notification Edge Function fires for each INSERT via DB trigger.
-      // NOTE: action_type must be 'route' so the Edge Function's push-dispatch
-      // logic recognises this as a deep-link notification (not a plain alert).
-      final notifications = recipientIds.map((userId) {
-        return {
-          'user_id': userId,
-          'type': 'listing_updated',
-          'title': 'Listing Updated',
-          'body':
-              '"$listingTitle" has been updated by the seller. Tap to view the changes.',
-          'action_type': 'route',
-          'action_url': '/listing/$listingId',
-          'is_read': false,
-        };
-      }).toList();
-
-      await _client.from('notifications').insert(notifications);
+      await _client.rpc(
+        'notify_listing_updated',
+        params: {
+          'p_listing_id': listingId,
+          'p_listing_title': listingTitle,
+        },
+      );
     } on PostgrestException catch (e) {
       // NOTE: Non-critical — notification failure should not block the edit.
-      debugPrint('notifyListingUpdated error: ${e.message}');
+      debugPrint('notifyListingUpdated RPC error: ${e.message}');
     }
   }
 

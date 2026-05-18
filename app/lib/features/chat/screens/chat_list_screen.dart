@@ -6,6 +6,7 @@ import 'package:smivo/core/providers/nav_scroll_provider.dart';
 import 'package:smivo/core/theme/breakpoints.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 import 'package:smivo/data/models/chat_room.dart';
+import 'package:smivo/data/models/group_chat_member.dart';
 import 'package:smivo/features/carpool/providers/group_chat_provider.dart';
 import 'package:smivo/features/carpool/screens/group_chat_screen.dart';
 import 'package:smivo/features/carpool/widgets/group_chat_list_tile.dart';
@@ -206,6 +207,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   useWidthConstraint: useWidthConstraint,
                   searchQuery: _searchQuery,
                   isDesktop: isDesktop,
+                  showArchived: _showArchived,
+                  currentUserId: currentUserId,
                   onSelect: (tripId) {
                     if (isDesktop) {
                       setState(() => _selectedChatRoomId = 'group_$tripId');
@@ -593,18 +596,25 @@ class _SystemMessagesItem extends ConsumerWidget {
 /// messages entry and above the 1-on-1 chat list.
 ///
 /// Hidden entirely when the user has no group chats or is not logged in.
-/// The section does not affect the rest of the ChatListScreen state.
+/// Supports pin/archive/unread-override via swipe actions on each tile,
+/// mirroring the 1-on-1 [ChatListItem] interaction model.
 class _GroupChatListSection extends ConsumerWidget {
   const _GroupChatListSection({
     required this.useWidthConstraint,
     required this.searchQuery,
     required this.isDesktop,
+    required this.showArchived,
+    required this.currentUserId,
     required this.onSelect,
   });
 
   final bool useWidthConstraint;
   final String searchQuery;
   final bool isDesktop;
+  // NOTE: When true, shows only archived group chats;
+  // when false, shows only active (non-archived) ones.
+  final bool showArchived;
+  final String? currentUserId;
   final void Function(String tripId) onSelect;
 
   @override
@@ -619,7 +629,7 @@ class _GroupChatListSection extends ConsumerWidget {
         if (rooms.isEmpty) return const SizedBox.shrink();
 
         // Filter rooms by search query (matches room name)
-        final filtered = searchQuery.isEmpty
+        final searched = searchQuery.isEmpty
             ? rooms
             : rooms.where((r) {
                 return r.name.toLowerCase().contains(
@@ -627,7 +637,35 @@ class _GroupChatListSection extends ConsumerWidget {
                     );
               }).toList();
 
+        // NOTE: Read per-member prefs from the members list.
+        // Each room's members list includes the current user's membership row,
+        // which carries is_pinned / is_archived / is_unread_override.
+        // We fall back to defaults if the user's row isn't found.
+
+        // Per-room member lookup helper
+        GroupChatMember? memberFor(room) =>
+            currentUserId == null
+                ? null
+                : (room.members as List<GroupChatMember>)
+                    .where((m) => m.userId == currentUserId)
+                    .firstOrNull;
+
+        // Filter by archived state
+        final filtered = searched.where((r) {
+          final m = memberFor(r);
+          return (m?.isArchived ?? false) == showArchived;
+        }).toList();
+
         if (filtered.isEmpty) return const SizedBox.shrink();
+
+        // Sort: pinned first, then by updatedAt desc
+        filtered.sort((a, b) {
+          final aPinned = memberFor(a)?.isPinned ?? false;
+          final bPinned = memberFor(b)?.isPinned ?? false;
+          if (aPinned && !bPinned) return -1;
+          if (!aPinned && bPinned) return 1;
+          return b.updatedAt.compareTo(a.updatedAt);
+        });
 
         // Resolve unread counts (default to empty map on loading/error)
         final unreadCounts = unreadCountsAsync.value ?? {};
@@ -640,10 +678,29 @@ class _GroupChatListSection extends ConsumerWidget {
               for (final room in filtered)
                 Builder(
                   builder: (context) {
+                    final member = memberFor(room);
                     Widget tile = GroupChatListTile(
                       room: room,
                       unreadCount: unreadCounts[room.id] ?? 0,
+                      isPinned: member?.isPinned ?? false,
+                      isArchived: member?.isArchived ?? false,
+                      isUnreadOverride: member?.isUnreadOverride ?? false,
                       onTap: () => onSelect(room.tripId),
+                      onTogglePin: () => toggleGroupPin(
+                        ref,
+                        room.id,
+                        !(member?.isPinned ?? false),
+                      ),
+                      onToggleArchive: () => toggleGroupArchive(
+                        ref,
+                        room.id,
+                        !(member?.isArchived ?? false),
+                      ),
+                      onToggleUnread: () => toggleGroupUnreadOverride(
+                        ref,
+                        room.id,
+                        !(member?.isUnreadOverride ?? false),
+                      ),
                     );
 
                     return useWidthConstraint

@@ -44,6 +44,10 @@ abstract class Order with _$Order {
     @JsonKey(name: 'rental_status') String? rentalStatus,
     @JsonKey(name: 'deposit_refunded_at') DateTime? depositRefundedAt,
     @JsonKey(name: 'return_requested_at') DateTime? returnRequestedAt,
+    // NOTE: Stored at order creation so accept_listing_changes() can
+    // recalculate total_price using the buyer's original rate type (day/week/month)
+    // when the seller edits pricing and the buyer re-accepts the changes.
+    @JsonKey(name: 'rental_rate_type') String? rentalRateType,
 
     // Rental reminder preferences
     @JsonKey(name: 'reminder_days_before') @Default(1) int reminderDaysBefore,

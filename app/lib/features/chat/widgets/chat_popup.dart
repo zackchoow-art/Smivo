@@ -360,7 +360,17 @@ class _ChatPopupWidgetState extends ConsumerState<ChatPopupWidget> {
 
                           Navigator.of(context).pop(); // Close popup
 
-                          if (order != null && order.status != 'pending') {
+                          // NOTE: Same routing rule as ChatRoomScreen._buildListingPreview:
+                          // - pending / invalidated → listing detail
+                          //   (buyer acts on the listing, reviews diff, re-submits)
+                          // - confirmed / completed / cancelled / missed / etc
+                          //   → order detail (order record is the primary context)
+                          final shouldGoToOrder =
+                              order != null &&
+                              order.status != 'pending' &&
+                              order.status != 'invalidated';
+
+                          if (shouldGoToOrder) {
                             context.pushNamed(
                               AppRoutes.orderDetail,
                               pathParameters: {'id': order.id},

@@ -1,20 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:smivo/core/theme/theme_extensions.dart';
 
-/// A Master-Detail split layout for desktop Chat screens.
+/// A resizable Master-Detail split layout for desktop Chat screens.
 ///
-/// Left panel (320px) shows the chat list; right panel fills
-/// the remaining width with the selected chat room or a placeholder.
-/// This widget is a pure layout container — it contains no business logic.
-class ChatSplitView extends StatelessWidget {
+/// Left panel (chat list) and right panel (chat room) are separated by a
+/// draggable divider. The user can drag horizontally to resize the panels,
+/// with hard limits to ensure both panels always have usable space.
+///
+/// Constraints:
+///   - Minimum left panel width : [_kMinLeftWidth]   (240 px)
+///   - Maximum left panel width : [_kMaxLeftWidth]   (480 px)
+///   - Default left panel width : [_kDefaultLeftWidth] (320 px)
+class ChatSplitView extends StatefulWidget {
   const ChatSplitView({super.key, required this.chatList, this.chatRoom});
 
-  /// Widget displayed in the left 320px master panel.
+  /// Widget displayed in the left master panel.
   final Widget chatList;
 
   /// Widget displayed in the right detail panel.
   /// When null, a "Select a conversation" placeholder is shown.
   final Widget? chatRoom;
+
+  @override
+  State<ChatSplitView> createState() => _ChatSplitViewState();
+}
+
+class _ChatSplitViewState extends State<ChatSplitView> {
+  // NOTE: Clamp range chosen so both panels stay readable at all times.
+  static const double _kDefaultLeftWidth = 320;
+  static const double _kMinLeftWidth = 240;
+  static const double _kMaxLeftWidth = 480;
+
+  // Divider hit-target is wider than the visible line for easy grabbing.
+  static const double _kDividerHitWidth = 12;
+  static const double _kDividerVisibleWidth = 1;
+
+  double _leftWidth = _kDefaultLeftWidth;
+  bool _isDragging = false;
 
   @override
   Widget build(BuildContext context) {
@@ -23,18 +45,44 @@ class ChatSplitView extends StatelessWidget {
 
     return Row(
       children: [
-        // Left master panel: fixed 320px width
-        SizedBox(width: 320, child: chatList),
-        // Vertical divider between panels
-        VerticalDivider(
-          width: 1,
-          thickness: 1,
-          color: colors.outline.withValues(alpha: 0.12),
+        // ── Left master panel ────────────────────────────────────────────
+        SizedBox(width: _leftWidth, child: widget.chatList),
+
+        // ── Draggable divider ────────────────────────────────────────────
+        // GestureDetector sits over a wider hit area centred on the 1px line.
+        MouseRegion(
+          cursor: SystemMouseCursors.resizeColumn,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragStart: (_) => setState(() => _isDragging = true),
+            onHorizontalDragUpdate: (details) {
+              setState(() {
+                _leftWidth = (_leftWidth + details.delta.dx).clamp(
+                  _kMinLeftWidth,
+                  _kMaxLeftWidth,
+                );
+              });
+            },
+            onHorizontalDragEnd: (_) => setState(() => _isDragging = false),
+            child: SizedBox(
+              width: _kDividerHitWidth,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 100),
+                  // NOTE: Highlight divider while dragging to give feedback.
+                  width: _isDragging ? 3 : _kDividerVisibleWidth,
+                  color: _isDragging
+                      ? colors.primary.withValues(alpha: 0.5)
+                      : colors.outline.withValues(alpha: 0.12),
+                ),
+              ),
+            ),
+          ),
         ),
-        // Right detail panel: fills remaining width
+
+        // ── Right detail panel ───────────────────────────────────────────
         Expanded(
-          child:
-              chatRoom ??
+          child: widget.chatRoom ??
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

@@ -1005,8 +1005,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                 ],
                                 // NOTE: Show a rich diff card when the buyer's offer was
                                 // invalidated (seller edited the listing). Display each
-                                // field that changed with old value → new value, mirroring
-                                // the carpool detail page's lastAcknowledgedSnapshot pattern.
+                                // field that changed with old value → new value.
                                 // Only buyers with an invalidated order see this diff;
                                 // unrelated users only see the current listing.
                                 if (!isOwnListing)
@@ -1017,30 +1016,42 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                       }
                                       final snap = order!.listingSnapshot;
 
-                                      // Build list of (label, oldVal, newVal) for changed fields
+                                      // Parse the snapshot capture timestamp
+                                      // (= moment seller saved changes).
+                                      DateTime? capturedAt;
+                                      if (snap?['captured_at'] != null) {
+                                        capturedAt = DateTime.tryParse(
+                                          snap!['captured_at'] as String,
+                                        )?.toLocal();
+                                      }
+                                      final capturedAtStr =
+                                          capturedAt != null
+                                              ? DateFormat(
+                                                'MMM d, yyyy · h:mm a',
+                                              ).format(capturedAt)
+                                              : null;
+
+                                      // Build list of (label, oldVal, newVal) for changed fields.
                                       final diffs = <(String, String, String)>[];
                                       if (snap != null) {
+                                        // Helper: only add to diff list if value changed.
                                         void addIfChanged(
                                           String label,
                                           String? oldRaw,
-                                          String newVal,
+                                          String? newVal,
                                         ) {
-                                          if (oldRaw != null && oldRaw != newVal) {
-                                            diffs.add((label, oldRaw, newVal));
+                                          final o = oldRaw ?? '—';
+                                          final n = newVal ?? '—';
+                                          if (o != n) {
+                                            diffs.add((label, o, n));
                                           }
                                         }
 
+                                        // ── Core fields ──────────────────────────
                                         addIfChanged(
                                           'Title',
                                           snap['title']?.toString(),
                                           listing.title,
-                                        );
-                                        addIfChanged(
-                                          'Price',
-                                          snap['price'] != null
-                                              ? '\$${(snap['price'] as num).toStringAsFixed(0)}'
-                                              : null,
-                                          '\$${listing.price.toStringAsFixed(0)}',
                                         );
                                         addIfChanged(
                                           'Condition',
@@ -1052,19 +1063,116 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                           snap['transaction_type']?.toString(),
                                           listing.transactionType,
                                         );
-                                        // Truncate description for readability
+
+                                        // ── Pricing (sale) ────────────────────────
+                                        if (listing.transactionType == 'sale' ||
+                                            snap['transaction_type'] == 'sale') {
+                                          addIfChanged(
+                                            'Sale Price',
+                                            snap['price'] != null
+                                                ? '\$${(snap['price'] as num).toStringAsFixed(0)}'
+                                                : null,
+                                            '\$${listing.price.toStringAsFixed(0)}',
+                                          );
+                                        }
+
+                                        // ── Pricing (rental) ──────────────────────
+                                        if (listing.transactionType == 'rental' ||
+                                            snap['transaction_type'] == 'rental') {
+                                          addIfChanged(
+                                            'Daily Rate',
+                                            snap['rental_daily_price'] != null
+                                                ? '\$${(snap['rental_daily_price'] as num).toStringAsFixed(0)}/day'
+                                                : null,
+                                            listing.rentalDailyPrice != null
+                                                ? '\$${listing.rentalDailyPrice!.toStringAsFixed(0)}/day'
+                                                : null,
+                                          );
+                                          addIfChanged(
+                                            'Weekly Rate',
+                                            snap['rental_weekly_price'] != null
+                                                ? '\$${(snap['rental_weekly_price'] as num).toStringAsFixed(0)}/wk'
+                                                : null,
+                                            listing.rentalWeeklyPrice != null
+                                                ? '\$${listing.rentalWeeklyPrice!.toStringAsFixed(0)}/wk'
+                                                : null,
+                                          );
+                                          addIfChanged(
+                                            'Monthly Rate',
+                                            snap['rental_monthly_price'] != null
+                                                ? '\$${(snap['rental_monthly_price'] as num).toStringAsFixed(0)}/mo'
+                                                : null,
+                                            listing.rentalMonthlyPrice != null
+                                                ? '\$${listing.rentalMonthlyPrice!.toStringAsFixed(0)}/mo'
+                                                : null,
+                                          );
+                                          addIfChanged(
+                                            'Deposit',
+                                            snap['deposit_amount'] != null
+                                                ? '\$${(snap['deposit_amount'] as num).toStringAsFixed(0)}'
+                                                : null,
+                                            listing.depositAmount > 0
+                                                ? '\$${listing.depositAmount.toStringAsFixed(0)}'
+                                                : null,
+                                          );
+                                        }
+
+                                        // ── Description ───────────────────────────
                                         final oldDesc = snap['description']?.toString();
                                         final newDesc = listing.description ?? '';
-                                        if (oldDesc != null && oldDesc != newDesc) {
-                                          diffs.add((
-                                            'Description',
-                                            oldDesc.length > 80
+                                        final oldDescDisplay =
+                                            oldDesc != null && oldDesc.length > 80
                                                 ? '${oldDesc.substring(0, 80)}…'
-                                                : oldDesc,
+                                                : oldDesc;
+                                        final newDescDisplay =
                                             newDesc.length > 80
                                                 ? '${newDesc.substring(0, 80)}…'
-                                                : newDesc,
-                                          ));
+                                                : newDesc;
+                                        addIfChanged(
+                                          'Description',
+                                          oldDescDisplay,
+                                          newDescDisplay.isEmpty
+                                              ? null
+                                              : newDescDisplay,
+                                        );
+
+                                        // ── Logistics ─────────────────────────────
+                                        // Available date
+                                        final oldDate = snap['available_date'] != null
+                                            ? DateTime.tryParse(
+                                                snap['available_date'] as String,
+                                              )?.toLocal()
+                                            : null;
+                                        final newDate = listing.availableDate?.toLocal();
+                                        addIfChanged(
+                                          'Available Date',
+                                          oldDate != null
+                                              ? DateFormat('MMM d, yyyy').format(oldDate)
+                                              : 'Not specified',
+                                          newDate != null
+                                              ? DateFormat('MMM d, yyyy').format(newDate)
+                                              : 'Not specified',
+                                        );
+
+                                        // Pickup location name
+                                        addIfChanged(
+                                          'Pickup Location',
+                                          snap['pickup_location_name']?.toString(),
+                                          listing.pickupLocation?.name,
+                                        );
+
+                                        // Allow buyer to change pickup address
+                                        final oldAllow = snap['allow_pickup_change'];
+                                        final newAllow = listing.allowPickupChange;
+                                        if (oldAllow != null) {
+                                          final oldAllowBool = oldAllow as bool;
+                                          if (oldAllowBool != newAllow) {
+                                            diffs.add((
+                                              'Buyer Can Change Pickup',
+                                              oldAllowBool ? 'Allowed' : 'Not allowed',
+                                              newAllow ? 'Allowed' : 'Not allowed',
+                                            ));
+                                          }
                                         }
                                       }
 
@@ -1081,7 +1189,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                           children: [
                                             Row(
                                               children: [
-                                                Icon(Icons.update, color: colors.warning, size: 18),
+                                                Icon(
+                                                  Icons.update,
+                                                  color: colors.warning,
+                                                  size: 18,
+                                                ),
                                                 const SizedBox(width: 8),
                                                 Expanded(
                                                   child: Text(
@@ -1094,6 +1206,26 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                 ),
                                               ],
                                             ),
+                                            // First item: modification timestamp
+                                            if (capturedAtStr != null) ...[
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.access_time,
+                                                    size: 12,
+                                                    color: colors.outlineVariant,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    'Updated at $capturedAtStr',
+                                                    style: typo.labelSmall.copyWith(
+                                                      color: colors.outlineVariant,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                             if (diffs.isNotEmpty) ...[
                                               const SizedBox(height: 10),
                                               // Show each changed field as old (strikethrough) → new
@@ -1112,20 +1244,27 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                       ),
                                                       const SizedBox(height: 2),
                                                       Row(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment.start,
                                                         children: [
                                                           Expanded(
                                                             child: Text(
                                                               d.$2,
                                                               style: typo.bodySmall.copyWith(
                                                                 color: colors.error,
-                                                                decoration: TextDecoration.lineThrough,
+                                                                decoration:
+                                                                    TextDecoration.lineThrough,
                                                               ),
                                                             ),
                                                           ),
                                                           const Padding(
-                                                            padding: EdgeInsets.symmetric(horizontal: 6),
-                                                            child: Icon(Icons.arrow_forward, size: 12),
+                                                            padding: EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                            ),
+                                                            child: Icon(
+                                                              Icons.arrow_forward,
+                                                              size: 12,
+                                                            ),
                                                           ),
                                                           Expanded(
                                                             child: Text(
@@ -1169,12 +1308,24 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                       final isInvalidated =
                                           order?.status == 'invalidated';
 
-                                      // NOTE: Show an 'Accept Changes & Resubmit' button
-                                      // instead of the normal buy button when the order is
-                                      // invalidated. This calls accept_listing_changes() RPC
-                                      // which clears the snapshot and reverts status to pending,
-                                      // re-entering the seller's queue.
-                                      if (isInvalidated && order != null) {
+                                      // NOTE: For RENTAL invalidated orders the buyer must
+                                      // re-select dates and a rate with the new pricing, so
+                                      // we fall through to the normal rental UI below.
+                                      // We cancel the old invalidated order transparently
+                                      // right before the new order is submitted (see submit
+                                      // handler further below).
+                                      //
+                                      // For SALE invalidated orders "Accept & Resubmit" is
+                                      // safe: total_price is always listing.price, which the
+                                      // accept_listing_changes() RPC already updates server-side.
+                                      final isRentalListing =
+                                          listing.transactionType.toLowerCase() ==
+                                          'rental';
+
+                                      if (isInvalidated &&
+                                          order != null &&
+                                          !isRentalListing) {
+                                        // ── Sale invalidated: one-tap resubmit ──
                                         final isAccepting = ref
                                             .watch(orderActionsProvider)
                                             .isLoading;
@@ -1914,6 +2065,41 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                         }
 
                                                         try {
+                                                          // NOTE: Rental invalidated orders are not
+                                                          // resubmitted via accept_listing_changes().
+                                                          // Instead the buyer re-selects dates and submits
+                                                          // a fresh order. We must cancel the old invalidated
+                                                          // order first to avoid the unique constraint on
+                                                          // (buyer_id, listing_id, status=pending).
+                                                          if (isRental) {
+                                                            final currentOrder =
+                                                                ref
+                                                                    .read(
+                                                                      existingBuyerOrderProvider(
+                                                                        listing
+                                                                            .id,
+                                                                      ),
+                                                                    )
+                                                                    .value;
+                                                            if (currentOrder !=
+                                                                    null &&
+                                                                currentOrder
+                                                                        .status ==
+                                                                    'invalidated') {
+                                                              await ref
+                                                                  .read(
+                                                                    orderRepositoryProvider,
+                                                                  )
+                                                                  .updateOrderStatus(
+                                                                    currentOrder
+                                                                        .id,
+                                                                    'cancelled',
+                                                                    cancelledBy:
+                                                                        null, // System cancel — no notification needed
+                                                                  );
+                                                            }
+                                                          }
+
                                                           // NOTE: Buyer address-change priority:
                                                           // 1. If buyer changed address: use buyer-selected address
                                                           //    + buyer's school name (text snapshot).
@@ -2017,6 +2203,17 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                                                     effectivePickupName,
                                                                 school:
                                                                     schoolName,
+                                                                // NOTE: Convert 'DAY'/'WEEK'/'MONTH' → lowercase
+                                                                // so it matches the DB CHECK constraint values.
+                                                                // Only set for rental orders.
+                                                                rentalRateType:
+                                                                    isRental
+                                                                        ? ref
+                                                                              .read(
+                                                                                selectedRentalRateProvider,
+                                                                              )
+                                                                              .toLowerCase()
+                                                                        : null,
                                                               );
                                                           if (!context.mounted) {
                                                             return;

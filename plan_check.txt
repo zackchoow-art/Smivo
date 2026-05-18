@@ -1,2 +1,0 @@
-1. Create admin/vercel.json
-2. Wait for user confirmation

@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import type { BanType, BanStatus, RestrictionScope } from '@/types/ban';
 import type { UserProfile } from '@/types/user-profile';
 import { showToast } from '@/hooks/useToast';
+import { LiftReasonModal } from '@/components/moderation/LiftReasonModal';
 
 
 export function BansPage() {
@@ -24,6 +25,8 @@ export function BansPage() {
   const [type, setType] = useState<BanType | ''>('');
   const [scopeFilter, setScopeFilter] = useState<RestrictionScope | ''>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // NOTE: Track which ban is pending lift so the modal can collect a reason
+  const [liftingBanId, setLiftingBanId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useBans(page, {
     status: status || undefined,
@@ -34,18 +37,21 @@ export function BansPage() {
   const liftBanMutation = useLiftBan();
   const { admin } = useAuth();
 
-  const handleLiftBan = async (banId: string) => {
-    if (!admin) return;
-    const reason = prompt('Reason for lifting the ban:');
-    if (!reason) return;
+  const handleLiftBan = (banId: string) => {
+    setLiftingBanId(banId);
+  };
+
+  const handleConfirmLift = async (reason: string) => {
+    if (!admin || !liftingBanId) return;
 
     try {
       await liftBanMutation.mutateAsync({
-        banId,
+        banId: liftingBanId,
         liftReason: reason,
         adminId: admin.user_id
       });
       showToast('Ban lifted successfully ✅', 'success');
+      setLiftingBanId(null);
     } catch (err) {
       console.error(err);
       showToast('Failed to lift ban. Please try again.', 'error', 5000);
@@ -184,6 +190,15 @@ export function BansPage() {
       </footer>
 
       {isModalOpen && <CreateBanModal onClose={() => setIsModalOpen(false)} />}
+
+      {liftingBanId && (
+        <LiftReasonModal
+          title="Lift Ban"
+          onConfirm={handleConfirmLift}
+          onCancel={() => setLiftingBanId(null)}
+          isPending={liftBanMutation.isPending}
+        />
+      )}
 
       <style>{`
         .bans-container {

@@ -186,6 +186,10 @@ class FlatBuyerOrderCard extends StatelessWidget {
 
     return switch (status) {
       'pending' => (colors.statusPending, Colors.white, 'Pending'),
+      // NOTE: 'invalidated' means the seller edited the listing after the buyer
+      // submitted an offer. Show 'Updated' in amber/warning so the buyer notices
+      // they need to review and re-submit.
+      'invalidated' => (colors.warning, Colors.white, 'Updated'),
       'confirmed' => _confirmedChip(colors, rentalStatus),
       'completed' => (colors.success, Colors.white, 'Done'),
       'cancelled' => (colors.statusCancelled, Colors.white, 'Missed'),

@@ -613,7 +613,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: GestureDetector(
         onTap: () {
-          if (order != null && order.status != 'pending') {
+          // NOTE: For pending/invalidated orders the buyer still needs to
+          // act on the listing (view diff, re-submit offer), so we always
+          // send them to the listing detail page.
+          // For all post-acceptance states (confirmed, completed, cancelled,
+          // missed, etc.) the order record is the primary context, so we
+          // send them to order detail.
+          final shouldGoToOrder =
+              order != null &&
+              order.status != 'pending' &&
+              order.status != 'invalidated';
+
+          if (shouldGoToOrder) {
             context.pushNamed(
               AppRoutes.orderDetail,
               pathParameters: {'id': order.id},

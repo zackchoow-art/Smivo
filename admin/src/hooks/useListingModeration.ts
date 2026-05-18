@@ -327,7 +327,7 @@ export function useAllListings(page: number, filters?: AllListingsFilters) {
         .from(TABLES.LISTINGS)
         .select(`
           *,
-          images:listing_images(image_url),
+          images:listing_images(id, image_url),
           seller:user_profiles!seller_id(id, display_name, email, avatar_url)
         `, { count: 'exact' });
 

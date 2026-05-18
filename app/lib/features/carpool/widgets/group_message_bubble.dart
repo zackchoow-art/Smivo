@@ -102,69 +102,6 @@ class _ChatMessageBubble extends StatelessWidget {
     final senderName = message.sender?.displayName ?? 'Unknown';
     final timeStr = _formatTime(message.createdAt);
 
-    // Build the bubble widget
-    final bubble = Container(
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.72,
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isMe
-            ? theme.colorScheme.primary
-            : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(16),
-          topRight: const Radius.circular(16),
-          bottomLeft: Radius.circular(isMe ? 16 : 4),
-          bottomRight: Radius.circular(isMe ? 4 : 16),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          // Message content
-          if (message.messageType == 'image' && message.imageUrl != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                message.imageUrl!,
-                width: 200,
-                height: 200,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.broken_image,
-                  size: 48,
-                ),
-              ),
-            )
-          else
-            Text(
-              message.content,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: isMe
-                    ? theme.colorScheme.onPrimary
-                    : theme.colorScheme.onSurface,
-              ),
-            ),
-
-          const SizedBox(height: 4),
-
-          // "Sender Name · HH:mm" footer (name only for others' messages)
-          Text(
-            isMe ? timeStr : '$senderName · $timeStr',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: isMe
-                  ? theme.colorScheme.onPrimary.withValues(alpha: 0.7)
-                  : theme.colorScheme.outline,
-              fontSize: 10,
-            ),
-          ),
-        ],
-      ),
-    );
-
     // Build avatar widget — use SmivoUserAvatar when sender profile is present,
     // fall back to a plain CircleAvatar if profile data is missing (Realtime
     // payloads do not include JOIN relations).
@@ -178,32 +115,100 @@ class _ChatMessageBubble extends StatelessWidget {
     } else {
       avatarWidget = CircleAvatar(
         radius: 12,
-        backgroundColor:
-            theme.colorScheme.surfaceContainerHigh,
+        backgroundColor: theme.colorScheme.surfaceContainerHigh,
         child: Icon(
           Icons.person,
           size: 12,
-          color: theme.colorScheme.onSurfaceVariant
-              .withValues(alpha: 0.5),
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
         ),
       );
     }
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: isMe ? 48 : 8,
-        right: isMe ? 8 : 48,
-        top: 2,
-        bottom: 2,
-      ),
-      child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: isMe
-            ? [bubble, const SizedBox(width: 6), avatarWidget]
-            : [avatarWidget, const SizedBox(width: 6), bubble],
-      ),
+    // NOTE: Use LayoutBuilder instead of MediaQuery.size.width so that the
+    // bubble max-width is relative to the actual parent column width, not the
+    // full screen. On iPad split view the panel is narrower than the screen, so
+    // using screen width caused overflow. 0.72 of the parent is safe for both.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bubbleMaxWidth = constraints.maxWidth * 0.72;
+
+        final bubble = Container(
+          constraints: BoxConstraints(maxWidth: bubbleMaxWidth),
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isMe
+                ? theme.colorScheme.primary
+                : theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(16),
+              topRight: const Radius.circular(16),
+              bottomLeft: Radius.circular(isMe ? 16 : 4),
+              bottomRight: Radius.circular(isMe ? 4 : 16),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment:
+                isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              // Message content
+              if (message.messageType == 'image' && message.imageUrl != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    message.imageUrl!,
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.broken_image,
+                      size: 48,
+                    ),
+                  ),
+                )
+              else
+                Text(
+                  message.content,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isMe
+                        ? theme.colorScheme.onPrimary
+                        : theme.colorScheme.onSurface,
+                  ),
+                ),
+
+              const SizedBox(height: 4),
+
+              // \"Sender Name · HH:mm\" footer (name only for others' messages)
+              Text(
+                isMe ? timeStr : '$senderName · $timeStr',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: isMe
+                      ? theme.colorScheme.onPrimary.withValues(alpha: 0.7)
+                      : theme.colorScheme.outline,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+        );
+
+        return Padding(
+          padding: EdgeInsets.only(
+            left: isMe ? 48 : 8,
+            right: isMe ? 8 : 48,
+            top: 2,
+            bottom: 2,
+          ),
+          child: Row(
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: isMe
+                ? [bubble, const SizedBox(width: 6), avatarWidget]
+                : [avatarWidget, const SizedBox(width: 6), bubble],
+          ),
+        );
+      },
     );
   }
 }

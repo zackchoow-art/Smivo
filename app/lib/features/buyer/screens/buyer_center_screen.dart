@@ -5,10 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smivo/core/router/app_routes.dart';
+import 'package:smivo/core/providers/theme_provider.dart';
+import 'package:smivo/core/theme/theme_variant.dart';
 import 'package:smivo/features/buyer/providers/buyer_center_provider.dart';
 import 'package:smivo/features/notifications/providers/notification_provider.dart';
 
-import 'package:smivo/shared/widgets/content_width_constraint.dart';
 import 'package:smivo/shared/widgets/responsive_grid.dart';
 import 'package:smivo/shared/widgets/sticky_header_delegate.dart';
 import 'package:smivo/shared/widgets/collapsing_title_app_bar.dart';
@@ -264,17 +265,33 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
     );
   }
 
-  void _handleOrderTap(String orderId, bool hasUnread) {
+  void _handleOrderTap(dynamic order, bool hasUnread) {
     if (hasUnread) {
       final notifications = ref.read(notificationListProvider).value ?? [];
       final unreadNotifs = notifications.where(
-        (n) => !n.isRead && n.relatedOrderId == orderId,
+        (n) => !n.isRead && n.relatedOrderId == order.id,
       );
       for (final n in unreadNotifs) {
         ref.read(notificationListProvider.notifier).markAsRead(n.id);
       }
     }
-    context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': orderId});
+
+    // NOTE: For invalidated orders, the meaningful action for the buyer is to
+    // review what changed on the listing and decide whether to re-submit.
+    // The diff card and "Accept Changes & Resubmit" button live on the listing
+    // detail screen, not the order detail screen, so we send them there.
+    if ((order.status as String) == 'invalidated') {
+      final listingId = order.listingId as String?;
+      if (listingId != null) {
+        context.pushNamed(
+          AppRoutes.listingDetail,
+          pathParameters: {'id': listingId},
+        );
+        return;
+      }
+    }
+
+    context.pushNamed(AppRoutes.orderDetail, pathParameters: {'id': order.id});
   }
 
   List<Widget> _buildSection(
@@ -289,7 +306,9 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
     final typo = context.smivoTypo;
     final radius = context.smivoRadius;
     final isExpanded = _expandedSections[title] ?? true;
-    final isFlat = colors.primary == const Color(0xFF004181);
+    // NOTE: Check active theme variant from themeProvider directly to handle
+    // custom color schemes (e.g. Sage, Rose, Pastel) seamlessly.
+    final isFlat = ref.watch(themeProvider) == SmivoThemeVariant.flat;
 
     return [
       SliverPadding(
@@ -323,231 +342,211 @@ class _BuyerCenterScreenState extends ConsumerState<BuyerCenterScreen> {
           ),
         ),
       ),
-      // NOTE: Hide the list entirely when the section is collapsed.
+      // NOTE: SliverResponsiveGrid handles column count correctly via
+      // SliverLayoutBuilder, so no ContentWidthConstraint wrapping is needed.
       if (isExpanded)
-        // NOTE: ContentWidthConstraint centers cards on desktop.
-        // Flat grid maxWidth 1280; Teal list maxWidth 960.
-        Builder(
-          builder: (context) {
-            final sw = MediaQuery.of(context).size.width;
-            final useConstraint = Breakpoints.isDesktop(sw);
-            final maxW = isFlat ? 1280.0 : 960.0;
-            final sliver = SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver:
-                  isFlat
-                      ? SliverResponsiveGrid(
-                        itemCount: orders.length,
-                        mobileColumns: 2,
-                        tabletColumns: 3,
-                        desktopColumns: 4,
-                        crossAxisSpacing: 24,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.72,
-                        itemBuilder: (context, index) {
-                          final order = orders[index];
-                          final hasUnread = notifications.any(
-                            (n) => !n.isRead && n.relatedOrderId == order.id,
-                          );
-                          return FlatBuyerOrderCard(
-                            order: order,
-                            sectionTitle: title,
-                            hasUnread: hasUnread,
-                            onTap: () => _handleOrderTap(order.id, hasUnread),
-                          );
-                        },
-                      )
-                      : SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final order = orders[index];
-                          final listing = order.listing;
-                          final imageUrl =
-                              listing?.images.isNotEmpty == true
-                                  ? listing!.images.first.imageUrl
-                                  : null;
-                          final sellerName =
-                              order.seller?.displayName ?? 'Seller';
-                          final dateStr = DateFormat(
-                            'M/d/yyyy HH:mm',
-                          ).format(order.createdAt);
-                          final hasUnread = notifications.any(
-                            (n) => !n.isRead && n.relatedOrderId == order.id,
-                          );
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          sliver:
+              isFlat
+                  ? SliverResponsiveGrid(
+                    itemCount: orders.length,
+                    mobileColumns: 2,
+                    tabletColumns: 3,
+                    desktopColumns: 4,
+                    crossAxisSpacing: 24,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.72,
+                    itemBuilder: (context, index) {
+                      final order = orders[index];
+                      final hasUnread = notifications.any(
+                        (n) => !n.isRead && n.relatedOrderId == order.id,
+                      );
+                      return FlatBuyerOrderCard(
+                        order: order,
+                        sectionTitle: title,
+                        hasUnread: hasUnread,
+                        onTap: () => _handleOrderTap(order, hasUnread),
+                      );
+                    },
+                  )
+                  : SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final order = orders[index];
+                      final listing = order.listing;
+                      final imageUrl =
+                          listing?.images.isNotEmpty == true
+                              ? listing!.images.first.imageUrl
+                              : null;
+                      final sellerName =
+                          order.seller?.displayName ?? 'Seller';
+                      final dateStr = DateFormat(
+                        'M/d/yyyy HH:mm',
+                      ).format(order.createdAt);
+                      final hasUnread = notifications.any(
+                        (n) => !n.isRead && n.relatedOrderId == order.id,
+                      );
 
-                          return InkWell(
-                            onTap: () => _handleOrderTap(order.id, hasUnread),
-                            borderRadius: BorderRadius.circular(radius.card),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: colors.surfaceContainerLow,
-                                borderRadius: BorderRadius.circular(
-                                  radius.card,
-                                ),
-                                border: Border.all(
-                                  color: colors.outlineVariant.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      radius.image,
-                                    ),
-                                    child:
-                                        imageUrl != null
-                                            ? Image.network(
-                                              imageUrl,
-                                              width: 48,
-                                              height: 48,
-                                              fit: BoxFit.cover,
-                                            )
-                                            : Container(
-                                              width: 48,
-                                              height: 48,
-                                              color:
-                                                  colors.surfaceContainerHigh,
-                                              child: const Icon(Icons.image),
-                                            ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          listing?.title ?? 'Order',
-                                          style: typo.bodyLarge.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        RichText(
-                                          text: TextSpan(
-                                            style: typo.bodyMedium.copyWith(
-                                              color: colors.onSurface
-                                                  .withValues(alpha: 0.7),
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                text:
-                                                    '\$${order.totalPrice.toStringAsFixed(0)}',
-                                                style: TextStyle(
-                                                  color: colors.primary,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text:
-                                                    title == 'Awaiting Delivery'
-                                                        ? ' · ${order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : 'Unknown location'}'
-                                                        : ' · $sellerName',
-                                              ),
-                                            ],
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      if (title == 'Awaiting Delivery')
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            if (hasUnread)
-                                              Container(
-                                                width: 8,
-                                                height: 8,
-                                                margin: const EdgeInsets.only(
-                                                  right: 4,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: colors.error,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            Container(
-                                              width: 72,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 4,
-                                                    vertical: 4,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: colors.primary,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      radius.full,
-                                                    ),
-                                              ),
-                                              child: FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                child: Text(
-                                                  'Awaiting\nPickup',
-                                                  textAlign: TextAlign.center,
-                                                  style: typo.labelSmall.copyWith(
-                                                    color:
-                                                        colors
-                                                            .surfaceContainerLowest,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      else ...[
-                                        _StatusChip(
-                                          order: order,
-                                          hasUnread: hasUnread,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          dateStr,
-                                          style: typo.labelSmall.copyWith(
-                                            color: colors.onSurface.withValues(
-                                              alpha: 0.4,
-                                            ),
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ],
+                      return InkWell(
+                        onTap: () => _handleOrderTap(order, hasUnread),
+                        borderRadius: BorderRadius.circular(radius.card),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(
+                              radius.card,
+                            ),
+                            border: Border.all(
+                              color: colors.outlineVariant.withValues(
+                                alpha: 0.3,
                               ),
                             ),
-                          );
-                        }, childCount: orders.length),
-                      ),
-            );
-            return useConstraint
-                ? SliverToBoxAdapter(
-                  child: ContentWidthConstraint(
-                    maxWidth: maxW,
-                    child: CustomScrollView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      slivers: [sliver],
-                    ),
+                          ),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  radius.image,
+                                ),
+                                child:
+                                    imageUrl != null
+                                        ? Image.network(
+                                          imageUrl,
+                                          width: 48,
+                                          height: 48,
+                                          fit: BoxFit.cover,
+                                        )
+                                        : Container(
+                                          width: 48,
+                                          height: 48,
+                                          color:
+                                              colors.surfaceContainerHigh,
+                                          child: const Icon(Icons.image),
+                                        ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      listing?.title ?? 'Order',
+                                      style: typo.bodyLarge.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    RichText(
+                                      text: TextSpan(
+                                        style: typo.bodyMedium.copyWith(
+                                          color: colors.onSurface
+                                              .withValues(alpha: 0.7),
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text:
+                                                '\$${order.totalPrice.toStringAsFixed(0)}',
+                                            style: TextStyle(
+                                              color: colors.primary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text:
+                                                title == 'Awaiting Delivery'
+                                                    ? ' · ${order.pickupLocation?.name != null ? '${order.pickupLocation!.name}, ${order.school}' : 'Unknown location'}'
+                                                    : ' · $sellerName',
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  if (title == 'Awaiting Delivery')
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (hasUnread)
+                                          Container(
+                                            width: 8,
+                                            height: 8,
+                                            margin: const EdgeInsets.only(
+                                              right: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: colors.error,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                        Container(
+                                          width: 72,
+                                          padding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 4,
+                                                vertical: 4,
+                                              ),
+                                          decoration: BoxDecoration(
+                                            color: colors.primary,
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                  radius.full,
+                                                ),
+                                          ),
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: Text(
+                                              'Awaiting\nPickup',
+                                              textAlign: TextAlign.center,
+                                              style: typo.labelSmall.copyWith(
+                                                color:
+                                                    colors
+                                                        .surfaceContainerLowest,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  else ...[
+                                    _StatusChip(
+                                      order: order,
+                                      hasUnread: hasUnread,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      dateStr,
+                                      style: typo.labelSmall.copyWith(
+                                        color: colors.onSurface.withValues(
+                                          alpha: 0.4,
+                                        ),
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }, childCount: orders.length),
                   ),
-                )
-                : sliver;
-          },
         ),
     ];
   }

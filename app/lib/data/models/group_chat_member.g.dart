@@ -16,6 +16,9 @@ _GroupChatMember _$GroupChatMemberFromJson(Map<String, dynamic> json) =>
           json['last_read_at'] == null
               ? null
               : DateTime.parse(json['last_read_at'] as String),
+      isPinned: json['is_pinned'] as bool? ?? false,
+      isArchived: json['is_archived'] as bool? ?? false,
+      isUnreadOverride: json['is_unread_override'] as bool? ?? false,
       user:
           json['user'] == null
               ? null
@@ -29,5 +32,8 @@ Map<String, dynamic> _$GroupChatMemberToJson(_GroupChatMember instance) =>
       'user_id': instance.userId,
       'joined_at': instance.joinedAt.toIso8601String(),
       'last_read_at': instance.lastReadAt?.toIso8601String(),
+      'is_pinned': instance.isPinned,
+      'is_archived': instance.isArchived,
+      'is_unread_override': instance.isUnreadOverride,
       'user': instance.user,
     };

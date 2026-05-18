@@ -80,6 +80,9 @@ export function useAdminRole() {
       // NOTE: Platform-wide purge removed in v00175 — only school-scoped cleanup allowed.
       canPurgeSchoolData:       _isSysadmin || isSchoolAdmin,
 
+      // ── Listing data maintenance ───────────────────────────────
+      canEditListings:          _isSysadmin || isPlatformAdmin || isSchoolAdmin,
+
       // ── Carpool management ────────────────────────────────────
       canViewCarpool:           isModeratorOrAbove,
       canEditCarpoolStatus:     _isSysadmin || isPlatformAdmin || isSchoolAdmin,

@@ -929,11 +929,10 @@ class _CreateListingFormScreenState
       // Force save the selector's current 'Specify Address' value before
       // clearing state, in case the user typed but did not dismiss the keyboard.
       _addressSelectorKey.currentState?.saveIfSpecifying();
-      // NOTE: The selector also auto-saves on focus-loss;
-      // this is a redundant safety net for the form-submit path.
+      // NOTE: Reset the entire form so that re-entering the Post page shows
+      // a blank slate rather than the previously submitted content.
+      _resetForm(ref);
       ref.invalidate(homeListingsProvider);
-      ref.read(listingPhotosProvider.notifier).clear();
-      ref.read(selectedListingCategoryProvider.notifier).clear();
 
       if (!context.mounted) return;
 
@@ -966,6 +965,47 @@ class _CreateListingFormScreenState
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  /// Resets all form fields and Riverpod-managed form state to their defaults.
+  /// Called after a successful submission so the next visit starts fresh.
+  void _resetForm(WidgetRef ref) {
+    // Clear TextControllers
+    _titleController.clear();
+    _descriptionController.clear();
+    _priceController.clear();
+    _depositController.clear();
+    _dailyController.clear();
+    _weeklyController.clear();
+    _monthlyController.clear();
+    _customLocationController.clear();
+
+    // Reset local state variables to their initial defaults
+    setState(() {
+      _selectedCondition = 'good';
+      _availableDate = null;
+      _selectedPickupId = null;
+      _customLocationNote = '';
+      _allowBuyerToSuggest = true;
+      _dailyEnabled = true;
+      _weeklyEnabled = false;
+      _monthlyEnabled = false;
+      _dailyHasError = false;
+      _weeklyHasError = false;
+      _monthlyHasError = false;
+      _depositHasError = false;
+      _rentalRateErrorText = null;
+    });
+
+    // Reset Riverpod-managed form state
+    ref.read(listingPhotosProvider.notifier).clear();
+    ref.read(selectedListingCategoryProvider.notifier).clear();
+    // Reset sale/rental mode tab back to the screen's initial mode
+    ref
+        .read(
+          listingFormModeProvider(initialMode: widget.initialMode).notifier,
+        )
+        .setMode(widget.initialMode);
   }
 
   Future<void> _showSuccessDialog(BuildContext context, bool isSale) {

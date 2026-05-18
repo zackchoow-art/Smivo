@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAllListings, useListingOrders } from '@/hooks/useListingModeration';
 import { useTargetModerationLogs } from '@/hooks/useBackendModerationLogs';
+import { useAdminUpdateListing, useAdminUploadListingImage, useAdminDeleteListingImage } from '@/hooks/useListingEdit';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
-import { Filter, Eye, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { Filter, Eye, FileText, CheckCircle, XCircle, Pencil, Trash2, Upload, X, Save, Loader2 } from 'lucide-react';
 
 import { useColleges } from '@/hooks/useColleges';
 import { useSchoolDictItems } from '@/hooks/useSchoolDictData';
@@ -219,7 +221,6 @@ export function AllListingsPage() {
 }
 
 // ── Image Lightbox Overlay ─────────────────────────────────────────────────
-import { useEffect, useCallback } from 'react';
 
 function ImageLightbox({ images, currentIndex, onClose, onNavigate }: {
   images: string[];
@@ -325,65 +326,135 @@ function ImageLightbox({ images, currentIndex, onClose, onNavigate }: {
 function ListingDetailCard({ listing }: { listing: any }) {
   const { data: colleges = [] } = useColleges();
   const { data: orders = [] } = useListingOrders(listing.id);
+  const { canEditListings } = useAdminRole();
   const isRental = listing.listing_type === 'rental';
 
   // Build a status timeline from order history
   const statusTimeline = buildStatusTimeline(listing, orders);
 
-  // Lightbox state for image preview
+  // Lightbox state
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const images: { image_url: string }[] = listing.images ?? [];
+  const images: { id: string; image_url: string }[] = listing.images ?? [];
+
+  // ── Edit mode state ──
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(listing.title);
+  const [editDesc, setEditDesc] = useState(listing.description ?? '');
+  const [editPrice, setEditPrice] = useState(String(listing.price));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const updateMutation = useAdminUpdateListing();
+  const uploadMutation = useAdminUploadListingImage();
+  const deleteMutation = useAdminDeleteListingImage();
+
+  const isBusy = updateMutation.isPending || uploadMutation.isPending || deleteMutation.isPending;
+
+  const handleSave = () => {
+    const payload: Record<string, unknown> = { listingId: listing.id };
+    if (editTitle !== listing.title) payload.title = editTitle;
+    if (editDesc !== (listing.description ?? '')) payload.description = editDesc;
+    const newPrice = parseFloat(editPrice);
+    if (!isNaN(newPrice) && newPrice !== listing.price) payload.price = newPrice;
+    if (Object.keys(payload).length <= 1) { setEditing(false); return; }
+    updateMutation.mutate(payload as any, { onSuccess: () => setEditing(false) });
+  };
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadMutation.mutate({
+      listingId: listing.id,
+      sellerId: listing.user_id ?? listing.seller_id,
+      file,
+    });
+    e.target.value = '';
+  };
+
+  const handleDeleteImage = (img: { id: string; image_url: string }) => {
+    if (!confirm('Delete this image?')) return;
+    deleteMutation.mutate({ imageId: img.id, imageUrl: img.image_url });
+  };
+
+  const startEdit = () => {
+    setEditTitle(listing.title);
+    setEditDesc(listing.description ?? '');
+    setEditPrice(String(listing.price));
+    setEditing(true);
+  };
 
   return (
     <div className="card-expanded-content">
       {/* ── Left Column: Basic Info + Images ── */}
       <div className="detail-col detail-col--left">
-        <h3 className="pane-title">Listing Information</h3>
-        <p className="detail-desc">{listing.description}</p>
-        
-        <div className="detail-grid detail-grid--2col">
-          <div className="detail-item">
-            <span className="label">Type</span>
-            <span className="value" style={{ textTransform: 'capitalize' }}>{listing.listing_type || 'Sale'}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Condition</span>
-            <span className="value">{listing.condition?.replace('_', ' ')}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Status</span>
-            <span className="value" style={{ textTransform: 'capitalize' }}>{listing.status}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Category</span>
-            <span className="value" style={{ textTransform: 'capitalize' }}>{listing.category}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Listed Date</span>
-            <span className="value">{new Date(listing.created_at).toLocaleString()}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Available Date</span>
-            <span className="value">{listing.available_date ? new Date(listing.available_date).toLocaleDateString() : 'Immediately'}</span>
-          </div>
-          {listing.pickup_location && (
-            <div className="detail-item" style={{ gridColumn: '1 / -1' }}>
-              <span className="label">Pickup Location</span>
-              <span className="value">{listing.pickup_location}, {colleges.find((c: any) => c.id === listing.college_id)?.name || listing.college_id}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 className="pane-title">Listing Information</h3>
+          {canEditListings && !editing && (
+            <button className="edit-toggle-btn" onClick={startEdit}><Pencil size={13} /> Edit</button>
+          )}
+          {editing && (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button className="edit-toggle-btn edit-toggle-btn--save" onClick={handleSave} disabled={isBusy}>
+                {updateMutation.isPending ? <Loader2 size={13} className="spin" /> : <Save size={13} />} Save
+              </button>
+              <button className="edit-toggle-btn" onClick={() => setEditing(false)} disabled={isBusy}><X size={13} /> Cancel</button>
             </div>
           )}
         </div>
 
-        <h3 className="pane-title" style={{ marginTop: '20px' }}>Images</h3>
-        <div className="image-gallery">
+        {editing ? (
+          <div className="edit-form">
+            <label className="edit-label">Title</label>
+            <input className="edit-input" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+            <label className="edit-label">Description</label>
+            <textarea className="edit-textarea" value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={4} />
+            <label className="edit-label">Price ($)</label>
+            <input className="edit-input" type="number" step="0.01" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} style={{ maxWidth: 160 }} />
+            {updateMutation.isError && <div className="edit-error">Save failed: {(updateMutation.error as Error).message}</div>}
+          </div>
+        ) : (
+          <>
+            <p className="detail-desc">{listing.description}</p>
+            <div className="detail-grid detail-grid--2col">
+              <div className="detail-item"><span className="label">Type</span><span className="value" style={{ textTransform: 'capitalize' }}>{listing.listing_type || 'Sale'}</span></div>
+              <div className="detail-item"><span className="label">Condition</span><span className="value">{listing.condition?.replace('_', ' ')}</span></div>
+              <div className="detail-item"><span className="label">Status</span><span className="value" style={{ textTransform: 'capitalize' }}>{listing.status}</span></div>
+              <div className="detail-item"><span className="label">Category</span><span className="value" style={{ textTransform: 'capitalize' }}>{listing.category}</span></div>
+              <div className="detail-item"><span className="label">Listed Date</span><span className="value">{new Date(listing.created_at).toLocaleString()}</span></div>
+              <div className="detail-item"><span className="label">Available Date</span><span className="value">{listing.available_date ? new Date(listing.available_date).toLocaleDateString() : 'Immediately'}</span></div>
+              {listing.pickup_location && (
+                <div className="detail-item" style={{ gridColumn: '1 / -1' }}><span className="label">Pickup Location</span><span className="value">{listing.pickup_location}, {colleges.find((c: any) => c.id === listing.college_id)?.name || listing.college_id}</span></div>
+              )}
+            </div>
+          </>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
+          <h3 className="pane-title" style={{ margin: 0 }}>Images</h3>
+          {editing && (
+            <>
+              <button className="edit-toggle-btn" onClick={() => fileInputRef.current?.click()} disabled={uploadMutation.isPending}>
+                {uploadMutation.isPending ? <Loader2 size={13} className="spin" /> : <Upload size={13} />} Upload
+              </button>
+              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
+            </>
+          )}
+        </div>
+        {uploadMutation.isError && <div className="edit-error" style={{ marginBottom: 8 }}>Upload failed: {(uploadMutation.error as Error).message}</div>}
+        <div className="image-gallery" style={{ marginTop: 8 }}>
           {images.map((img, i) => (
-            <img
-              key={i}
-              src={img.image_url}
-              alt={`listing ${i + 1}`}
-              className="gallery-img gallery-img--clickable"
-              onClick={() => setLightboxIndex(i)}
-            />
+            <div key={img.id || i} className="gallery-img-wrap">
+              <img
+                src={img.image_url}
+                alt={`listing ${i + 1}`}
+                className="gallery-img gallery-img--clickable"
+                onClick={() => !editing && setLightboxIndex(i)}
+              />
+              {editing && img.id && (
+                <button className="img-delete-btn" onClick={() => handleDeleteImage(img)} disabled={deleteMutation.isPending} title="Delete image">
+                  <Trash2 size={12} />
+                </button>
+              )}
+            </div>
           ))}
           {images.length === 0 && (
             <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>No images available.</div>
@@ -582,6 +653,42 @@ function ListingDetailCard({ listing }: { listing: any }) {
           border-color: var(--color-info);
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+
+        /* Edit mode */
+        .edit-toggle-btn {
+          display: inline-flex; align-items: center; gap: 4px;
+          padding: 4px 10px; font-size: 12px; font-weight: 500;
+          border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+          background: var(--color-bg-primary); color: var(--color-text-secondary);
+          cursor: pointer; transition: all 0.15s;
+        }
+        .edit-toggle-btn:hover:not(:disabled) { background: var(--color-bg-secondary); border-color: var(--color-info); color: var(--color-info); }
+        .edit-toggle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .edit-toggle-btn--save { background: var(--color-info); color: white; border-color: var(--color-info); }
+        .edit-toggle-btn--save:hover:not(:disabled) { opacity: 0.9; color: white; }
+
+        .edit-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .edit-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--color-text-tertiary); letter-spacing: 0.03em; }
+        .edit-input { padding: 7px 10px; font-size: 13px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-primary); color: var(--color-text-primary); outline: none; transition: border-color 0.15s; }
+        .edit-input:focus { border-color: var(--color-info); }
+        .edit-textarea { padding: 7px 10px; font-size: 13px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-primary); color: var(--color-text-primary); outline: none; resize: vertical; min-height: 72px; font-family: inherit; transition: border-color 0.15s; }
+        .edit-textarea:focus { border-color: var(--color-info); }
+        .edit-error { font-size: 12px; color: var(--color-danger); padding: 4px 0; }
+
+        .gallery-img-wrap { position: relative; display: inline-block; }
+        .img-delete-btn {
+          position: absolute; top: -6px; right: -6px;
+          width: 20px; height: 20px; border-radius: 50%;
+          background: var(--color-danger); color: white;
+          border: 2px solid var(--color-bg-secondary);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; transition: transform 0.15s;
+        }
+        .img-delete-btn:hover { transform: scale(1.15); }
+        .img-delete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Engagement row */
         .engagement-row {

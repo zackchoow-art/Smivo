@@ -213,3 +213,63 @@ Future<void> clearGroupChatSession(WidgetRef ref) async {
   ref.invalidate(groupUnreadCountsProvider);
 }
 
+/// Toggles the pin state of a group chat room for the current user.
+///
+/// [roomId] is the group_chat_rooms.id (not trip_id).
+/// After toggling, invalidates [userGroupChatRoomsProvider] so the list
+/// re-sorts with pinned rooms at the top.
+Future<void> toggleGroupPin(
+  WidgetRef ref,
+  String roomId,
+  bool isPinned,
+) async {
+  final client = ref.read(supabaseClientProvider);
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return;
+
+  await ref.read(groupChatRepositoryProvider).toggleGroupPin(
+    roomId: roomId,
+    userId: userId,
+    isPinned: isPinned,
+  );
+  ref.invalidate(userGroupChatRoomsProvider);
+}
+
+/// Toggles the archive state of a group chat room for the current user.
+Future<void> toggleGroupArchive(
+  WidgetRef ref,
+  String roomId,
+  bool isArchived,
+) async {
+  final client = ref.read(supabaseClientProvider);
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return;
+
+  await ref.read(groupChatRepositoryProvider).toggleGroupArchive(
+    roomId: roomId,
+    userId: userId,
+    isArchived: isArchived,
+  );
+  ref.invalidate(userGroupChatRoomsProvider);
+}
+
+/// Toggles the unread-override state of a group chat room for the current user.
+Future<void> toggleGroupUnreadOverride(
+  WidgetRef ref,
+  String roomId,
+  bool isUnreadOverride,
+) async {
+  final client = ref.read(supabaseClientProvider);
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return;
+
+  await ref.read(groupChatRepositoryProvider).toggleGroupUnreadOverride(
+    roomId: roomId,
+    userId: userId,
+    isUnreadOverride: isUnreadOverride,
+  );
+  // NOTE: Also reset the override to false when marking as read
+  // is done via markGroupChatAsRead; here we only handle the override flag.
+  ref.invalidate(userGroupChatRoomsProvider);
+  ref.invalidate(groupUnreadCountsProvider);
+}

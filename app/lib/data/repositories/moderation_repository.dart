@@ -187,6 +187,13 @@ class ModerationRepository {
   /// The RLS policy on content_reports only returns rows where:
   ///   status = 'resolved' AND action_taken IN ('warn', 'restrict')
   /// so dismissed reports are never exposed to the reported user.
+  ///
+  /// NOTE: De-duplication by content target (listing_id / chat_room_id) is
+  /// applied here to prevent the same moderation event appearing multiple
+  /// times when multiple users reported the same item.  When N reporters flag
+  /// the same listing, N rows are resolved — but the seller should only see
+  /// ONE warning card per listing (the most recent one, which already carries
+  /// the merged reporter count in resolution_note).
   Future<List<ContentReport>> getReportPenaltiesAgainstUser(
     String userId,
   ) async {
@@ -196,7 +203,37 @@ class ModerationRepository {
           .select('*, listing:listings(*, images:listing_images(*))')
           .eq('reported_user_id', userId)
           .order('created_at', ascending: false);
-      return data.map((json) => ContentReport.fromJson(json)).toList();
+
+      final all = data.map((json) => ContentReport.fromJson(json)).toList();
+
+      // NOTE: De-duplicate by target: keep only the first (newest) record per
+      // listing_id.  For reports without a listing (user-level reports), group
+      // by chat_room_id, or fall back to treating each report individually.
+      // The incoming list is already sorted newest-first, so the first entry
+      // in each group is the canonical one we want to display.
+      final seen = <String>{};
+      final deduped = <ContentReport>[];
+      for (final report in all) {
+        // Build a dedup key:
+        //   - listing reports: "listing:<listing_id>"
+        //   - chat reports   : "chat:<chat_room_id>"
+        //   - user reports   : "user:<report_id>" (no dedup — each is unique)
+        final String key;
+        if (report.listingId != null) {
+          key = 'listing:${report.listingId}';
+        } else if (report.chatRoomId != null) {
+          key = 'chat:${report.chatRoomId}';
+        } else {
+          key = 'user:${report.id}';
+        }
+
+        if (!seen.contains(key)) {
+          seen.add(key);
+          deduped.add(report);
+        }
+      }
+
+      return deduped;
     } on PostgrestException catch (e) {
       throw DatabaseException(e.message, e);
     }
